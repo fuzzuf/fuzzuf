@@ -1,0 +1,9 @@
+increment=">"
+decrement="<"
+add="+"
+sub="-"
+output="."
+input=","
+begin="["
+end="]"
+

@@ -1,0 +1,35 @@
+/*
+ * fuzzuf
+ * Copyright (C) 2021 Ricerca Security
+ * 
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see http://www.gnu.org/licenses/.
+ */
+#cmakedefine ENABLE_DANGEROUS_STACK_TRACE_OUTPUT
+#cmakedefine HAS_CXX_STD_BIT
+#cmakedefine HAS_CXX_STD_FILESYSTEM
+#cmakedefine ENABLE_DISPLAY_LAST_STACK_TRACE
+#cmakedefine DEFINE_DEBUG_ASSERT
+#cmakedefine ENABLE_NODE_TRACER
+#cmakedefine FUZZTOYS_FOUND
+#define TEST_DICTIONARY_DIR "${CMAKE_SOURCE_DIR}/test/dict"
+#define TEST_BINARY_DIR "${CMAKE_BINARY_DIR}/test"
+#define TEST_SOURCE_DIR "${CMAKE_SOURCE_DIR}/test"
+#define FUZZUF_DEFAULT_RUNLEVEL MODE_${DEFAULT_RUNLEVEL_CAP}
+#define FUZZUF_PIN_EXECUTABLE "${PIN_EXECUTABLE}"
+// NOTE: FUZZUF_QEMU_EXECUTABLE is for testing purpose only. Do not use in the Fuzzuf core implementation.
+#define FUZZUF_QEMU_EXECUTABLE "${QEMU_EXECUTABLE}"
+// NOTE: FUZZUF_CS_PROXY_EXECUTABLE is for testing purpose only. Do not use in the Fuzzuf core implementation.
+#define FUZZUF_CS_PROXY_EXECUTABLE "${CS_PROXY_EXECUTABLE}"
+#define FUZZUF_FUZZTOYS_DIR "${FUZZTOYS_DIR}"
+#cmakedefine FLC_FOUND

@@ -1,0 +1,52 @@
+name: release mirror
+on:
+  push:
+    branches:
+      - release
+permissions:
+  contents: read
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: checkout orig
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 1
+          path: orig
+          ref: release
+      - name: set Git config
+        run: |
+          git config --global user.email "fuzzuf-dev@ricsec.co.jp"
+          git config --global user.name "ricsec-bot"
+      - name: set SSH key
+        env:
+          SSH_KEY: ${{ secrets.SSH_KEY }}
+        run: |
+          echo "$SSH_KEY" > key.pem
+          chmod 600 key.pem
+      - name: mkdir
+        run: |
+          mkdir release
+      - name: git init
+        working-directory: ./release
+        run: |
+          git init
+          git remote add origin git@github.com:fuzzuf/fuzzuf
+      - name: apply changes
+        working-directory: ./orig
+        run: |
+          git archive HEAD | tar -x -C ../release
+      - name: commit changes
+        working-directory: ./release
+        env:
+          COMMIT_MSG: ${{ github.event.head_commit.message }}
+        run: |
+          git add -A
+          git commit -m "initial commit"
+      - name: push changes
+        working-directory: ./release
+        env:
+          GIT_SSH_COMMAND: ssh -i ../key.pem
+        run: |
+          git push origin master

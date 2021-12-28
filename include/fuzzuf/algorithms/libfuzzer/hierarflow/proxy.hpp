@@ -1,0 +1,35 @@
+/*
+ * fuzzuf
+ * Copyright (C) 2021 Ricerca Security
+ * 
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see http://www.gnu.org/licenses/.
+ */
+#ifndef FUZZUF_INCLUDE_ALGORITHM_LIBFUZZER_HIERARFLOW_PROXY_HPP
+#define FUZZUF_INCLUDE_ALGORITHM_LIBFUZZER_HIERARFLOW_PROXY_HPP
+#include "fuzzuf/algorithms/libfuzzer/do_nothing.hpp"
+#include "fuzzuf/algorithms/libfuzzer/hierarflow/simple_function.hpp"
+
+namespace fuzzuf::algorithm::libfuzzer {
+
+/**
+ * @class Proxy
+ * @brief Do nothing but invoke all child nodes
+ * Since the node is not actually "no operation", and the function is same as
+ * Proxy node, this node is deprecated. The node takes no any paths.
+ *
+ * @tparm F Function type to define what arguments passes through this node.
+ */
+FUZZUF_ALGORITHM_LIBFUZZER_HIERARFLOW_SIMPLE_FUNCTION(Proxy, DoNothing)
+} // namespace fuzzuf::algorithm::libfuzzer
+#endif

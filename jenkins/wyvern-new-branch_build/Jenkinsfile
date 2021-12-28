@@ -1,0 +1,20 @@
+@Library('atla') _
+atla_branch_build2( 'wyvern-new', 'atla', "${BRANCH}" ) {
+  dist_name, dist_info ->
+  node( 'atla_build' ) {
+    docker.image( dist_info[ 'images' ][ 'flc' ] ).inside {
+      stage( 'checkout' ) {
+        atla_checkout( 'NewWyvernPseudoCode', "${BRANCH}" )
+      }
+      stage( 'build' ) {
+        sh "./jenkins/${JOB_NAME}/build.sh ${PYENV_VERSION} ${PYENV_DIR} build_"+dist_info[ "type" ]+'_'+dist_info[ "version" ]+" -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr -DPATTR_USER=jenkins -DPATTR_BRANCH=${BRANCH} -DPATTR_VERSION_RELEASE=${REVISION_OFFSET}+${BUILD_NUMBER} -DENABLE_HEAVY_TEST=OFF -DENABLE_DANGEROUS_STACK_TRACE_OUTPUT=ON -DENABLE_DOXYGEN=ON -DPIN_ROOT=/opt/pin/3.7"
+      }
+      if( env.PYENV_VERSION == "native" ) {
+        stage( 'deploy' ) {
+          atla_publish( dist_info, "${BRANCH}" )
+        }
+      }
+    }
+  }
+}
+

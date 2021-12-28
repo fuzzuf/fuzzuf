@@ -1,0 +1,49 @@
+# 以下の機能はlibFuzzerからfuzzufに移植されていない
+
+## Mutator
+
+### Mutate\_AddWordFromTORC(CMP)
+
+llvmのSanitizerCoverageのtrace-cmpを使って得られる 分岐で比較した値 を挿入する
+fuzzufにはtrace-cmpに相当する情報を得る手段が無い為実装不能
+
+### Mutate\_AddWordFromPersistentAutoDictionary
+
+過去にMutate\_AddWordFromManualDictionaryとMutate\_AddWordFromTORCで挿入した値のうち、新しいカバレッジの発見に繋がった物が蓄積される辞書
+Mutate\_AddWordFromManualDictionaryのみから入力を拾う実装になっている
+
+## Corpus
+
+libFuzzerはCorpusの完全な状態を永続化し、途中からfuzzingを再開する事ができるが、fuzzufの実装では入力値のみを永続化する為永続化された情報から再開したとしても以前の状態を完全に復元する事はできない
+
+## Feature
+
+#### Data Flow Trace
+
+llvmのDataFlowSanitizerを使って得られるデータの移動の記録を使って入力値のどの部分が分岐に影響するかを特定する
+この結果に基づいてMutationを行う範囲にマスクをかける事で、特定の分岐を抜ける入力を集中的に探すのではないかと思われる(ただlibFuzzerの実装を見る限りマスクの生成には繋がっていない(=この情報は有効に活用されていない)ように見える)
+fuzzufではDataFlowSanitizerに相当する情報を得る手段が無い為実装不能
+
+### Executor
+
+#### 子プロセス作成の回避
+
+libFuzzerはfuzzingの対象とfuzzerを同じバイナリにリンクする事で子プロセス生成のコストを回避するが、これに相当するexecutorは現状fuzzufにない為、fuzzufの実装では子プロセスが作られる。
+
+#### 共有ライブラリのサポート
+
+libFuzzerは実行可能バイナリのedge coverageだけでなく、そこにリンクされる共有ライブラリのedge coverageも回収して結合する仕組みを持っている
+fuzzufは共有ライブラリからカバレッジを取る手段が無い為実装不能
+
+### Feedback
+
+#### Leak Sanitizer
+
+libFuzzerはターゲットの実行を開始してから確保され、終了するまでに解放されなかったメモリを検知している
+fuzzufではleak sanitizer付きでターゲットがコンパイルされていればこのケースを失敗扱いにすることはできるが、失敗理由はabortになる為メモリリークだったかどうかはわからなくなる
+
+#### Stack Depth Tracing
+
+llvmのSanitizerCoverageのstack-depthを使ってターゲットがスタックをどこまで使ったかを取得する
+fuzzufは使われたスタックの深さを取る手段が無い為実装不能
+

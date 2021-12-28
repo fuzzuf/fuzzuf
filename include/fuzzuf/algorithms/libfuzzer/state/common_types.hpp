@@ -1,0 +1,32 @@
+/*
+ * fuzzuf
+ * Copyright (C) 2021 Ricerca Security
+ * 
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see http://www.gnu.org/licenses/.
+ */
+#ifndef FUZZUF_INCLUDE_ALGORITHM_LIBFUZZER_STATE_COMMON_TYPES_HPP
+#define FUZZUF_INCLUDE_ALGORITHM_LIBFUZZER_STATE_COMMON_TYPES_HPP
+#include <cstdint>
+#include <vector>
+
+namespace fuzzuf::algorithm::libfuzzer {
+
+// カバレッジを記録するための型(必須ではない)
+using coverage_t = std::vector<std::uint8_t>;
+// 標準出力を記録するための型(必須ではない)
+using output_t = std::vector<std::uint8_t>;
+
+} // namespace fuzzuf::algorithm::libfuzzer
+
+#endif

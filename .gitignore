@@ -1,0 +1,10 @@
+*.swp
+*.log
+*.core
+
+### VUzzer-related
+bb.out
+
+.python-version
+/.vscode
+/build
