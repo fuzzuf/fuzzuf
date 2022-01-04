@@ -536,8 +536,7 @@ if( "${PATTR_PYENV}" STREQUAL "native" )
     set(DOXYGEN_SOURCE_BROWSER YES)
     set(DOXYGEN_EXTRACT_PRIVATE YES)
     if( ${CMAKE_VERSION} VERSION_LESS 3.12.0 )
-      file( GLOB_RECURSE FUZZUF_HEADERS RELATIVE ${
-  CMAKE_SOURCE_DIR} "*.hpp" )
+      file( GLOB_RECURSE FUZZUF_HEADERS RELATIVE ${CMAKE_SOURCE_DIR} "*.hpp" )
       doxygen_add_docs(
         fuzzuf_doc
         ${FUZZUF_SOURCES}
