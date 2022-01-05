@@ -1,5 +1,5 @@
 @Library('atla') _
-atla_branch_build2( 'wyvern-new', 'atla', "${BRANCH}" ) {
+atla_branch_build2( 'fuzzuf', 'atla', "${BRANCH}" ) {
   dist_name, dist_info ->
   node( 'atla_build' ) {
     docker.image( dist_info[ 'images' ][ 'flc' ] ).inside {

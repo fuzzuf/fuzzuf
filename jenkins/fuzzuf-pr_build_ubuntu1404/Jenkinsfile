@@ -20,10 +20,10 @@ pipeline {
   }
   post { 
     success {
-      atla_notify_build_result( 'new wyvern', 'Ubuntu 14.04でのビルド', true )
+      atla_notify_build_result( 'fuzzuf', 'Ubuntu 14.04でのビルド', true )
     }
     unsuccessful {
-      atla_notify_build_result( 'new wyvern', 'Ubuntu 14.04でのビルド', false )
+      atla_notify_build_result( 'fuzzuf', 'Ubuntu 14.04でのビルド', false )
     }
   }
 }
