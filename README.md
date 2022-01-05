@@ -1,5 +1,7 @@
 # fuzzuf
 
+[![Build Status](https://jenkins.atla.ricsec.co.jp/buildStatus/icon?job=fuzzuf-branch_build)](https://jenkins.atla.ricsec.co.jp/view/fuzzuf/job/fuzzuf-branch_build/)
+
 ![fuzzuf-afl-exifutil](/docs/resources/img/fuzzuf-afl-exifutil.png)
 
 [README（日本語）](/README_ja.md)
