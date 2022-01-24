@@ -156,11 +156,11 @@ public:
     ExitStatusFeedback GetExitStatusFeedback();
 
     void TerminateForkServer();
-    void SetCArgvAndDecideInputMode();    
-    void SetupSharedMemories();
-    void ResetSharedMemories();
-    void EraseSharedMemories();
-    void SetupEnvironmentVariablesForTarget();
+    virtual void SetCArgvAndDecideInputMode();
+    virtual void SetupSharedMemories();
+    virtual void ResetSharedMemories();
+    virtual void EraseSharedMemories();
+    virtual void SetupEnvironmentVariablesForTarget();
     void SetupForkServer();    
 
     static void SetupSignalHandlers();
@@ -171,7 +171,11 @@ public:
     // InplaceMemoryFeedback made of GetStdErr before calling this function becomes invalid after Run()
     fuzzuf::executor::output_t MoveStdErr();
 
-private:    
+protected:
+    bool record_stdout_and_err;
+    bool has_shared_memories;
+
+private:
     PUTExitReasonType last_exit_reason;
     u8 last_signal;    
     fuzzuf::executor::output_t stdout_buffer;
@@ -182,7 +186,4 @@ private:
     epoll_event fork_server_stdout_event;
     epoll_event fork_server_stderr_event;
     epoll_event fork_server_read_event;
-
-    bool record_stdout_and_err;
-    bool has_shared_memories;
 };
