@@ -15,6 +15,10 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see http://www.gnu.org/licenses/.
  */
+/**
+ * @file fuzzer.hpp
+ * @author Ricerca Security <fuzzuf-dev@ricsec.co.jp>
+ */
 #ifndef FUZZUF_INCLUDE_ALGORITHM_LIBFUZZER_FUZZER_HPP
 #define FUZZUF_INCLUDE_ALGORITHM_LIBFUZZER_FUZZER_HPP
 
@@ -45,12 +49,12 @@ class LibFuzzer : public ::Fuzzer {
   using Wrapped = utils::type_traits::replace_return_type_t<void, Func>;
 
 public:
-  LibFuzzer(const FuzzerArgs &, const GlobalFuzzerOptions &,
+  LibFuzzer(FuzzerArgs &, const GlobalFuzzerOptions &,
             std::function<void(std::string &&)> &&);
   virtual ~LibFuzzer() {}
   virtual void OneLoop();
   virtual void ReceiveStopSignal(void) {}
-  bool end() const { return end_; }
+  bool ShouldEnd() const { return end_; }
   const FuzzerCreateInfo &get_create_info() const { return create_info; }
 
 private:

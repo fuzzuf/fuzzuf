@@ -15,6 +15,10 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see http://www.gnu.org/licenses/.
  */
+/**
+ * @file mask.hpp
+ * @author Ricerca Security <fuzzuf-dev@ricsec.co.jp>
+ */
 #ifndef FUZZUF_INCLUDE_ALGORITHM_LIBFUZZER_HIERARFLOW_MASK_HPP
 #define FUZZUF_INCLUDE_ALGORITHM_LIBFUZZER_HIERARFLOW_MASK_HPP
 #include "fuzzuf/algorithms/libfuzzer/hierarflow/standard_end.hpp"
@@ -34,9 +38,9 @@ namespace fuzzuf::algorithm::libfuzzer {
  * Only masked elements of input are passed to child nodes.
  * This node is intended to limit range to mutate.
  * The node takes one path for input.
- * @tparm F Function type to define what arguments passes through this node.
- * @tparm Mask mask container type.
- * @tparm Path Struct path to define which value to to use.
+ * @tparam F Function type to define what arguments passes through this node.
+ * @tparam Mask Mask container type.
+ * @tparam Path Struct path to define which value to to use.
  */
 template <typename F, typename Mask, typename Path> struct StaticMask {};
 template <typename R, typename... Args, typename Mask, typename Path>
@@ -44,15 +48,13 @@ struct StaticMask<R(Args...), Mask, Path>
     : public HierarFlowRoutine<R(Args...), R(Args...)> {
   FUZZUF_ALGORITHM_LIBFUZZER_HIERARFLOW_STANDARD_TYPEDEFS
   /**
-   * @fn
    * Constructor
    * All arguments are transfered to constructor of the mask
    */
   StaticMask(Mask &&m) : mask(std::move(m)) {}
   /**
-   * @fn
    * This callable is called on HierarFlow execution
-   * @param args arguments
+   * @param args Arguments
    * @return direction of next node
    */
   callee_ref_t operator()(Args... args) {
@@ -100,9 +102,9 @@ using StaticMask = libfuzzer::StaticMask<F, Mask, StaticMaskStdArgOrderT<Ord>>;
  * Only masked elements of input are passed to child nodes.
  * This node is intended to limit range to mutate.
  * The node takes 2 paths for mask and input.
- * @tparm F Function type to define what arguments passes through this node.
- * @tparm Mask mask container type.
- * @tparm Path Struct path to define which value to to use.
+ * @tparam F Function type to define what arguments passes through this node.
+ * @tparam Mask Mask container type.
+ * @tparam Path Struct path to define which value to to use.
  */
 template <typename F, typename Path> struct DynamicMask {};
 template <typename R, typename... Args, typename Path>
@@ -110,9 +112,8 @@ struct DynamicMask<R(Args...), Path>
     : public HierarFlowRoutine<R(Args...), R(Args...)> {
   FUZZUF_ALGORITHM_LIBFUZZER_HIERARFLOW_STANDARD_TYPEDEFS
   /**
-   * @fn
    * This callable is called on HierarFlow execution
-   * @param args arguments
+   * @param args Arguments
    * @return direction of next node
    */
   callee_ref_t operator()(Args... args) {

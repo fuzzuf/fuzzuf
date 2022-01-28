@@ -64,6 +64,11 @@ BOOST_AUTO_TEST_CASE(ProxyExecutorRun) {
                          {output_file_path.native()}, 1000, 10000, true,
                          path_to_write_seed, (1U << 16), 0,
                          ProxyExecutor::CPUID_DO_NOT_BIND, true);
+  // Initialize executor instance
+  // We have to run below initialization because ProxyExecutor is considered
+  // as a base class and it expects initialization in the derived class constructors.
+  executor.SetCArgvAndDecideInputMode();
+  executor.Initilize();
   BOOST_CHECK_EQUAL(executor.stdin_mode, true);
 
   // Invoke ProxyExecutor::Run()
@@ -158,6 +163,11 @@ BOOST_AUTO_TEST_CASE(ProxyExecutorNativeRunTooMuchOutput,
       path_to_write_seed, PAGE_SIZE, PAGE_SIZE,
       ProxyExecutor::CPUID_DO_NOT_BIND, true /* record_stdout_and_err */
   );
+  // Initialize executor instance
+  // We have to run below initialization because ProxyExecutor is considered
+  // as a base class and it expects initialization in the derived class constructors.
+  executor.SetCArgvAndDecideInputMode();
+  executor.Initilize();
   BOOST_CHECK_EQUAL(executor.stdin_mode, true);
 
   // Invoke ProxyExecutor::Run()

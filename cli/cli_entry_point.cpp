@@ -26,41 +26,17 @@
 
 #include <iostream>
 
-void usage(const char *argv_0) {
-  std::cerr << "Example usage:" << std::endl;
-  std::cerr << "\t" << argv_0
-            << " afl --in_dir=test/put_binaries/libjpeg/seeds -- "
-               "test/put_binaries/libjpeg/libjpeg_turbo_fuzzer @@"
-            << std::endl;
-  exit(1);
-}
 
 int main(int argc, const char *argv[]) {
   try {
     // Explicitly enable logging to stdout as Logger does not get confirmed before parsing command line options
     StdoutLogger::Enable();
 
-    // Show a usage and exit because none of fuzzers are specified
-    if (argc < 2) {
-      usage(argv[0]);
-    }
-
     GlobalFuzzerOptions global_options;
 
-    // Parse a sub-command in a messy way as it does not expect one other than a fuzzer
-    global_options.fuzzer = argv[1];
-
-    // Obtain overall fuzzing campaign settings from the command line
-    // NOTE: Beware that it skips argv[0] and a sub-command
-    GlobalArgs global_args = {.argc = argc - 2, .argv = &argv[2]};
+    GlobalArgs global_args = {.argc = argc, .argv = argv};
     FuzzerArgs fuzzer_args =
         ParseGlobalOptionsForFuzzer(global_args, /* &mut */ global_options);
-
-    if (global_options.help) {
-      // help inside ParseGlobalOptionsForFuzzer()
-      // Exit directly because fuzzuf already showed the message
-      return 0;
-    }
 
     // Follow the command line, and initialize a logger instance which gets and saves the logs
     StdoutLogger::Disable();
@@ -68,6 +44,7 @@ int main(int argc, const char *argv[]) {
       StdoutLogger::Enable();
     } else if (global_options.logger == Logger::LogFile) {
       if (global_options.log_file.has_value()) {
+        DEBUG("LogFile logger is enabled");
         LogFileLogger::Init(global_options.log_file.value());
       } else {
         throw exceptions::cli_error("LogFile logger is specified, but log_file "
@@ -90,8 +67,8 @@ int main(int argc, const char *argv[]) {
 
     // Now the fuzzing campaign begins
     // TODO: The timeout for the fuzzing campaign has not been implemented.
-    // `while (true)` should be replaced when appropriate
-    while (true) {
+    // FIXME: fuzzer->ShouldEnd() seems always false when libfuzzer&nezha is used
+    while (!fuzzer->ShouldEnd()) {
       fuzzer->OneLoop();
       // Call hooks per OneLoop, if necessary
     }

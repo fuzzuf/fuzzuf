@@ -31,7 +31,6 @@ namespace fuzzuf::algorithm::vuzzer::routine::update {
 UpdateFitness::UpdateFitness(VUzzerState &state) : state(state) {}
 
 /**
- * @fn
  * @brief Calculate fitness score of seed based on feedback
  * @param (testcase) Seed
  * @param (inp_feed) Feedback
@@ -125,7 +124,6 @@ VUzzerUpdCalleeRef UpdateFitness::operator()(
 UpdateTaint::UpdateTaint(VUzzerState &state) : state(state) {}
 
 /**
- * @fn
  * @brief Get taint information
  * @param (testcase) Seed
  * @param (inp_feed) Feedback
@@ -144,7 +142,6 @@ VUzzerUpdCalleeRef UpdateTaint::operator()(
 UpdateQueue::UpdateQueue(VUzzerState &state) : state(state) {}
 
 /**
- * @fn
  * @brief Delete seeds from seed_queue whose score is not high
  * @todo Consider time complexity. Currently it calls DeleteFromQueue method at every deletion of seeds. It costs O(n^2).
  */
@@ -177,7 +174,6 @@ NullableRef<HierarFlowCallee<void(void)>> UpdateQueue::operator()(void) {
 TrimQueue::TrimQueue(VUzzerState &state) : state(state) {}
 
 /**
- * @fn
  * @brief Prune the seeds(if at all), whose trace is subset of the new seed just got executed.
  * @param (testcase) New seed just got executed
  * @param (bb_cov) BB coverage of new seed

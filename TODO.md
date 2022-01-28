@@ -74,22 +74,6 @@ This to-do is very important to complete libFuzzer because it use some metrics l
 
 Also, we need to replace all the tests that use raw binaries in the repo after this to-do is resolved. That is definitely unsound.
 
-### Redesign command line arguments
-
-The current fuzzuf CLI has a bit weird format of command line arguments:
-
-```bash
-fuzzuf fuzzer_name --global_option1=foo --global_option2=bar -- --local_option1=baz --local_option2=qux -- put_name --put_option1 --put_option2 @@
-```
-
-Although this format may be good in terms of readability, it spoils usability considering that usually humans type this long line and that they may get irritated by being forced to mind the order of options. The reason why the fuzzuf CLI has this format is just that it was easier to implement. We should change this implmentation so that 
-  - we can specify the fuzzer options in the arbitrary order
-  - we can register the abbreviations of options like `-t`
-  - we can remove `=`
-    - we may not remove it if many people prefer the format `--name=value` to `--name value`
-
-We think this can be done by registering those options in advance and constructing the sole parser in the end, instead of calling the parsers of global options and local options one by one. Also, the parse library is a hindrance to this change. We should replace it with boost::program\_options or gflags.
-
 ### Support multiple types of executors in the fuzzers
 
 At present, the fuzzers implemented in fuzzuf employ one fixed executor and don't support switching executors. However, there are many fuzzers that can work with different sorts of executor. For example, the original AFL has QEMU mode, which enables AFL to work without compile-time instrumentation. Another example might be VUzzer. VUzzer originally uses pintool to obtain basic block coverage, but it doesn't matter if we use QEMU or compile-time instrumentation instead as long as basic block coverage is correctly extracted. Thus, we should design executors and their usage so that algorithms can use them interchangeably if possible.

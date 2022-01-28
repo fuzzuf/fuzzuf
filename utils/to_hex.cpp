@@ -15,6 +15,10 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see http://www.gnu.org/licenses/.
  */
+/**
+ * @file to_hex.cpp
+ * @author Ricerca Security <fuzzuf-dev@ricsec.co.jp>
+ */
 #include "fuzzuf/utils/to_hex.hpp"
 #include <boost/spirit/include/karma.hpp>
 namespace fuzzuf::utils {

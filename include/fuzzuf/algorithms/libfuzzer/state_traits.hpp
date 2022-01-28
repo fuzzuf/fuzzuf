@@ -15,6 +15,10 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see http://www.gnu.org/licenses/.
  */
+/**
+ * @file state_traits.hpp
+ * @author Ricerca Security <fuzzuf-dev@ricsec.co.jp>
+ */
 #ifndef FUZZUF_INCLUDE_ALGORITHM_LIBFUZZER_STATE_TRAITS_HPP
 #define FUZZUF_INCLUDE_ALGORITHM_LIBFUZZER_STATE_TRAITS_HPP
 #include "fuzzuf/utils/check_capability.hpp"
@@ -22,9 +26,8 @@
 
 namespace fuzzuf::algorithm::libfuzzer {
 
-/*
- * libFuzzerの状態を表す型が
- * 持っている筈の情報を持っている事を確認する
+/**
+ * Meta functions to check if the State type has required member functions
  */
 
 FUZZUF_CHECK_CAPABILITY(HasIncrementUseCount1, has_IncrementUseCount1,

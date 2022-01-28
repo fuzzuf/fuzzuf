@@ -15,15 +15,19 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see http://www.gnu.org/licenses/.
  */
+/**
+ * @file version.hpp
+ * @author Ricerca Security <fuzzuf-dev@ricsec.co.jp>
+ */
 #ifndef FUZZUF_INCLUDE_ALGORITHM_LIBFUZZER_VERSION_HPP
 #define FUZZUF_INCLUDE_ALGORITHM_LIBFUZZER_VERSION_HPP
 
 namespace fuzzuf::algorithm::libfuzzer {
 
-// llvmのバージョンを32bit整数にエンコードした物
+/// LLVM version that is encoded into 32bit integer
 using Version = std::uint32_t;
 
-// llvmのバージョンのtripleを32bitの整数にする
+/// Convert LLVM version triple to 32bit integer value
 template <typename T>
 constexpr auto MakeVersion(T major, T minor, T patch)
     -> std::enable_if_t<std::is_convertible_v<T, std::uint32_t>, Version> {
@@ -32,7 +36,7 @@ constexpr auto MakeVersion(T major, T minor, T patch)
 }
 
 namespace version {
-// Nezhaが実装された時点のllvmのバージョン
+/// The LLVM version that Nezha is implemented for.
 constexpr Version nezha = MakeVersion(4u, 0u, 1u);
 } // namespace version
 

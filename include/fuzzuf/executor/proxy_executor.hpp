@@ -29,17 +29,7 @@
 #include "fuzzuf/utils/common.hpp"
 #include "fuzzuf/feedback/inplace_memory_feedback.hpp"
 #include "fuzzuf/feedback/exit_status_feedback.hpp"
-
-namespace fuzzuf::executor {
-
-struct child_state_t {
-  int exec_result;
-  int exec_errno;
-};
-
-using output_t = std::vector< std::uint8_t >;
-constexpr std::size_t output_block_size = 512u;
-}
+#include "fuzzuf/feedback/file_feedback.hpp"
 
 // A class for fuzz execution under Linux environment through proxies (such as QEMU) having fork server.
 //
@@ -84,6 +74,8 @@ public:
     // If specified, an id in the range 0-origin is assigned. std::nullopt otherwise.
     std::optional<int> binded_cpuid; 
 
+    const int cpuid_to_bind;
+
     const bool uses_asan = false; // May become one of the available options in the future, but currently not anticipated
 
     const int cpu_core_count;
@@ -127,6 +119,20 @@ public:
         // we would tell that we would like to record stdout and stderr.
         bool record_stdout_and_err = false
     );
+    ProxyExecutor(
+        const fs::path &proxy_path,
+        const std::vector<std::string> &pargv,
+        const std::vector<std::string> &argv,
+        u32 exec_timelimit_ms,
+        u64 exec_memlimit,
+        const fs::path &path_to_write_input
+    );
+    ProxyExecutor(
+        const std::vector<std::string> &argv,
+        u32 exec_timelimit_ms,
+        u64 exec_memlimit,
+        const fs::path &path_to_write_input
+    );
     ~ProxyExecutor();
 
     ProxyExecutor( const ProxyExecutor& ) = delete;
@@ -137,6 +143,7 @@ public:
 
     // Common methods among children on Executor classes
     // Declare in the base class and define in each derivative, if possible (how to achieve?)
+    void Initilize();
     void Run(const u8 *buf, u32 len, u32 timeout_ms=0);
     void ReceiveStopSignal(void);
 
@@ -145,6 +152,7 @@ public:
     InplaceMemoryFeedback GetBBFeedback();
     InplaceMemoryFeedback GetStdOut();
     InplaceMemoryFeedback GetStdErr();
+    FileFeedback GetFileFeedback(fs::path feed_path);
     ExitStatusFeedback GetExitStatusFeedback();
 
     void TerminateForkServer();
@@ -176,4 +184,5 @@ private:
     epoll_event fork_server_read_event;
 
     bool record_stdout_and_err;
+    bool has_shared_memories;
 };

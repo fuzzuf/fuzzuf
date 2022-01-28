@@ -15,6 +15,10 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see http://www.gnu.org/licenses/.
  */
+/**
+ * @file state.hpp
+ * @author Ricerca Security <fuzzuf-dev@ricsec.co.jp>
+ */
 #ifndef FUZZUF_INCLUDE_ALGORITHM_LIBFUZZER_STATE_STATE_HPP
 #define FUZZUF_INCLUDE_ALGORITHM_LIBFUZZER_STATE_STATE_HPP
 #include "fuzzuf/algorithms/libfuzzer/config.hpp"
@@ -32,9 +36,9 @@ namespace fuzzuf::algorithm::libfuzzer {
 
 /**
  * @class State
- * @brief libFuzzerの状態を保持する構造体
+ * @brief Struct to hold libFuzzer state
  *
- * libFuzzerの対応箇所
+ * Corresponding code of original libFuzzer implementation
  * https://github.com/llvm/llvm-project/blob/llvmorg-12.0.1/compiler-rt/lib/fuzzer/FuzzerCorpus.h#L154
  *
  */
@@ -49,15 +53,18 @@ struct State {
         input_sizes_per_feature(feature_set_size, 0u),
         smallest_element_per_feature(feature_set_size, 0u) {}
 
-  // libFuzzerの挙動に関する設定
+  // Config to alter libFuzzer behaviour
   Config config;
-  // 各入力値が選択される確率
+  // Current probability of choosing each input value
   corpus_distribution_t corpus_distribution;
-  // corpus_distributionを再計算する必要がある
+  // If true, corpus_distribution need to be recalculated.
   bool distribution_needs_update = true;
 
-  // entropicモードでenergyを計算するのに使われている
+  // List of seldomly detected features.
+  // In entropic mode, common features are ignored and never affect on the energy.
   std::vector<std::uint32_t> rare_features;
+
+  // Features listed in the rare features but detected number is larger than the value will be dropped from rare features.
   std::uint16_t freq_of_most_abundant_rare_feature = 0u;
   std::vector<std::uint16_t> global_feature_freqs;
   std::size_t executed_mutations_count = 0u;
@@ -74,9 +81,9 @@ auto toString(std::string &dest, const State &value, std::size_t indent_count,
 
 /**
  * @class IsState
- * @brief 与えられた型TがState型の要件を満たす場合にtrueを返すメタ関数
+ * @brief Meta function to check if the type satisfies State concept
  *
- * @tparm T 任意の型
+ * @tparam T Type to check
  */
 template <typename T, typename Enable = void>
 struct IsState : public std::false_type {};

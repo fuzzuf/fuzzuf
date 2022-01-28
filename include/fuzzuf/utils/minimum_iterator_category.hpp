@@ -15,6 +15,10 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see http://www.gnu.org/licenses/.
  */
+/**
+ * @file minimum_iterator_category.hpp
+ * @author Ricerca Security <fuzzuf-dev@ricsec.co.jp>
+ */
 #ifndef FUZZUF_INCLUDE_UTILS_MINIMUM_ITERATOR_CATEGORY_HPP
 #define FUZZUF_INCLUDE_UTILS_MINIMUM_ITERATOR_CATEGORY_HPP
 #include <iterator>

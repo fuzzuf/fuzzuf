@@ -15,6 +15,10 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see http://www.gnu.org/licenses/.
  */
+/**
+ * @file map_file.hpp
+ * @author Ricerca Security <fuzzuf-dev@ricsec.co.jp>
+ */
 #ifndef FUZZUF_INCLUDE_UTILS_MAP_FILE_HPP
 #define FUZZUF_INCLUDE_UTILS_MAP_FILE_HPP
 #include "fuzzuf/utils/shared_range.hpp"
@@ -26,15 +30,11 @@ using mapped_file_t = boost::iterator_range<
     range::shared_iterator<uint8_t *, std::shared_ptr<uint8_t>>>;
 
 /**
- * @fn
- * filenameで指定されたファイルをmmapして、mmapした領域をshared_rangeで返す
- * @brief
- * filenameで指定されたファイルをmmapして、mmapした領域をshared_rangeで返す
- * @param filename ファイル名
- * @param flags ファイルをopen(2)する際に渡すフラグ
- * @param populate
- * trueの場合mmapと同時に全てのページをメモリに乗せる事を要求する
- * @return mmapされた領域のrange
+ * mmap the file specified by filename, then return mmaped range using shared_range
+ * @param filename Filename
+ * @param flags Flags passed to open(2)
+ * @param populate If true, require all pages to be loaded at mmap
+ * @return range of mmaped memory range
  */
 auto map_file(const std::string &filename, unsigned int flags, bool populate)
     -> mapped_file_t;

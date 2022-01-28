@@ -15,6 +15,10 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see http://www.gnu.org/licenses/.
  */
+/**
+ * @file interprocess_shared_object.hpp
+ * @author Ricerca Security <fuzzuf-dev@ricsec.co.jp>
+ */
 #ifndef FUZZUF_INCLUDE_UTILS_INTERPROCESS_SHARED_OBJECT_HPP
 #define FUZZUF_INCLUDE_UTILS_INTERPROCESS_SHARED_OBJECT_HPP
 #include "fuzzuf/utils/shared_range.hpp"
@@ -27,25 +31,19 @@
 
 namespace fuzzuf::utils::interprocess {
 
-/*
- * T型の子プロセスと共有されるインスタンスを作る
- * TはTrivially Copyableの要件を満たさなければならない
- * インスタンスは引数で渡した値で初期化される
+/**
+ * Generate instance of T that is shared with child processes
+ * T must satisfy trivially copyable concept
+ * The instance is initialized by argument values
  *
- * 共有はMAP_SHARED|MAP_ANNONYMOUSなメモリをmmapする事で
- * 実現されている
- * 故にページサイズを下回るサイズ型であっても少なく
- * とも1ページは確保される事になる
- * また、この関数の呼び出しは確実にシステムコールを
- * 生じさせる
- * このため、小さい値を沢山共有する必要がある場合は
- * それらを構造体にまとめて大きな塊にしてから
- * create_shared_objectするのが望ましい
+ * The sharing is achieved by creating mmaped memory with MAP_SHARED|MAP_ANNONYMOUS
+ * Due to this implementation, even if the type T is smaller than page size, at least one page is allocated
+ * Furthermore, calling this function definitely cause system call
+ * For those reason, many small type values should be tied into one structure and call create_shared_object just once
  *
- * 返り値はdeleterでmunmapするshared_ptr< T >
+ * The return value type is shared_ptr< T > with munmapping deleter
  *
- * mmapが失敗した場合(ex. 空きメモリがない)
- * 例外std::bad_allocが飛ぶ
+ * If mmap failed for some reason ( for example, out of memory ), std::bad_alloc is thrown
  */
 template <typename T>
 auto create_shared_object(const T &v)

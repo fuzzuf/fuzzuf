@@ -91,7 +91,7 @@ To stop fuzzing, hit `Ctrl-C` to send `SIGINT` to the `fuzzuf` process. Check th
 
 ### Changing Fuzzer
 
-fuzzuf provides various fuzzers other than AFL. Next, we are going to use AFLFast to fuzz the same executable. Please read [AFLFast document](/docs/algorithms/AFLFast/algorithm_en.md) to know the characteristics of the AFLFast fuzzer.
+fuzzuf provides various fuzzers other than AFL. Next, we are going to use AFLFast to fuzz the same executable. Please read [AFLFast document](/docs/algorithms/aflfast/algorithm_en.md) to know the characteristics of the AFLFast fuzzer.
 To change the fuzzer used, we only have to modify the command line argument (and local options).
 
 ```shell

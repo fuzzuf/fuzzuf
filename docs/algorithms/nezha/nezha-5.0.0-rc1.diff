@@ -1,0 +1,657 @@
+diff -ubr Fuzzer-5.0.0-rc1/FuzzerCorpus.h nezha/Fuzzer/FuzzerCorpus.h
+--- Fuzzer-5.0.0-rc1/FuzzerCorpus.h	2021-09-27 14:55:39.018135798 +0900
++++ nezha/Fuzzer/FuzzerCorpus.h	2021-08-11 15:04:33.080663848 +0900
+@@ -34,8 +34,7 @@
+   size_t NumExecutedMutations = 0;
+   size_t NumSuccessfullMutations = 0;
+   bool MayDeleteFile = false;
+-  bool Reduced = false;
+-  std::vector<uint32_t> UniqFeatureSet;
++  std::vector<uint32_t> FeatureSet;
+ };
+ 
+ class InputCorpus {
+@@ -80,8 +79,7 @@
+     II.U = U;
+     II.NumFeatures = NumFeatures;
+     II.MayDeleteFile = MayDeleteFile;
+-    II.UniqFeatureSet = FeatureSet;
+-    std::sort(II.UniqFeatureSet.begin(), II.UniqFeatureSet.end());
++    II.FeatureSet = FeatureSet;
+     ComputeSHA1(U.data(), U.size(), II.Sha1);
+     Hashes.insert(Sha1ToString(II.Sha1));
+     UpdateCorpusDistribution();
+@@ -119,21 +117,34 @@
+         Printf("%s sz=%zd ", Sha1ToString(II->Sha1).c_str(), II->U.size());
+         PrintUnit(II->U);
+         Printf(" ");
+-        PrintFeatureSet(II->UniqFeatureSet);
++        PrintFeatureSet(II->FeatureSet);
+         Printf("\n");
+       }
+       i++;
+     }
+   }
+ 
++  // If FeatureSet is that same as in II, replace II->U with {Data,Size}.
++  bool TryToReplace(InputInfo *II, const uint8_t *Data, size_t Size,
++                    const std::vector<uint32_t> &FeatureSet) {
++    if (II->U.size() > Size && II->FeatureSet.size() &&
++        II->FeatureSet == FeatureSet) {
++      if (FeatureDebug)
++        Printf("Replace: %zd => %zd\n", II->U.size(), Size);
++      Replace(II, {Data, Data + Size});
++      PrintCorpus();
++      return true;
++    }
++    return false;
++  }
++
+   void Replace(InputInfo *II, const Unit &U) {
+-    assert(II->U.size() > U.size());
++    assert(II->U.size());
+     Hashes.erase(Sha1ToString(II->Sha1));
+     DeleteFile(*II);
+     ComputeSHA1(U.data(), U.size(), II->Sha1);
+     Hashes.insert(Sha1ToString(II->Sha1));
+     II->U = U;
+-    II->Reduced = true;
+   }
+ 
+   bool HasUnit(const Unit &U) { return Hashes.count(Hash(U)); }
+@@ -187,7 +198,7 @@
+       Printf("EVICTED %zd\n", Idx);
+   }
+ 
+-  bool AddFeature(size_t Idx, uint32_t NewSize, bool Shrink) {
++  void AddFeature(size_t Idx, uint32_t NewSize, bool Shrink) {
+     assert(NewSize);
+     Idx = Idx % kFeatureSetSize;
+     uint32_t OldSize = GetFeature(Idx);
+@@ -207,9 +218,7 @@
+         Printf("ADD FEATURE %zd sz %d\n", Idx, NewSize);
+       SmallestElementPerFeature[Idx] = Inputs.size();
+       InputSizesPerFeature[Idx] = NewSize;
+-      return true;
+     }
+-    return false;
+   }
+ 
+   size_t NumFeatures() const { return NumAddedFeatures; }
+diff -ubr Fuzzer-5.0.0-rc1/FuzzerDefs.h nezha/Fuzzer/FuzzerDefs.h
+--- Fuzzer-5.0.0-rc1/FuzzerDefs.h	2021-09-27 14:55:39.018135798 +0900
++++ nezha/Fuzzer/FuzzerDefs.h	2021-08-11 15:04:33.080663848 +0900
+@@ -107,6 +107,7 @@
+ typedef int (*UserCallback)(const uint8_t *Data, size_t Size);
+ 
+ int FuzzerDriver(int *argc, char ***argv, UserCallback Callback);
++int FuzzerDiffTestOneInput(const uint8_t *Data, size_t Size);
+ 
+ struct ScopedDoingMyOwnMemOrStr {
+   ScopedDoingMyOwnMemOrStr() { DoingMyOwnMemOrStr++; }
+diff -ubr Fuzzer-5.0.0-rc1/FuzzerDriver.cpp nezha/Fuzzer/FuzzerDriver.cpp
+--- Fuzzer-5.0.0-rc1/FuzzerDriver.cpp	2021-09-27 14:55:39.018135798 +0900
++++ nezha/Fuzzer/FuzzerDriver.cpp	2021-08-11 15:04:33.080663848 +0900
+@@ -585,6 +585,7 @@
+   Options.DetectLeaks = Flags.detect_leaks;
+   Options.TraceMalloc = Flags.trace_malloc;
+   Options.RssLimitMb = Flags.rss_limit_mb;
++  Options.DifferentialMode = Flags.diff_mode;
+   if (Flags.runs >= 0)
+     Options.MaxNumberOfRuns = Flags.runs;
+   if (!Inputs->empty() && !Flags.minimize_crash_internal_step)
+diff -ubr Fuzzer-5.0.0-rc1/FuzzerExtFunctions.def nezha/Fuzzer/FuzzerExtFunctions.def
+--- Fuzzer-5.0.0-rc1/FuzzerExtFunctions.def	2021-09-27 14:55:39.018135798 +0900
++++ nezha/Fuzzer/FuzzerExtFunctions.def	2021-08-11 15:04:33.080663848 +0900
+@@ -24,6 +24,7 @@
+           const uint8_t * Data2, size_t Size2,
+           uint8_t * Out, size_t MaxOutSize, unsigned int Seed),
+          false);
++EXT_FUNC(LLVMFuzzerCustomCallbacks, UserCallbacks *, (void), false);
+ 
+ // Sanitizer functions
+ EXT_FUNC(__lsan_enable, void, (), false);
+@@ -44,3 +45,5 @@
+ EXT_FUNC(__sanitizer_set_report_fd, void, (void*), false);
+ EXT_FUNC(__sanitizer_dump_coverage, void, (const uintptr_t *, uintptr_t),
+          false);
++EXT_FUNC(__sanitizer_update_counter_bitset_and_clear_counters, uintptr_t,
++         (uint8_t*), false);
+diff -ubr Fuzzer-5.0.0-rc1/FuzzerExtFunctions.h nezha/Fuzzer/FuzzerExtFunctions.h
+--- Fuzzer-5.0.0-rc1/FuzzerExtFunctions.h	2021-09-27 14:55:39.018135798 +0900
++++ nezha/Fuzzer/FuzzerExtFunctions.h	2021-08-11 15:04:33.080663848 +0900
+@@ -15,6 +15,12 @@
+ #include <stddef.h>
+ #include <stdint.h>
+ 
++typedef int (*UserCallback)(const uint8_t *Data, size_t Size);
++struct UserCallbacks {
++  UserCallback *callbacks;
++  int size;
++};
++
+ namespace fuzzer {
+ 
+ struct ExternalFunctions {
+diff -ubr Fuzzer-5.0.0-rc1/FuzzerFlags.def nezha/Fuzzer/FuzzerFlags.def
+--- Fuzzer-5.0.0-rc1/FuzzerFlags.def	2021-09-27 14:55:39.018135798 +0900
++++ nezha/Fuzzer/FuzzerFlags.def	2021-08-11 15:04:33.080663848 +0900
+@@ -82,6 +82,7 @@
+ FUZZER_FLAG_INT(only_ascii, 0,
+                 "If 1, generate only ASCII (isprint+isspace) inputs.")
+ FUZZER_FLAG_STRING(dict, "Experimental. Use the dictionary file.")
++FUZZER_FLAG_INT(diff_mode, 0, "Experimental. Perform differential fuzzing.")
+ FUZZER_FLAG_STRING(artifact_prefix, "Write fuzzing artifacts (crash, "
+                                     "timeout, or slow inputs) as "
+                                     "$(artifact_prefix)file")
+diff -ubr Fuzzer-5.0.0-rc1/FuzzerInternal.h nezha/Fuzzer/FuzzerInternal.h
+--- Fuzzer-5.0.0-rc1/FuzzerInternal.h	2021-09-27 14:55:39.018135798 +0900
++++ nezha/Fuzzer/FuzzerInternal.h	2021-08-11 15:04:33.084641631 +0900
+@@ -63,9 +63,11 @@
+   static void StaticInterruptCallback();
+   static void StaticFileSizeExceedCallback();
+ 
+-  void ExecuteCallback(const uint8_t *Data, size_t Size);
++  int ExecuteCallback(const uint8_t *Data, size_t Size);
+   bool RunOne(const uint8_t *Data, size_t Size, bool MayDeleteFile = false,
+               InputInfo *II = nullptr);
++  bool RunOneCallback(const uint8_t *Data, size_t Size, size_t idx,
++                      bool MayDeleteFile = false, InputInfo *II = nullptr);
+ 
+   // Merge Corpora[1:] into Corpora[0].
+   void Merge(const std::vector<std::string> &Corpora);
+@@ -99,12 +101,13 @@
+   void WriteToOutputCorpus(const Unit &U);
+   void WriteUnitToFileWithPrefix(const Unit &U, const char *Prefix);
+   void PrintStats(const char *Where, const char *End = "\n", size_t Units = 0);
+-  void PrintStatusForNewUnit(const Unit &U, const char *Text);
++  void PrintStatusForNewUnit(const Unit &U);
+   void ShuffleCorpus(UnitVector *V);
+   void CheckExitOnSrcPosOrItem();
+ 
+   static void StaticDeathCallback();
+   void DumpCurrentUnit(const char *Prefix);
++  void DumpUnitIfDiff(const uint8_t *Data, size_t Size);
+   void DeathCallback();
+ 
+   void AllocateCurrentUnitData();
+@@ -115,6 +118,7 @@
+ 
+   size_t TotalNumberOfRuns = 0;
+   size_t NumberOfNewUnitsAdded = 0;
++  size_t NumberOfDiffUnitsAdded = 0;
+ 
+   bool HasMoreMallocsThanFrees = false;
+   size_t NumberOfLeakDetectionAttempts = 0;
+@@ -132,10 +136,11 @@
+   size_t MaxInputLen = 0;
+   size_t MaxMutationLen = 0;
+ 
+-  std::vector<uint32_t> UniqFeatureSetTmp;
++  std::vector<uint32_t> FeatureSetTmp;
+ 
+   // Need to know our own thread.
+   static thread_local bool IsMyThread;
++  static thread_local bool UnitHadOutputDiff;
+ };
+ 
+ } // namespace fuzzer
+diff -ubr Fuzzer-5.0.0-rc1/FuzzerLoop.cpp nezha/Fuzzer/FuzzerLoop.cpp
+--- Fuzzer-5.0.0-rc1/FuzzerLoop.cpp	2021-09-27 14:55:39.018135798 +0900
++++ nezha/Fuzzer/FuzzerLoop.cpp	2021-08-11 15:04:33.084641631 +0900
+@@ -20,6 +20,7 @@
+ #include <cstring>
+ #include <memory>
+ #include <set>
++#include <sstream>
+ 
+ #if defined(__has_include)
+ #if __has_include(<sanitizer / lsan_interface.h>)
+@@ -39,6 +40,7 @@
+ static const size_t kMaxUnitSizeToPrint = 256;
+ 
+ thread_local bool Fuzzer::IsMyThread;
++thread_local bool Fuzzer::UnitHadOutputDiff;
+ 
+ SharedMemoryRegion SMR;
+ 
+@@ -117,6 +119,7 @@
+   assert(!F);
+   F = this;
+   TPC.ResetMaps();
++  if (Options.DifferentialMode) TPC.InitializeDiffCallbacks(EF);
+   IsMyThread = true;
+   if (Options.DetectLeaks && EF->__sanitizer_install_malloc_and_free_hooks)
+     EF->__sanitizer_install_malloc_and_free_hooks(MallocHook, FreeHook);
+@@ -159,6 +162,26 @@
+                             Prefix);
+ }
+ 
++void Fuzzer::DumpUnitIfDiff(const uint8_t *Data, size_t Size) {
++  bool has_zero = false;
++  bool has_nonzero = false;
++  std::stringstream SS;
++  for (size_t i = 0; i < TPC.OutputDiffVec.size(); ++i) {
++    if (TPC.OutputDiffVec[i] == 0)
++      has_zero = true;
++    else
++      has_nonzero = true;
++    SS << TPC.OutputDiffVec[i] << "_";
++  }
++
++  if (has_zero && has_nonzero) {
++    UnitHadOutputDiff = true;
++    NumberOfDiffUnitsAdded++;
++    WriteUnitToFileWithPrefix({Data, Data + Size},
++                              ("diff_" + SS.str()).c_str());
++  }
++}
++
+ NO_SANITIZE_MEMORY
+ void Fuzzer::DeathCallback() {
+   DumpCurrentUnit("crash-");
+@@ -287,6 +310,8 @@
+   Printf("stat::number_of_executed_units: %zd\n", TotalNumberOfRuns);
+   Printf("stat::average_exec_per_sec:     %zd\n", ExecPerSec);
+   Printf("stat::new_units_added:          %zd\n", NumberOfNewUnitsAdded);
++  if  (Options.DifferentialMode)
++    Printf("stat::number_of_diffs:          %zd\n", NumberOfDiffUnitsAdded);
+   Printf("stat::slowest_unit_time_sec:    %zd\n", TimeOfLongestUnitInSeconds);
+   Printf("stat::peak_rss_mb:              %zd\n", GetPeakRSSMb());
+ }
+@@ -396,41 +421,59 @@
+   }
+ }
+ 
+-bool Fuzzer::RunOne(const uint8_t *Data, size_t Size, bool MayDeleteFile,
+-                    InputInfo *II) {
++bool Fuzzer::RunOneCallback(const uint8_t *Data, size_t Size, size_t idx,
++                            bool MayDeleteFile, InputInfo *II) {
+   if (!Size) return false;
+ 
+-  ExecuteCallback(Data, Size);
++  int ret = ExecuteCallback(Data, Size);
++  if (Options.DifferentialMode) TPC.OutputDiffVec[idx] = ret;
+ 
+-  UniqFeatureSetTmp.clear();
+-  size_t FoundUniqFeaturesOfII = 0;
++  FeatureSetTmp.clear();
+   size_t NumUpdatesBefore = Corpus.NumFeatureUpdates();
+   TPC.CollectFeatures([&](size_t Feature) {
+-    if (Corpus.AddFeature(Feature, Size, Options.Shrink))
+-      UniqFeatureSetTmp.push_back(Feature);
+-    if (Options.ReduceInputs && II)
+-      if (std::binary_search(II->UniqFeatureSet.begin(),
+-                             II->UniqFeatureSet.end(), Feature))
+-        FoundUniqFeaturesOfII++;
++    Corpus.AddFeature(Feature, Size, Options.Shrink);
++    if (Options.ReduceInputs)
++      FeatureSetTmp.push_back(Feature);
+   });
+   PrintPulseAndReportSlowInput(Data, Size);
+   size_t NumNewFeatures = Corpus.NumFeatureUpdates() - NumUpdatesBefore;
+   if (NumNewFeatures) {
+     Corpus.AddToCorpus({Data, Data + Size}, NumNewFeatures, MayDeleteFile,
+-                       UniqFeatureSetTmp);
++                       FeatureSetTmp);
+     CheckExitOnSrcPosOrItem();
+     return true;
+   }
+-  if (II && FoundUniqFeaturesOfII &&
+-      FoundUniqFeaturesOfII == II->UniqFeatureSet.size() &&
+-      II->U.size() > Size) {
+-    Corpus.Replace(II, {Data, Data + Size});
++  if (II && Corpus.TryToReplace(II, Data, Size, FeatureSetTmp)) {
+     CheckExitOnSrcPosOrItem();
+     return true;
+   }
+   return false;
+ }
+ 
++bool Fuzzer::RunOne(const uint8_t *Data, size_t Size, bool MayDeleteFile,
++                    InputInfo *II) {
++  if (Options.DifferentialMode) {
++    size_t ret = 0, cb_ret = 0, features = 0;
++    UnitHadOutputDiff = false;
++    std::vector<int> feature_vec;
++    EF->__sanitizer_update_counter_bitset_and_clear_counters(0);
++    for (int i = 0; i < TPC.UC->size; ++i) {
++      CB = TPC.UC->callbacks[i];
++      cb_ret = RunOneCallback(Data, Size, i, MayDeleteFile, II);
++      features += cb_ret;
++      feature_vec.push_back(cb_ret);
++    }
++
++    bool new_diff = TPC.NewOutputDiff() | TPC.NewTraceDiff(feature_vec);
++    if (new_diff)
++      DumpUnitIfDiff(Data, Size);
++
++    return features > 0 ? features : new_diff;
++  }
++
++  return RunOneCallback(Data, Size, 0, MayDeleteFile, II);
++}
++
+ size_t Fuzzer::GetCurrentUnitInFuzzingThead(const uint8_t **Data) const {
+   assert(InFuzzingThread());
+   *Data = CurrentUnitData;
+@@ -455,7 +498,7 @@
+          !memcmp(A + Size - Limit / 2, B + Size - Limit / 2, Limit / 2);
+ }
+ 
+-void Fuzzer::ExecuteCallback(const uint8_t *Data, size_t Size) {
++int Fuzzer::ExecuteCallback(const uint8_t *Data, size_t Size) {
+   TotalNumberOfRuns++;
+   assert(InFuzzingThread());
+   if (SMR.IsClient())
+@@ -474,13 +517,16 @@
+   int Res = CB(DataCopy, Size);
+   RunningCB = false;
+   UnitStopTime = system_clock::now();
++  if (!Options.DifferentialMode) {
+   (void)Res;
+   assert(Res == 0);
++  }
+   HasMoreMallocsThanFrees = AllocTracer.Stop();
+   if (!LooseMemeq(DataCopy, Data, Size))
+     CrashOnOverwrittenData();
+   CurrentUnitSize = 0;
+   delete[] DataCopy;
++  return Res;
+ }
+ 
+ void Fuzzer::WriteToOutputCorpus(const Unit &U) {
+@@ -507,10 +553,10 @@
+     Printf("Base64: %s\n", Base64(U).c_str());
+ }
+ 
+-void Fuzzer::PrintStatusForNewUnit(const Unit &U, const char *Text) {
++void Fuzzer::PrintStatusForNewUnit(const Unit &U) {
+   if (!Options.PrintNEW)
+     return;
+-  PrintStats(Text, "");
++  PrintStats("NEW   ", "");
+   if (Options.Verbosity) {
+     Printf(" L: %zd ", U.size());
+     MD.PrintMutationSequence();
+@@ -521,8 +567,7 @@
+ void Fuzzer::ReportNewCoverage(InputInfo *II, const Unit &U) {
+   II->NumSuccessfullMutations++;
+   MD.RecordSuccessfulMutationSequence();
+-  PrintStatusForNewUnit(U, II->Reduced ? "REDUCE" :
+-                                         "NEW   ");
++  PrintStatusForNewUnit(U);
+   WriteToOutputCorpus(U);
+   NumberOfNewUnitsAdded++;
+   TPC.PrintNewPCs();
+@@ -592,6 +637,8 @@
+   memcpy(CurrentUnitData, U.data(), Size);
+ 
+   assert(MaxMutationLen > 0);
++  uint8_t *PreviousUnit = new uint8_t[MaxInputLen];
++  size_t PreviousSize = 0;
+ 
+   size_t CurrentMaxMutationLen =
+       Options.ExperimentalLenControl
+@@ -602,14 +649,24 @@
+   for (int i = 0; i < Options.MutateDepth; i++) {
+     if (TotalNumberOfRuns >= Options.MaxNumberOfRuns)
+       break;
++    memcpy(PreviousUnit, CurrentUnitData, Size);
++    PreviousSize = Size;
+     size_t NewSize = 0;
+     NewSize = MD.Mutate(CurrentUnitData, Size, CurrentMaxMutationLen);
+     assert(NewSize > 0 && "Mutator returned empty unit");
+     assert(NewSize <= CurrentMaxMutationLen && "Mutator return overisized unit");
+     Size = NewSize;
+     II.NumExecutedMutations++;
+-    if (RunOne(CurrentUnitData, Size, /*MayDeleteFile=*/true, &II))
++    if (RunOne(CurrentUnitData, Size, /*MayDeleteFile=*/true, &II)) {
+       ReportNewCoverage(&II, {CurrentUnitData, CurrentUnitData + Size});
++      if (UnitHadOutputDiff) {
++        uint8_t Hash[kSHA1NumBytes];
++        ComputeSHA1((uint8_t *)(CurrentUnitData), Size, Hash);
++        std::string s = Sha1ToString(Hash) + "_BeforeMutationWas_";
++        WriteUnitToFileWithPrefix({PreviousUnit, PreviousUnit + PreviousSize},
++                                  s.c_str());
++      }
++    }
+ 
+     TryDetectingAMemoryLeak(CurrentUnitData, Size,
+                             /*DuringInitialCorpusExecution*/ false);
+diff -ubr Fuzzer-5.0.0-rc1/FuzzerOptions.h nezha/Fuzzer/FuzzerOptions.h
+--- Fuzzer-5.0.0-rc1/FuzzerOptions.h	2021-09-27 14:55:39.018135798 +0900
++++ nezha/Fuzzer/FuzzerOptions.h	2021-08-11 15:04:33.084641631 +0900
+@@ -25,6 +25,7 @@
+   int MaxTotalTimeSec = 0;
+   int RssLimitMb = 0;
+   bool DoCrossOver = true;
++  bool DifferentialMode = false;
+   int MutateDepth = 5;
+   bool UseCounters = false;
+   bool UseIndirCalls = true;
+diff -ubr Fuzzer-5.0.0-rc1/FuzzerTracePC.cpp nezha/Fuzzer/FuzzerTracePC.cpp
+--- Fuzzer-5.0.0-rc1/FuzzerTracePC.cpp	2021-09-27 14:55:39.018135798 +0900
++++ nezha/Fuzzer/FuzzerTracePC.cpp	2021-08-11 15:04:33.088619416 +0900
+@@ -39,6 +39,22 @@
+ 
+ int ScopedDoingMyOwnMemOrStr::DoingMyOwnMemOrStr;
+ 
++bool TracePC::NewTraceDiff(std::vector<int>& feature_v) {
++  return FeatureTraceDiff.insert(feature_v).second;
++}
++
++bool TracePC::NewOutputDiff() {
++  return OutputTraceDiff.insert(OutputDiffVec).second;
++}
++
++void TracePC::InitializeDiffCallbacks(ExternalFunctions *EF) {
++  assert(EF->LLVMFuzzerCustomCallbacks);
++  assert(EF->__sanitizer_update_counter_bitset_and_clear_counters);
++  UC = EF->LLVMFuzzerCustomCallbacks();
++  assert(UC && UC->callbacks && UC->size > 0);
++  OutputDiffVec = std::vector<int>(UC->size);;
++}
++
+ uint8_t *TracePC::Counters() const {
+   return __sancov_trace_pc_guard_8bit_counters;
+ }
+diff -ubr Fuzzer-5.0.0-rc1/FuzzerTracePC.h nezha/Fuzzer/FuzzerTracePC.h
+--- Fuzzer-5.0.0-rc1/FuzzerTracePC.h	2021-09-27 14:55:39.018135798 +0900
++++ nezha/Fuzzer/FuzzerTracePC.h	2021-08-11 15:04:33.088619416 +0900
+@@ -14,9 +14,12 @@
+ 
+ #include "FuzzerDefs.h"
+ #include "FuzzerDictionary.h"
++#include "FuzzerExtFunctions.h"
+ #include "FuzzerValueBitMap.h"
+ 
+ #include <set>
++#include <unordered_set>
++#include <vector>
+ 
+ namespace fuzzer {
+ 
+@@ -67,6 +70,18 @@
+   }
+ };
+ 
++struct VectorIntHash {
++  size_t operator()(const std::vector<int>& v) const {
++    std::hash<int> hasher;
++    size_t seed = 0;
++    for (int i : v) {
++      seed ^= hasher(i) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
++    }
++    return seed;
++  }
++};
++using SetOfIntVectors = std::unordered_set<std::vector<int>, VectorIntHash>;
++
+ class TracePC {
+  public:
+   static const size_t kNumPCs = 1 << 21;
+@@ -107,6 +122,7 @@
+ 
+   void PrintNewPCs();
+   void InitializePrintNewPCs();
++  void InitializeDiffCallbacks(ExternalFunctions *EF);
+   size_t GetNumPCs() const {
+     return NumGuards == 0 ? (1 << kTracePcBits) : Min(kNumPCs, NumGuards + 1);
+   }
+@@ -115,6 +131,11 @@
+     return PCs()[Idx];
+   }
+ 
++  std::vector<int> OutputDiffVec;
++  UserCallbacks *UC;
++  bool NewOutputDiff();
++  bool NewTraceDiff(std::vector<int>& feature_v);
++
+ private:
+   bool UseCounters = false;
+   bool UseValueProfile = false;
+@@ -138,6 +159,8 @@
+   std::set<uintptr_t> *PrintedPCs;
+ 
+   ValueBitMap ValueProfileMap;
++  SetOfIntVectors FeatureTraceDiff;
++  SetOfIntVectors OutputTraceDiff;
+ };
+ 
+ template <class Callback> // void Callback(size_t Idx, uint8_t Value);
+diff -ubr Fuzzer-5.0.0-rc1/afl/afl_driver.cpp nezha/Fuzzer/afl/afl_driver.cpp
+--- Fuzzer-5.0.0-rc1/afl/afl_driver.cpp	2021-09-27 14:55:39.018135798 +0900
++++ nezha/Fuzzer/afl/afl_driver.cpp	2021-08-11 15:04:33.088619416 +0900
+@@ -22,8 +22,8 @@
+   return 0;
+ }
+ EOF
+-# Build your target with -fsanitize-coverage=trace-pc-guard using fresh clang.
+-clang -g -fsanitize-coverage=trace-pc-guard test_fuzzer.cc -c
++# Build your target with -fsanitize-coverage=trace-pc using fresh clang.
++clang -g -fsanitize-coverage=trace-pc test_fuzzer.cc -c
+ # Build afl-llvm-rt.o.c from the AFL distribution.
+ clang -c -w $AFL_HOME/llvm_mode/afl-llvm-rt.o.c
+ # Build this file, link it with afl-llvm-rt.o.o and the target code.
+nezha/Fuzzer/ のみに存在: tags
+diff -ubr Fuzzer-5.0.0-rc1/test/CMakeLists.txt nezha/Fuzzer/test/CMakeLists.txt
+--- Fuzzer-5.0.0-rc1/test/CMakeLists.txt	2021-09-27 14:55:39.018135798 +0900
++++ nezha/Fuzzer/test/CMakeLists.txt	2021-08-11 15:04:33.092597199 +0900
+@@ -90,7 +90,6 @@
+   EmptyTest
+   EquivalenceATest
+   EquivalenceBTest
+-  FlagsTest
+   FourIndependentBranchesTest
+   FullCoverageSetTest
+   InitializeTest
+@@ -119,7 +118,6 @@
+   SingleStrncmpTest
+   SpamyTest
+   ShrinkControlFlowTest
+-  ShrinkControlFlowSimpleTest
+   ShrinkValueProfileTest
+   StrcmpTest
+   StrncmpOOBTest
+Fuzzer-5.0.0-rc1/test のみに存在: FlagsTest.cpp
+diff -ubr Fuzzer-5.0.0-rc1/test/FuzzerUnittest.cpp nezha/Fuzzer/test/FuzzerUnittest.cpp
+--- Fuzzer-5.0.0-rc1/test/FuzzerUnittest.cpp	2021-09-27 14:55:39.018135798 +0900
++++ nezha/Fuzzer/test/FuzzerUnittest.cpp	2021-08-11 15:04:33.096574983 +0900
+@@ -5,9 +5,6 @@
+ // with ASan) involving C++ standard library types when using libcxx.
+ #define _LIBCPP_HAS_NO_ASAN
+ 
+-// Do not attempt to use LLVM ostream from gtest.
+-#define GTEST_NO_LLVM_RAW_OSTREAM 1
+-
+ #include "FuzzerCorpus.h"
+ #include "FuzzerDictionary.h"
+ #include "FuzzerInternal.h"
+@@ -424,6 +421,35 @@
+   TestAddWordFromDictionary(&MutationDispatcher::Mutate, 1 << 15);
+ }
+ 
++void TestAddWordFromDictionaryWithHint(Mutator M, int NumIter) {
++  std::unique_ptr<ExternalFunctions> t(new ExternalFunctions());
++  fuzzer::EF = t.get();
++  Random Rand(0);
++  MutationDispatcher MD(Rand, {});
++  uint8_t W[] = {0xAA, 0xBB, 0xCC, 0xDD, 0xFF, 0xEE, 0xEF};
++  size_t PosHint = 7777;
++  MD.AddWordToAutoDictionary({Word(W, sizeof(W)), PosHint});
++  int FoundMask = 0;
++  for (int i = 0; i < NumIter; i++) {
++    uint8_t T[10000];
++    memset(T, 0, sizeof(T));
++    size_t NewSize = (MD.*M)(T, 9000, 10000);
++    if (NewSize >= PosHint + sizeof(W) &&
++        !memcmp(W, T + PosHint, sizeof(W)))
++      FoundMask = 1;
++  }
++  EXPECT_EQ(FoundMask, 1);
++}
++
++TEST(FuzzerMutate, AddWordFromDictionaryWithHint1) {
++  TestAddWordFromDictionaryWithHint(
++      &MutationDispatcher::Mutate_AddWordFromTemporaryAutoDictionary, 1 << 5);
++}
++
++TEST(FuzzerMutate, AddWordFromDictionaryWithHint2) {
++  TestAddWordFromDictionaryWithHint(&MutationDispatcher::Mutate, 1 << 10);
++}
++
+ void TestChangeASCIIInteger(Mutator M, int NumIter) {
+   std::unique_ptr<ExternalFunctions> t(new ExternalFunctions());
+   fuzzer::EF = t.get();
+@@ -564,7 +590,7 @@
+   size_t N = 10;
+   size_t TriesPerUnit = 1<<16;
+   for (size_t i = 0; i < N; i++)
+-    C->AddToCorpus(Unit{ static_cast<uint8_t>(i) }, 1, false, {});
++    C->AddToCorpus(Unit{ static_cast<uint8_t>(i) }, 0);
+ 
+   std::vector<size_t> Hist(N);
+   for (size_t i = 0; i < N * TriesPerUnit; i++) {
+Fuzzer-5.0.0-rc1/test のみに存在: ShrinkControlFlowSimpleTest.cpp
+diff -ubr Fuzzer-5.0.0-rc1/test/fuzzer-flags.test nezha/Fuzzer/test/fuzzer-flags.test
+--- Fuzzer-5.0.0-rc1/test/fuzzer-flags.test	2021-09-27 14:55:39.022127151 +0900
++++ nezha/Fuzzer/test/fuzzer-flags.test	2021-08-11 15:04:33.100552767 +0900
+@@ -1,21 +1,10 @@
+-# Does not work on windows for unknown reason.
+-UNSUPPORTED: windows
+-
+-RUN: LLVMFuzzer-FlagsTest -foo_bar=1 2>&1 | FileCheck %s --check-prefix=FOO_BAR
++RUN: LLVMFuzzer-SimpleTest -foo_bar=1 2>&1 | FileCheck %s --check-prefix=FOO_BAR
+ FOO_BAR: WARNING: unrecognized flag '-foo_bar=1'; use -help=1 to list all flags
+ FOO_BAR: BINGO
+ 
+-RUN: LLVMFuzzer-FlagsTest -runs=10 --max_len=100 2>&1 | FileCheck %s --check-prefix=DASH_DASH
++RUN: LLVMFuzzer-SimpleTest -runs=10 --max_len=100 2>&1 | FileCheck %s --check-prefix=DASH_DASH
+ DASH_DASH: WARNING: did you mean '-max_len=100' (single dash)?
+ DASH_DASH: INFO: A corpus is not provided, starting from an empty corpus
+ 
+-RUN: LLVMFuzzer-FlagsTest -help=1 2>&1 | FileCheck %s --check-prefix=NO_INTERNAL
++RUN: LLVMFuzzer-SimpleTest -help=1 2>&1 | FileCheck %s --check-prefix=NO_INTERNAL
+ NO_INTERNAL-NOT: internal flag
+-
+-RUN: LLVMFuzzer-FlagsTest --foo-bar -runs=10 -ignore_remaining_args=1 --baz -help=1 test 2>&1 | FileCheck %s --check-prefix=PASSTHRU
+-PASSTHRU: BINGO --foo-bar --baz -help=1 test
+-
+-RUN: mkdir -p %t/T0 %t/T1
+-RUN: touch %t/T1/empty
+-RUN: LLVMFuzzer-FlagsTest --foo-bar -merge=1 %t/T0 %t/T1 -ignore_remaining_args=1 --baz -help=1 test 2>&1 | FileCheck %s --check-prefix=PASSTHRU-MERGE
+-PASSTHRU-MERGE: BINGO --foo-bar --baz -help=1 test
+diff -ubr Fuzzer-5.0.0-rc1/test/fuzzer-traces-hooks.test nezha/Fuzzer/test/fuzzer-traces-hooks.test
+--- Fuzzer-5.0.0-rc1/test/fuzzer-traces-hooks.test	2021-09-27 14:55:39.022127151 +0900
++++ nezha/Fuzzer/test/fuzzer-traces-hooks.test	2021-08-11 15:04:33.100552767 +0900
+@@ -10,7 +10,7 @@
+ 
+ RUN: not LLVMFuzzer-Memcmp64BytesTest        -seed=1 -runs=1000000   2>&1 | FileCheck %s
+ 
+-RUN: LLVMFuzzer-RepeatedMemcmp -seed=11 -runs=100000 -max_len=20 2>&1 | FileCheck %s --check-prefix=RECOMMENDED_DICT
++RUN: LLVMFuzzer-RepeatedMemcmp -seed=11 -runs=100000 2>&1 | FileCheck %s --check-prefix=RECOMMENDED_DICT
+ RECOMMENDED_DICT:###### Recommended dictionary. ######
+ RECOMMENDED_DICT-DAG: "foo"
+ RECOMMENDED_DICT-DAG: "bar"
+Fuzzer-5.0.0-rc1/test のみに存在: reduce_inputs.test

@@ -15,19 +15,24 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see http://www.gnu.org/licenses/.
  */
+/**
+ * @file fuzzer.cpp
+ * @author Ricerca Security <fuzzuf-dev@ricsec.co.jp>
+ */
 #include "fuzzuf/algorithms/libfuzzer/cli_compat/fuzzer.hpp"
 #include "fuzzuf/algorithms/libfuzzer/cli_compat/options.hpp"
 #include "fuzzuf/algorithms/libfuzzer/config.hpp"
 #include "fuzzuf/algorithms/libfuzzer/create.hpp"
 #include "fuzzuf/cli/fuzzer_args.hpp"
 #include "fuzzuf/cli/global_fuzzer_options.hpp"
+#include "fuzzuf/logger/logger.hpp"
 #include <boost/program_options.hpp>
 #include <cstdint>
 #include <fstream>
 #include <string>
 
 namespace fuzzuf::algorithm::libfuzzer {
-LibFuzzer::LibFuzzer(const FuzzerArgs &fuzzer_args,
+LibFuzzer::LibFuzzer(FuzzerArgs &fuzzer_args,
                      const GlobalFuzzerOptions &global,
                      std::function<void(std::string &&)> &&sink_)
     : node_tracer([this](std::string &&m) { sink("trace : " + m); }) {
@@ -35,7 +40,7 @@ LibFuzzer::LibFuzzer(const FuzzerArgs &fuzzer_args,
   opts.output_dir = global.out_dir;
   auto [desc, pd] = createOptions(opts);
 
-  if (!postProcess(desc, pd, fuzzer_args.argc, fuzzer_args.argv, global,
+  if (!postProcess(fuzzer_args.global_options_description.add(desc), pd, fuzzer_args.argc, fuzzer_args.argv, global,
                    std::move(sink_), opts)) {
     end_ = true;
     return;
@@ -66,8 +71,11 @@ LibFuzzer::LibFuzzer(const FuzzerArgs &fuzzer_args,
   runone = [this, runone_wrapped = std::move(runone_wrapped)]() mutable {
     runone_wrapped(vars, node_tracer, ett);
   };
+
+  DEBUG("[*] LibFuzzer::LibFuzzer(): Done");
 }
 void LibFuzzer::OneLoop() {
+  // DEBUG("[*] LibFuzzer::OneLoop(): end_: %s", end_ ? "true" : "false");
   if (!end_) {
     runone();
     if (total_cycles >= 0 && vars.count >= std::size_t(total_cycles)) {

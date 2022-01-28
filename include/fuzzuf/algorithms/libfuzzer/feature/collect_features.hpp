@@ -15,6 +15,10 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see http://www.gnu.org/licenses/.
  */
+/**
+ * @file collect_features.hpp
+ * @author Ricerca Security <fuzzuf-dev@ricsec.co.jp>
+ */
 #ifndef FUZZUF_INCLUDE_ALGORITHM_LIBFUZZER_FEATURE_COLLECT_FEATURES_HPP
 #define FUZZUF_INCLUDE_ALGORITHM_LIBFUZZER_FEATURE_COLLECT_FEATURES_HPP
 #include "fuzzuf/algorithms/libfuzzer/feature/counter_to_feature.hpp"
@@ -49,13 +53,12 @@ template <typename Cov>
 constexpr unsigned int coverage_depth_v = CoverageDepth<Cov>::value;
 
 /**
- * @fn
  * Find features, then call cb for each feature.
  *
- * @tparm State libFuzzer state object type
- * @tparm Cov Range of std::uint8_t to pass coverage
- * @tparm Callback Callable with one integer argument that indicates ID of detected feature.
- * @param state libFuzzer state object
+ * @tparam State LibFuzzer state object type
+ * @tparam Cov Range of std::uint8_t to pass coverage
+ * @tparam Callback Callable with one integer argument that indicates ID of detected feature.
+ * @param state LibFuzzer state object
  * @param cov Coverage retrived from the executor
  * @param module_offset
  * Consider head of coverage is mode_offset'th element of coverage

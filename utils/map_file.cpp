@@ -15,6 +15,10 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see http://www.gnu.org/licenses/.
  */
+/**
+ * @file map_file.cpp
+ * @author Ricerca Security <fuzzuf-dev@ricsec.co.jp>
+ */
 #include "fuzzuf/utils/map_file.hpp"
 #include <boost/scope_exit.hpp>
 #include <cerrno>

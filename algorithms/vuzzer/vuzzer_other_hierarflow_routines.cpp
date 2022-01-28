@@ -41,7 +41,6 @@ NullableRef<HierarFlowCallee<void(void)>> FuzzLoop::operator()(void) {
 DecideKeep::DecideKeep(VUzzerState &state) : state(state) {}
 
 /**
- * @fn
  * @brief Mark some seeds as special and save them to keep_queue.
  */
 VUzzerMidCalleeRef DecideKeep::operator()(void) {
@@ -69,7 +68,6 @@ VUzzerMidCalleeRef DecideKeep::operator()(void) {
 RunEHB::RunEHB(VUzzerState &state) : state(state) {}
 
 /**
- * @fn
  * 
  * @brief Detect EHBs based on bb traces taken during executions
  */
@@ -118,7 +116,6 @@ VUzzerMidCalleeRef RunEHB::operator()(void) {
 ExecutePUT::ExecutePUT(VUzzerState &state) : state(state) {}
 
 /**
- * @fn
  * @brief Execute PUT
  */
 VUzzerMidCalleeRef ExecutePUT::operator()(void) {
@@ -166,7 +163,6 @@ VUzzerMidCalleeRef ExecutePUT::operator()(void) {
 ExecuteTaintPUT::ExecuteTaintPUT(VUzzerState &state) : state(state) {}
 
 /**
- * @fn
  * @brief Execute PUT by taint engine
  */
 VUzzerMidCalleeRef ExecuteTaintPUT::operator()(void) {

@@ -15,6 +15,10 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see http://www.gnu.org/licenses/.
  */
+/**
+ * @file execute.hpp
+ * @author Ricerca Security <fuzzuf-dev@ricsec.co.jp>
+ */
 #ifndef FUZZUF_INCLUDE_ALGORITHM_LIBFUZZER_EXECUTOR_EXECUTE_HPP
 #define FUZZUF_INCLUDE_ALGORITHM_LIBFUZZER_EXECUTOR_EXECUTE_HPP
 #include "fuzzuf/algorithms/libfuzzer/state/input_info.hpp"
@@ -27,21 +31,20 @@
 namespace fuzzuf::algorithm::libfuzzer::executor {
 
 /**
- * @fn
  * Run target with input, and acquire coverage,
  * outputs, execution result.
  *
- * @tparm Range Contiguous Range of std::uint8_t to pass input
- * @tparm Output Container of std::uint8_t to receive standard output
- * @tparm Cov Container of std::uint8_t to receive coverage
- * @tparm InputInfo Type of execution result
- * @tparm Executor executor type
- * @param state libFuzzer state object
+ * @tparam Range Contiguous Range of std::uint8_t to pass input
+ * @tparam Output Container of std::uint8_t to receive standard output
+ * @tparam Cov Container of std::uint8_t to receive coverage
+ * @tparam InputInfo Type of execution result
+ * @tparam Executor Executor type
+ * @param state LibFuzzer state object
  * @param corpus FullCorpus to add new execution result
  * @param range Input value that was passed to the executor
- * @param exec_result reference to execution result to output detail of this
+ * @param exec_result Reference to execution result to output detail of this
  * execution
- * @param executor executor to run target
+ * @param executor Executor to run target
  * @param afl_coverage If True, coverage is retrived using GetAFLFeedback().
  * Otherwise coverage is retrived using GetBBFeedback().
  */

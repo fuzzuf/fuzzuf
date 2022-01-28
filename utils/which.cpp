@@ -15,6 +15,10 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see http://www.gnu.org/licenses/.
  */
+/**
+ * @file which.cpp
+ * @author Ricerca Security <fuzzuf-dev@ricsec.co.jp>
+ */
 #include "fuzzuf/utils/filesystem.hpp"
 #include <algorithm>
 #include <cassert>
@@ -42,7 +46,7 @@ auto which(const fs::path &name) -> fs::path {
         auto *const local_end = std::find(iter, global_end, ':');
 
         const auto deterministic = fs::path(iter, local_end) / name;
-        if (fs::exists(deterministic)) {
+        if (fs::exists(deterministic) && !fs::is_directory(deterministic)) {
           return deterministic;
         }
         iter = std::find_if(local_end, global_end,
@@ -65,7 +69,7 @@ auto which(const fs::path &name) -> fs::path {
         const auto local_end = std::find(iter, global_end, ':');
 
         auto deterministic = fs::path(iter, local_end) / name;
-        if (fs::exists(deterministic)) {
+        if (fs::exists(deterministic) && !fs::is_directory(deterministic)) {
           return deterministic;
         }
         iter = std::find_if(local_end, global_end,

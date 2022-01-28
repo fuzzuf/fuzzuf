@@ -15,6 +15,10 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see http://www.gnu.org/licenses/.
  */
+/**
+ * @file dictionary.hpp
+ * @author Ricerca Security <fuzzuf-dev@ricsec.co.jp>
+ */
 #ifndef FUZZUF_INCLUDE_ALGORITHM_LIBFUZZER_DICTIONARY_HPP
 #define FUZZUF_INCLUDE_ALGORITHM_LIBFUZZER_DICTIONARY_HPP
 #include "fuzzuf/utils/filesystem.hpp"
@@ -126,7 +130,7 @@ operator<<(std::basic_ostream<char, Traits> &l,
   return l;
 }
 
-/*
+/**
  * Static dictionary uses static_vector for both container to store byte sequence and container to store dictionary entries.
  * Static dictionary has much closer behaviour to original libFuzzer implementation and it has same size limitation.
  */
@@ -145,7 +149,7 @@ operator<<(std::basic_ostream<char, Traits> &l, const StaticDictionary &r) {
   return l;
 }
 
-/*
+/**
  * Dynamic dictionary uses vector for the continers.
  * Dynamic dictionary may allocate memory during fuzzing, but the size limitation is much looser.
  */

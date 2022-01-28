@@ -58,7 +58,6 @@ VUzzerState::~VUzzerState() {
 }
 
 /**
- * @fn
  * @brief Execute a PUT with input from the buffer 
  * @param (buf) Input buffer
  * @param (len) Length of the input buffer
@@ -84,7 +83,6 @@ FileFeedback VUzzerState::RunExecutor(
 }
 
 /**
- * @fn
  * Execute a PUT by dynamic taint analysis technique with input from the buffer.
  * The input buffer is marked as taint tag.
  * @brief Execute a PUT by dynamic taint analysis technique with input from the buffer.
@@ -118,7 +116,6 @@ void VUzzerState::ReceiveStopSignal(void) {
 }
 
 /**
- * @fn
  * 
  * @brief Load initial seeds from dir specified by -i option
 */
@@ -188,7 +185,6 @@ void VUzzerState::ReadTestcases(void) {
 }
 
 /**
- * @fn
  * @brief Add a new testcase to seed queue
  * @param (queue) seed queue
  * @param (fn) file name of testcase
@@ -215,7 +211,6 @@ std::shared_ptr<VUzzerTestcase> VUzzerState::AddToQueue(
 }
 
 /**
- * @fn
  * @brief Delete the testcase from seed queue
  * @param (queue) Seed queue
  * @param (itr) Iterator of seed entry

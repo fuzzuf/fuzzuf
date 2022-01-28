@@ -6,13 +6,31 @@ atla_branch_build2( 'fuzzuf', 'atla', "${BRANCH}" ) {
       stage( 'checkout' ) {
         atla_checkout2( "${GIT_URL}", "${BRANCH}" )
       }
+      if( env.DOC_GIT_URL != "" ) {
+        stage( 'checkout doc' ) {
+          dir( "build_"+dist_info[ "type" ]+'_'+dist_info[ "version" ]+'/docs' ) {
+            atla_checkout2( "${DOC_GIT_URL}", "main" )
+          }
+        }
+      }
       stage( 'build' ) {
-        sh "./jenkins/${JOB_NAME}/build.sh ${PYENV_VERSION} ${PYENV_DIR} build_"+dist_info[ "type" ]+'_'+dist_info[ "version" ]+" -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr -DPATTR_USER=jenkins -DPATTR_BRANCH=${BRANCH} -DPATTR_VERSION_RELEASE=${REVISION_OFFSET}+${BUILD_NUMBER} -DENABLE_HEAVY_TEST=OFF -DENABLE_DANGEROUS_STACK_TRACE_OUTPUT=ON -DENABLE_DOXYGEN=ON -DPIN_ROOT=/opt/pin/3.7"
+        sh "./jenkins/fuzzuf-branch_build/build.sh ${PYENV_VERSION} ${PYENV_DIR} build_"+dist_info[ "type" ]+'_'+dist_info[ "version" ]+" -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr -DPATTR_USER=jenkins -DPATTR_BRANCH=${BRANCH} -DPATTR_VERSION_RELEASE=${REVISION_OFFSET}+${BUILD_NUMBER} -DENABLE_HEAVY_TEST=OFF -DENABLE_DANGEROUS_STACK_TRACE_OUTPUT=ON -DENABLE_DOXYGEN=ON -DPIN_ROOT=/opt/pin/3.7"
       }
       if( env.PUBLISH == "true" ) {
         if( env.PYENV_VERSION == "native" ) {
           stage( 'deploy' ) {
             atla_publish( dist_info, "${BRANCH}" )
+          }
+        }
+      }
+      if( dist_info[ "type" ]+'_'+dist_info[ "version" ] == "ubuntu_20.04" ) {
+        if( env.DOC_GIT_URL != "" ) {
+          stage( 'deploy doc' ) {
+            dir( "build_"+dist_info[ "type" ]+'_'+dist_info[ "version" ]+'/docs' ) {
+              withCredentials([usernamePassword(credentialsId: 'github_ricsec-bot_username_token', usernameVariable: 'ZZZZZ_USERNAME', passwordVariable: 'ZZZZZ_PASSWORD' )]) {
+                sh('git push https://${ZZZZZ_USERNAME}:${ZZZZZ_PASSWORD}@github.com/RICSecLab/fuzzuf-doxygen-docs.git')
+              }
+            }
           }
         }
       }

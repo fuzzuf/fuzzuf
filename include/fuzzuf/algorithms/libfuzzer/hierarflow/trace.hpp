@@ -15,6 +15,10 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see http://www.gnu.org/licenses/.
  */
+/**
+ * @file trace.hpp
+ * @author Ricerca Security <fuzzuf-dev@ricsec.co.jp>
+ */
 #ifndef FUZZUF_INCLUDE_ALGORITHM_LIBFUZZER_HIERARFLOW_TRACE_HPP
 #define FUZZUF_INCLUDE_ALGORITHM_LIBFUZZER_HIERARFLOW_TRACE_HPP
 
@@ -36,7 +40,7 @@
 #define FUZZUF_ALGORITHM_LIBFUZZER_HIERARFLOW_TRACE(event)                     \
   fuzzuf::utils::callWithDetected<fuzzuf::utils::IsNodeTracer>(                \
       [&](auto &&tracer) { tracer(event); }, std::forward<Args>(args)...);
-/*
+/**
  * Macro to generate event that indicates enter and leave of nodes, those are
  * received by NodeTracer
  */
@@ -48,7 +52,7 @@
                fuzzuf::utils::Checkpoint::checkpoint, args...);                \
       },                                                                       \
       std::forward<Args>(args)...);
-/*
+/**
  * Macro to generate "mark" event received by NodeTracer
  */
 #define FUZZUF_ALGORITHM_LIBFUZZER_HIERARFLOW_MARK(node_name, info)            \

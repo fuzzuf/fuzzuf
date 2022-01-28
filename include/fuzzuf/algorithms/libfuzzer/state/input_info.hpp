@@ -15,6 +15,10 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see http://www.gnu.org/licenses/.
  */
+/**
+ * @file input_info.hpp
+ * @author Ricerca Security <fuzzuf-dev@ricsec.co.jp>
+ */
 #ifndef FUZZUF_INCLUDE_ALGORITHM_LIBFUZZER_STATE_INPUT_INFO_HPP
 #define FUZZUF_INCLUDE_ALGORITHM_LIBFUZZER_STATE_INPUT_INFO_HPP
 #include "fuzzuf/algorithms/libfuzzer/state/testcase_id.hpp"
@@ -34,98 +38,103 @@ namespace fuzzuf::algorithm::libfuzzer {
 
 /**
  * @class InputInfo
- * @brief 入力値をexecutorに渡して実行した結果得られる情報
- * これらの値はexecutorで再度実行する事で取り戻せるため永続化対象には含まれない
- * libFuzzerの実行結果が持つ全ての変数を持ってきてあるが、libFuzzerのいくつかの機能は移植していない(or
- * できない)ため、全く変化しないメンバも存在する
+ * @brief execution result
+ * This class contains values retrived from executor and scratch values to calculate weight
+ * All values in Input Info of original implementation has been ported, yet some of them are not used due to some functionalities are not ported.
  *
- * libFuzzerの対応箇所
+ * Corresponding code of original libFuzzer implementation
  * https://github.com/llvm/llvm-project/blob/llvmorg-12.0.1/compiler-rt/lib/fuzzer/FuzzerCorpus.h#L28
  */
 struct InputInfo {
   InputInfo() : id(0), enabled(false), time_of_unit(0) {}
   InputInfo(testcase_id_t id_) : id(id_), enabled(true), time_of_unit(0) {}
   /**
-   * @fn
-   * この実行結果のenergyを求める
+   * Calculate energy of this execution result
    */
   void updateEnergy(std::size_t global_number_of_features,
                     bool scale_per_exec_time,
                     std::chrono::microseconds average_unit_execution_time);
   /**
-   * @fn
-   * 指定したfeatureをこの実行結果のfeature_freqsから削除する
-   * @param index feature
+   * Remove specified feature from feature_freqs of this execution result.
+   * @param index Feature id
    */
   bool delete_feature_freq(std::uint32_t index);
   /**
-   * @fn
-   * 有効な実行結果を持っている場合trueを返す
+   * Return true if the InputInfo contains active execution result.
    */
   operator bool() const { return enabled; }
   /**
-   * @fn
-   * 指定したfeatureをこの実行結果のfeature_freqsに追加する
-   * @param index feature
+   * Append specified feature to feature_freqs of this execution result.
+   * @param index Feature id
    */
   void updateFeatureFrequency(std::uint32_t index);
 
-  // 以下libFuzzer由来の要素
-  // ExecInputSetから対応する入力を見つけるためのID
+  /// ID to bind an input value in ExecInputSet to this execution result.
   testcase_id_t id;
+  /// If true, the InputInfo contains active execution result.
   bool enabled;
-  // 実行時間
+  /// Values ported from original implementation
+  /// elapsed time of execution
   std::chrono::microseconds time_of_unit;
-  // 見つかったfeatureの数
+  /// detected feature count
   std::size_t features_count = 0u;
-  // mutationを行った回数
+  /// applied mutation count
   std::size_t executed_mutations_count = 0u;
   // ?
   bool never_reduce = false;
   // ?
   bool may_delete_file = false;
-  // focus_functionを使っている
+  /// the input value is generated using focus function
   bool has_focus_function = false;
-  // 既に存在した同じ入力値の実行結果を置き換えた
+  /// this execution result replaced existing one
   bool reduced = false;
-  // energyの値を再計算する必要がある
+  /// If true, since values affecting to the energy has changed, energy need to be recalculated.
   bool needs_energy_update = false;
-  // この実行結果の重要度 rare_featuresを使って求める
+  /**
+   * Importance of this execution result.
+   * rare_features affects on this value.
+   */
   double energy = 0.0;
   // ?
   double sum_incidence = 0.0;
-  // 重複を排したfeatureの値の列
+  // unique feature ids detected on this execution
   std::vector<std::uint64_t> unique_feature_set;
   // ?
   std::vector<std::pair<std::uint32_t, std::uint16_t>> feature_freqs;
 
-  // 以下fuzzuf由来の要素
-  // 子プロセスの実行結果
+  /**
+   * fuzzuf specific variables
+   * status code of the target execution
+   */
   PUTExitReasonType status = PUTExitReasonType::FAULT_NONE;
-  // 子プロセスを終了させたシグナル
+  /// signal number that caused the target to terminate
   unsigned int signal = 0;
-  // この入力の重み
+  /// weight of this execution result
   double weight = 0.0;
 
-  // 新しいfeatureを発見した
+  /// number of novel features by this execution
   std::size_t found_unique_features = 0u;
 
-  // corpusに追加された
+  /// If true, the execution result has added to corpus
   bool added_to_corpus = false;
 
-  // 入力値のハッシュ
+  /// Hash value of the input value.
   std::string sha1;
-  // 入力値の名前
+  /**
+   * Name of the input value
+   * If the input value has name and requested to make persistent, the name is used as the filename.
+   * If the input value doesn't have name but requested to make persistent, the sha1 is used as the filename.
+   */
   std::string name;
-  // 入力値の長さ
+  /// The length of input value.
   std::size_t input_size = 0u;
 };
 
 /**
  * @class is_input_info
- * @brief 与えられた型TがInputInfo型の要件を満たす場合にtrueを返すメタ関数
+ * @brief Meta function to check if the type satisfies InputInfo concept
  *
- * @tparm T 任意の型
+ * @tparam T Type to check
  */
 template <typename T, typename Enable = void>
 struct is_input_info : public std::false_type {};
@@ -199,12 +208,11 @@ struct is_input_info<
 template <typename T> constexpr bool is_input_info_v = is_input_info<T>::value;
 
 /**
- * @fn
- * InputInfoを文字列に変換する
- * @param dest 出力先
- * @param value 値
- * @param index_count インデントの深さ
- * @param indent インデントに使う文字列
+ * Serialize InputInfo into string
+ * @param dest Serialized string is stored in this value
+ * @param value InputInfo to serialize
+ * @param index_count Initial indentation depth
+ * @param indent String to insert for indentation
  */
 auto toString(std::string &dest, const InputInfo &value,
               std::size_t indent_count, const std::string &indent) -> bool;

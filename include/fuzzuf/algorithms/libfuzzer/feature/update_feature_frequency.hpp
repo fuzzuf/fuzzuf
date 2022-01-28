@@ -15,6 +15,10 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see http://www.gnu.org/licenses/.
  */
+/**
+ * @file update_feature_frequency.hpp
+ * @author Ricerca Security <fuzzuf-dev@ricsec.co.jp>
+ */
 #ifndef FUZZUF_INCLUDE_ALGORITHM_LIBFUZZER_FEATURE_UPDATE_FEATURE_FREQUENCY_HPP
 #define FUZZUF_INCLUDE_ALGORITHM_LIBFUZZER_FEATURE_UPDATE_FEATURE_FREQUENCY_HPP
 #include "fuzzuf/algorithms/libfuzzer/state/input_info.hpp"
@@ -27,7 +31,6 @@
 namespace fuzzuf::algorithm::libfuzzer::feature {
 
 /**
- * @fn
  * Increment counter at index-th element of global_feature_freqs
  * The counter value saturates
  * Since n-th element of global_feature_freqs indicates detection count of feature ID n, index should be a valid feature ID.
@@ -35,11 +38,11 @@ namespace fuzzuf::algorithm::libfuzzer::feature {
  * Corresponding code of original libFuzzer implementation
  * https://github.com/llvm/llvm-project/blob/llvmorg-12.0.1/compiler-rt/lib/fuzzer/FuzzerCorpus.h#L437
  *
- * @tparm State libFuzzer state object type
- * @tparm InputInfo Type to provide execution result
- * @param state libFuzzer state object
+ * @tparam State LibFuzzer state object type
+ * @tparam InputInfo Type to provide execution result
+ * @param state LibFuzzer state object
  * @param exec_result Execution result that was produced by the executor
- * @param index index of value to increment
+ * @param index Index of value to increment
  */
 template <typename State, typename InputInfo>
 auto UpdateFeatureFrequency(State &state, InputInfo &exec_result,

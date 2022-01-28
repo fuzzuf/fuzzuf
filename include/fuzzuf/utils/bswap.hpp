@@ -15,6 +15,10 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see http://www.gnu.org/licenses/.
  */
+/**
+ * @file bswap.hpp
+ * @author Ricerca Security <fuzzuf-dev@ricsec.co.jp>
+ */
 #ifndef FUZZUF_INCLUDE_UTILS_BSWAP_HPP
 #define FUZZUF_INCLUDE_UTILS_BSWAP_HPP
 #include <cstdint>
@@ -23,8 +27,8 @@ namespace fuzzuf::utils {
 
 /**
  * @class bswap
- * @brief 符号なし整数型のバイトオーダーを反転させる
- * @tparm T 何らかの符号なし整数型
+ * @brief swap byte ordering of the unsigned integer value
+ * @tparam T Unsigned integer type
  */
 template <typename T> struct bswap {};
 template <> struct bswap<std::uint8_t> {
@@ -68,8 +72,8 @@ template <> struct bswap<std::uint64_t> {
 
 /**
  * @class not_swap
- * @brief 符号なし整数型のバイトオーダーを反転させない
- * @tparm T 何らかの符号なし整数型
+ * @brief do nothing to the unsigned integer value
+ * @tparam T Unsigned integer type
  */
 template <typename T, typename Enable = void> struct not_swap {};
 
@@ -82,58 +86,58 @@ struct not_swap<T, std::enable_if_t<std::is_integral_v<T>>> {
 #if __BYTE_ORDER__ == 1234
 /**
  * @class htole
- * @brief システムのバイトオーダーからリトルエンディアンにする
- * @tparm T 何らかの符号なし整数型
+ * @brief Convert system byte order value to little endian
+ * @tparam T Unsigned integer type
  */
 template <typename T> using htole = bswap<T>;
 
 /**
  * @class htobe
- * @brief システムのバイトオーダーからビッグエンディアンにする
- * @tparm T 何らかの符号なし整数型
+ * @brief Convert system byte order value to big endian
+ * @tparam T Unsigned integer type
  */
 template <typename T> using htobe = not_swap<T>;
 
 /**
  * @class letoh
- * @brief リトルエンディアンからシステムのバイトオーダーにする
- * @tparm T 何らかの符号なし整数型
+ * @brief Convert little endian value to system byte order
+ * @tparam T Unsigned integer type
  */
 template <typename T> using letoh = bswap<T>;
 
 /**
  * @class betoh
- * @brief ビッグエンディアンからシステムのバイトオーダーにする
- * @tparm T 何らかの符号なし整数型
+ * @brief Convert big endian value to system byte order
+ * @tparam T Unsigned integer type
  */
 template <typename T> using betoh = not_swap<T>;
 
 #elif __BYTE_ORDER__ == 4321
 /**
  * @class htole
- * @brief システムのバイトオーダーからリトルエンディアンにする
- * @tparm T 何らかの符号なし整数型
+ * @brief Convert system byte order value to little endian
+ * @tparam T Unsigned integer type
  */
 template <typename T> using htole = not_swap<T>;
 
 /**
  * @class htobe
- * @brief システムのバイトオーダーからビッグエンディアンにする
- * @tparm T 何らかの符号なし整数型
+ * @brief Convert system byte order value to big endian
+ * @tparam T Unsigned integer type
  */
 template <typename T> using htobe = bswap<T>;
 
 /**
  * @class letoh
- * @brief リトルエンディアンからシステムのバイトオーダーにする
- * @tparm T 何らかの符号なし整数型
+ * @brief Convert little endian value to system byte order
+ * @tparam T Unsigned integer type
  */
 template <typename T> using letoh = not_swap<T>;
 
 /**
  * @class betoh
- * @brief ビッグエンディアンからシステムのバイトオーダーにする
- * @tparm T 何らかの符号なし整数型
+ * @brief Convert big endian value to system byte order
+ * @tparam T Unsigned integer type
  */
 template <typename T> using betoh = bswap<T>;
 

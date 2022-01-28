@@ -15,6 +15,10 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see http://www.gnu.org/licenses/.
  */
+/**
+ * @file afl_dict_parser.hpp
+ * @author Ricerca Security <fuzzuf-dev@ricsec.co.jp>
+ */
 #ifndef FUZZUF_INCLUDE_UTILS_AFL_DICT_PARSER_HPP
 #define FUZZUF_INCLUDE_UTILS_AFL_DICT_PARSER_HPP
 #include "fuzzuf/exceptions.hpp"
@@ -31,19 +35,20 @@
 #include <functional>
 #include <string>
 #include <system_error>
-/*
- * AFLの辞書をロードできるようにした
- * ロード先の型は
- * T型のSequentialコンテナ。ただしT::word_tが定義されていて、word_tはcharと互換のある型を要素とするSequentialコンテナでTはword_tを引数とするコンストラクタを持つ
- * を満たす必要がある
+/**
+ * Enables loading AFL dictionary
+ * Destination type should be Sequential container of T where T::word_t is defined and word_t is a sequential container with value_type that is compatible to char, and T has a constructor with word_t as an argument
  */
 namespace fuzzuf::utils::dictionary {
 FUZZUF_CHECK_CAPABILITY(HasGet, has_get, std::declval<T>().get())
 
-// 辞書型Tの要素のバイト列を持つコンテナの型を返す
+/**
+ * @class DictionaryWord
+ * @brief Meta function to return word_t type of the dictionary type T
+ * type is defined only if T has word_t and value_type of T has member function get()
+ * @tparam T Dictionary type
+ */
 template <typename T, typename Enable = void> struct DictionaryWord {};
-
-// 条件: TのRangeValueがメンバ関数get()を持っている
 template <typename T>
 struct DictionaryWord<T, std::enable_if_t<has_get_v<range::RangeValueT<T>>>> {
   using type = typename range::RangeValueT<T>::word_t;
@@ -52,8 +57,10 @@ struct DictionaryWord<T, std::enable_if_t<has_get_v<range::RangeValueT<T>>>> {
 template <typename T>
 using DictionaryWordT = typename DictionaryWord<T>::type;
 
-// Dest型の辞書に対してWord型の新しいエントリを追加する
-// 条件: TのRangeValueがメンバ関数get()を持っている
+/**
+ * Add new entry that type is Word to dictionary that type is Dict
+ * requirements: RangeValue of T has member function get()
+ */
 template <typename Dest, typename Word>
 auto EmplaceWord(Dest &dest, Word &&word)
     -> std::enable_if_t<has_get_v<range::RangeValueT<Dest>>> {

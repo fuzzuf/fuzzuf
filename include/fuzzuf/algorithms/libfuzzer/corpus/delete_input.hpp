@@ -15,6 +15,10 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see http://www.gnu.org/licenses/.
  */
+/**
+ * @file delete_input.hpp
+ * @author Ricerca Security <fuzzuf-dev@ricsec.co.jp>
+ */
 #ifndef FUZZUF_INCLUDE_ALGORITHM_LIBFUZZER_CORPUS_DELETE_INPUT_HPP
 #define FUZZUF_INCLUDE_ALGORITHM_LIBFUZZER_CORPUS_DELETE_INPUT_HPP
 #include "fuzzuf/algorithms/libfuzzer/state/corpus.hpp"
@@ -26,17 +30,16 @@
 namespace fuzzuf::algorithm::libfuzzer::corpus {
 
 /**
- * @fn
+ * Remove index-th element from the corpus
  *
- * libFuzzerの対応箇所
+ * Corresponding code of original libFuzzer implementation
  * https://github.com/llvm/llvm-project/blob/llvmorg-12.0.1/compiler-rt/lib/fuzzer/FuzzerCorpus.h#L346
  *
- * corpusからindex番目の要素を削除する
- * @tparm State libFuzzerの状態を表す型
- * @tparm Corpus 要素を削除するfull corpusの型
- * @param state libFuzzerの状態
- * @param corpus 要素を削除するcorpus
- * @param index partial corpusのindex番目の要素が削除される
+ * @tparam State LibFuzzer state object type
+ * @tparam Corpus FullCorpus type to remove execution result
+ * @param state LibFuzzer state object
+ * @param corpus FullCorpus to remove execution result
+ * @param index Index-th element is removed
  */
 template <typename State, typename Corpus>
 auto deleteInput(State &state, Corpus &corpus, std::size_t index)

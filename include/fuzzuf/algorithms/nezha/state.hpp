@@ -15,6 +15,10 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see http://www.gnu.org/licenses/.
  */
+/**
+ * @file state.hpp
+ * @author Ricerca Security <fuzzuf-dev@ricsec.co.jp>
+ */
 #ifndef FUZZUF_INCLUDE_ALGORITHM_NEZHA_STATE_HPP
 #define FUZZUF_INCLUDE_ALGORITHM_NEZHA_STATE_HPP
 #include "fuzzuf/feedback/put_exit_reason_type.hpp"
@@ -26,17 +30,16 @@ namespace fuzzuf::algorithm::nezha {
 
 /**
  * @class output_equal_to
- * @brief 2つのrangeが等しい事を確認するcallable object
+ * @brief callable object to check if two ranges are same
  */
 struct output_equal_to {
   /**
-   * @fn
-   * 2つのrangeが等しい事を確認する
-   * @tparm R1 1つめのrangeの型
-   * @tparm R2 2つめのrangeの型
-   * @param r1 1つめのrange
-   * @param r2 2つめのrange
-   * @return 等しい場合はtrueを返す。そうでない場合はfalseを返す。
+   * Return true if two ranges are same
+   * @tparam R1 Type of first range
+   * @tparam R2 Type of second range
+   * @param r1 First range
+   * @param r2 Second range
+   * @return true on same, Otherwise false.
    */
   template <typename R1, typename R2>
   bool operator()(const R1 &r1, const R2 &r2) const {
@@ -46,37 +49,36 @@ struct output_equal_to {
 
 /**
  * @class output_hash
- * @brief vectorのhashを求めるcallable object
+ * @brief callable object to calculate hash value of vector
  */
 struct output_hash {
   /**
-   * @fn
-   * vectorのhashを求める
-   * 実装はBoost.Hashそのまま
-   * @tparm R1 rangeの型
-   * @param r1 range
-   * @return ハッシュ値を返す
+   * calculate hash value of vector
+   * The implementation simply uses Boost.Hash
+   * @tparam R1 Type of range
+   * @param r1 Range
+   * @return hash value
    */
   template <typename R1> std::size_t operator()(const R1 &r1) const {
     return boost::hash<R1>()(r1);
   }
 };
 
-// 各ターゲットでの実行結果がcorpusに追加されたかどうかを記録するvector
+// Vector to store bools which indicate the execution result of each targets had been added to corpus or not
 using trace_t = std::vector<bool>;
-// trace_t型の値が既知の物かどうか判断するためのset
+// unordered set to check if a trace_t value is novel
 using known_traces_t =
     std::unordered_set<trace_t, output_hash, output_equal_to>;
 
-// 各ターゲットでの終了理由を記録するvector
+// Vector to store status code of each execution
 using status_t = std::vector<PUTExitReasonType>;
-// status_t型の値が既知の物かどうかを判断するためのset
+// unordered set to check if a status_t value is novel
 using known_status_t =
     std::unordered_set<status_t, output_hash, output_equal_to>;
 
-// 各ターゲットの標準出力のハッシュを記録するvector
+// Vector to store hash value of standard output produced by each target
 using outputs_t = std::vector<std::size_t>;
-// outputs_t型の値が既知の物かどうかを判断するためのset
+// unordered set to check if a outputs_t value is novel
 using known_outputs_t =
     std::unordered_set<outputs_t, output_hash, output_equal_to>;
 

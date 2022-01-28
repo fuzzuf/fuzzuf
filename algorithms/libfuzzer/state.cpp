@@ -15,6 +15,10 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see http://www.gnu.org/licenses/.
  */
+/**
+ * @file state.cpp
+ * @author Ricerca Security <fuzzuf-dev@ricsec.co.jp>
+ */
 #include "fuzzuf/algorithms/libfuzzer/state/state.hpp"
 #include "fuzzuf/algorithms/libfuzzer/utils.hpp"
 

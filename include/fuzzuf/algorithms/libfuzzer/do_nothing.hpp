@@ -15,12 +15,15 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see http://www.gnu.org/licenses/.
  */
+/**
+ * @file do_nothing.hpp
+ * @author Ricerca Security <fuzzuf-dev@ricsec.co.jp>
+ */
 #ifndef FUZZUF_INCLUDE_ALGORITHM_LIBFUZZER_DO_NOTHING_HPP
 #define FUZZUF_INCLUDE_ALGORITHM_LIBFUZZER_DO_NOTHING_HPP
 namespace fuzzuf::algorithm::libfuzzer {
 
 /**
- * @fn
  * A function accepting any arguments and does nothing.
  */
 template <typename... Args> void DoNothing(Args &&...) {}

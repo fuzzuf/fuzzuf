@@ -15,6 +15,10 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see http://www.gnu.org/licenses/.
  */
+/**
+ * @file dictionary.hpp
+ * @author Ricerca Security <fuzzuf-dev@ricsec.co.jp>
+ */
 #ifndef FUZZUF_INCLUDE_ALGORITHM_LIBFUZZER_HIERARFLOW_DICTIONARY_HPP
 #define FUZZUF_INCLUDE_ALGORITHM_LIBFUZZER_HIERARFLOW_DICTIONARY_HPP
 #include "fuzzuf/algorithms/libfuzzer/hierarflow/mutator_std_arg_order.hpp"
@@ -33,10 +37,10 @@ namespace fuzzuf::algorithm::libfuzzer {
  * @brief Insert or Overwrite value selected from the dictionary defined at the
  * node creation to the input specified by the Path. This node takes standard
  * mutator parameters( rng, input, max length and mutation history ).
- * @tparm F Function type to define what arguments passes through this node.
- * @tparm Dict Dictionary Type. Dictinary Type must be a container of
+ * @tparam F Function type to define what arguments passes through this node.
+ * @tparam Dict Dictionary Type. Dictinary Type must be a container of
  * BasicDictionaryEntry (reference container type) or compatible type.
- * @tparm Path Struct path to define which value to to use.
+ * @tparam Path Struct path to define which value to to use.
  */
 template <typename F, typename Dict, typename Path> class StaticDict {};
 template <typename R, typename... Args, typename Dict, typename Path>
@@ -45,16 +49,14 @@ class StaticDict<R(Args...), Dict, Path>
 public:
   FUZZUF_ALGORITHM_LIBFUZZER_HIERARFLOW_STANDARD_TYPEDEFS
   /**
-   * @fn
    * Constructor
    * All arguments are transfered to constructor of the dictionary
    */
   template <typename... T>
   StaticDict(T &&...args) : dict(std::forward<T>(args)...) {}
   /**
-   * @fn
    * This callable is called on HierarFlow execution
-   * @param args arguments
+   * @param args Arguments
    * @return direction of next node
    */
   callee_ref_t operator()(Args... args) {
@@ -81,8 +83,8 @@ using StaticDict = libfuzzer::StaticDict<F, Dict, StaticDictStdArgOrderT<Ord>>;
  * the Path to the input specified by the Path. This node takes 5 paths, 4 for
  * standard mutator parameters( rng, input, max length and mutation history )
  * and 1 for dictionary.
- * @tparm F Function type to define what arguments passes through this node.
- * @tparm Path Struct path to define which value to to use.
+ * @tparam F Function type to define what arguments passes through this node.
+ * @tparam Path Struct path to define which value to to use.
  */
 FUZZUF_ALGORITHM_LIBFUZZER_HIERARFLOW_SIMPLE_FUNCTION(DynamicDict,
                                                       mutator::Dictionary)
@@ -104,8 +106,8 @@ using DynamicDict = libfuzzer::DynamicDict<F, DynamicDictStdArgOrderT<Ord>>;
  * used dictionary words. The expected usage of this node is to update
  * persistent auto dictionary. This node takes 2 paths for dict and
  * dict_history.
- * @tparm F Function type to define what arguments passes through this node.
- * @tparm Path Struct path to define which value to to use.
+ * @tparam F Function type to define what arguments passes through this node.
+ * @tparam Path Struct path to define which value to to use.
  */
 FUZZUF_ALGORITHM_LIBFUZZER_HIERARFLOW_SIMPLE_FUNCTION(UpdateDictionary,
                                                       mutator::UpdateDictionary)

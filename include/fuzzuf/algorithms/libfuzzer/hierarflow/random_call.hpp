@@ -15,6 +15,10 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see http://www.gnu.org/licenses/.
  */
+/**
+ * @file random_call.hpp
+ * @author Ricerca Security <fuzzuf-dev@ricsec.co.jp>
+ */
 #ifndef FUZZUF_INCLUDE_ALGORITHM_LIBFUZZER_HIERARFLOW_RANDOM_CALL_HPP
 #define FUZZUF_INCLUDE_ALGORITHM_LIBFUZZER_HIERARFLOW_RANDOM_CALL_HPP
 #include "fuzzuf/algorithms/libfuzzer/hierarflow/simple_function.hpp"
@@ -36,8 +40,8 @@ namespace fuzzuf::algorithm::libfuzzer {
  * Since common random call implementation located in HierarFlow/Utility.hpp doesn't have ability to select RNG instance, this libFuzzer implementation cannot replace RandomCall to common version.
  * In this implementation, RNG algoritm must be selectable, due to some tests require RNG that produce deterministic values.
  *
- * @tparm F Function type to define what arguments passes through this node.
- * @tparm Path Struct path to define which value to to use.
+ * @tparam F Function type to define what arguments passes through this node.
+ * @tparam Path Struct path to define which value to to use.
  */
 template <typename F, typename Path> struct RandomCall {};
 template <typename R, typename... Args, typename Path>
@@ -46,17 +50,15 @@ class RandomCall<R(Args...), Path>
 public:
   FUZZUF_ALGORITHM_LIBFUZZER_HIERARFLOW_STANDARD_TYPEDEFS
   /**
-   * @fn
    * This callable is called on HierarFlow execution
-   * @param args arguments
+   * @param args Arguments
    * @return direction of next node
    */
   FUZZUF_ALGORITHM_LIBFUZZER_HIERARFLOW_NOP(RandomCall)
 private:
   /**
-   * @fn
    * Retrieve one random value, select one child node and invoke it.
-   * @param args arguments
+   * @param args Arguments
    * @return result of child node
    */
   virtual R CallSuccessors(Args... args) override {

@@ -33,7 +33,6 @@ namespace fuzzuf::algorithm::vuzzer::routine::mutation {
 Mutate::Mutate(VUzzerState &state) : state(state) {}
 
 /**
- * @fn
  * @brief Choose two seeds from seed_queue randomly, mutate and save them as new seeds in pending_queue.
  */
 VUzzerMutCalleeRef Mutate::operator()(void) {

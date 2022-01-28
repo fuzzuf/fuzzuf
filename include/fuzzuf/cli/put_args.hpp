@@ -17,5 +17,26 @@
  */
 #pragma once
 #include "fuzzuf/cli/command_line_args.hpp"
+#include "fuzzuf/exceptions.hpp"
 
-using PutArgs = CommandLineArgs;
+struct PutArgs {
+    std::vector<std::string> args;
+    int argc;
+
+    PutArgs(std::vector<std::string> args) :
+        args(args),
+        argc(args.size())
+        {}
+
+    void Check() {
+        if (args.size() == 0) {
+            throw exceptions::cli_error(Util::StrPrintf("Command line of PUT is not specified"), __FILE__, __LINE__);
+        }
+    }
+
+    std::vector<std::string>& Args() {
+        return this->args;
+    }
+};
+
+

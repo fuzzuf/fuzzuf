@@ -15,6 +15,10 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see http://www.gnu.org/licenses/.
  */
+/**
+ * @file sort_types.hpp
+ * @author Ricerca Security <fuzzuf-dev@ricsec.co.jp>
+ */
 #ifndef FUZZUF_INCLUDE_UTILS_SORT_TYPES_HPP
 #define FUZZUF_INCLUDE_UTILS_SORT_TYPES_HPP
 #include "fuzzuf/utils/type_traits/get_nth.hpp"
@@ -22,18 +26,18 @@
 #include <type_traits>
 
 namespace fuzzuf::utils::type_traits {
-/*
+/**
  * @class SortTypes
  * @brief
- * 型Tのテンプレート引数や関数の引数をOrderで指定された順に並べ替えた物を返すメタ関数
- * 例:
- * SortTypes< std::integral_sequence< int, 1, 2, 0 >, bool( int, float, double )
- * > これはbool( float, double, int )と同義 SortTypes< std::integral_sequence<
- * int, 2, 1, 0 >, std::tuple< int, float, double > > これはstd::tuple< double,
- * float, int >と同義
- * @tparm Order 型の順序を表すstd::integer_sequenceの型
- * @tparm U テンプレート引数を持つ型または関数の型
+ * Meta function to sort template parameters or function argument types in order specified by Order
+ * example:
+ * SortTypes< std::integral_sequence< int, 1, 2, 0 >, bool( int, float, double ) >
+ * This is equivalent to bool( float, double, int )
+ * SortTypes< std::integral_sequence< int, 2, 1, 0 >, std::tuple< int, float, double > >
+ * This is equivalent to std::tuple< double, float, int >
  *
+ * @tparam Order std::integer_sequence to define order
+ * @tparam U A type with template parameters or function type
  */
 template <typename Order, typename T> struct SortTypes {};
 

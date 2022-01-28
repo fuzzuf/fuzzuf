@@ -15,6 +15,10 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see http://www.gnu.org/licenses/.
  */
+/**
+ * @file insert_nth.hpp
+ * @author Ricerca Security <fuzzuf-dev@ricsec.co.jp>
+ */
 #ifndef FUZZUF_INCLUDE_UTILS_INSERT_NTH_HPP
 #define FUZZUF_INCLUDE_UTILS_INSERT_NTH_HPP
 #include <type_traits>
@@ -65,18 +69,18 @@ struct InsertNth<i, std::integer_sequence<T, values...>,
 
 } // namespace detail
 
-/*
+/**
  * @class InsertNth
  * @brief
- * 型Uのテンプレート引数や関数の引数のi番目の前にTを追加した型を返すメタ関数 例:
+ * Meta function to Insert T before i-th element of template parameters or function argument types
+ * example:
  * InsertNthT< 1, std::string, bool( int, float, double, char ) >
- * これは bool( int, std::string, float, double, char )と同義
+ * This is equivalent to bool( int, std::string, float, double, char )
  * InsertNthT< 2, std::string, std::tuple< int, float, double, char > >
- * これは std::tuple< int, float, std::string, double, char >と同義
- * @tparm i i番目の要素の前に挿入する
- * @tparm T この型を挿入する
- * @tparm U テンプレート引数を持つ型または関数の型
- *
+ * This is equivalent to std::tuple< int, float, std::string, double, char >
+ * @tparam i Insert before i-th element
+ * @tparam T Insert this type
+ * @tparam U A type with template parameters or function type
  */
 template <unsigned int i, typename T, typename U> struct InsertNth {};
 template <unsigned int i, typename T, template <typename...> typename L,

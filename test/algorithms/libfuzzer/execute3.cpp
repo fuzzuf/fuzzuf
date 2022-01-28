@@ -28,6 +28,9 @@
 #include <boost/test/unit_test.hpp>
 #include <config.h>
 #include <iostream>
+#include <boost/program_options.hpp>
+
+namespace po = boost::program_options;
 
 /**
  * fuzzufをCLIから実行した場合に近い方法でlibFuzzerを組み立て、libFuzzerのデフォルトのサイクル数だけ回し、その過程でサニタイザにかかったりabortしたりしないことを確認する
@@ -66,7 +69,21 @@ BOOST_AUTO_TEST_CASE(HierarFlowExecute) {
               std::ostreambuf_iterator<char>(fd));
   }
 
-  std::vector<std::string> args{"foo",
+  // Parse a sub-command
+  po::positional_options_description subcommand;
+  subcommand.add("fuzzer", 1);
+
+  // Define global options
+  po::options_description global_desc("Global options");
+  global_desc.add_options()
+      ("fuzzer", 
+          po::value<std::string>(), 
+          "Specify fuzzer to be used in your fuzzing campaign.")
+  ;
+
+  // Simulate command line args
+  std::vector<std::string> args{"fuzzuf", 
+                                "libfuzzer",
                                 "-target=" FUZZUF_FUZZTOYS_DIR
                                 "/fuzz_toys-brainf_ck",
                                 "-seed=1",
@@ -84,20 +101,25 @@ BOOST_AUTO_TEST_CASE(HierarFlowExecute) {
                                 "-shuffle=0",
                                 "-len_control=10",
                                 input_dir.string()};
+
   std::vector<const char *> cargs;
   cargs.reserve(args.size());
   std::transform(args.begin(), args.end(), std::back_inserter(cargs),
                  [](const auto &v) { return v.c_str(); });
-  FuzzerArgs wrapped_args;
-  wrapped_args.argc = int(cargs.size()) - 1;
-  wrapped_args.argv = std::next(cargs.data());
 
-  lf::LibFuzzer fuzzer(wrapped_args, GlobalFuzzerOptions(),
+  FuzzerArgs fargs { 
+    .argc = int(cargs.size()),
+    .argv = cargs.data(),
+    .global_options_description = global_desc,
+  };
+
+  lf::LibFuzzer fuzzer(fargs, GlobalFuzzerOptions(),
                        [](std::string &&m) { std::cout << m << std::flush; });
 
-  while (!fuzzer.end()) {
+  while (!fuzzer.ShouldEnd()) {
     fuzzer.OneLoop();
   }
+
   BOOST_TEST_CHECKPOINT("after execution");
   {
     const auto &create_info = fuzzer.get_create_info();

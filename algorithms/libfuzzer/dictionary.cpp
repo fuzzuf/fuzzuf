@@ -15,20 +15,23 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see http://www.gnu.org/licenses/.
  */
+/**
+ * @file dictionary.cpp
+ * @author Ricerca Security <fuzzuf-dev@ricsec.co.jp>
+ */
 #include "fuzzuf/algorithms/libfuzzer/dictionary.hpp"
 #include "fuzzuf/utils/afl_dict_parser.hpp"
+
+#include <iostream>
 
 namespace fuzzuf::algorithm::libfuzzer::dictionary {
 
 /**
- * @fn
- * filenameで指定されたAFL辞書をdestにロードする
- * destに最初から要素がある場合、ロードした内容は既にある要素の後ろにinsertされる
- * @brief filenameで指定されたAFL辞書をdestにロードする
- * @param filename ファイル名
- * @param dest ロードした内容の出力先
- * @param eout
- * ファイルのパースに失敗した場合にエラーメッセージが文字列で渡ってくるコールバック
+ * Load AFL compatible dictionary from specified file.
+ * If dest has initial values, loaded contents are inserted at end of existing entries.
+ * @param filename Filename of dictionary
+ * @param dest Static dictionary to store loaded entries
+ * @param eout Callable with one string argument to display error message on parse failure
  */
 void Load(const std::string &filename_, StaticDictionary &dest, bool strict,
           const std::function<void(std::string &&)> &eout) {
@@ -36,14 +39,11 @@ void Load(const std::string &filename_, StaticDictionary &dest, bool strict,
 }
 
 /**
- * @fn
- * filenameで指定されたAFL辞書をdestにロードする
- * destに最初から要素がある場合、ロードした内容は既にある要素の後ろにinsertされる
- * @brief filenameで指定されたAFL辞書をdestにロードする
- * @param filename ファイル名
- * @param dest ロードした内容の出力先
- * @param eout
- * ファイルのパースに失敗した場合にエラーメッセージが文字列で渡ってくるコールバック
+ * Load AFL compatible dictionary from specified file.
+ * If dest has initial values, loaded contents are inserted at end of existing entries.
+ * @param filename Filename of dictionary
+ * @param dest Dynamic dictionary to store loaded entries
+ * @param eout Callable with one string argument to display error message on parse failure
  */
 void Load(const std::string &filename_, DynamicDictionary &dest, bool strict,
           const std::function<void(std::string &&)> &eout) {
@@ -51,13 +51,11 @@ void Load(const std::string &filename_, DynamicDictionary &dest, bool strict,
 }
 
 /**
- * @fn
- * pathsで指定されたAFL辞書を順番にdestにロードする
- * destに最初から要素がある場合、ロードした内容は既にある要素の後ろにinsertされる
- * @param paths AFL辞書へのパスを要素とするrange
- * @param dest ロードした内容の出力先
- * @param eout
- * ファイルのパースに失敗した場合にエラーメッセージが文字列で渡ってくるコールバック
+ * Load AFL compatible dictionary files specified by paths.
+ * If dest has initial values, loaded contents are inserted at end of existing entries.
+ * @param paths Range of path to dictionary file
+ * @param dest Static dictionary to store loaded entries
+ * @param eout Callable with one string argument to display error message on parse failure
  */
 void Load(const std::vector<fs::path> &paths, StaticDictionary &dest,
           bool strict, const std::function<void(std::string &&)> &eout) {
@@ -67,13 +65,11 @@ void Load(const std::vector<fs::path> &paths, StaticDictionary &dest,
 }
 
 /**
- * @fn
- * pathsで指定されたAFL辞書を順番にdestにロードする
- * destに最初から要素がある場合、ロードした内容は既にある要素の後ろにinsertされる
- * @param paths AFL辞書へのパスを要素とするrange
- * @param dest ロードした内容の出力先
- * @param eout
- * ファイルのパースに失敗した場合にエラーメッセージが文字列で渡ってくるコールバック
+ * Load AFL compatible dictionary files specified by paths.
+ * If dest has initial values, loaded contents are inserted at end of existing entries.
+ * @param paths Range of path to dictionary file
+ * @param dest Dynamic dictionary to store loaded entries
+ * @param eout Callable with one string argument to display error message on parse failure
  */
 void Load(const std::vector<fs::path> &paths, DynamicDictionary &dest,
           bool strict, const std::function<void(std::string &&)> &eout) {

@@ -33,84 +33,35 @@
 #include "fuzzuf/cli/fuzzer/vuzzer/build_vuzzer_from_args.hpp"
 
 #define Argc(argv) (sizeof(argv) / sizeof(char *))
+#define UNUSED(x) (void)(x)
 
 GlobalFuzzerOptions default_options; // Default value goes here
 
-BOOST_AUTO_TEST_CASE(TheLeanMeanCPPOptPerser_CheckSpec) {
-    GlobalFuzzerOptions options;
-    options.fuzzer = "xyz";
-
-    #pragma GCC diagnostic ignored "-Wwrite-strings"
-    const char *argv[] = {"--in_dir=test-in", "--out_dir=test-out", "--exec_timelimit_ms=123", "--exec_memlimit=456", "--", "--some-afl-option=true"};
-    GlobalArgs args = {
-        .argc = Argc(argv),
-        .argv = argv,
-    };
-    FuzzerArgs fuzzer_args = ParseGlobalOptionsForFuzzer(args, options);
-
-    DEBUG("[*] &argv[5] = %p", &argv[5]);
-    DEBUG("[*] fuzzer_args.argv = %p", fuzzer_args.argv);
-
-    BOOST_CHECK_EQUAL(fuzzer_args.argc, 1);
-    BOOST_CHECK_EQUAL(fuzzer_args.argv, &argv[5]);
-}
-
 BOOST_AUTO_TEST_CASE(ParseGlobalFuzzerOptions_AllOptions) {
     GlobalFuzzerOptions options;
-    options.fuzzer = "xyz";
 
     #pragma GCC diagnostic ignored "-Wwrite-strings"
-    const char *argv[] = {"--in_dir=test-in", "--out_dir=test-out", "--exec_timelimit_ms=123", "--exec_memlimit=456", "--", "--some-afl-option=true"};
+    const char *argv[] = {"fuzzuf", "fuzzer", "--in_dir=test-in", "--out_dir=test-out", "--exec_timelimit_ms=123", "--exec_memlimit=456"};
     GlobalArgs args = {
         .argc = Argc(argv),
         .argv = argv,
     };
     FuzzerArgs fuzzer_args = ParseGlobalOptionsForFuzzer(args, options);
 
-    // Check if `options` reflects `argv`
-    BOOST_CHECK_EQUAL(options.in_dir, "test-in");
-    BOOST_CHECK_EQUAL(options.out_dir, "test-out");
-    BOOST_CHECK_EQUAL(options.exec_timelimit_ms.value(), 123);
-    BOOST_CHECK_EQUAL(options.exec_memlimit.value(), 456);
-
-    // Check if `fuzzer` is not affected
-    BOOST_CHECK_EQUAL(options.fuzzer, "xyz");
-
-    // Check if FuzzerArgs contains command line options for a fuzzer
-    BOOST_CHECK_EQUAL(fuzzer_args.argc, 1);
-    BOOST_CHECK_EQUAL(fuzzer_args.argv[0], "--some-afl-option=true");
-}
-
-BOOST_AUTO_TEST_CASE(ParseAFLFuzzerOptions_AllOptions){
-    GlobalFuzzerOptions options;
-    options.fuzzer = "afl";
-
-    #pragma GCC diagnostic ignored "-Wwrite-strings"
-    const char *argv[] = {"--in_dir=test-in", "--out_dir=test-out", "--exec_timelimit_ms=123", "--exec_memlimit=456", "--", "--dict_file=aaa.dict"};
-    GlobalArgs args = {
-        .argc = Argc(argv),
-        .argv = argv,
-    };
-    FuzzerArgs fuzzer_args = ParseGlobalOptionsForFuzzer(args, options);
+    // Check if fuzzer is captured
+    BOOST_CHECK_EQUAL(options.fuzzer, "fuzzer");
 
     // Check if `options` reflects `argv`
     BOOST_CHECK_EQUAL(options.in_dir, "test-in");
     BOOST_CHECK_EQUAL(options.out_dir, "test-out");
     BOOST_CHECK_EQUAL(options.exec_timelimit_ms.value(), 123);
     BOOST_CHECK_EQUAL(options.exec_memlimit.value(), 456);
-
-    // Check if `fuzzer` is not affected
-    BOOST_CHECK_EQUAL(options.fuzzer, "afl");
-
-    // Check if FuzzerArgs contains command line options for a fuzzer
-    BOOST_CHECK_EQUAL(fuzzer_args.argc, 1);
-    BOOST_CHECK_EQUAL(fuzzer_args.argv[0], "--dict_file=aaa.dict");
 }
 
-BOOST_AUTO_TEST_CASE(ParseGlobalFuzzerOptions_DirsAreBlank) {
+BOOST_AUTO_TEST_CASE(ParseGlobalFuzzerOptions_InOutDirsAreBlank) {
     GlobalFuzzerOptions options;
     #pragma GCC diagnostic ignored "-Wwrite-strings"
-    const char *argv[] = {"--exec_timelimit_ms=123", "--exec_memlimit=456", "--"};
+    const char *argv[] = {"fuzzuf", "fuzzer", "--exec_timelimit_ms=123", "--exec_memlimit=456", "--"};
     GlobalArgs args = {
         .argc = Argc(argv),
         .argv = argv,
@@ -122,10 +73,10 @@ BOOST_AUTO_TEST_CASE(ParseGlobalFuzzerOptions_DirsAreBlank) {
     BOOST_CHECK_EQUAL(options.out_dir, default_options.out_dir);
 }
 
-BOOST_AUTO_TEST_CASE(ParseGlobalFuzzerOptions_NoLogOption) {
+BOOST_AUTO_TEST_CASE(ParseGlobalFuzzerOptions_NoLogFileSpecified) {
     GlobalFuzzerOptions options;
     #pragma GCC diagnostic ignored "-Wwrite-strings"
-    const char *argv[] = {"--"};
+    const char *argv[] = {"fuzzuf", "fuzzer", "--"};
     GlobalArgs args = {
         .argc = Argc(argv),
         .argv = argv,
@@ -138,7 +89,7 @@ BOOST_AUTO_TEST_CASE(ParseGlobalFuzzerOptions_NoLogOption) {
 BOOST_AUTO_TEST_CASE(ParseGlobalFuzzerOptions_LogFileSpecified) {
     GlobalFuzzerOptions options;
     #pragma GCC diagnostic ignored "-Wwrite-strings"
-    const char *argv[] = {"--log_file=5rC3kk6PzF5P2sPs.log", "--"};
+    const char *argv[] = {"fuzzuf", "fuzzer", "--log_file=5rC3kk6PzF5P2sPs.log", "--"};
     GlobalArgs args = {
         .argc = Argc(argv),
         .argv = argv,
@@ -150,48 +101,48 @@ BOOST_AUTO_TEST_CASE(ParseGlobalFuzzerOptions_LogFileSpecified) {
     BOOST_CHECK_EQUAL(options.log_file.value().string(), "5rC3kk6PzF5P2sPs.log");
 }
 
-inline void BaseSenario_ParseGlobalFuzzerOptions_WithWrongOption(
-    const char test_case_name[], GlobalArgs &args, GlobalFuzzerOptions &options) {
-    try {
-        ParseGlobalOptionsForFuzzer(args, options);
+inline void BaseSenario_ParseGlobalFuzzerOptions_WithUnregisteredOption(
+    const char test_case_name[], GlobalArgs &args, GlobalFuzzerOptions &options) 
+{
+    UNUSED(test_case_name);
 
-        BOOST_ASSERT_MSG(false, "cli_error should be thrown in this test case");
-    } catch (const exceptions::cli_error &e) {
-        // Exception has been thrown. This test case passed
-        const char expected_cli_error_message[] = "Unknown option or missing handler for option";
-        BOOST_CHECK_EQUAL(strncmp(e.what(), expected_cli_error_message, strlen(expected_cli_error_message)), 0);
-        DEBUG("[*] Caught cli_error as expected: %s: %s at %s:%d", test_case_name, e.what(), e.file, e.line);
-    }
+    // Any of exceptions should not be thrown. ParseGlobalOptionsForFuzzer ignores unregistered options while parsing.
+    ParseGlobalOptionsForFuzzer(args, options);
 }
 
-BOOST_AUTO_TEST_CASE(ParseGlobalFuzzerOptions_WithWrongOption_Case1) {
+BOOST_AUTO_TEST_CASE(ParseGlobalFuzzerOptions_WithUnregisteredOption_Case1) {
     GlobalFuzzerOptions options;
     #pragma GCC diagnostic ignored "-Wwrite-strings"
-    const char *argv[] = {"--in_dir=in", "--no-such-option"};
+    const char *argv[] = {"fuzzuf", "fuzzer", "--in_dir=in", "--no-such-option"};
     GlobalArgs args = {
         .argc = Argc(argv),
         .argv = argv,
     };
-    BaseSenario_ParseGlobalFuzzerOptions_WithWrongOption("ParseGlobalFuzzerOptions_WithWrongOption_Case1", args, options);
+    BaseSenario_ParseGlobalFuzzerOptions_WithUnregisteredOption("ParseGlobalFuzzerOptions_WithUnregisteredOption_Case1", args, options);
 }
 
-BOOST_AUTO_TEST_CASE(ParseGlobalFuzzerOptions_WithWrongOption_Case2) {
+BOOST_AUTO_TEST_CASE(ParseGlobalFuzzerOptions_WithUnregisteredOption_Case2) {
     GlobalFuzzerOptions options;
     #pragma GCC diagnostic ignored "-Wwrite-strings"
-    const char *argv[] = {"--in_dir=in", "--no-such-option", "--out_dir=out"}; // Sandwitch
+    const char *argv[] = {"fuzzuf", "fuzzer", "--in_dir=in", "--no-such-option", "--out_dir=out"}; // Sandwitch unregistered option
     GlobalArgs args = {
         .argc = Argc(argv),
         .argv = argv,
     };
-    BaseSenario_ParseGlobalFuzzerOptions_WithWrongOption("ParseGlobalFuzzerOptions_WithWrongOption_Case2", args, options);
+    BaseSenario_ParseGlobalFuzzerOptions_WithUnregisteredOption("ParseGlobalFuzzerOptions_WithUnregisteredOption_Case2", args, options);
 }
 
 BOOST_AUTO_TEST_CASE(BuildAFLByParsingGlobalOptionAndPUT) {
     GlobalFuzzerOptions options;
     #pragma GCC diagnostic ignored "-Wwrite-strings"
     const char *argv[] = {
-        "--in_dir=gS53LCfbAhunlziS", // Global options
-        // PUT. Because NativeLinuxExecutor throws error,
+        "fuzzuf",
+        "afl",
+        // Global options
+        "--in_dir=gS53LCfbAhunlziS", 
+        "--forksrv=false",
+        // PUT options. 
+        // Because NativeLinuxExecutor throws error,
         // we can't use a random value here.
         "../put_binaries/command_wrapper", // PUT
         "Jpx1kB6oh8N9wUe0" // arguments
@@ -217,14 +168,63 @@ BOOST_AUTO_TEST_CASE(BuildAFLByParsingGlobalOptionAndPUT) {
     BOOST_CHECK_EQUAL(state.setting->argv[1], "Jpx1kB6oh8N9wUe0");
 }
 
+BOOST_AUTO_TEST_CASE(BuildAFLByParsingGlobalOptionAndFuzzerOptionAndPUT) {
+    GlobalFuzzerOptions options;
+    #pragma GCC diagnostic ignored "-Wwrite-strings"
+    const char *argv[] = {
+        "fuzzuf",
+        "afl",
+        // Global options
+        "--in_dir=u4I8Vq8mMTaCE5CH", 
+        "--forksrv=false",
+        // Fuzzer options
+        "--dict_file=" TEST_DICTIONARY_DIR "/test.dict",
+        // PUT options. 
+        // Because NativeLinuxExecutor throws error,
+        // we can't use a random value here.
+        "../put_binaries/command_wrapper", // PUT
+        "f996ko6rvPgSajvm" // arguments
+        };
+    GlobalArgs args = {
+        .argc = Argc(argv),
+        .argv = argv,
+    };
+
+    using AFLState = fuzzuf::algorithm::afl::AFLState;
+
+    // Parse global options and PUT, and build fuzzer
+    auto fuzzer_args = ParseGlobalOptionsForFuzzer(args, options);
+    auto fuzzer = BuildAFLFuzzerFromArgs<AFLFuzzerStub<AFLState>, AFLFuzzerStub<AFLState>>(
+            fuzzer_args, options
+        );
+
+    // Check if global option is captured correctly
+    BOOST_CHECK_EQUAL(options.in_dir, "u4I8Vq8mMTaCE5CH");
+
+    auto& state = *fuzzer->state;
+
+    // Check if fuzzer option (dict_file) is captured correctly, and dict file has been loaded
+    BOOST_CHECK_EQUAL(state.extras.size(), 3);
+
+    // Check if PUT args are captured correctly
+    BOOST_CHECK_EQUAL(state.setting->argv.size(), 2);
+    BOOST_CHECK_EQUAL(state.setting->argv[0], "../put_binaries/command_wrapper");
+    BOOST_CHECK_EQUAL(state.setting->argv[1], "f996ko6rvPgSajvm");
+}
+
 BOOST_AUTO_TEST_CASE(BuildAFLFastByParsingGlobalOptionAndPUT) {
     using AFLFastState = fuzzuf::algorithm::aflfast::AFLFastState;
     GlobalFuzzerOptions options;
     #pragma GCC diagnostic ignored "-Wwrite-strings"
     // 本来はschedule用のオプションもテストされるべきだが、CLI側の改修が必要なので一旦放置
     const char *argv[] = {
-        "--in_dir=chahz3ea4deRah4o", // Global options
-        // PUT. Because NativeLinuxExecutor throws error,
+        "fuzzuf",
+        "aflfast",
+        // Global options
+        "--in_dir=chahz3ea4deRah4o", 
+        "--forksrv=false",
+        // PUT options. 
+        // Because NativeLinuxExecutor throws error,
         // we can't use a random value here.
         "../put_binaries/command_wrapper", // PUT
         "oung6UgoQue1eiYu" // arguments
@@ -248,17 +248,18 @@ BOOST_AUTO_TEST_CASE(BuildAFLFastByParsingGlobalOptionAndPUT) {
     BOOST_CHECK_EQUAL(state.setting->argv[1], "oung6UgoQue1eiYu");
 }
 
-// もしAFL向けのオプションを追加したら、それの正常動作を確認するテストケースを追加してくださいね
+// NOTE: もしAFL向けのオプションを追加したら、それの正常動作を確認するテストケースを追加してくださいね
+
 BOOST_AUTO_TEST_CASE(BuildVUzzerByParsingGlobalOptionAndPUT) {
     using VUzzerState = fuzzuf::algorithm::vuzzer::VUzzerState;
     GlobalFuzzerOptions options;
     #pragma GCC diagnostic ignored "-Wwrite-strings"
     
     const char *argv[] = {
-        "--in_dir=1yGosmSge1Fb4pNA", // Global options
-        // PUT. Because NativeLinuxExecutor throws error,
-        // we can't use a random value here.
-        "--",
+        "fuzzuf",
+        "vuzzer",
+        // Global options
+        "--in_dir=1yGosmSge1Fb4pNA", 
         "--weight=db05iKsZORKkxela",
         "--full_dict=SNqUXXzGJqyE78SC",
         "--unique_dict=lz025YtrYx3hLoYO",
@@ -266,6 +267,9 @@ BOOST_AUTO_TEST_CASE(BuildVUzzerByParsingGlobalOptionAndPUT) {
         "--taint_db=dKiBtlnutZAUczkS",
         "--taint_out=a85cZxCSaxkpewYb",
         "--",
+        // PUT options. 
+        // Because NativeLinuxExecutor throws error,
+        // we can't use a random value here.
         "../put_binaries/command_wrapper", // PUT
         "HQ5lspLelPJPEC35" // arguments
         };

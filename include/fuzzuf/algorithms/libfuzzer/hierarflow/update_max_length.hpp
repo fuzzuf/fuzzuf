@@ -15,6 +15,10 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see http://www.gnu.org/licenses/.
  */
+/**
+ * @file update_max_length.hpp
+ * @author Ricerca Security <fuzzuf-dev@ricsec.co.jp>
+ */
 #ifndef FUZZUF_INCLUDE_ALGORITHM_LIBFUZZER_HIERARFLOW_UPDATE_MAX_LENGTH_HPP
 #define FUZZUF_INCLUDE_ALGORITHM_LIBFUZZER_HIERARFLOW_UPDATE_MAX_LENGTH_HPP
 #include "fuzzuf/algorithms/libfuzzer/hierarflow/simple_function.hpp"
@@ -30,8 +34,8 @@ namespace fuzzuf::algorithm::libfuzzer {
  *
  * The node takes 3 path for current max length, current runs count and last
  * corpus update run.
- * @tparm F Function type to define what arguments passes through this node.
- * @tparm Path Struct path to define which value to to use.
+ * @tparam F Function type to define what arguments passes through this node.
+ * @tparam Path Struct path to define which value to to use.
  */
 template <typename F, typename Path> struct UpdateMaxLength {};
 template <typename R, typename... Args, typename Path>
@@ -40,7 +44,6 @@ class UpdateMaxLength<R(Args...), Path>
 public:
   FUZZUF_ALGORITHM_LIBFUZZER_HIERARFLOW_STANDARD_TYPEDEFS
   /**
-   * @fn
    * Constructor
    * All arguments are transfered to constructor of the append value
    */
@@ -48,9 +51,8 @@ public:
   UpdateMaxLength(std::size_t max_length_, std::size_t len_control_)
       : max_length(max_length_), len_control(len_control_) {}
   /**
-   * @fn
    * This callable is called on HierarFlow execution
-   * @param args arguments
+   * @param args Arguments
    * @return direction of next node
    */
   callee_ref_t operator()(Args... args) {

@@ -15,6 +15,10 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see http://www.gnu.org/licenses/.
  */
+/**
+ * @file repeat_until_mutated.hpp
+ * @author Ricerca Security <fuzzuf-dev@ricsec.co.jp>
+ */
 #ifndef FUZZUF_INCLUDE_ALGORITHM_LIBFUZZER_HIERARFLOW_REPEAT_UNTIL_MUTATED_HPP
 #define FUZZUF_INCLUDE_ALGORITHM_LIBFUZZER_HIERARFLOW_REPEAT_UNTIL_MUTATED_HPP
 #include "fuzzuf/algorithms/libfuzzer/hierarflow/simple_function.hpp"
@@ -33,8 +37,8 @@ namespace fuzzuf::algorithm::libfuzzer {
  * mutation history is recorded only if mutation succeeded, total loop count can
  * be larger than expected mutation count. This node modifies flow. The node
  * takes 1 path for mutation history
- * @tparm F Function type to define what arguments passes through this node.
- * @tparm Path Struct path to define which value to to use.
+ * @tparam F Function type to define what arguments passes through this node.
+ * @tparam Path Struct path to define which value to to use.
  */
 template <typename F, typename Path> struct RepeatUntilMutated {};
 template <typename R, typename... Args, typename Path>
@@ -43,17 +47,15 @@ class RepeatUntilMutated<R(Args...), Path>
 public:
   FUZZUF_ALGORITHM_LIBFUZZER_HIERARFLOW_STANDARD_TYPEDEFS
   /**
-   * @fn
    * Constructor
-   * @param expected_ expected mutation counts
-   * @param max_ max try counts
+   * @param expected_ Expected mutation counts
+   * @param max_ Max try counts
    */
   RepeatUntilMutated(std::size_t expected_, std::size_t max_)
       : expected(expected_), max(max_) {}
   /**
-   * @fn
    * This callable is called on HierarFlow execution
-   * @param args arguments
+   * @param args Arguments
    * @return direction of next node
    */
   callee_ref_t operator()(Args... args) {

@@ -54,6 +54,7 @@ public:
     void OneLoop(void);
   
     void ReceiveStopSignal(void);
+    bool ShouldEnd(void) { return false; }
 
 private:    
     // We need std::unique_ptr because we have to make the construction of these variables "delayed"

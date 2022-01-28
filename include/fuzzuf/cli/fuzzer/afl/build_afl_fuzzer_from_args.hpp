@@ -25,77 +25,81 @@
 #include "fuzzuf/algorithms/afl/afl_setting.hpp"
 #include "fuzzuf/algorithms/afl/afl_state.hpp"
 #include "fuzzuf/executor/native_linux_executor.hpp"
+#include <boost/program_options.hpp>
 
-inline void CheckIfOptionHasValue(option::Option &opt) {
-    if (!opt.arg) {
-        throw exceptions::cli_error(Util::StrPrintf("Option %s does not have value", opt.name), __FILE__, __LINE__);
-    }
-}
+namespace po = boost::program_options;
 
 struct AFLFuzzerOptions {
-    std::string dict_file;
+    bool forksrv;                           // Optional
+    std::string dict_file;                  // Optional
 
     // Default values
     AFLFuzzerOptions() : 
+        forksrv(true),
         dict_file("")
         {};
 };
 
+namespace fuzzuf::cli::fuzzer::afl {
+
+// Fuzzer specific help
+// TODO: Provide better help message
+static void usage(po::options_description &desc) {
+    std::cout << "Help:" << std::endl;
+    std::cout << desc << std::endl;
+    exit(1);
+}
+
+}
+
 // Used only for CLI
 template <class TFuzzer, class TAFLFuzzer>
-std::unique_ptr<TFuzzer> BuildAFLFuzzerFromArgs(FuzzerArgs &fuzzer_args, GlobalFuzzerOptions &global_options) {
-    enum optionIndex {
-        DictFile
-    };
-
-    const option::Descriptor usage[] = {
-        {optionIndex::DictFile, 0, "", "dict_file", option::Arg::Optional, "    --dict_file DICTIONARY_FILE \tLoad additional dictionary file."},
-        {0, 0, 0, 0, 0, 0}
-    };
-
-    option::Stats  stats(usage, fuzzer_args.argc, fuzzer_args.argv);
-    option::Option options[stats.options_max], buffer[stats.buffer_max];
-    option::Parser parse(usage, fuzzer_args.argc, fuzzer_args.argv, options, buffer);
+std::unique_ptr<TFuzzer> BuildAFLFuzzerFromArgs(
+    FuzzerArgs &fuzzer_args, 
+    GlobalFuzzerOptions &global_options
+) {
+    po::positional_options_description pargs_desc;
+    pargs_desc.add("fuzzer", 1);
+    pargs_desc.add("pargs", -1);
 
     AFLFuzzerOptions afl_options;
 
-    // Trace level log
-    // DEBUG("[*] ParseAFLOptionsForFuzzer: argc = %d", fuzzer_args.argc);
-    // DEBUG("[*] ParseAFLOptionsForFuzzer: parse.optionsCount() = %d", parse.optionsCount());
-    // DEBUG("[*] ParseAFLOptionsForFuzzer: parse.nonOptionsCount() = %d", parse.nonOptionsCount());
+    po::options_description fuzzer_desc("AFL options");
+    std::vector<std::string> pargs;
+    fuzzer_desc.add_options()
+        ("forksrv", 
+            po::value<bool>(&afl_options.forksrv)->default_value(afl_options.forksrv), 
+            "Enable/disable fork server mode. default is true.")
+        ("dict_file", 
+            po::value<std::string>(&afl_options.dict_file), 
+            "Load additional dictionary file.")
+        ("pargs", 
+            po::value<std::vector<std::string>>(&pargs), 
+            "Specify PUT and args for PUT.")
+    ;
 
+    po::variables_map vm;
+    po::store(
+        po::command_line_parser(fuzzer_args.argc, fuzzer_args.argv)
+            .options(fuzzer_args.global_options_description.add(fuzzer_desc))
+            .positional(pargs_desc)
+            .run(), 
+        vm
+        );
+    po::notify(vm);
 
-    if (parse.error()) {
-        throw exceptions::cli_error(Util::StrPrintf("Failed to parse AFL command line"), __FILE__, __LINE__);
+    if (global_options.help) {
+        fuzzuf::cli::fuzzer::afl::usage(fuzzer_args.global_options_description);
     }
 
-
-
-    for (int i = 0; i < parse.optionsCount(); ++i) {
-        option::Option& opt = buffer[i];
-
-        switch(opt.index()) {
-            case optionIndex::DictFile: {
-                CheckIfOptionHasValue(opt);
-                afl_options.dict_file = opt.arg;
-                break;
-            }
-            default: {
-                throw exceptions::cli_error(
-                    Util::StrPrintf("Unknown option or missing handler for option \"%s\"", opt.name),
-                    __FILE__, __LINE__);
-            }
-        }
-    }
-
-    PutArgs put = {
-        .argc = parse.nonOptionsCount(),
-        .argv = parse.nonOptions()
-    };
-
-    if (put.argc == 0) {
-        throw exceptions::cli_error(Util::StrPrintf("Command line of PUT is not specified"), __FILE__, __LINE__);
-    }
+    PutArgs put(pargs);
+    try {
+        put.Check();
+    } catch (const exceptions::cli_error &e) {
+        std::cerr << "[!] " << e.what() << std::endl;
+        std::cerr << "\tat " << e.file << ":" << e.line << std::endl;
+        fuzzuf::cli::fuzzer::afl::usage(fuzzer_args.global_options_description);
+    } 
 
     // Trace level log
     DEBUG("[*] PUT: put = [");
@@ -117,7 +121,7 @@ std::unique_ptr<TFuzzer> BuildAFLFuzzerFromArgs(FuzzerArgs &fuzzer_args, GlobalF
                         global_options.out_dir,
                         global_options.exec_timelimit_ms.value_or(GetExecTimeout<AFLTag>()),
                         global_options.exec_memlimit.value_or(GetMemLimit<AFLTag>()),
-                        /* forksrv */   true, // FIXME: support non fork server mode also
+                        afl_options.forksrv,
                         /* dumb_mode */ false,  // FIXME: add dumb_mode
                         NativeLinuxExecutor::CPUID_BIND_WHICHEVER
                     );

@@ -27,3 +27,11 @@ test/instrument以下のREADMEに記載があるため、そちらを参照。
 したがって、「instrumentを挿入したプログラムが、内部でexecv関数を利用して"/bin/cat"を呼び出す」という形のwrapperを噛ませることで対処することとした。
 このwrapperに相当するのがcommand\_wrapperである。
 ソースコードはこのディレクトリのcommand\_wrapper.cpp。
+
+# quickjs/qjs
+[QuickJS](https://bellard.org/quickjs/) compiled by afl-gcc for testing JavaScript fuzzers such as DIE.
+
+The QuickJS we're using is the 2021-03-27 release, which has the commit ID `b5e62895c619d4ffc75c9d822c8d85f1ece77e5b` and is compiled by the following command:
+```bash
+make CC=afl-gcc
+```

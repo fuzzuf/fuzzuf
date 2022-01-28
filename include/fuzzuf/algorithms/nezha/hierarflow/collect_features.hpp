@@ -15,6 +15,10 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see http://www.gnu.org/licenses/.
  */
+/**
+ * @file collect_features.hpp
+ * @author Ricerca Security <fuzzuf-dev@ricsec.co.jp>
+ */
 #ifndef FUZZUF_INCLUDE_ALGORITHM_NEZHA_HIERARFLOW_COLLECT_FEATURES_HPP
 #define FUZZUF_INCLUDE_ALGORITHM_NEZHA_HIERARFLOW_COLLECT_FEATURES_HPP
 #include "fuzzuf/algorithms/nezha/executor/collect_features.hpp"
@@ -27,18 +31,17 @@
 namespace fuzzuf::algorithm::nezha {
 /**
  * @class CollectFeatures
- * @brief ターゲットの実行結果をもとにfeaturesを求める
- * featureとは実行結果の際立った特徴にユニークなIDを与えたもので、主に未到達edgeに到達した場合がこれに該当する
- * featuresはこの実行結果のfeatureを並べたベクタで、libFuzzerはfeaturesに基づいてその入力がChooseRandomSeedで選ばれる確率を変化させる
- * 計算結果はexec_result_index番目の引数に置かれた実行結果の詳細に書かれる
- * @tparm F このノードを通る引数を定義するための関数型
- * @tparm state_index
- * state_index番目の引数をState型とみなしてそこから計算方法に関わる設定を得る
- * @tparm input_index input_index番目の引数を入力値が入ったrangeと見做す
- * @tparm coverage_index coverage_index番目の引数をedge
- * coverageが入ったrangeと見做す
- * @tparm exec_result_index
- * exec_result_index番目の引数を実行結果の詳細が入ったInputInfo型と見做す
+ * @brief Calculate features according to specified execution result.
+ * "Feature" is a outstanding feature of the execution which has unique ID. In
+ * most case, entering a new edge that is not covered by previous executions is
+ * a feature. "Features" is a vector of feature. libFuzzer calculate weight of
+ * the execution result that affects by features. If ChooseRandomSeed is using
+ * non-uniform distribution, input of higher weighted execution result is
+ * selected more frequentry. The node takes 5 paths for state, corpus, input,
+ * execution result and coverage.
+ *
+ * @tparam F Function type to define what arguments passes through this node.
+ * @tparam Path Struct path to define which value to to use.
  */
 template <typename F, typename Path> struct CollectFeatures {};
 template <typename R, typename... Args, typename Path>
@@ -47,16 +50,15 @@ struct CollectFeatures<R(Args...), Path>
 public:
   FUZZUF_ALGORITHM_LIBFUZZER_HIERARFLOW_STANDARD_TYPEDEFS
   /**
-   * コンストラクタ
-   * @param module_offset
-   * カバレッジのfeatureのオフセット。あるedgeを通過している事を表すfeatureはカバレッジの先頭からそのedgeまでのバイト数とedgeを通った回数から計算される。ライブラリを動的リンクしている場合や、複数のターゲットの実行結果を扱う場合、異なるカバレッジのfeatureが同じIDにならないように、カバレッジの先頭のedgeを何バイト目のedgeと見做すかを指定する必要がある
+   * Constructor
+   * @param module_offset_ Offset value of feature. if module_offset is 3000 and cov[ 2 ] is non zero value, the feature 3002 is activated.
    */
   CollectFeatures(std::uint32_t module_offset_ = 0)
       : module_offset(module_offset_) {}
   /**
-   * HierarFlowの実行時に呼び出される関数
-   * @param args 引数
-   * @return グラフの進行方向
+   * This callable is called on HierarFlow execution
+   * @param args Arguments
+   * @return direction of next node
    */
   callee_ref_t operator()(Args... args) {
     FUZZUF_ALGORITHM_LIBFUZZER_HIERARFLOW_CHECKPOINT("CollectFeatures", enter)

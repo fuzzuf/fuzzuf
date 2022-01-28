@@ -15,6 +15,10 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see http://www.gnu.org/licenses/.
  */
+/**
+ * @file options.cpp
+ * @author Ricerca Security <fuzzuf-dev@ricsec.co.jp>
+ */
 #include "fuzzuf/algorithms/libfuzzer/cli_compat/options.hpp"
 #include "fuzzuf/algorithms/libfuzzer/calc_max_length.hpp"
 #include "fuzzuf/algorithms/libfuzzer/corpus/add_to_initial_exec_input_set.hpp"
@@ -32,8 +36,7 @@ auto createOptions(Options &dest)
                   boost::program_options::positional_options_description> {
   namespace po = boost::program_options;
   po::options_description desc("Options");
-  desc.add_options()("help", po::value<int>(&dest.help),
-                     "Print help message (-help=1).")(
+  desc.add_options()(
       "target",
       po::value<std::vector<std::string>>(&dest.raw_targets)->multitoken(),
       "Mandatory option. Path to the target executable.")(
@@ -225,7 +228,7 @@ auto postProcess(
     std::function<void(std::string &&)> &&sink, Options &dest) -> bool {
   namespace po = boost::program_options;
   po::variables_map vm;
-  po::store(po::command_line_parser(argc + 1, std::prev(argv))
+  po::store(po::command_line_parser(argc, argv)
                 .options(desc)
                 .positional(pd)
                 .style(po::command_line_style::default_style |
@@ -244,7 +247,7 @@ auto postProcess(
     dest.sink = std::move(sink);
   }
 
-  if (vm.count("help") != 0U) {
+  if (global.help == 1) {
     std::ostringstream out;
     out << "Usage : " << std::endl;
     out << "  $ fuzzuf [libfuzzer|nezha] -- [options]\n";
@@ -253,6 +256,10 @@ auto postProcess(
     return false;
   }
 
+  for (auto &v : dest.raw_targets) {
+    DEBUG("[*] dest.raw_targets[] = %s", v.c_str());
+  }
+  
   if (dest.create_info.verbosity >= 1U) {
     dest.create_info.config.debug = true;
   }

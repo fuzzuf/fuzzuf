@@ -15,6 +15,10 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see http://www.gnu.org/licenses/.
  */
+/**
+ * @file nth_range.hpp
+ * @author Ricerca Security <fuzzuf-dev@ricsec.co.jp>
+ */
 #ifndef FUZZUF_INCLUDE_UTILS_NTH_RANGE_HPP
 #define FUZZUF_INCLUDE_UTILS_NTH_RANGE_HPP
 #include "fuzzuf/utils/type_traits/remove_cvr.hpp"
@@ -25,19 +29,18 @@ namespace fuzzuf::utils::range {
 
 /**
  * @class nth_iterator
- * @brief std::get可能な型のi番目の要素を返すイテレータアダプタ
- * @tparm T ベースイテレータの型
- * @tparm i i番目への参照を返す
- */
-/*
- * 例:
+ * @brief An Iterator adaptor to extract i-th element of std::get-able value
+ * @tparam T Base iterator type
+ * @tparam i Return i-th value
+ *
+ * example:
  * std::vector< std::tuple< int, int, int > > a{ ... };
  * b = a|nth< 2 >;
- * bはaの各要素の中のstd::get< 2 >()だけを返すようなrangeになる
- * 一時領域にstd::get< 2 >()だけをstd::transformする必要がなくなる
+ * b is a range that extract only second tuple element of each a elements.
+ * This is useful to avoid creating temporary vector that contains only second tuple elements.
  *
- * Boost.Rangeのmap_keys、map_valuesに近いが、あちらがstd::pairのみをサポートするのに対してこちらはstd::get<
- * n >()可能な型なら何でもいける(雑にいうとtupleでもいける)
+ * This adapter perform like map_keys and map_values in Boost.Range. 
+ * Beside map_keys and map_values support std::pair only, this adapter support any types that elements can be extracted by std::get. (In other word, this adaptor works on tuple too)
  * https://www.boost.org/doc/libs/1_52_0/libs/range/doc/html/range/reference/adaptors/reference/map_keys.html
  * https://www.boost.org/doc/libs/1_52_0/libs/range/doc/html/range/reference/adaptors/reference/map_values.html
  */
@@ -237,10 +240,10 @@ template <std::size_t i, typename R> nth_range<i, R> make_nth_range(R &v) {
 }
 
 /**
- * @fn
- * std::get可能な型のi番目の要素を返すrangeを返す
- * @tparm i i番目への参照を返す
- * @tparm R ベースrangeの型
+ * @brief Return range adaptor to extract i-th element of std::get-able value
+ * @tparam i Return i-th value
+ * @tparam R Base range type
+ * @param v Base range
  */
 template <std::size_t i, typename R> auto make_nth_range(const R &v) {
   using iterator =

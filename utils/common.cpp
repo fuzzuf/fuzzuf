@@ -61,6 +61,50 @@ namespace filesystem = boost::filesystem;
 
 namespace Util {
 
+/**
+ * @fn
+ * @brief Execute external command with arguments
+ * @param (args) Argument vector
+ */
+int ExecuteCommand(std::vector<std::string>& args) {
+  if (args.size() == 0)
+    return -1; // Too short arguments
+
+  auto pid = fork();
+  if (pid < 0)
+    ERROR("fork() failed");
+
+  if (pid == 0) {
+    /* Child process: Execute command */
+    // Prepare arguments
+    char **argv = new char *[args.size() + 1];
+
+    for (size_t i = 0; i < args.size(); i++)
+      argv[i] = strdup(args[i].c_str());
+
+    argv[args.size()] = NULL;
+
+    // Execute command
+    if (execvp(args[0].c_str(), argv) == -1) {
+      std::string cmd = "";
+      for (auto arg: args)
+        cmd += arg + " ";
+      ERROR("execvp() failed: %s", cmd.c_str());
+    }
+
+    _exit(-1); // Unreachable
+
+  } else {
+    /* Parent process: Wait for child*/
+    int wstatus;
+
+    if (waitpid(pid, &wstatus, 0) < 0)
+      ERROR("waitpid() failed");
+
+    return WEXITSTATUS(wstatus);
+  }
+}
+
 // TODO: ディレクトリを作成したら true を、作成する必要が無かったら false
 // を返すようにしていいのでは？セマンティクスが不一致。
 void CreateDir(std::string path) {

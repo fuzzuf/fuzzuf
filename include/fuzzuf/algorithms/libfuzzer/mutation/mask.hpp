@@ -15,6 +15,10 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see http://www.gnu.org/licenses/.
  */
+/**
+ * @file mask.hpp
+ * @author Ricerca Security <fuzzuf-dev@ricsec.co.jp>
+ */
 #ifndef FUZZUF_INCLUDE_ALGORITHM_LIBFUZZER_MUTATION_MASK_HPP
 #define FUZZUF_INCLUDE_ALGORITHM_LIBFUZZER_MUTATION_MASK_HPP
 #include "fuzzuf/utils/filtered_range.hpp"
@@ -27,19 +31,18 @@
 #include <vector>
 namespace fuzzuf::algorithm::libfuzzer::mutator {
 
-/*
- * @fn
+/**
  * Copy elements of data which corresponding mask value is not zero to dest
  *
  * Corresponding code of original libFuzzer implementation
  * https://github.com/llvm/llvm-project/blob/llvmorg-12.0.1/compiler-rt/lib/fuzzer/FuzzerMutate.cpp#L545
  *
- * @tparm R1 range of original value
- * @tparm Mask range of mask value
- * @tparm R2 container to output masked value
- * @param data original value
- * @param mask mask value
- * @param dest output container
+ * @tparam R1 Range of original value
+ * @tparam Mask Range of mask value
+ * @tparam R2 Container to output masked value
+ * @param data Original value
+ * @param mask Mask value
+ * @param dest Output container
  * @return length of post modification value
  */
 template <typename R1, typename Mask_, typename R2>
@@ -63,19 +66,18 @@ auto Mask(const R1 &data, const Mask_ &mask, R2 &dest) -> std::enable_if_t<
                      std::back_inserter(dest));
 }
 
-/*
- * @fn
+/**
  * Update elements in data which corresponding mask value is non-zero by values from src
  *
  * Corresponding code of original libFuzzer implementation
  * https://github.com/llvm/llvm-project/blob/llvmorg-12.0.1/compiler-rt/lib/fuzzer/FuzzerMutate.cpp#L545
  *
- * @tparm R1 range of masked value
- * @tparm Mask range of mask value
- * @tparm R2 container to output
- * @param data masked value
- * @param mask mask value
- * @param dest output container
+ * @tparam R1 Range of masked value
+ * @tparam Mask Range of mask value
+ * @tparam R2 Container to output
+ * @param data Masked value
+ * @param mask Mask value
+ * @param dest Output container
  * @return length of post modification value
  */
 template <typename R1, typename Mask, typename R2>

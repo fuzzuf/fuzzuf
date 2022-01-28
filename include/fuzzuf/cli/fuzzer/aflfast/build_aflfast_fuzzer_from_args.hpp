@@ -25,37 +25,78 @@
 #include "fuzzuf/algorithms/aflfast/aflfast_setting.hpp"
 #include "fuzzuf/algorithms/aflfast/aflfast_state.hpp"
 #include "fuzzuf/executor/native_linux_executor.hpp"
+#include <boost/program_options.hpp>
+
+namespace po = boost::program_options;
+
+struct AFLFastFuzzerOptions {
+    bool forksrv;                           // Optional
+
+    // Default values
+    AFLFastFuzzerOptions() : 
+        forksrv(true)
+        {};
+};
+
+namespace fuzzuf::cli::fuzzer::aflfast {
+
+// Fuzzer specific help
+// TODO: Provide better help message
+static void usage(po::options_description &desc) {
+    std::cout << "Help:" << std::endl;
+    std::cout << desc << std::endl;
+    exit(1);
+}
+
+}
+
 
 // Used only for CLI
 template <class TFuzzer, class TAFLFuzzer>
-std::unique_ptr<TFuzzer> BuildAFLFastFuzzerFromArgs(FuzzerArgs &fuzzer_args, GlobalFuzzerOptions &global_options) {
-    enum optionIndex {
-        // Blank
-    };
+std::unique_ptr<TFuzzer> BuildAFLFastFuzzerFromArgs(
+    FuzzerArgs &fuzzer_args, 
+    GlobalFuzzerOptions &global_options
+) {
+    po::positional_options_description pargs_desc;
+    pargs_desc.add("fuzzer", 1);
+    pargs_desc.add("pargs", -1);
 
-    const option::Descriptor usage[] = {
-        // Blank
-        {0, 0, 0, 0, 0, 0}
-    };
+    AFLFastFuzzerOptions aflfast_options;
 
-    option::Stats  stats(usage, fuzzer_args.argc, fuzzer_args.argv);
-    option::Option options[stats.options_max], buffer[stats.buffer_max];
-    option::Parser parse(usage, fuzzer_args.argc, fuzzer_args.argv, options, buffer);
+    po::options_description fuzzer_desc("AFLFast options");
+    std::vector<std::string> pargs;
+    fuzzer_desc.add_options()
+        ("forksrv", 
+            po::value<bool>(&aflfast_options.forksrv)->default_value(aflfast_options.forksrv), 
+            "Enable/disable fork server mode. default is true.")
+        // If you want to add fuzzer specific options, add options here
+        ("pargs", 
+            po::value<std::vector<std::string>>(&pargs), 
+            "Specify PUT and args for PUT.")
+    ;
 
-    if (parse.error()) {
-        throw exceptions::cli_error(Util::StrPrintf("Failed to parse AFLFast command line"), __FILE__, __LINE__);
+    po::variables_map vm;
+    po::store(
+        po::command_line_parser(fuzzer_args.argc, fuzzer_args.argv)
+            .options(fuzzer_args.global_options_description.add(fuzzer_desc))
+            .positional(pargs_desc)
+            .run(), 
+        vm
+        );
+    po::notify(vm);
+
+    if (global_options.help) {
+        fuzzuf::cli::fuzzer::aflfast::usage(fuzzer_args.global_options_description);
     }
 
-    // Add handlers for local options here
-
-    PutArgs put = {
-        .argc = parse.nonOptionsCount(),
-        .argv = parse.nonOptions()
-    };
-
-    if (put.argc == 0) {
-        throw exceptions::cli_error(Util::StrPrintf("Command line of PUT is not specified"), __FILE__, __LINE__);
-    }
+    PutArgs put(pargs);
+    try {
+        put.Check();
+    } catch (const exceptions::cli_error &e) {
+        std::cerr << "[!] " << e.what() << std::endl;
+        std::cerr << "\tat " << e.file << ":" << e.line << std::endl;
+        fuzzuf::cli::fuzzer::aflfast::usage(fuzzer_args.global_options_description);
+    } 
 
     // Trace level log
     DEBUG("[*] PUT: put = [");
@@ -78,7 +119,7 @@ std::unique_ptr<TFuzzer> BuildAFLFastFuzzerFromArgs(FuzzerArgs &fuzzer_args, Glo
                         global_options.out_dir,
                         global_options.exec_timelimit_ms.value_or(GetExecTimeout<AFLFastTag>()),
                         global_options.exec_memlimit.value_or(GetMemLimit<AFLFastTag>()),
-                        /* forksrv */   true, // FIXME: support non fork server mode also
+                        aflfast_options.forksrv,
                         /* dumb_mode */ false,  // FIXME: add dumb_mode
                         NativeLinuxExecutor::CPUID_BIND_WHICHEVER,
                         FAST

@@ -15,6 +15,10 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see http://www.gnu.org/licenses/.
  */
+/**
+ * @file fuzzer.cpp
+ * @author Ricerca Security <fuzzuf-dev@ricsec.co.jp>
+ */
 #include "fuzzuf/algorithms/nezha/cli_compat/fuzzer.hpp"
 #include "fuzzuf/algorithms/nezha/create.hpp"
 #include "fuzzuf/algorithms/libfuzzer/cli_compat/options.hpp"

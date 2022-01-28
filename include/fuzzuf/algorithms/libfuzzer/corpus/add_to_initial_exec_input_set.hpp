@@ -15,6 +15,10 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see http://www.gnu.org/licenses/.
  */
+/**
+ * @file add_to_initial_exec_input_set.hpp
+ * @author Ricerca Security <fuzzuf-dev@ricsec.co.jp>
+ */
 #ifndef FUZZUF_INCLUDE_ALGORITHM_LIBFUZZER_CORPUS_ADD_TO_INITIAL_INPUT_SET_HPP
 #define FUZZUF_INCLUDE_ALGORITHM_LIBFUZZER_CORPUS_ADD_TO_INITIAL_INPUT_SET_HPP
 #include "fuzzuf/exec_input/exec_input_set.hpp"
@@ -25,11 +29,10 @@
 namespace fuzzuf::algorithm::libfuzzer::corpus {
 
 /**
- * @fn
  * Insert value to initial input value set.
  * For contiguous range
  *
- * @tparm Range Contiguous Range of std::uint8_t
+ * @tparam Range Contiguous Range of std::uint8_t
  * @param initial_exec_input_set ExecInputSet to insert value
  * @param range Initial Input value to be inserted
  */
@@ -45,11 +48,10 @@ auto addToInitialExecInputSet(ExecInputSet &initial_exec_input_set,
 }
 
 /**
- * @fn
  * Insert value to initial input value set.
  * For non contiguous range
  *
- * @tparm Range Contiguous Range of std::uint8_t
+ * @tparam Range Contiguous Range of std::uint8_t
  * @param initial_exec_input_set ExecInputSet to insert value
  * @param range Initial Input value to be inserted
  */

@@ -15,6 +15,10 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see http://www.gnu.org/licenses/.
  */
+/**
+ * @file common_types.hpp
+ * @author Ricerca Security <fuzzuf-dev@ricsec.co.jp>
+ */
 #ifndef FUZZUF_INCLUDE_ALGORITHM_LIBFUZZER_STATE_COMMON_TYPES_HPP
 #define FUZZUF_INCLUDE_ALGORITHM_LIBFUZZER_STATE_COMMON_TYPES_HPP
 #include <cstdint>
@@ -22,9 +26,13 @@
 
 namespace fuzzuf::algorithm::libfuzzer {
 
-// カバレッジを記録するための型(必須ではない)
+/**
+ * A container type that is available to store coverage
+ */
 using coverage_t = std::vector<std::uint8_t>;
-// 標準出力を記録するための型(必須ではない)
+/**
+ * A container type that is available to store standard output
+ */
 using output_t = std::vector<std::uint8_t>;
 
 } // namespace fuzzuf::algorithm::libfuzzer

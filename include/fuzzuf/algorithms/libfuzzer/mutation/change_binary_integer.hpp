@@ -15,6 +15,10 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see http://www.gnu.org/licenses/.
  */
+/**
+ * @file change_binary_integer.hpp
+ * @author Ricerca Security <fuzzuf-dev@ricsec.co.jp>
+ */
 #ifndef FUZZUF_INCLUDE_ALGORITHM_LIBFUZZER_MUTATION_CHANGE_BINARY_INTEGER_HPP
 #define FUZZUF_INCLUDE_ALGORITHM_LIBFUZZER_MUTATION_CHANGE_BINARY_INTEGER_HPP
 #include "fuzzuf/algorithms/libfuzzer/mutation/utils.hpp"
@@ -26,8 +30,7 @@
 #include <type_traits>
 namespace fuzzuf::algorithm::libfuzzer::mutator {
 
-/*
- * @fn
+/**
  * Consider random length from random offset of the data is a signed integer in two complement representation, then modify the value in range of -10 to 10 and writeback modified value to original position.
  * This operation may change byte order at writeback.
  * This operation may invert the sign at writeback.
@@ -35,11 +38,11 @@ namespace fuzzuf::algorithm::libfuzzer::mutator {
  * Corresponding code of original libFuzzer implementation
  * https://github.com/llvm/llvm-project/blob/llvmorg-12.0.1/compiler-rt/lib/fuzzer/FuzzerMutate.cpp#L408
  *
- * @tparm RNG type of random number generator
- * @tparm Range container of the value
- * @param rng random number generator
- * @param data value to modify
- * @param max_size max length of value
+ * @tparam RNG Type of random number generator
+ * @tparam Range Container of the value
+ * @param rng Random number generator
+ * @param data Value to modify
+ * @param max_size Max length of value
  * @return length of post modification value
  */
 template <typename RNG, typename Range>

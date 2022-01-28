@@ -15,6 +15,10 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see http://www.gnu.org/licenses/.
  */
+/**
+ * @file collect_features.hpp
+ * @author Ricerca Security <fuzzuf-dev@ricsec.co.jp>
+ */
 #ifndef FUZZUF_INCLUDE_ALGORITHM_NEZHA_EXECUTOR_COLLECT_FEATURES_HPP
 #define FUZZUF_INCLUDE_ALGORITHM_NEZHA_EXECUTOR_COLLECT_FEATURES_HPP
 #include "fuzzuf/algorithms/nezha/state.hpp"
@@ -29,27 +33,23 @@
 namespace fuzzuf::algorithm::nezha::executor {
 
 /**
- * @fn
- * 実行結果からfeatureを求める
- * libFuzzerのCollectFeaturesは入力値そのfeatureが出る最も短い入力値だった場合に、そのfeatureを実行結果のunique_featuresとするが、Nezhaでは出たfeatureは全て実行結果のunique_featuresと見做す
- * (つまりuniqueではなくなる。オリジナルの実装ではunique_featuresのuniqueを消す変更も入っている)
+ * Calculate features of specified execution result.
+ * Unlike CollectFeatures in libFuzzer, this function consider every features detected on the execution as unique_features of the execution.
+ * (This means unique_features is no longer unique. As the Reflection of that difference, original Nezha implementation renames unique_features to features.)
  *
- * Nezhaの対応箇所
+ * Corresponding code of original Nezha implementation
  * https://github.com/nezha-dt/nezha/blob/master/Fuzzer/FuzzerLoop.cpp#L433
  *
- * @tparm State stateの型
- * @tparm Corpus corpusの型
- * @tparm Range 入力値のrangeの型
- * @tparm Cov カバレッジのrangeの型
- * @param state libFuzzerの状態
- * @param corpus 実行結果を追加する先となるcorpus
- * @param range 入力値のrange
- * @param found_unique_features
- * この値がnullptrでない場合、新しいfeatureが見つかったかどうかが返る。見つかった場合はtrue
- * @param exec_result 実行結果
- * @param cov カバレッジのrange
- * @param module_offset
- * カバレッジの先頭の要素をmodule_offset要素目と見做してfeatureの値を求める
+ * @tparam State LibFuzzer state object type
+ * @tparam Corpus FullCorpus type to add new execution result
+ * @tparam Range Contiguous Range of std::uint8_t to pass input
+ * @tparam Cov Range of std::uint8_t to pass coverage
+ * @param state LibFuzzer state object
+ * @param corpus FullCorpus to add new execution result
+ * @param range Input value that was passed to the executor
+ * @param exec_result Execution result that was produced by the executor
+ * @param cov Coverage retrived from the executor
+ * @param module_offset Offset value of feature. if module_offset is 3000 and cov[ 2 ] is non zero value, the feature 3002 is activated.
  */
 template <typename State, typename Corpus, typename Range, typename InputInfo,
           typename Cov>

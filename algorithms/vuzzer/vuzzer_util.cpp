@@ -30,7 +30,6 @@
 namespace fuzzuf::algorithm::vuzzer::util {
 
 /**
- * @fn
  * @brief Parse basic block weight file.
  * @param (state) VUzzer state
  * @param (path) Path to bb weight file
@@ -77,7 +76,6 @@ void ParseBBWeights(
 }
 
 /**
- * @fn
  * @brief Parse basic block coverage file.
  * @param (inp_feed) FileFeedback obtained by PUT execution
  * @param (bb_cov) A result of the parsing
@@ -123,7 +121,6 @@ void ParseBBCov(
 }
 
 /**
- * @fn
  * @brief Parse taint file.
  * @param (state) VUzzer state
  * @param (testcase) 
@@ -193,7 +190,6 @@ void ParseTaintInfo(
 }
 
 /**
- * @fn
  * Convert dictionary {0xXXXXX: i} to bitsets format 0x10001000.... based on the global key set.
  * If i-th key of global key set exists in dictionary, then i-th bit is set.
  * @brief Convert dictionary {0xXXXXX: i} to bitsets format 0x10001000... based on the global key set.

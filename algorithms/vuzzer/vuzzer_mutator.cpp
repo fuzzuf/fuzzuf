@@ -68,7 +68,6 @@ VUzzerMutator::VUzzerMutator(VUzzerMutator&& src)
     : Mutator<typename VUzzerState::Tag>(std::move(src)), state(src.state) {}
 
 /**
- * @fn
  * @brief Determine the mutation offset of input buffer. The offset should be less than size
  * @param (limit) upper limit of offset.
  */
@@ -108,7 +107,6 @@ u32 VUzzerMutator::GetCutPos(u32 limit) {
 }
 
 /**
- * @fn
  * @brief Delete [pos: pos+size) range of input buffer. pos is determined by GetCutPos method. 
  * @sa GetCutPos
  */
@@ -120,7 +118,6 @@ void VUzzerMutator::EliminateRandom() {
 }
 
 /**
- * @fn
  * @brief Delete [pos: pos+size) range of input buffer. pos is chosen randomly.
  */
 void VUzzerMutator::EliminateRandomEnd() {
@@ -131,7 +128,6 @@ void VUzzerMutator::EliminateRandomEnd() {
 }
 
 /**
- * @fn
  * @brief Run two mutations EliminateRandomEnd and EliminateRandom sequentially.
  * @sa EliminateRandomEnd
  * @sa EliminateRandom
@@ -143,7 +139,6 @@ void VUzzerMutator::DoubleEliminate() {
 }
 
 /**
- * @fn
  * @brief Insert random bytes at [pos: pos+size) range of input buffer. pos is determined by GetCutPos method. 
  * @sa GetCutPos
  */
@@ -157,7 +152,6 @@ void VUzzerMutator::AddRandom() {
 }
 
 /**
- * @fn
  * @brief Replace bytes at [pos: pos+size) range of input buffer with random bytes. pos is determined by GetCutPos method. 
  * @sa GetCutPos
  */
@@ -171,7 +165,6 @@ void VUzzerMutator::ChangeRandom() {
 }
 
 /**
- * @fn
  * @brief Replace each bytes at offsets with random bytes. The offsets are chosen from taint information.
  */
 void VUzzerMutator::ChangeBytes() {
@@ -214,7 +207,6 @@ void VUzzerMutator::ChangeBytes() {
 }
 
 /**
- * @fn
  * When fuzzer has full_bytes_dict, then insert bytes chosen from it at the offset. 
  * If not but has unique_bytes_dict, then insert bytes chosen from it at the offsets.
  * Otherwirse replace bytes at offsets with random bytes generated from all_dicts.
@@ -255,7 +247,6 @@ void VUzzerMutator::ChangeRandomFull() {
 }
 
 /**
- * @fn
  * @brief Change each bytes at random offsets to random bytes.
  */
 void VUzzerMutator::SingleChangeRandom() {
@@ -268,7 +259,6 @@ void VUzzerMutator::SingleChangeRandom() {
 }
 
 /**
- * @fn
  * @brief Decrease each bytes at random offsets.
  */
 void VUzzerMutator::LowerSingleRandom() {
@@ -281,7 +271,6 @@ void VUzzerMutator::LowerSingleRandom() {
 }
 
 /**
- * @fn
  * @brief Increase each bytes at random offsets.
  */
 void VUzzerMutator::RaiseSingleRandom() {
@@ -294,7 +283,6 @@ void VUzzerMutator::RaiseSingleRandom() {
 }
 
 /**
- * @fn
  * @brief Replace a '\0' byte with a specified byte
  */
 void VUzzerMutator::EliminateNull() {
@@ -308,7 +296,6 @@ void VUzzerMutator::EliminateNull() {
 }
 
 /**
- * @fn
  * @brief Replace "\0\0" bytes with specified two bytes
  */
 void VUzzerMutator::EliminateDoubleNull() {
@@ -334,7 +321,6 @@ void VUzzerMutator::EliminateDoubleNull() {
 }
 
 /**
- * @fn
  * @brief Replace entire input buffer with random bytes
  */
 void VUzzerMutator::TotallyRandom() {
@@ -347,7 +333,6 @@ void VUzzerMutator::TotallyRandom() {
 }
 
 /**
- * @fn
  * @brief Replace four bytes of input buffer with a hard-coded magic number
  */
 void VUzzerMutator::IntSlide() {
@@ -376,7 +361,6 @@ void VUzzerMutator::IntSlide() {
 }
 
 /**
- * @fn
  * @brief Run mutation methods randomly chosen twice.
  */
 void VUzzerMutator::DoubleFuzz() {
@@ -387,7 +371,6 @@ void VUzzerMutator::DoubleFuzz() {
 }
 
 /**
- * @fn
  * @brief Run the ChangeRandomFull mutation twice
  * @sa ChangeRandomFull
  */
@@ -398,7 +381,6 @@ void VUzzerMutator::DoubleFullMutate() {
 }
 
 /**
- * @fn
  * @brief Insert buf into [pos, pos+extra_len) of input buffer while overwriting input buffer[pos] with buf[0]. 
  */
 void VUzzerMutator::InsertWithOnebyteOverwrite(u32 pos, const u8 *buf, u32 extra_len) {
@@ -418,7 +400,6 @@ void VUzzerMutator::InsertWithOnebyteOverwrite(u32 pos, const u8 *buf, u32 extra
 }
 
 /**
- * @fn
  * Replace random four bytes at offsets chosen from taint information about LEA operations with hard-coded magic bytes.
  * Then replace random bytes at offsets chosen from taint information about CMP operations with magic bytes.
  * @brief Replace each bytes at offsets with random bytes. The offsets are chosen from taint information. 
@@ -495,7 +476,6 @@ void VUzzerMutator::TaintBasedChange() {
     Currently crossover mutator generates new seeds and put them into ExecInputSet.
     However ExecInputSet should only be used for the purpose of saving seeds in seed_queues. */
 /**
- * @fn
  * @brief Cut the two inputs at each offsets and swap them.
  * @param (target) XXX
  */
@@ -532,7 +512,6 @@ VUzzerMutator::SingleCrossOver(const ExecInput& target) {
 }
 
 /**
- * @fn
  * @brief Pick up subsets from two inputs and swap them.
  * @param (target) XXX
  */
@@ -575,7 +554,6 @@ VUzzerMutator::DoubleCrossOver(const ExecInput& target) {
 }
 
 /**
- * @fn
  * @brief Run mutation methods randomly chosen
  */
 void VUzzerMutator::MutateRandom() {
@@ -588,7 +566,6 @@ void VUzzerMutator::MutateRandom() {
 }
 
 /**
- * @fn
  * @brief Run crossover mutation methods randomly chosen
  * @param (target) XXX
  */

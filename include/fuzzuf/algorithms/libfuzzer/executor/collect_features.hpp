@@ -15,6 +15,10 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see http://www.gnu.org/licenses/.
  */
+/**
+ * @file collect_features.hpp
+ * @author Ricerca Security <fuzzuf-dev@ricsec.co.jp>
+ */
 #ifndef FUZZUF_INCLUDE_ALGORITHM_LIBFUZZER_EXECUTOR_COLLECT_FEATURE_HPP
 #define FUZZUF_INCLUDE_ALGORITHM_LIBFUZZER_EXECUTOR_COLLECT_FEATURE_HPP
 #include "fuzzuf/algorithms/libfuzzer/feature/add_feature.hpp"
@@ -31,7 +35,6 @@
 namespace fuzzuf::algorithm::libfuzzer::executor {
 
 /**
- * @fn
  * Calculate features of specified execution result.
  * "Feature" is a outstanding feature of the execution which has unique ID. In
  * most case, entering a new edge that is not covered by previous executions is
@@ -39,12 +42,12 @@ namespace fuzzuf::algorithm::libfuzzer::executor {
  * the execution result that affects by features. If ChooseRandomSeed is using
  * non-uniform distribution, input of higher weighted execution result is
  * selected more frequentry.
- * @tparm State libFuzzer state object type
- * @tparm Corpus FullCorpus type to add new execution result
- * @tparm Range Contiguous Range of std::uint8_t to pass input
- * @tparm InputInfo Type to provide execution result
- * @tparm Cov Range of std::uint8_t to pass coverage
- * @param state libFuzzer state object
+ * @tparam State LibFuzzer state object type
+ * @tparam Corpus FullCorpus type to add new execution result
+ * @tparam Range Contiguous Range of std::uint8_t to pass input
+ * @tparam InputInfo Type to provide execution result
+ * @tparam Cov Range of std::uint8_t to pass coverage
+ * @param state LibFuzzer state object
  * @param corpus FullCorpus to add new execution result
  * @param range Input value that was passed to the executor
  * @param exec_result Execution result that was produced by the executor

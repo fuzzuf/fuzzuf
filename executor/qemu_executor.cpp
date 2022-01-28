@@ -17,8 +17,10 @@
  */
 #include "fuzzuf/executor/qemu_executor.hpp"
 
-// 前提:
-//    - path_to_write_inputで指定されるパスにファイルが作成できる状態になっていること
+/**
+ * Precondition:
+ *    - A file can be created at path path_str_to_write_input.
+ */
 QEMUExecutor::QEMUExecutor(
     const fs::path &proxy_path,
     const std::vector<std::string> &argv,
@@ -28,6 +30,9 @@ QEMUExecutor::QEMUExecutor(
     const fs::path &path_to_write_input,
     int cpuid_to_bind,
     bool record_stdout_and_err
-) : ProxyExecutor ( proxy_path, std::vector<std::string>(), argv, exec_timelimit_ms, exec_memlimit, forksrv, path_to_write_input, QEMUExecutor::QEMU_SHM_SIZE, 0, cpuid_to_bind, record_stdout_and_err )
+) : ProxyExecutor ( proxy_path, std::vector<std::string>(), argv, exec_timelimit_ms, exec_memlimit, forksrv,
+                    path_to_write_input, QEMUExecutor::QEMU_SHM_SIZE, 0, cpuid_to_bind, record_stdout_and_err )
 {
+    ProxyExecutor::SetCArgvAndDecideInputMode();
+    ProxyExecutor::Initilize();
 }

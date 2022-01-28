@@ -15,6 +15,10 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see http://www.gnu.org/licenses/.
  */
+/**
+ * @file print_status_for_new_unit.hpp
+ * @author Ricerca Security <fuzzuf-dev@ricsec.co.jp>
+ */
 #ifndef FUZZUF_INCLUDE_ALGORITHM_LIBFUZZER_EXECUTE_PRINT_STATUS_FOR_NEW_UNIT_HPP
 #define FUZZUF_INCLUDE_ALGORITHM_LIBFUZZER_EXECUTE_PRINT_STATUS_FOR_NEW_UNIT_HPP
 #include "fuzzuf/algorithms/libfuzzer/mutation_history.hpp"
@@ -31,16 +35,15 @@
 namespace fuzzuf::algorithm::libfuzzer::executor {
 
 /**
- * @fn
  * Print execution result and fuzzer state as in the format similar to
  * original implementation.
  *
  * Corresponding code of original libFuzzer implementation
  * https://github.com/llvm/llvm-project/blob/llvmorg-12.0.1/compiler-rt/lib/fuzzer/FuzzerLoop.cpp#L648
  *
- * @tparm Range Contiguous Range of std::uint8_t to pass input
- * @tparm InputInfo Type to provide execution result
- * @tparm DictEntries Range of pointer to dictionary entries
+ * @tparam Range Contiguous Range of std::uint8_t to pass input
+ * @tparam InputInfo Type to provide execution result
+ * @tparam DictEntries Range of pointer to dictionary entries
  * @param range Input value that was passed to the executor
  * @param exec_result Execution result that was produced by the executor
  * @param max_size Miximum length of input value
@@ -49,7 +52,7 @@ namespace fuzzuf::algorithm::libfuzzer::executor {
  * @param dict_entries Range of pointer to dictionary entries which had been
  * used to generate current input
  * @param cycle Current cycle of global fuzzer loop
- * @param begin_date datetime that the fuzzing started
+ * @param begin_date Datetime that the fuzzing started
  * @param verbosity If 0, minimum informatios are displayed. If 1, minimum
  * informations, input length, limited number of elements of history and
  * dict_entries and input value( only if the input value is short enough ) are

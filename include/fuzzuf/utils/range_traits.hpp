@@ -15,6 +15,10 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see http://www.gnu.org/licenses/.
  */
+/**
+ * @file range_traits.hpp
+ * @author Ricerca Security <fuzzuf-dev@ricsec.co.jp>
+ */
 #ifndef FUZZUF_INCLUDE_UTILS_RANGE_TRAITS_HPP
 #define FUZZUF_INCLUDE_UTILS_RANGE_TRAITS_HPP
 #include "fuzzuf/utils/check_capability.hpp"
@@ -28,8 +32,8 @@ namespace fuzzuf::utils::range {
 
 /**
  * @class IsIterator
- * @brief TがC++17 §24.2.1-1の要件を満たす場合trueを返す
- * @tparm T 任意の型
+ * @brief Meta function that returns true if T satisfies C++17 §24.2.1-1 requirements
+ * @tparam T Type to check
  */
 template <typename T, typename Enable = void>
 struct IsIterator : public std::false_type {};
@@ -45,9 +49,8 @@ template <typename T> constexpr bool is_iterator_v = IsIterator<T>::value;
 
 /**
  * @class IsRange
- * @brief
- * Tがメンバ関数begin()とend()を持ち、その返り値の型のis_iteratorがtrueである場合trueを返す
- * @tparm T 任意の型
+ * @brief Meta function that returns true if T has member function begin() and end() and the return type of those functions satisfies is_iterator
+ * @tparam T Type to check
  */
 template <typename T, typename Enable = void>
 struct IsRange : public std::false_type {};
@@ -63,13 +66,14 @@ template <typename T> constexpr bool is_range_v = IsRange<T>::value;
 
 /**
  * @class RangeValue
- * @brief Rangeのis_rangeがtrueの場合にrangeのvalue_typeを取得する
- * @tparm Range 任意の型
+ * @brief Meta function that returns value_type of Range if Range satisfies is_range
+ * Otherwise, type is not defined
+ * @tparam Range Range type
  */
 template <typename Range, typename Enable = void> struct RangeValue {};
 template <typename Range>
 struct RangeValue<Range,
-                  std::enable_if_t<is_range_v<Range> // Rangeはrangeである
+                  std::enable_if_t<is_range_v<Range> // Range is range
                                    >> {
   using type =
       type_traits::RemoveCvrT<decltype(*std::declval<Range>().begin())>;
@@ -79,13 +83,14 @@ template <typename Range> using RangeValueT = typename RangeValue<Range>::type;
 
 /**
  * @class RangeIterator
- * @brief Rangeのis_rangeがtrueの場合にrangeのiteratorを取得する
- * @tparm Range 任意の型
+ * @brief Meta function that returns iterator of Range if Range satisfies is_range
+ * Otherwise, type is not defined
+ * @tparam Range Range type
  */
 template <typename Range, typename Enable = void> struct RangeIterator {};
 template <typename Range>
 struct RangeIterator<Range,
-                     std::enable_if_t<is_range_v<Range> // Rangeはrangeである
+                     std::enable_if_t<is_range_v<Range> // Range is range
                                       >> {
   using type = type_traits::RemoveCvrT<decltype(std::declval<Range>().begin())>;
 };
@@ -94,9 +99,10 @@ using RangeIteratorT = typename RangeIterator<Range>::type;
 
 /**
  * @class is_range_of
- * @brief Rangeのis_rangeがtrueかつRangeのRangeValueがTの場合にtrueを返す
- * @tparm Range 任意の型
- * @tparm T 要素の型
+ * @brief Meta function that returns true if Range satisfies is_range and the value_type is same as T
+ * If Range doesn't satisfy is_range, value is not defined
+ * @tparam Range Range type
+ * @tparam T Expected value type
  */
 template <typename Range, typename T, typename Enable = void>
 struct IsRangeOf : public std::false_type {};
@@ -108,8 +114,9 @@ constexpr bool is_range_of_v = IsRangeOf<Range, T>::value;
 
 /**
  * @class is_integral_range
- * @brief Rangeのis_rangeがtrueかつRangeのRangeValueが整数の場合にtrueを返す
- * @tparm Range 任意の型
+ * @brief Meta function that returns true if Range satisfies is_range and the value_type is integral
+ * If Range doesn't satisfy is_range, value is not defined
+ * @tparam Range Range type
  */
 template <typename Range, typename Enable = void>
 struct IsIntegralRange : public std::false_type {};
@@ -119,88 +126,88 @@ struct IsIntegralRange<Range, std::enable_if_t<is_range_v<Range>>>
 template <typename Range>
 constexpr bool is_integral_range_v = IsIntegralRange<Range>::value;
 
-// メンバ関数erase( iter, iter )がある
+// Check if the type has member function erase( iter, iter )
 FUZZUF_CHECK_CAPABILITY(HasErase, has_erase,
                         std::declval<T &>().erase(std::declval<T &>().begin(),
                                                   std::declval<T &>().end()))
-// メンバ関数insert( iter, value )がある
+// Check if the type has member function insert( iter, value )
 FUZZUF_CHECK_CAPABILITY(
     HasInsertValue, has_insert_value,
     std::declval<T &>().insert(std::declval<T &>().begin(),
                                std::declval<RangeValueT<T>>()))
-// メンバ関数insert( iter, n, value )がある
+// Check if the type has member function insert( iter, n, value )
 FUZZUF_CHECK_CAPABILITY(
     HasInsertValueN, has_insert_value_n,
     std::declval<T &>().insert(std::declval<T &>().begin(), 3u,
                                std::declval<RangeValueT<T>>()))
-// メンバ関数insert( iter, iter, iter )がある
+// Check if the type has member function insert( iter, iter, iter )
 FUZZUF_CHECK_CAPABILITY(HasInsertRange, has_insert_range,
                         std::declval<T &>().insert(std::declval<T &>().begin(),
                                                    std::declval<T &>().begin(),
                                                    std::declval<T &>().begin()))
-// メンバ関数push_back( value )がある
+// Check if the type has member function push_back( value )
 FUZZUF_CHECK_CAPABILITY(
     HasPushBack, has_push_back,
     std::declval<T &>().push_back(std::declval<RangeValueT<T>>()))
-// メンバ関数assign( iter, iter )がある
+// Check if the type has member function assign( iter, iter )
 FUZZUF_CHECK_CAPABILITY(HasAssign, has_assign,
                         std::declval<T &>().assign(std::declval<T &>().begin(),
                                                    std::declval<T &>().begin()))
-// メンバ関数clear()がある
+// Check if the type has member function clear()
 FUZZUF_CHECK_CAPABILITY(HasClear, has_clear, std::declval<T &>().clear())
-// メンバ関数empty()がある
+// Check if the type has member function empty()
 FUZZUF_CHECK_CAPABILITY(HasEmpty, has_empty, std::declval<T &>().empty())
-// メンバ関数size()がある
+// Check if the type has member function size()
 FUZZUF_CHECK_CAPABILITY(HasSize, has_size, std::declval<T &>().size())
-// メンバ関数data()がある
+// Check if the type has member function data()
 FUZZUF_CHECK_CAPABILITY(HasData, has_data, std::declval<T &>().data())
-// メンバ関数resize( size )がある
+// Check if the type has member function resize( size )
 FUZZUF_CHECK_CAPABILITY(HasResize, has_resize, std::declval<T &>().resize(1u))
 
 /**
- * @fn
- * rangeの長さを返す
- * @tparm R メンバ関数size()を持つ任意の型
- * @param r メンバ関数size()を持つ任意の型の値
+ * Return the size of range
+ * Roughly compatible to C++20 std::ranges::size
+ * @tparam R Type with member function size()
+ * @param r Value of R
  */
 template <typename R>
 auto rangeSize(const R &r)
-    -> std::enable_if_t<has_size_v<R>, // Rにはメンバ関数size()がある
+    -> std::enable_if_t<has_size_v<R>, // R has size()
                         std::size_t> {
   return r.size();
 }
 
 /**
- * @fn
- * rangeの長さを返す
- * @tparm R メンバ関数begin()とend()を持つ任意の型
- * @param r メンバ関数begin()とend()を持つ任意の型の値
+ * Return the size of range
+ * Roughly compatible to C++20 std::ranges::size
+ * @tparam R Type with member function begin() and end()
+ * @param r Value of R
  */
 template <typename R>
 auto rangeSize(const R &r)
-    -> std::enable_if_t<!has_size_v<R>, // Rにはメンバ関数size()がない
+    -> std::enable_if_t<!has_size_v<R>, // R doesn't have size()
                         std::size_t> {
   return std::distance(r.begin(), r.end());
 }
 
 /**
- * @fn
- * rangeが空の場合にtrueを返す
- * @tparm R メンバ関数empty()を持つ任意の型
- * @param r メンバ関数empty()を持つ任意の型の値
+ * Return true if the range is empty
+ * Roughly compatible to C++20 std::ranges::empty
+ * @tparam R Type with member function empty()
+ * @param r Value of R
  */
 template <typename R>
 auto rangeEmpty(const R &r)
-    -> std::enable_if_t<has_empty_v<R>, // Rにはメンバ関数empty()がある
+    -> std::enable_if_t<has_empty_v<R>, // R has empty()
                         std::size_t> {
   return r.empty();
 }
 
 /**
- * @fn
- * rangeが空の場合にtrueを返す
- * @tparm R メンバ関数begin()とend()を持つ任意の型
- * @param r メンバ関数begin()とend()を持つ任意の型の値
+ * Return true if the range is empty
+ * Roughly compatible to C++20 std::ranges::empty
+ * @tparam R Type with member function begin() and end()
+ * @param r Value of R
  */
 template <typename R>
 auto rangeEmpty(const R &r)
@@ -210,12 +217,11 @@ auto rangeEmpty(const R &r)
 }
 
 /**
- * @fn
- * r2にr1を代入する
- * @tparm R1 R2に代入可能な任意の型
- * @tparm R2 R1を代入可能な任意の型
- * @param r1 この値を代入する
- * @param r2 この参照先に代入される
+ * Assign r1 to r2
+ * @tparam R1 Type that can be assigned to R2
+ * @tparam R2 Type that can assign R1
+ * @param r1 This value is assigned
+ * @param r2 Assign to this value
  */
 template <typename R1, typename R2>
 auto assign(const R1 &r1, R2 &r2)
@@ -224,12 +230,11 @@ auto assign(const R1 &r1, R2 &r2)
 }
 
 /**
- * @fn
- * r2にr1を代入する
- * @tparm R1 メンバ関数begin()とend()を持つ任意の型
- * @tparm R2 メンバ関数assign()を持つ任意の型
- * @param r1 この値を代入する
- * @param r2 この参照先に代入される
+ * Assign r1 to r2
+ * @tparam R1 Type with member function begin() and end()
+ * @tparam R2 Type with member function assign
+ * @param r1 This value is assigned
+ * @param r2 Assign to this value
  */
 template <typename R1, typename R2>
 auto assign(const R1 &r1, R2 &r2)
@@ -239,12 +244,11 @@ auto assign(const R1 &r1, R2 &r2)
 }
 
 /**
- * @fn
- * r2にr1を代入する
- * @tparm R1 メンバ関数begin()とend()を持つ任意の型
- * @tparm R2 メンバ関数clear()とinsert()を持つ任意の型
- * @param r1 この値を代入する
- * @param r2 この参照先に代入される
+ * Assign r1 to r2
+ * @tparam R1 Type with member function begin() and end()
+ * @tparam R2 Type with member function clear() and insert()
+ * @param r1 This value is assigned
+ * @param r2 Assign to this value
  */
 template <typename R1, typename R2>
 auto assign(const R1 &r1, R2 &r2)
@@ -256,12 +260,11 @@ auto assign(const R1 &r1, R2 &r2)
 }
 
 /**
- * @fn
- * r2にr1を代入する
- * @tparm R1 メンバ関数begin()とend()を持つ任意の型
- * @tparm R2 メンバ関数clear()とpush_back()を持つ任意の型
- * @param r1 この値を代入する
- * @param r2 この参照先に代入される
+ * Assign r1 to r2
+ * @tparam R1 Type with member function begin() and end()
+ * @tparam R2 Type with member function clear() and push_back()
+ * @param r1 This value is assigned
+ * @param r2 Assign to this value
  */
 template <typename R1, typename R2>
 auto assign(const R1 &r1, R2 &r2)
@@ -273,12 +276,11 @@ auto assign(const R1 &r1, R2 &r2)
 }
 
 /**
- * @fn
- * r2にr1を代入する
- * @tparm R1 メンバ関数begin()とend()を持つ任意の型
- * @tparm R2 メンバ関数begin()とresize()を持つ任意の型
- * @param r1 この値を代入する
- * @param r2 この参照先に代入される
+ * Assign r1 to r2
+ * @tparam R1 Type with member function begin() and end()
+ * @tparam R2 Type with member function begin() and resize()
+ * @param r1 This value is assigned
+ * @param r2 Assign to this value
  */
 template <typename R1, typename R2>
 auto assign(const R1 &r1, R2 &r2)
@@ -291,9 +293,9 @@ auto assign(const R1 &r1, R2 &r2)
 
 /**
  * @class directly_appendable
- * @brief R1とR2で+=による加算が可能な場合trueを返す
- * @tparm R1 任意の型
- * @tparm R2 任意の型
+ * @brief Meta function that returns true if operator+= is defined for R1 and R2
+ * @tparam R1 Any type
+ * @tparam R2 Any type
  */
 template <typename R1, typename R2, typename Enable = void>
 struct DirectlyAppendable : public std::false_type {};
@@ -306,9 +308,9 @@ constexpr bool directly_appendable_v = DirectlyAppendable<R1, R2>::value;
 
 /**
  * @class is_convertible_range
- * @brief R1のRangeValueをR2のRangeValueに暗黙に変換可能な場合trueが返る
- * @tparm R1 任意の型
- * @tparm R2 任意の型
+ * @brief Meta function that returns true if RangeValue of R1 can cast to RangeValue of R2 implicitly
+ * @tparam R1 Any type
+ * @tparam R2 Any type
  */
 template <typename R1, typename R2, typename Enable = void>
 struct IsConvertibleRange : public std::false_type {};
@@ -321,12 +323,11 @@ template <typename R1, typename R2>
 constexpr bool is_convertible_range_v = IsConvertibleRange<R1, R2>::value;
 
 /**
- * @fn
- * r2にr1を追加する
- * @tparm R1 R2に+=できる任意の型
- * @tparm R2 R1を+=できる任意の型
- * @param r1 この値を追加する
- * @param r2 この参照先に追加する
+ * Append r1 to r2
+ * @tparam R1 Type that can be appended to R2 by +=
+ * @tparam R2 Type that can append R1 by +=
+ * @param r1 This value is appended
+ * @param r2 Append to this value
  */
 template <typename R1, typename R2>
 auto append(const R1 &r1, R2 &r2)
@@ -335,14 +336,11 @@ auto append(const R1 &r1, R2 &r2)
 }
 
 /**
- * @fn
- * r2にr1を追加する
- * @tparm R1
- * メンバ関数begin()とend()を持ちR2とconvertible_rangeであるような任意の型
- * @tparm R2
- * メンバ関数end()とinsert()を持ちR1とconvertible_rangeであるような任意の型
- * @param r1 この値を追加する
- * @param r2 この参照先に追加する
+ * Append r1 to r2
+ * @tparam R1 Type with member function begin() and end() that satisfies convertible_range with R2
+ * @tparam R2 Type with member function end() and insert() that satisfies convertible_range with R1
+ * @param r1 This value is appended
+ * @param r2 Append to this value
  */
 template <typename R1, typename R2>
 auto append(const R1 &r1, R2 &r2)
@@ -353,12 +351,11 @@ auto append(const R1 &r1, R2 &r2)
 }
 
 /**
- * @fn
- * r2にr1を追加する
- * @tparm R1 R2のvalue_typeに暗黙に変換可能な任意の型
- * @tparm R2 メンバ関数end()とinsert()を持つ任意の型
- * @param r1 この値を追加する
- * @param r2 この参照先に追加する
+ * Append r1 to r2
+ * @tparam R1 Type that can cast to value_type of R2 implicitly
+ * @tparam R2 Type with member function end() and insert()
+ * @param r1 This value is appended
+ * @param r2 Append to this value
  */
 template <typename R1, typename R2>
 auto append(const R1 &r1, R2 &r2)
@@ -369,14 +366,12 @@ auto append(const R1 &r1, R2 &r2)
 }
 
 /**
- * @fn
- * r2にr1を追加する
- * @tparm R1
- * メンバ関数begin()とend()を持ちR2とconvertible_rangeであるような任意の型
- * @tparm R2
- * メンバ関数end()とpush_back()を持ちR1とconvertible_rangeであるような任意の型
- * @param r1 この値を追加する
- * @param r2 この参照先に追加する
+ * Append r1 to r2
+ * @tparam R1 Type that can cast to value_type of R2 implicitly
+ * @tparam R1 Type with member function begin() and end() that satisfies convertible_range with R2
+ * @tparam R2 Type with member function end() and push_back() that satisfies convertible_range with R1
+ * @param r1 This value is appended
+ * @param r2 Append to this value
  */
 template <typename R1, typename R2>
 auto append(const R1 &r1, R2 &r2)
@@ -387,12 +382,11 @@ auto append(const R1 &r1, R2 &r2)
 }
 
 /**
- * @fn
- * r2にr1を追加する
- * @tparm R1 R2のvalue_typeに暗黙に変換可能な任意の型
- * @tparm R2 メンバ関数end()とpush_back()を持つ任意の型
- * @param r1 この値を追加する
- * @param r2 この参照先に追加する
+ * Append r1 to r2
+ * @tparam R1 Type that can cast to value_type of R2 implicitly
+ * @tparam R2 Type with member function end() and push_back()
+ * @param r1 This value is appended
+ * @param r2 Append to this value
  */
 template <typename R1, typename R2>
 auto append(const R1 &r1, R2 &r2)
@@ -403,14 +397,12 @@ auto append(const R1 &r1, R2 &r2)
 }
 
 /**
- * @fn
- * r2にr1を追加する
- * @tparm R1
- * メンバ関数begin()とend()を持ちR2とconvertible_rangeであるような任意の型
- * @tparm R2
- * メンバ関数resize()とbegin()を持ちR1とconvertible_rangeであるような任意の型
- * @param r1 この値を追加する
- * @param r2 この参照先に追加する
+ * Append r1 to r2
+ * @tparam R1 Type that can cast to value_type of R2 implicitly
+ * @tparam R1 Type with member function begin() and end() that satisfies convertible_range with R2
+ * @tparam R2 Type with member function resize) and begin() that satisfies convertible_range with R1
+ * @param r1 This value is appended
+ * @param r2 Append to this value
  */
 template <typename R1, typename R2>
 auto append(const R1 &r1, R2 &r2)
@@ -424,12 +416,11 @@ auto append(const R1 &r1, R2 &r2)
 }
 
 /**
- * @fn
- * r2にr1を追加する
- * @tparm R1 R2のvalue_typeに暗黙に変換可能な任意の型
- * @tparm R2 メンバ関数resize()とbegin()を持つ任意の型
- * @param r1 この値を追加する
- * @param r2 この参照先に追加する
+ * Append r1 to r2
+ * @tparam R1 Type that can cast to value_type of R2 implicitly
+ * @tparam R2 Type with member function resize() and begin()
+ * @param r1 This value is appended
+ * @param r2 Append to this value
  */
 template <typename R1, typename R2>
 auto append(const R1 &r1, R2 &r2)
@@ -443,23 +434,21 @@ auto append(const R1 &r1, R2 &r2)
 }
 
 /**
- * @fn
  * remove all elements in the range
  * ( for the case R has clear() )
- * @tparm R A type that meets the standard range concept and has clear()
- * @param r range to remove elements
+ * @tparam R A type that meets the standard range concept and has clear()
+ * @param r Range to remove elements
  */
 template <typename R> auto clear(R &r) -> std::enable_if_t<has_clear_v<R>> {
   r.clear();
 }
 
 /**
- * @fn
  * remove all elements in the range
  * ( for the case R doesn't have clear() )
- * @tparm R A type that meets the standard range concept but clear() is not
+ * @tparam R A type that meets the standard range concept but clear() is not
  * available
- * @param r range to remove elements
+ * @param r Range to remove elements
  */
 template <typename R> auto clear(R &r) -> std::enable_if_t<!has_clear_v<R>> {
   r = R();
@@ -467,8 +456,8 @@ template <typename R> auto clear(R &r) -> std::enable_if_t<!has_clear_v<R>> {
 
 /**
  * @class
- * @brief Tがassignで代入できるrangeの場合にtrueを返す
- * @tparm T 任意の型
+ * @brief Meta function that returns true if T is range that can be left hand side value of assign()
+ * @tparam T Type to check
  */
 template <typename T, typename Enable = void>
 struct IsAssignableRange : public std::false_type {};
@@ -494,12 +483,11 @@ template <typename T>
 constexpr bool is_assignable_range_v = IsAssignableRange<T>::value;
 
 /**
- * @fn
- * rangeからrangeへ値を代入する
- * @tparm R1 rangeの要件を満たす任意の型
- * @tparm R2 rangeの要件を満たす任意の型
- * @param r1 この値を代入する
- * @param r2 この参照先に代入される
+ * assign range values to other range
+ * @tparam R1 Type that satisfies range concept
+ * @tparam R2 Type that satisfies range concept
+ * @param r1 This value is assigned
+ * @param r2 Assign to this value
  */
 template <typename R1, typename R2>
 auto copy(const R1 &r1, R2 &r2)
@@ -510,12 +498,11 @@ auto copy(const R1 &r1, R2 &r2)
 }
 
 /**
- * @fn
- * rangeからoutput iteratorへ値を代入する
- * @tparm R1 rangeの要件を満たす任意の型
- * @tparm R2 output iteratorの要件を満たす任意の型
- * @param r1 この値を代入する
- * @param r2 このイテレータに代入される
+ * assign range values to output iterator
+ * @tparam R1 Type that satisfies range concept
+ * @tparam R2 Type that satisfies output iterator concept
+ * @param r1 This value is assigned
+ * @param r2 Assign to this value
  */
 template <typename R, typename I>
 auto copy(const R &r, I dest)
@@ -525,3 +512,4 @@ auto copy(const R &r, I dest)
 
 } // namespace fuzzuf::utils::range
 #endif
+

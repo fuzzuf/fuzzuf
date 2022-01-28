@@ -15,6 +15,10 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see http://www.gnu.org/licenses/.
  */
+/**
+ * @file fuzzer.hpp
+ * @author Ricerca Security <fuzzuf-dev@ricsec.co.jp>
+ */
 #ifndef FUZZUF_INCLUDE_ALGORITHM_NEZHA_FUZZER_HPP
 #define FUZZUF_INCLUDE_ALGORITHM_LNEZHA_FUZZER_HPP
 
@@ -37,7 +41,7 @@ struct GlobalFuzzerOptions;
 namespace fuzzuf::algorithm::nezha {
 
 class NezhaFuzzer : public ::Fuzzer {
-  // Fuzzer signature ( status code difference as a difference of targets )
+  /// Fuzzer signature ( status code difference as a difference of targets )
   using Func = bool(libfuzzer::Variables &, // common libFuzzer variables
                     Variables &,            // Nezha specific variables
                     utils::DumpTracer &, utils::ElapsedTimeTracer &);
@@ -50,7 +54,7 @@ public:
   virtual ~NezhaFuzzer() {}
   virtual void OneLoop();
   virtual void ReceiveStopSignal(void) {}
-  bool end() const { return end_; }
+  bool ShouldEnd() const { return end_; }
   const libfuzzer::FuzzerCreateInfo &get_create_info() const {
     return create_info;
   }

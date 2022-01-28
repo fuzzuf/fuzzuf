@@ -15,6 +15,10 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see http://www.gnu.org/licenses/.
  */
+/**
+ * @file add_feature.hpp
+ * @author Ricerca Security <fuzzuf-dev@ricsec.co.jp>
+ */
 #ifndef FUZZUF_INCLUDE_ALGORITHM_LIBFUZZER_FEATURE_ADD_FEATURE_HPP
 #define FUZZUF_INCLUDE_ALGORITHM_LIBFUZZER_FEATURE_ADD_FEATURE_HPP
 #include "fuzzuf/algorithms/libfuzzer/corpus/delete_input.hpp"
@@ -31,15 +35,14 @@
 namespace fuzzuf::algorithm::libfuzzer::feature {
 
 /**
- * @fn
  * Append feature
  *
  * Corresponding code of original libFuzzer implementation
  * https://github.com/llvm/llvm-project/blob/llvmorg-12.0.1/compiler-rt/lib/fuzzer/FuzzerCorpus.h#L409
  *
- * @tparm State libFuzzer state object type
- * @tparm Corpus FullCorpus type to add new execution result
- * @param state libFuzzer state object
+ * @tparam State LibFuzzer state object type
+ * @tparam Corpus FullCorpus type to add new execution result
+ * @param state LibFuzzer state object
  * @param corpus FullCorpus
  * @param index Feature ID to add
  * @param new_size Length of input which produced this feature

@@ -99,7 +99,7 @@ BOOST_AUTO_TEST_CASE(HierarFlowExecute) {
   ne::NezhaFuzzer fuzzer(wrapped_args, GlobalFuzzerOptions(),
                          [](std::string &&m) { std::cout << m << std::flush; });
 
-  while (!fuzzer.end()) {
+  while (!fuzzer.ShouldEnd()) {
     fuzzer.OneLoop();
   }
 

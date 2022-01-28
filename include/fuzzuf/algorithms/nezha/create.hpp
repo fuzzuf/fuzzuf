@@ -15,6 +15,10 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see http://www.gnu.org/licenses/.
  */
+/**
+ * @file create.hpp
+ * @author Ricerca Security <fuzzuf-dev@ricsec.co.jp>
+ */
 #ifndef FUZZUF_INCLUDE_ALGORITHMS_NEZHA_CREATE_HPP
 #define FUZZUF_INCLUDE_ALGORITHMS_NEZHA_CREATE_HPP
 #include "fuzzuf/algorithms/nezha/config.hpp"
@@ -27,23 +31,22 @@
 namespace fuzzuf::algorithm::nezha {
 
 /**
- * @fn
  * Build following flow using HierarFlow
  * * Execute specified target and retrive execution result
  * * Calculate features using execution result
  * * Add to corpus if the execution result is valuable
  * * Append value that represent whether the execution result was added to corpus to traces
  * * Append hash value of standard output to outputs
- * @tparm F Input function type of HierarFlow node
- * @tparm Ord Type to specify how to retrive values from the arguments.
- * @tparm Sink Type of the callable with one string argument
- * @param target_path path of the target executable
- * @param create_info parameters on building the fuzzer
+ * @tparam F Input function type of HierarFlow node
+ * @tparam Ord Type to specify how to retrive values from the arguments.
+ * @tparam Sink Type of the callable with one string argument
+ * @param target_path Path of the target executable
+ * @param create_info Parameters on building the fuzzer
  * @param use_output If true, standard output of the execution is treated as the output of  execution. Otherwise, status code is treated as the output of execution.
  * @param force_add_to_corpus If true, the execution result is added to the
  * corpus regardless of features. Otherwise, the execution result is added to
  * the corpus if the execution found novel features.
- * @param may_delete_file set may_delete_file attribute to the execution result
+ * @param may_delete_file Set may_delete_file attribute to the execution result
  * ( This attribute is not used in current fuzzuf's implementation ).
  * @param persistent If true, the input is written to both memory and storage.
  * Otherwise, the input is stored on the memory only.
@@ -113,19 +116,18 @@ auto CreateRunSingleTarget(const fs::path &target_path,
 }
 
 /**
- * @fn
  * Build following flow using HierarFlow
  * * For each target executables, run everything defined at CreateRunSingleTarget
- * @tparm F Input function type of HierarFlow node
- * @tparm Ord Type to specify how to retrive values from the arguments.
- * @tparm Sink Type of the callable with one string argument
- * @param target_path vector of paths of the target executable
- * @param create_info parameters on building the fuzzer
+ * @tparam F Input function type of HierarFlow node
+ * @tparam Ord Type to specify how to retrive values from the arguments.
+ * @tparam Sink Type of the callable with one string argument
+ * @param target_path Vector of paths of the target executable
+ * @param create_info Parameters on building the fuzzer
  * @param use_output If true, standard output of the execution is treated as the output of  execution. Otherwise, status code is treated as the output of execution.
  * @param force_add_to_corpus If true, the execution result is added to the
  * corpus regardless of features. Otherwise, the execution result is added to
  * the corpus if the execution found novel features.
- * @param may_delete_file set may_delete_file attribute to the execution result
+ * @param may_delete_file Set may_delete_file attribute to the execution result
  * ( This attribute is not used in current fuzzuf's implementation ).
  * @param persistent If true, the input is written to both memory and storage.
  * Otherwise, the input is stored on the memory only.
@@ -158,16 +160,15 @@ auto CreateRunTargets(const std::vector<fs::path> &target_path,
 }
 
 /**
- * @fn
  * Build following flow using HierarFlow
  * * Select one input ( or two if crossover is enabled) and mutate it
  * * Run everything defined at CreateRunTargets using the input
  * * Append execution result to solutions if the traces or outputs is unique
- * @tparm F Input function type of HierarFlow node
- * @tparm Ord Type to specify how to retrive values from the arguments.
- * @tparm Sink Type of the callable with one string argument
- * @param target_path vector of paths of the target executable
- * @param create_info parameters on building the fuzzer
+ * @tparam F Input function type of HierarFlow node
+ * @tparam Ord Type to specify how to retrive values from the arguments.
+ * @tparam Sink Type of the callable with one string argument
+ * @param target_path Vector of paths of the target executable
+ * @param create_info Parameters on building the fuzzer
  * @param use_output If true, standard output of the execution is treated as the output of  execution. Otherwise, status code is treated as the output of execution.
  * @param sink Callback function with one string argument to output messages.
  * @return root node of the HierarFlow
@@ -262,13 +263,12 @@ auto createRunone(const std::vector<fs::path> &target_path,
 }
 
 /**
- * @fn
  * Build all process of Nezha using HierarFlow
- * @tparm F Input function type of HierarFlow node
- * @tparm Ord Type to specify how to retrive values from the arguments.
- * @tparm Sink Type of the callable with one string argument
- * @param target_path vector of paths of the target executable
- * @param create_info parameters on building the fuzzer
+ * @tparam F Input function type of HierarFlow node
+ * @tparam Ord Type to specify how to retrive values from the arguments.
+ * @tparam Sink Type of the callable with one string argument
+ * @param target_path Vector of paths of the target executable
+ * @param create_info Parameters on building the fuzzer
  * @param initial_inputs ExecInputSet that contains initial inputs
  * @param sink Callback function with one string argument to output messages.
  * @return root node of the HierarFlow

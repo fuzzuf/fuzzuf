@@ -15,6 +15,10 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see http://www.gnu.org/licenses/.
  */
+/**
+ * @file utils.hpp
+ * @author Ricerca Security <fuzzuf-dev@ricsec.co.jp>
+ */
 #ifndef FUZZUF_INCLUDE_ALGORITHM_LIBFUZZER_MUTATION_UTILS_HPP
 #define FUZZUF_INCLUDE_ALGORITHM_LIBFUZZER_MUTATION_UTILS_HPP
 #include "fuzzuf/algorithms/libfuzzer/dictionary.hpp"
@@ -110,18 +114,17 @@ auto GetPositionHint(const E &) -> std::enable_if_t<
 
 namespace detail {
 
-/*
- * @fn
+/**
  * Copy [begin1, end1) to [begin2, end2).
  * If both range size is not same, elements in shorter range size are affected.
  * It is acceptable to overwrap both ranges.
  *
- * @tparm Iterator source iterator. forward_iterator or higher is required.
- * @tparm OutputIterator destination iterator. forward_iterator or higher is required.
- * @param begin1 begin of source
- * @param end1 end of source
- * @param begin2 begin of destination
- * @param end2 end of destination
+ * @tparam Iterator Source iterator. forward_iterator or higher is required.
+ * @tparam OutputIterator Destination iterator. forward_iterator or higher is required.
+ * @param begin1 Begin of source
+ * @param end1 End of source
+ * @param begin2 Begin of destination
+ * @param end2 End of destination
  */
 template <typename Iterator, typename OutputIterator>
 void CopySelf(Iterator begin1, Iterator end1, OutputIterator begin2,
@@ -147,15 +150,14 @@ void CopySelf(Iterator begin1, Iterator end1, OutputIterator begin2,
 }
 
 /*
- * @fn
  * Insert [begin, end) to specified position.
  * The inserting position is permitted to be placed between begin and end.
  *
- * @tparm Iterator source iterator. forward_iterator or higher is required.
- * @tparm OutputIterator inserting position iterator. output_iterator or higher is required.
- * @param begin1begin of source
- * @param end end of source
- * @param at inserting position
+ * @tparam Iterator Source iterator. forward_iterator or higher is required.
+ * @tparam OutputIterator Inserting position iterator. output_iterator or higher is required.
+ * @param begin1begin Of source
+ * @param end End of source
+ * @param at Inserting position
  */
 template <typename Iterator, typename OutputIterator>
 void InsertSelf(Iterator begin, Iterator end, OutputIterator at) {
@@ -177,18 +179,17 @@ void InsertSelf(Iterator begin, Iterator end, OutputIterator at) {
 }
 
 /*
- * @fn
  * Copy random length of "from" from random offset to random length of "to" from random offset.
  *
  * Corresponding code of original libFuzzer implementation
  * https://github.com/llvm/llvm-project/blob/llvmorg-12.0.1/compiler-rt/lib/fuzzer/FuzzerMutate.cpp#L299
  *
- * @tparm RNG type of random number generator
- * @tparm R1 "from" range type
- * @tparm R2 "to" range type
- * @param rng random number generator
- * @param from the range to copy values from
- * @param to the range to copy values to
+ * @tparam RNG Type of random number generator
+ * @tparam R1 "from" range type
+ * @tparam R2 "to" range type
+ * @param rng Random number generator
+ * @param from The range to copy values from
+ * @param to The range to copy values to
  * @param potential_overlap Set true if "from" and "to" can overwrap. Otherwise, set false.
  * @return length of "to"
  */
@@ -220,20 +221,19 @@ auto CopyPartOf(RNG &rng, const R1 &from, R2 &to, bool potential_overlap)
 }
 
 /*
- * @fn
  * Fetch random length chunks of values from r1 and r2, then output interleaved to the dest.
  *
  * Corresponding code of original libFuzzer implementation
  * https://github.com/llvm/llvm-project/blob/llvmorg-12.0.1/compiler-rt/lib/fuzzer/FuzzerCrossOver.cpp#L19
  *
- * @tparm RNG type of random number generator
- * @tparm R1 first source range type
- * @tparm R2 second source range type
- * @tparm OutputIterator output_iterator or higher
- * @param rng random number generator
- * @param r1 first source range
- * @param r2 second source range
- * @param dest an output iterator to write interleaved values.
+ * @tparam RNG Type of random number generator
+ * @tparam R1 First source range type
+ * @tparam R2 Second source range type
+ * @tparam OutputIterator Output_iterator or higher
+ * @param rng Random number generator
+ * @param r1 First source range
+ * @param r2 Second source range
+ * @param dest An output iterator to write interleaved values.
  * @return total copied size
  */
 template <typename RNG, typename R1, typename R2, typename OutputIterator>
@@ -273,19 +273,18 @@ auto Crossover(RNG &rng, const R1 &r1, const R2 &r2, OutputIterator dest,
 }
 
 /*
- * @fn
  * Insert or copy specified dictionary entry at the random position of data.
  *
  * Corresponding code of original libFuzzer implementation
  * https://github.com/llvm/llvm-project/blob/llvmorg-12.0.1/compiler-rt/lib/fuzzer/FuzzerMutate.cpp#L166
  *
- * @tparm RNG type of random number generator
- * @tparm R destination container type
- * @tparm E dictionary entry type
- * @param rng random number generator
- * @param data destination to write dictionary entry
- * @param dict_entry dictionary entry
- * @param max_size max length of data
+ * @tparam RNG Type of random number generator
+ * @tparam R Destination container type
+ * @tparam E Dictionary entry type
+ * @param rng Random number generator
+ * @param data Destination to write dictionary entry
+ * @param dict_entry Dictionary entry
+ * @param max_size Max length of data
  * @return length of post modification data
  */
 template <typename RNG, typename R, typename E>
@@ -323,19 +322,18 @@ auto ApplyDictionaryEntry(RNG &rng, R &data, E &dict_entry,
 }
 
 /*
- * @fn
  * Insert or copy randomly selected dictionary entry at the random position of data.
  *
  * Corresponding code of original libFuzzer implementation
  * https://github.com/llvm/llvm-project/blob/llvmorg-12.0.1/compiler-rt/lib/fuzzer/FuzzerMutate.cpp#L285
  *
- * @tparm RNG type of random number generator
- * @tparm Dict dictionary type
- * @tparm R destination container type
- * @param rng random number generator
- * @param dict dictionary
- * @param data destination to write dictionary entry
- * @param max_size max length of data
+ * @tparam RNG Type of random number generator
+ * @tparam Dict Dictionary type
+ * @tparam R Destination container type
+ * @param rng Random number generator
+ * @param dict Dictionary
+ * @param data Destination to write dictionary entry
+ * @param max_size Max length of data
  * @return length of post modification data
  */
 template <typename RNG, typename Dict, typename R>
@@ -364,18 +362,17 @@ auto AddWordFromDictionary(
 }
 
 /*
- * @fn
  * Insert random length of "from" from random offset to random position of "to".
  *
  * Corresponding code of original libFuzzer implementation
  * https://github.com/llvm/llvm-project/blob/llvmorg-12.0.1/compiler-rt/lib/fuzzer/FuzzerMutate.cpp#L314
  *
- * @tparm RNG type of random number generator
- * @tparm R1 "from" range type
- * @tparm R2 "to" range type
- * @param rng random number generator
- * @param from the range to insert values from
- * @param to the range insert values to
+ * @tparam RNG Type of random number generator
+ * @tparam R1 "from" range type
+ * @tparam R2 "to" range type
+ * @param rng Random number generator
+ * @param from The range to insert values from
+ * @param to The range insert values to
  * @param potential_overlap Set true if "from" and "to" can overwrap. Otherwise, set false.
  * @return length of post modified "to"
  */
@@ -412,18 +409,17 @@ auto InsertPartOf(RNG &rng, const R1 &from, R2 &to, bool potential_overlap,
 }
 
 /*
- * @fn
  * Insert random length of "from" from random offset to random position of "to".
  * Consider sizeof(T) bytes at random offset of data is a value of integer type T, then modify the value in range of -10 to 10 and writeback modified value to original position.
  *
  * Corresponding code of original libFuzzer implementation
  * https://github.com/llvm/llvm-project/blob/llvmorg-12.0.1/compiler-rt/lib/fuzzer/FuzzerMutate.cpp#L384
  *
- * @tparm T integer type
- * @tparm RNG type of random number generator
- * @tparm Range container of the value
- * @param rng random number generator
- * @param data value to modify
+ * @tparam T Integer type
+ * @tparam RNG Type of random number generator
+ * @tparam Range Container of the value
+ * @param rng Random number generator
+ * @param data Value to modify
  * @return length of post modification value
  */
 template <typename T, typename RNG, typename Range>

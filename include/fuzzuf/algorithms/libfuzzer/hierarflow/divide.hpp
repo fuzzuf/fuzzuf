@@ -15,6 +15,10 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see http://www.gnu.org/licenses/.
  */
+/**
+ * @file divide.hpp
+ * @author Ricerca Security <fuzzuf-dev@ricsec.co.jp>
+ */
 #ifndef FUZZUF_INCLUDE_ALGORITHM_LIBFUZZER_HIERARFLOW_DIVIDE_HPP
 #define FUZZUF_INCLUDE_ALGORITHM_LIBFUZZER_HIERARFLOW_DIVIDE_HPP
 #include "fuzzuf/algorithms/libfuzzer/hierarflow/standard_typedef.hpp"
@@ -29,8 +33,8 @@ namespace fuzzuf::algorithm::libfuzzer {
  *
  * This node modifies flow.
  * The node takes no any paths.
- * @tparm F Function type to define what arguments passes through this node.
- * @tparm Path Struct path to define which value to to use.
+ * @tparam F Function type to define what arguments passes through this node.
+ * @tparam Path Struct path to define which value to to use.
  */
 template <typename F, typename Path = utils::struct_path::Paths<>> struct Divide {};
 template <typename R, typename... Args, typename Path>
@@ -39,15 +43,13 @@ class Divide<R(Args...), Path>
 public:
   FUZZUF_ALGORITHM_LIBFUZZER_HIERARFLOW_STANDARD_TYPEDEFS
   /**
-   * @fn
    * Constructor
-   * @param d child nodes are invoked for each d visits
+   * @param d Child nodes are invoked for each d visits
    */
   Divide( std::size_t d ) : numerator( 0u ), denominator( d ) {}
   /**
-   * @fn
    * This callable is called on HierarFlow execution
-   * @param args arguments
+   * @param args Arguments
    * @return direction of next node
    */
   callee_ref_t operator()(Args... args) {

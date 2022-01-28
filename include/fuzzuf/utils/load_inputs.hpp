@@ -15,6 +15,10 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see http://www.gnu.org/licenses/.
  */
+/**
+ * @file load_inputs.hpp
+ * @author Ricerca Security <fuzzuf-dev@ricsec.co.jp>
+ */
 #ifndef FUZZUF_INCLUDE_UTILS_LOAD_INPUTS_HPP
 #define FUZZUF_INCLUDE_UTILS_LOAD_INPUTS_HPP
 
@@ -24,10 +28,9 @@
 
 namespace fuzzuf::utils {
 /**
- * @fn
  * Mmap all files under the directory and return mmaped ranges.
  * Subdirectories under the specified directory are traversed recursively.
- * @param dir directory to find files.
+ * @param dir Directory to find files.
  * @param check_sha1 Calcurate Sha1 for each file contents and ignore file which
  * name doesn't match to the hash.
  * @return vector of mmaped ranges

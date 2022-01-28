@@ -15,6 +15,10 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see http://www.gnu.org/licenses/.
  */
+/**
+ * @file select_seed.hpp
+ * @author Ricerca Security <fuzzuf-dev@ricsec.co.jp>
+ */
 #ifndef FUZZUF_INCLUDE_ALGORITHM_LIBFUZZER_SELECT_SEED_HPP
 #define FUZZUF_INCLUDE_ALGORITHM_LIBFUZZER_SELECT_SEED_HPP
 #include "fuzzuf/algorithms/libfuzzer/random.hpp"
@@ -25,18 +29,16 @@
 
 namespace fuzzuf::algorithm::libfuzzer::select_seed {
 
-/*
- * @fn
- * 現在のcorpusの各要素のfeatureの数と重みを出力する
- * 出力のフォーマットはlibFuzzer互換
+/**
+ * Display feature count and weight of current corpus elements in libFuzzer compatible format
  *
- * libFuzzerの対応箇所
+ * Corresponding code of original libFuzzer implementation
  * https://github.com/llvm/llvm-project/blob/llvmorg-12.0.1/compiler-rt/lib/fuzzer/FuzzerCorpus.h#L547
  *
- * @tparm Corpus corpusの型
- * @param corpus このcorpusの中身が出力される
- * @param weights corpusの各要素の重み
- * @param sink メッセージの出力先
+ * @tparam Corpus Type of corpus
+ * @param corpus Display elements of this corpus
+ * @param weights Weights of each corpus elements
+ * @param sink Callable with one string argument to display message
  */
 template <typename Corpus>
 auto DumpDistribution(Corpus &corpus, const std::vector<double> &weights,
@@ -56,15 +58,12 @@ auto DumpDistribution(Corpus &corpus, const std::vector<double> &weights,
   sink(std::move(message));
 }
 
-/*
- * @fn
- * corpusの要素数と同サイズの整数の列を作る
+/**
+ * Generate sequentially increasing integer range in size of corpus
  *
- *
- *
- * @tparm Corpus corpusの型
- * @param corpus このcorpusの要素数が使用される
- * @param intervals 出力先
+ * @tparam Corpus Type of corpus
+ * @param corpus Corpus to retrive the size
+ * @param intervals Destination container
  */
 template <typename Corpus>
 auto GenerateIntervals(Corpus &corpus, std::vector<double> &intervals)
@@ -74,16 +73,15 @@ auto GenerateIntervals(Corpus &corpus, std::vector<double> &intervals)
   std::iota(intervals.begin(), intervals.end(), 0);
 }
 
-/*
- * @fn
- * corpusの後ろの要素ほど選ばれやすい重みを生成する
+/**
+ * Generate weights whose newer elements are more frequently chosen.
  *
- * libFuzzerの対応箇所
+ * Corresponding code of original libFuzzer implementation
  * https://github.com/llvm/llvm-project/blob/llvmorg-12.0.1/compiler-rt/lib/fuzzer/FuzzerCorpus.h#L540
  *
- * @tparm Corpus corpusの型
- * @param corpus このcorpusの要素数が使用される
- * @param intervals 出力先
+ * @tparam Corpus Type of corpus
+ * @param corpus Generate weights for elements of this corpus
+ * @param intervals Callable with one string argument to display message
  */
 template <typename Corpus>
 auto GenerateVanillaSchedule(Corpus &corpus, std::vector<double> &weights)
@@ -104,16 +102,15 @@ auto GenerateVanillaSchedule(Corpus &corpus, std::vector<double> &weights)
       });
 }
 
-/*
- * @fn
- * testcaseのenergyを求めて、energyに基づいて重みを生成する
+/**
+ * Calculate energy for each corpus element, then decide weights depending on the energy.
  *
- * libFuzzerの対応箇所
+ * Corresponding code of original libFuzzer implementation
  * https://github.com/llvm/llvm-project/blob/llvmorg-12.0.1/compiler-rt/lib/fuzzer/FuzzerCorpus.h#L504
  *
- * @tparm Corpus corpusの型
- * @param corpus このcorpusの要素数が使用される
- * @param intervals 出力先
+ * @tparam Corpus Type of corpus
+ * @param corpus Generate weights for elements of this corpus
+ * @param intervals Callable with one string argument to display message
  */
 template <typename State, typename Corpus>
 auto GenerateEntropicSchedule(State &state, Corpus &corpus,
@@ -163,24 +160,23 @@ auto GenerateEntropicSchedule(State &state, Corpus &corpus,
   return !vanilla_schedule;
 }
 
-/*
- * @fn
- * 入力の選択に使う重みを更新する
- * LLVM 10.0.0 以上版( entropicモードを使う )
+/**
+ * Update distribution that is used to choose input value.
+ * Compatible to LLVM version equal or higher than 11.0.0 ( entropic mode is enabled )
  *
- * libFuzzer
+ * Corresponding code of original libFuzzer implementation
  * https://github.com/llvm/llvm-project/blob/llvmorg-12.0.1/compiler-rt/lib/fuzzer/FuzzerCorpus.h#L488
  *
- * @tparm llvm_version LLVMのバージョン
- * @tparm State libFuzzerの状態を表す型
- * @tparm Corpus corpusの型
- * @tparm RNG 乱数生成器の型
- * @param state libFuzzerの状態
- * @param corpus このcorpusの要素に対する重みが計算される
- * @param rng 乱数生成器
+ * @tparam llvm_version LLVM version that the function is about to compatible to.
+ * @tparam State LibFuzzer state object type
+ * @tparam Corpus FullCorpus type to add new execution result
+ * @tparam RNG A type that satisfies standard  random number generator concept
+ * @param state LibFuzzer state object
+ * @param corpus FullCorpus to add new execution result
+ * @param rng Random number generator
  * @param sparse_energy_updates
- * entropicモードの場合、分布の更新が不要な状況でも1/sparse_energy_updatesの確率で分布の更新を行う
- * @param sink メッセージの出力先
+ * On entropic mode, calculate distribution in probability of 1/sparse_energy_updates even if distribution updating is not requested.
+ * @param sink Callable with one string argument to display message
  */
 template <Version llvm_version, typename State, typename Corpus, typename RNG>
 auto UpdateDistribution(State &state, Corpus &corpus, RNG &rng,
@@ -188,7 +184,7 @@ auto UpdateDistribution(State &state, Corpus &corpus, RNG &rng,
                         std::uint8_t max_mutation_factor,
                         const std::function<void(std::string &&)> &sink)
     -> std::enable_if_t<is_state_v<State> && is_full_corpus_v<Corpus> &&
-                            (llvm_version >= MakeVersion(10u, 0u, 0u)),
+                            (llvm_version >= MakeVersion(11u, 0u, 0u)),
                         bool> {
   if (!state.distribution_needs_update &&
       (!state.config.entropic.enabled ||
@@ -222,29 +218,30 @@ auto UpdateDistribution(State &state, Corpus &corpus, RNG &rng,
   return true;
 }
 
-/*
- * @fn
- * 入力の選択に使う重みを更新する
- * LLVM 10.0.0 未満版( entropicモードを使わない )
+/**
+ * Update distribution that is used to choose input value.
+ * Compatible to LLVM version less than 11.0.0 ( entropic mode is enabled )
  *
- * libFuzzerの対応箇所
+ * Corresponding code of original libFuzzer implementation
  * https://github.com/llvm/llvm-project/blob/llvmorg-10.0.1/compiler-rt/lib/fuzzer/FuzzerCorpus.h#L271
  *
- * @tparm llvm_version LLVMのバージョン
- * @tparm State libFuzzerの状態を表す型
- * @tparm Corpus corpusの型
- * @tparm RNG 乱数生成器の型
- * @param state libFuzzerの状態
- * @param corpus このcorpusの要素に対する重みが計算される
- * @param rng 乱数生成器
- * @param sink メッセージの出力先
+ * @tparam llvm_version LLVM version that the function is about to compatible to.
+ * @tparam State LibFuzzer state object type
+ * @tparam Corpus FullCorpus type to add new execution result
+ * @tparam RNG A type that satisfies standard  random number generator concept
+ * @param state LibFuzzer state object
+ * @param corpus FullCorpus to add new execution result
+ * @param rng Random number generator
+ * @param sparse_energy_updates
+ * On entropic mode, calculate distribution in probability of 1/sparse_energy_updates even if distribution updating is not requested.
+ * @param sink Callable with one string argument to display message
  */
 template <Version llvm_version, typename State, typename Corpus, typename RNG>
 auto UpdateDistribution(State &state, Corpus &corpus, RNG &, std::size_t,
                         std::uint8_t,
                         const std::function<void(std::string &&)> &sink)
     -> std::enable_if_t<is_state_v<State> && is_full_corpus_v<Corpus> &&
-                            (State::llvm_version < MakeVersion(10u, 0u, 0u)),
+                            (State::llvm_version < MakeVersion(11u, 0u, 0u)),
                         bool> {
   size_t corpus_size = corpus.corpus.size();
   assert(corpus_size);
@@ -260,26 +257,24 @@ auto UpdateDistribution(State &state, Corpus &corpus, RNG &, std::size_t,
   return true;
 }
 
-/*
- * @fn
- * corpusから入力を1つ選び、rangeにコピーする
- * 入力は重み付きの乱数で選択される
+/**
+ * Choose one input value from the corpus, then copy it to the range
  *
- * libFuzzerの対応箇所
+ * Corresponding code of original libFuzzer implementation
  * https://github.com/llvm/llvm-project/blob/llvmorg-12.0.1/compiler-rt/lib/fuzzer/FuzzerCorpus.h#L297
- * および
+ * and
  * https://github.com/llvm/llvm-project/blob/llvmorg-12.0.1/compiler-rt/lib/fuzzer/FuzzerCorpus.h#L303
  *
- * @tparm State libFuzzerの状態を表す型
- * @tparm Corpus corpusの型
- * @tparm RNG 乱数生成器の型
- * @tparm Range 選択した入力をコピーする先のコンテナの型
- * @tparm InputInfo 選択した入力の実行結果をコピーする先の型
- * @param state libFuzzerの状態
- * @param corpus このcorpusの要素に対する重みが計算される
- * @param rng 乱数生成器
- * @param range 選択した入力のコピー先
- * @param exec_result 選択した入力の実行結果のコピー先
+ * @tparam State LibFuzzer state object type
+ * @tparam Corpus FullCorpus type to add new execution result
+ * @tparam RNG A type that satisfies standard  random number generator concept
+ * @tparam Range Container of std::uint8_t to store selected input value
+ * @tparam InputInfo Type to store execution result of selected corpus element
+ * @param state LibFuzzer state object
+ * @param corpus FullCorpus to add new execution result
+ * @param rng Random number generator
+ * @param range Selected input value is stored in this value
+ * @param exec_result Selected execution result is stored in this value
  */
 template <typename State, typename RNG, typename Corpus, typename Range,
           typename InputInfo>

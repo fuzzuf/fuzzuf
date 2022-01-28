@@ -15,20 +15,20 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see http://www.gnu.org/licenses/.
  */
+/**
+ * @file create_empty_file.hpp
+ * @author Ricerca Security <fuzzuf-dev@ricsec.co.jp>
+ */
 #ifndef FUZZUF_INCLUDE_UTILS_CREATE_EMPTY_FILE_HPP
 #define FUZZUF_INCLUDE_UTILS_CREATE_EMPTY_FILE_HPP
 #include <cstddef>
 #include <string>
 namespace fuzzuf::utils {
-/*
- * filenameで指定したパスにファイルを作る
- * ファイルはsizeで指定したサイズで中身が未定義の
- * 状態になる
- *   ファイルシステムがスパースファイルを
- *   サポートしていればスパースになる
- * すでにファイルが存在した場合
- *   存在したファイルのサイズがsizeより小さければ
- *   ファイルサイズをsizeまで伸ばす
+/**
+ * Create file at the specified path
+ * The created file has size of undefined data
+ * If the filesystem supports sparse file, created file become sparse.
+ * If the file is already exists and existing file size is smaller than size, file is extended to size.
  */
 void create_empty_file(
   const std::string &filename,
