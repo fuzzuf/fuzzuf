@@ -15,6 +15,10 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see http://www.gnu.org/licenses/.
  */
+/**
+ * @file add_to_solution.hpp
+ * @author Ricerca Security <fuzzuf-dev@ricsec.co.jp>
+ */
 #ifndef FUZZUF_INCLUDE_ALGORITHM_NEZHA_EXECUTOR_ADD_TO_SOLUTION_HPP
 #define FUZZUF_INCLUDE_ALGORITHM_NEZHA_EXECUTOR_ADD_TO_SOLUTION_HPP
 #include "fuzzuf/algorithms/nezha/state.hpp"
@@ -28,23 +32,17 @@
 namespace fuzzuf::algorithm::nezha::executor {
 
 /**
- * @fn
- * outputsが未知の標準出力の組み合わせの場合または一部のターゲットのカバレッジだけに新規性が見られた場合、かつターゲット間で標準出力に差が見られる場合に実行結果と入力値に名前をつけて指定されたcorpusに追加する
- *
- * @tparm Corpus corpusの型
- * @tparm Range 入力値の型
- * @param corpus このcorpusに実行結果を追加する
- * @param range この入力値を追加する
- * @param exec_result この実行結果を追加する
- * @param trace
- * 各ターゲットの実行結果がAddToCorpusでcorpusに追加されたかどうかを表すboolのrange
- * @param known_traces
- * 過去にadd_to_solutionsを呼び出した際に渡ってきた事があるtraceのset
- * @param outputs
- * 各ターゲットを実行した際に得られた標準出力のハッシュを並べたstd::size_tのrange
- * @param outputs_hash
- * 過去にAddToSolutionsを呼び出した際に渡ってきた事があるoutputsのset
- * @param path_prefix 出力先のディレクトリ
+ * @brief Insert execution result to solutions if the tuple of outputs is novel or only part of coverage tuple contain novel features and at least two targets produced diferent standard output.
+ * @tparam Range Contiguous Range of std::uint8_t
+ * @tparam Output Range of std::uint8_t
+ * @param range Input value that was passed to the executor
+ * @param exec_result Execution result that was produced by the executor
+ * @param trace Range of bool that indicates execution result on each targets that had been added to corpus.
+ * @param trace_hash Previously appeared value of trace
+ * @param outputs Range of hash value of standard output
+ * @param outputs_hash Previously appeared value of outputs
+ * @param path_prefix Directory to output solutions.
+ * @return Return true if the input is added to solutions. Otherwise, return false.
  */
 template <typename Range, typename Output>
 auto AddToSolution(Range &range, libfuzzer::InputInfo &exec_result,
@@ -74,25 +72,22 @@ auto AddToSolution(Range &range, libfuzzer::InputInfo &exec_result,
 }
 
 /**
- * @fn
- * statusが未知の終了理由の組み合わせの場合または一部のターゲットのカバレッジだけに新規性が見られた場合、かつ一部のターゲットだけが正常終了している場合に実行結果と入力値に名前をつけて指定されたcorpusに追加する
+ * @brief Insert execution result to solutions if the tuple of status code is novel or only part of coverage tuple contain novel features and only part of targets exited as success( status code = 0 ).
  *
- * Nezhaの対応箇所
+ * Corresponding code of original Nezha implementation
  * https://github.com/nezha-dt/nezha/blob/master/Fuzzer/FuzzerLoop.cpp#L165
- *
- * @tparm Corpus corpusの型
- * @tparm Range 入力値の型
- * @param corpus このcorpusに実行結果を追加する
- * @param range この入力値を追加する
- * @param exec_result この実行結果を追加する
- * @param trace
- * 各ターゲットの実行結果がAddToCorpusでcorpusに追加されたかどうかを表すboolのrange
- * @param known_traces
- * 過去にadd_to_solutionsを呼び出した際に渡ってきた事があるtraceのset
- * @param status 各ターゲットの終了理由を並べたPUTExitReasonTypeのrange
- * @param status_hash
- * 過去にadd_to_solutionsを呼び出した際に渡ってきた事があるstatusのset
- * @param path_prefix 出力先のディレクトリ
+ * 
+ * @tparam Range Contiguous Range of std::uint8_t
+ * @tparam Output Range of std::uint8_t
+ * @param range Input value that was passed to the executor
+ * @param exec_result Execution result that was produced by the executor
+ * @param trace Range of bool that indicates execution result on each targets that had been added to corpus.
+ * @param trace_hash Previously appeared value of trace
+ * @param status Range of status code
+ * @param status_hash Previously appeared value of status
+ * @params path_prefix Directory to output solutions.
+ * @return Return true if the input is added to solutions. Otherwise, return
+ * false.
  */
 template <typename Range>
 auto AddToSolution(Range &range, libfuzzer::InputInfo &exec_result,

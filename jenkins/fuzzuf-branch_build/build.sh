@@ -49,13 +49,29 @@ then
   cmake ../ ${@:4} || die "cmakeできない"
   make -j8 || die "makeできない"
   make test || die "testが失敗した"
-  popd
 else
   pushd ${BUILD_DIR}
   cmake ../ ${@:4} || die "cmakeできない"
   make -j8 || die "makeできない"
   make test || die "testが失敗した"
-  make fuzzuf_doc || die "ドキュメントを作れない"
+  make fuzzuf_doc >doxygen.log || die "ドキュメントを作れない"
   make package || die "パッケージを作れない"
+  COMMIT_ID=$(git log --format="%H" -n 1)
+  pushd docs
+  if [ -e '.git' ]
+  then
+    git config user.email "ricsec-bot@ricsec.co.jp"
+    git config user.name "ricsec-bot"
+    mkdir -p docs
+    pushd docs
+    rm -rf *
+    mv ../../html/* ./
+    git add *
+    popd
+    date >last_update
+    git add last_update
+    git commit -a -m "Generated from ${COMMIT_ID}"
+  fi
+  popd
   popd
 fi

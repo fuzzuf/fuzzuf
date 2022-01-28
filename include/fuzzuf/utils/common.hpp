@@ -141,6 +141,8 @@ template<class T>
 using GetFuncArgsType = typename func_trait<T>::args_type_t;
 */
 
+int ExecuteCommand(std::vector<std::string>& args);
+
 void CreateDir(std::string path);
 
 int OpenFile(std::string path, int flag);
@@ -201,7 +203,6 @@ private:
   set_segv_handler();
 };
 /**
- * @fn
  * この関数の呼び出し以降、log()に渡されたログがurlで指定されたfluentdに送られる
  * ローカルホストの24224番ポートで動くfluentdに接続するには"fluent://localhost:24224"を設定する
  * 接続先のポートが24224番(デフォルト)の場合はポート番号は省略できる
@@ -214,7 +215,6 @@ private:
  **/
 void init_logger(const std::string &url);
 /**
- * @fn
  * log()に渡されたログがfluentdに送られる状態になっているかを確認する
  * この関数は送信先が設定されていることだけをチェックする為、実際にfluentdがログを受け取れる状態になっているかはこの関数の結果に影響しない
  * @brief ログの送信先が設定されているかを確認する
@@ -222,7 +222,6 @@ void init_logger(const std::string &url);
  **/
 bool has_logger();
 /**
- * @fn
  * init_loggerで設定された送信先に文字列のログを送る
  * 文字列はそれがJSONとして解釈可能な場合JSONとしてパースしてfluentdに送られる
  * JSONとして解釈できない文字列の場合、その文字列だけを含むJSONとしてfluentdに送られる
@@ -236,7 +235,6 @@ bool has_logger();
 void log(std::string &&tag, std::string &&message,
          std::function<void(fuzzuf::status_t)> &&cb);
 /**
- * @fn
  * init_loggerで設定された送信先に文字列のログを送る
  * 文字列はそれがJSONとして解釈可能な場合JSONとしてパースしてfluentdに送られる
  * JSONとして解釈できない文字列の場合、その文字列だけを含むJSONとしてfluentdに送られる
@@ -250,7 +248,6 @@ void log(std::string &&tag, std::string &&message,
  **/
 fuzzuf::status_t log(std::string &&tag, std::string &&message);
 /**
- * @fn
  * init_loggerで設定された送信先にJSONのログを送る
  * ログのタグはfuzzuf.<親プロセスのPID>.<自身のPID>.<tagで指定した値>になる
  * この関数はログの送信を送信キューに積んで送信完了を待たずに返る
@@ -262,7 +259,6 @@ fuzzuf::status_t log(std::string &&tag, std::string &&message);
 void log(std::string &&tag, nlohmann::json &&message,
          std::function<void(fuzzuf::status_t)> &&cb);
 /**
- * @fn
  * init_loggerで設定された送信先にJSONのログを送る
  * ログのタグはfuzzuf.<親プロセスのPID>.<自身のPID>.<tagで指定した値>になる
  * この関数はログの送信が完了するか失敗するまでブロックする

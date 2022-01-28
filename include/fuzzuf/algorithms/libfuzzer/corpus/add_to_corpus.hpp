@@ -15,6 +15,10 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see http://www.gnu.org/licenses/.
  */
+/**
+ * @file add_to_corpus.hpp
+ * @author Ricerca Security <fuzzuf-dev@ricsec.co.jp>
+ */
 #ifndef FUZZUF_INCLUDE_ALGORITHM_LIBFUZZER_CORPUS_ADD_TO_CORPUS_HPP
 #define FUZZUF_INCLUDE_ALGORITHM_LIBFUZZER_CORPUS_ADD_TO_CORPUS_HPP
 #include "fuzzuf/algorithms/libfuzzer/state/corpus.hpp"
@@ -31,7 +35,6 @@
 namespace fuzzuf::algorithm::libfuzzer::corpus {
 
 /**
- * @fn
  * Insert execution result to corpus if that has features
  * Unlike executor::AddToCorpus, this function always append the execution result to the corpus.
  * This function puts id and sha1 hash on the execution result.
@@ -40,9 +43,9 @@ namespace fuzzuf::algorithm::libfuzzer::corpus {
  * Corresponding code of original libFuzzer implementation
  * https://github.com/llvm/llvm-project/blob/llvmorg-12.0.1/compiler-rt/lib/fuzzer/FuzzerCorpus.h#L208
  *
- * @tparm Corpus FullCorpus type to add new execution result
- * @tparm Range Contiguous Range of std::uint8_t
- * @tparm InputInfo Type to provide execution result
+ * @tparam Corpus FullCorpus type to add new execution result
+ * @tparam Range Contiguous Range of std::uint8_t
+ * @tparam InputInfo Type to provide execution result
  * @param corpus FullCorpus to add new execution result
  * @param range Input value that was passed to the executor
  * @param testcase_ Execution result that was produced by the executor

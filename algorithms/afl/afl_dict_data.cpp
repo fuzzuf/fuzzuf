@@ -21,7 +21,6 @@
 namespace fuzzuf::algorithm::afl::dictionary {
 
 /**
- * @fn
  * Loads an AFL dictionary specified by filename into dest
  * If dest already has its elements, the content loaded is inserted after them
  * @brief Load AFL dictionary specified by filename to dest

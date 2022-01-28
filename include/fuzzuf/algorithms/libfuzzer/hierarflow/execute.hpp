@@ -15,6 +15,10 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see http://www.gnu.org/licenses/.
  */
+/**
+ * @file execute.hpp
+ * @author Ricerca Security <fuzzuf-dev@ricsec.co.jp>
+ */
 #ifndef FUZZUF_INCLUDE_ALGORITHM_LIBFUZZER_HIERARFLOW_EXECUTE_HPP
 #define FUZZUF_INCLUDE_ALGORITHM_LIBFUZZER_HIERARFLOW_EXECUTE_HPP
 #include "fuzzuf/algorithms/libfuzzer/executor/execute.hpp"
@@ -32,8 +36,8 @@ namespace fuzzuf::algorithm::libfuzzer {
  * @brief Run target with input specified by the Path, and acquire coverage,
  * outputs, execution result to the values specified by the Path. The node takes
  * 4 path for input, output, coverage and execution result.
- * @tparm F Function type to define what arguments passes through this node.
- * @tparm Path Struct path to define which value to to use.
+ * @tparam F Function type to define what arguments passes through this node.
+ * @tparam Path Struct path to define which value to to use.
  */
 template <typename F, typename Executor, typename Path> struct Execute {};
 template <typename R, typename... Args, typename Executor, typename Path>
@@ -42,7 +46,6 @@ struct Execute<R(Args...), Executor, Path>
 public:
   FUZZUF_ALGORITHM_LIBFUZZER_HIERARFLOW_STANDARD_TYPEDEFS
   /**
-   * @fn
    * Constructor
    * @param executor Executor to execute target program
    * @param use_afl_coverage If true, the node acquires coverage using
@@ -53,9 +56,8 @@ public:
     assert(executor);
   }
   /**
-   * @fn
    * This callable is called on HierarFlow execution
-   * @param args arguments
+   * @param args Arguments
    * @return direction of next node
    */
   callee_ref_t operator()(Args... args) {

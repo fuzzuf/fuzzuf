@@ -15,6 +15,10 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see http://www.gnu.org/licenses/.
  */
+/**
+ * @file for_each_non_zero_byte.hpp
+ * @author Ricerca Security <fuzzuf-dev@ricsec.co.jp>
+ */
 #ifndef FUZZUF_INCLUDE_ALGORITHM_LIBFUZZER_FEATURE_FOR_EACH_NON_ZERO_BYTE_HPP
 #define FUZZUF_INCLUDE_ALGORITHM_LIBFUZZER_FEATURE_FOR_EACH_NON_ZERO_BYTE_HPP
 #include "fuzzuf/utils/bswap.hpp"
@@ -29,19 +33,18 @@
 namespace fuzzuf::algorithm::libfuzzer::feature {
 
 /**
- * @fn
  * Call cb for each non-zero bytes in the range.
  * For pointer
  *
  * Corresponding code of original libFuzzer implementation
  * https://github.com/llvm/llvm-project/blob/llvmorg-12.0.1/compiler-rt/lib/fuzzer/FuzzerTracePC.h#L184
  *
- * @tparm Range range compliant type of input values
- * @tparm Integer type of first_feature
- * @tparm Callback callable with three integer arguments for first_feature, distance from begin() to current element and value of current element. 
- * @param data call cb for each non-zero elements of this range
- * @param first_feature this value is always passed to the first argument of cb
- * @param cb callable with three integer arguments for first_feature, distance from begin() to current element and value of current element.
+ * @tparam Range Range compliant type of input values
+ * @tparam Integer Type of first_feature
+ * @tparam Callback Callable with three integer arguments for first_feature, distance from begin() to current element and value of current element. 
+ * @param data Call cb for each non-zero elements of this range
+ * @param first_feature This value is always passed to the first argument of cb
+ * @param cb Callable with three integer arguments for first_feature, distance from begin() to current element and value of current element.
  * @return length of data
  */
 template <typename Range, typename Integer, typename Callback>
@@ -82,16 +85,15 @@ auto ForEachNonZeroByte(const Range &data, Integer first_feature, Callback cb)
 }
 
 /**
- * @fn
  * Call cb for each non-zero bytes in the range.
  * For non-pointer iterator
  *
- * @tparm Range range compliant type of input values
- * @tparm Integer type of first_feature
- * @tparm Callback callable with three integer arguments for first_feature, distance from begin() to current element and value of current element. 
- * @param data call cb for each non-zero elements of this range
- * @param first_feature this value is always passed to the first argument of cb
- * @param cb callable with three integer arguments for first_feature, distance from begin() to current element and value of current element.
+ * @tparam Range Range compliant type of input values
+ * @tparam Integer Type of first_feature
+ * @tparam Callback Callable with three integer arguments for first_feature, distance from begin() to current element and value of current element. 
+ * @param data Call cb for each non-zero elements of this range
+ * @param first_feature This value is always passed to the first argument of cb
+ * @param cb Callable with three integer arguments for first_feature, distance from begin() to current element and value of current element.
  * @return length of data
  */
 template <typename Range, typename Integer, typename Callback>

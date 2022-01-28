@@ -284,6 +284,9 @@ set(
   algorithms/aflfast/aflfast_setting.cpp
   algorithms/aflfast/aflfast_state.cpp
   algorithms/aflfast/aflfast_testcase.cpp
+  algorithms/die/die_fuzzer.cpp
+  algorithms/die/die_hierarflow_routines.cpp
+  algorithms/die/die_state.cpp
   algorithms/libfuzzer/config.cpp
   algorithms/libfuzzer/dictionary.cpp
   algorithms/libfuzzer/fuzzer.cpp
@@ -314,7 +317,6 @@ set(
   executor/polytracker_executor.cpp
   executor/proxy_executor.cpp
   executor/qemu_executor.cpp
-  executor/third_party_executor.cpp  
   feedback/borrowed_fd_feedback.cpp
   feedback/disposable_fd_feedback.cpp
   feedback/exit_status_feedback.cpp
@@ -374,8 +376,9 @@ set(
   FUZZUF_CLI_SOURCES
   cli/fuzzers/afl/register_afl_fuzzer.cpp
   cli/fuzzers/aflfast/register_aflfast_fuzzer.cpp
-  cli/fuzzers/libfuzzer/registration.cpp
-  cli/fuzzers/nezha/registration.cpp
+  cli/fuzzers/die/register_die_fuzzer.cpp
+  cli/fuzzers/libfuzzer/register_libfuzzer.cpp
+  cli/fuzzers/nezha/register_nezha_fuzzer.cpp
   cli/fuzzers/vuzzer/register_vuzzer.cpp
   cli/parse_global_options_for_fuzzer.cpp
   cli/fuzzer_builder_register.cpp
@@ -553,7 +556,6 @@ if( "${PATTR_PYENV}" STREQUAL "native" )
       doxygen_add_docs(
         fuzzuf_doc
         ALL
-        USE_STAMP_FILE
         WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
       )
     endif()

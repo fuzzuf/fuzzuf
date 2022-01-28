@@ -15,6 +15,10 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see http://www.gnu.org/licenses/.
  */
+/**
+ * @file add_to_solution.hpp
+ * @author Ricerca Security <fuzzuf-dev@ricsec.co.jp>
+ */
 #ifndef FUZZUF_INCLUDE_ALGORITHM_LIBFUZZER_EXECUTOR_ADD_TO_SOLUTIONS_HPP
 #define FUZZUF_INCLUDE_ALGORITHM_LIBFUZZER_EXECUTOR_ADD_TO_SOLUTIONS_HPP
 #include "fuzzuf/algorithms/libfuzzer/corpus/add_to_solution.hpp"
@@ -27,11 +31,10 @@
 namespace fuzzuf::algorithm::libfuzzer::executor {
 
 /**
- * @fn
  * @brief Insert execution result to solutions if the result is added to corpus
  * and target returned error status( any status excepting FAULT_NONE ) on exit.
- * @tparm Range Contiguous Range of std::uint8_t
- * @tparm InputInfo Type to provide execution result
+ * @tparam Range Contiguous Range of std::uint8_t
+ * @tparam InputInfo Type to provide execution result
  * @param range Input value that was passed to the executor
  * @param exec_result Execution result that was produced by the executor
  * @param crashed_only If false, all inputs that was added to corpus are added

@@ -15,6 +15,10 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see http://www.gnu.org/licenses/.
  */
+/**
+ * @file utils.hpp
+ * @author Ricerca Security <fuzzuf-dev@ricsec.co.jp>
+ */
 #ifndef FUZZUF_INCLUDE_ALGORITHM_LIBFUZZER_UTILS_HPP
 #define FUZZUF_INCLUDE_ALGORITHM_LIBFUZZER_UTILS_HPP
 #include "fuzzuf/utils/to_string.hpp"
@@ -24,10 +28,11 @@
 namespace fuzzuf::algorithm::libfuzzer {
 
 /**
- * @fn
- * log_2を整数にキャストした物を「1になっている最も左側のbitはどれか」を使って雑に求める
- * libFuzzerの対応箇所
+ * Roughly calculate log2 of integer value using leading number zeros.
+ * Corresponding code of original libFuzzer implementation
  * https://github.com/llvm/llvm-project/blob/llvmorg-12.0.1/compiler-rt/lib/fuzzer/FuzzerUtil.h#L93
+ * @param x value to calculate log2
+ * @return calculated value
  */
 auto lflog(std::size_t x) -> std::size_t;
 

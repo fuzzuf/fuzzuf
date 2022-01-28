@@ -15,13 +15,17 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see http://www.gnu.org/licenses/.
  */
+/**
+ * @file testcase_id.hpp
+ * @author Ricerca Security <fuzzuf-dev@ricsec.co.jp>
+ */
 #ifndef FUZZUF_INCLUDE_ALGORITHM_LIBFUZZER_STATE_TESTCASE_ID_HPP
 #define FUZZUF_INCLUDE_ALGORITHM_LIBFUZZER_STATE_TESTCASE_ID_HPP
 #include <cstdint>
 #include <functional>
 namespace fuzzuf::algorithm::libfuzzer {
 
-// 入力値とそれに対応するcorpusの要素を結びつける為のID
+/// ID to bind an input value and execution result.
 using testcase_id_t = std::uint64_t;
 
 } // namespace fuzzuf::algorithm::libfuzzer

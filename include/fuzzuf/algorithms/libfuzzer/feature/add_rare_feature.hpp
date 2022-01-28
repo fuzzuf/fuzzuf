@@ -15,6 +15,10 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see http://www.gnu.org/licenses/.
  */
+/**
+ * @file add_rare_feature.hpp
+ * @author Ricerca Security <fuzzuf-dev@ricsec.co.jp>
+ */
 #ifndef FUZZUF_INCLUDE_ALGORITHM_LIBFUZZER_FEATURE_ADD_RARE_FEATURE_HPP
 #define FUZZUF_INCLUDE_ALGORITHM_LIBFUZZER_FEATURE_ADD_RARE_FEATURE_HPP
 #include "fuzzuf/algorithms/libfuzzer/state/corpus.hpp"
@@ -28,16 +32,15 @@
 namespace fuzzuf::algorithm::libfuzzer::feature {
 
 /**
- * @fn
  * Append new feature to notable features.
  * If notable features exceeded max size, most common feature in notable features is dropped.
  *
  * Corresponding code of original libFuzzer implementation
  * https://github.com/llvm/llvm-project/blob/llvmorg-12.0.1/compiler-rt/lib/fuzzer/FuzzerCorpus.h#L357
  *
- * @tparm State libFuzzer state object type
- * @tparm Corpus FullCorpus type to add new execution result
- * @param state libFuzzer state object
+ * @tparam State LibFuzzer state object type
+ * @tparam Corpus FullCorpus type to add new execution result
+ * @param state LibFuzzer state object
  * @param corpus FullCorpus. If a feature was dropped from notable features, it is also removed from the partial corpus in the corpus.
  * @param index New feature
  */

@@ -15,6 +15,10 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see http://www.gnu.org/licenses/.
  */
+/**
+ * @file test_utils.hpp
+ * @author Ricerca Security <fuzzuf-dev@ricsec.co.jp>
+ */
 #ifndef FUZZUF_INCLUDE_ALGORITHMS_NEZHA_TEST_UTILS_HPP
 #define FUZZUF_INCLUDE_ALGORITHMS_NEZHA_TEST_UTILS_HPP
 #include "fuzzuf/algorithms/nezha/state.hpp"
@@ -26,7 +30,7 @@
 #include <cstdint>
 #include <vector>
 
-// テストを書くときに頻繁に書くことになるコードをまとめた物
+/// some utilities to write tests quickly
 namespace fuzzuf::algorithm::nezha::test {
 
 struct Variables {

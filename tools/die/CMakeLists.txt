@@ -1,0 +1,12 @@
+# Copy scripts to build directory
+file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/typer.py
+  DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
+file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/build_die.sh
+  DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
+
+# Setup DIE
+add_custom_target(die
+  COMMAND ${CMAKE_CURRENT_BINARY_DIR}/build_die.sh ${CMAKE_CURRENT_BINARY_DIR}
+  COMMENT "Setting up DIE..."
+  DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/build_die.sh
+  VERBATIM)

@@ -15,6 +15,10 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see http://www.gnu.org/licenses/.
  */
+/**
+ * @file collect_features.hpp
+ * @author Ricerca Security <fuzzuf-dev@ricsec.co.jp>
+ */
 #ifndef FUZZUF_INCLUDE_ALGORITHM_LIBFUZZER_HIERARFLOW_COLLECT_FEATURES_HPP
 #define FUZZUF_INCLUDE_ALGORITHM_LIBFUZZER_HIERARFLOW_COLLECT_FEATURES_HPP
 #include "fuzzuf/algorithms/libfuzzer/executor/collect_features.hpp"
@@ -37,8 +41,8 @@ namespace fuzzuf::algorithm::libfuzzer {
  * non-uniform distribution, input of higher weighted execution result is
  * selected more frequentry. The node takes 5 paths for state, corpus, input,
  * execution result and coverage.
- * @tparm F Function type to define what arguments passes through this node.
- * @tparm Path Struct path to define which value to to use.
+ * @tparam F Function type to define what arguments passes through this node.
+ * @tparam Path Struct path to define which value to to use.
  */
 template <typename F, typename Path> struct CollectFeatures {};
 template <typename R, typename... Args, typename Path>
@@ -47,7 +51,6 @@ struct CollectFeatures<R(Args...), Path>
 public:
   FUZZUF_ALGORITHM_LIBFUZZER_HIERARFLOW_STANDARD_TYPEDEFS
   /**
-   * @fn
    * Constructor
    * @param module_offset
    * Offset of feature ID of coverage. The feature ID of entering an edge is a
@@ -60,9 +63,8 @@ public:
   CollectFeatures(std::uint32_t module_offset_ = 0)
       : module_offset(module_offset_) {}
   /**
-   * @fn
    * This callable is called on HierarFlow execution
-   * @param args arguments
+   * @param args Arguments
    * @return direction of next node
    */
   callee_ref_t operator()(Args... args) {

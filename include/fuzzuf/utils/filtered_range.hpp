@@ -15,6 +15,10 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see http://www.gnu.org/licenses/.
  */
+/**
+ * @file filtered_range.hpp
+ * @author Ricerca Security <fuzzuf-dev@ricsec.co.jp>
+ */
 #ifndef FUZZUF_INCLUDE_UTILS_FILTERED_RANGE_HPP
 #define FUZZUF_INCLUDE_UTILS_FILTERED_RANGE_HPP
 #include "fuzzuf/utils/range_traits.hpp"
@@ -24,18 +28,17 @@
 #include <stdexcept>
 #include <type_traits>
 namespace fuzzuf::utils::range {
-// U型の値を持ちT型のイテレータに対する操作を全てforwardingする
-// U型の値はイテレータをコピーすると一緒にコピーされる
-// UにT型のイテレータの持ち主のコンテナへのスマートポインタを渡す事で、イテレータが1つでも残っている限りコンテナが消えないように出来る
-/*
- * 例:
+/**
+ * @class filtered_iterator
+ * Iterator adaptor to traverse only values that specified callable returns true
+ * The adaptor works as same as Boost.Iterator's filtered_iterator
+ * https://www.boost.org/doc/libs/1_78_0/libs/iterator/doc/html/iterator/specialized/filter.html
+ *
+ * example:
  * std::vector< int > a{ ... };
  * b = a|filtered[ []( int v ) { return v < 10; } ];
- * bはaの要素のうち10未満の値だけを含むrangeになる
- * std::filterしてstd::transformみたいな状況でfilterした結果を一時領域に書く必要がなくなる
- *
- * Boost.Rangeのfilteredとほぼ同じ振る舞いをするが、bidirectional_iteratorを渡された場合にrangeのイテレータががbidirectional_iteratorになる点が異なる
- * https://www.boost.org/doc/libs/1_52_0/libs/range/doc/html/range/reference/adaptors/reference/filtered.html
+ * b is a range that contains only lower than 10 values of a
+ * The adaptor avoid need of temporary container to receive result of std::copy_if
  */
 template <typename T, typename U, typename Enable = void>
 class filtered_iterator {};
@@ -79,7 +82,7 @@ class filtered_iterator {};
     return old;                                                                \
   }
 
-// 条件: Tのイテレータカテゴリはinput_iteratorである
+// requirements: T statisfies C++17 input iterator concept
 template <typename T, typename U>
 class filtered_iterator<T, U,
                         std::enable_if_t<std::is_same_v<
@@ -93,7 +96,7 @@ private:
   base_iter_t end;
   U cond;
 };
-// 条件: Tのイテレータカテゴリはforward_iteratorである
+// requirements: T statisfies C++17 forward iterator concept
 template <typename T, typename U>
 class filtered_iterator<T, U,
                         std::enable_if_t<std::is_convertible_v<
@@ -113,7 +116,7 @@ private:
   U cond;
 };
 
-// 条件: Rはrangeである
+// requirements: T statisfies range concept
 template <typename R, typename U>
 auto make_filtered_range(R &v, U cond) -> std::enable_if_t<
     is_range_v<R>,

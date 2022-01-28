@@ -15,6 +15,10 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see http://www.gnu.org/licenses/.
  */
+/**
+ * @file dictionary.hpp
+ * @author Ricerca Security <fuzzuf-dev@ricsec.co.jp>
+ */
 #ifndef FUZZUF_INCLUDE_ALGORITHM_LIBFUZZER_MUTATION_DICTIONARY_HPP
 #define FUZZUF_INCLUDE_ALGORITHM_LIBFUZZER_MUTATION_DICTIONARY_HPP
 #include "fuzzuf/algorithms/libfuzzer/mutation/utils.hpp"
@@ -26,8 +30,7 @@
 #include <type_traits>
 namespace fuzzuf::algorithm::libfuzzer::mutator {
 
-/*
- * @fn
+/**
  * Retrive a word from the dictionary and insert at the random position of data.
  *
  * Corresponding code of original libFuzzer implementation
@@ -35,14 +38,14 @@ namespace fuzzuf::algorithm::libfuzzer::mutator {
  * and
  * https://github.com/llvm/llvm-project/blob/llvmorg-12.0.1/compiler-rt/lib/fuzzer/FuzzerMutate.cpp#L280
  *
- * @tparm RNG type of random number generator
- * @tparm Range container of the value
- * @tparm Dict type of dictionary
- * @param rng random number generator
- * @param data value to modify
- * @param max_size max length of value
- * @param dict_entry history of selected words
- * @param dict dictinary
+ * @tparam RNG Type of random number generator
+ * @tparam Range Container of the value
+ * @tparam Dict Type of dictionary
+ * @param rng Random number generator
+ * @param data Value to modify
+ * @param max_size Max length of value
+ * @param dict_entry History of selected words
+ * @param dict Dictinary
  * @return length of post modification value
  */
 template <typename RNG, typename Range, typename Dict>
@@ -61,17 +64,16 @@ auto Dictionary(RNG &rng, Range &data, std::size_t max_size,
                                           dict_entry);
 }
 
-/*
- * @fn
+/**
  * Append selected words history to specified dictionary
  * This operation is needed to update persistent auto dict.
  *
  * Corresponding code of original libFuzzer implementation
  * https://github.com/llvm/llvm-project/blob/llvmorg-12.0.1/compiler-rt/lib/fuzzer/FuzzerMutate.cpp#L458
  *
- * @tparm Dict type of dictionary
- * @param dict dictionary to update
- * @param dict_entry history of selected words
+ * @tparam Dict Type of dictionary
+ * @param dict Dictionary to update
+ * @param dict_entry History of selected words
  */
 template <typename Dict>
 void UpdateDictionary(

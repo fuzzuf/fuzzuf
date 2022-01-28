@@ -35,6 +35,18 @@
 #include "fuzzuf/executor/pintool_executor.hpp"
 #include "fuzzuf/executor/polytracker_executor.hpp"
 
+namespace fuzzuf::cli::fuzzer::vuzzer {
+
+// Fuzzer specific help
+// TODO: Provide better help message
+static void usage(po::options_description &desc) {
+    std::cout << "Help:" << std::endl;
+    std::cout << desc << std::endl;
+    exit(1);
+}
+
+}
+
 using fuzzuf::algorithm::vuzzer::VUzzer;
 
 struct VUzzerOptions {
@@ -59,95 +71,69 @@ struct VUzzerOptions {
 // Used only for CLI
 template <class TFuzzer, class TVUzzer>
 std::unique_ptr<TFuzzer> BuildVUzzerFromArgs(FuzzerArgs &fuzzer_args, GlobalFuzzerOptions &global_options) {
+    po::positional_options_description pargs_desc;
+    pargs_desc.add("fuzzer", 1);
+    pargs_desc.add("pargs", -1);
+
     VUzzerOptions vuzzer_options;
 
-    enum optionIndex {
-        FullDict,
-        UniqueDict,
-        Weight,
-        InstBin,
-        TaintDB,
-        TaintOut
-    };
+    po::options_description fuzzer_desc("VUzzer options");
+    std::vector<std::string> pargs;
+    fuzzer_desc.add_options()
+        ("full_dict", 
+            po::value<std::string>(&vuzzer_options.full_dict), 
+            "Set path to \"full dictionary\". Default is `./full.dict`.")
+        ("unique_dict", 
+            po::value<std::string>(&vuzzer_options.unique_dict), 
+            "Set path to \"unique dictionary\". Default is `./unique.dict`.")
+        ("weight", 
+            po::value<std::string>(&vuzzer_options.weight), 
+            "Set path to \"weight file\". Default is `./weight`.")
+        ("inst_bin", 
+            po::value<std::string>(&vuzzer_options.inst_bin), 
+            "Set path to instrumented binary. Default is `./instrumented.bin`.")
+        ("taint_db", 
+            po::value<std::string>(&vuzzer_options.taint_db), 
+            "Set path to taint db. Default is `/mnt/polytracker/polytracker.db`.")
+        ("taint_out", 
+            po::value<std::string>(&vuzzer_options.taint_out), 
+            "Set path to output for taint analysis. Default is `/tmp/taint.out`.")
+        ("pargs", 
+            po::value<std::vector<std::string>>(&pargs), 
+            "Specify PUT and args for PUT.")
+    ;
 
-    const option::Descriptor usage[] = {
-        {optionIndex::FullDict, 0, "", "full_dict", option::Arg::Optional, "    --full_dict FULL_DICT \tSet path to \"full dictionary\". Default is `./full.dict`." },
-        {optionIndex::UniqueDict, 0, "", "unique_dict", option::Arg::Optional, "    --unique_dict UNIQUE_DICT \tSet path to \"unique dictionary\". Default is `./unique.dict`." },
-        {optionIndex::Weight, 0, "", "weight", option::Arg::Optional, "    --weight WEIGHT \tSet path to \"weight file\". Default is `./weight`." },
-        {optionIndex::InstBin, 0, "", "inst_bin", option::Arg::Optional, "    --inst_bin INST_BIN \tSet path to instrumented binary. Default is `./instrumented.bin`." },
-        {optionIndex::TaintDB, 0, "", "taint_db", option::Arg::Optional, "    --taint_db TAINT_DB \tSet path to taint db. Default is `/mnt/polytracker/polytracker.db`." },
-        {optionIndex::TaintOut, 0, "", "taint_out", option::Arg::Optional, "    --taint_out TAINT_OUT \tSet path to output for taint analysis. Default is `/tmp/taint.out`." },
-        {0, 0, 0, 0, 0, 0}
-    };
+    po::variables_map vm;
+    po::store(
+        po::command_line_parser(fuzzer_args.argc, fuzzer_args.argv)
+            .options(fuzzer_args.global_options_description.add(fuzzer_desc))
+            .positional(pargs_desc)
+            .run(),
+        vm
+        );
+    po::notify(vm);
 
-    option::Stats  stats(usage, fuzzer_args.argc, fuzzer_args.argv);
-    option::Option options[stats.options_max], buffer[stats.buffer_max];
-    option::Parser parse(usage, fuzzer_args.argc, fuzzer_args.argv, options, buffer);
-
-    if (parse.error()) {
-        throw exceptions::cli_error(Util::StrPrintf("Failed to parse VUzzer command line"), __FILE__, __LINE__);
+    if (global_options.help) {
+        fuzzuf::cli::fuzzer::vuzzer::usage(fuzzer_args.global_options_description);
     }
 
-    for (int i = 0; i < parse.optionsCount(); ++i) {
-        option::Option& opt = buffer[i];
-    
-        switch(opt.index()) {
-            case optionIndex::FullDict: {
-                CheckIfOptionHasValue(opt);
-                vuzzer_options.full_dict = opt.arg;
-                break;
-            }
-            case optionIndex::UniqueDict: {
-                CheckIfOptionHasValue(opt);
-                vuzzer_options.unique_dict = opt.arg;
-                break;
-            }            
-            case optionIndex::Weight: {
-                CheckIfOptionHasValue(opt);
-                vuzzer_options.weight = opt.arg;
-                break;
-            }
-            case optionIndex::InstBin: {
-                CheckIfOptionHasValue(opt);
-                vuzzer_options.inst_bin = opt.arg;
-                break;
-            }
-            case optionIndex::TaintDB: {
-                CheckIfOptionHasValue(opt);
-                vuzzer_options.taint_db = opt.arg;
-                break;
-            }
-            case optionIndex::TaintOut: {
-                CheckIfOptionHasValue(opt);
-                vuzzer_options.taint_out = opt.arg;
-                break;
-            }            
-            default: {
-                throw exceptions::cli_error(
-                    Util::StrPrintf("Unknown option or missing handler for option \"%s\"", opt.name),
-                    __FILE__, __LINE__);
-            }
-        }
+    /* (Pin) Executor of vuzzer requires absolute path of PUT binary */
+    pargs[0] = fs::absolute(pargs[0]).native();
+
+    PutArgs put(pargs);
+    try {
+        put.Check();
+    } catch (const exceptions::cli_error &e) {
+        std::cerr << "[!] " << e.what() << std::endl;
+        std::cerr << "\tat " << e.file << ":" << e.line << std::endl;
+        fuzzuf::cli::fuzzer::vuzzer::usage(fuzzer_args.global_options_description);
     }
 
-    PutArgs put = {
-        .argc = parse.nonOptionsCount(),
-        .argv = parse.nonOptions()
-    };
-
-    if (put.argc == 0) {
-        throw exceptions::cli_error(Util::StrPrintf("Command line of PUT is not specified"), __FILE__, __LINE__);
-    }
-
-    std::vector<std::string> args = put.Args();
     DEBUG("[*] PUT: put = [");
-    for (auto v : args) {
+    for (auto v : put.Args()) {
         DEBUG("\t\"%s\",", v.c_str());
     }
     DEBUG("    ]");
-
-    /* (Pin) Executor of vuzzer requires absolute path of PUT binary */
-    args[0] = fs::absolute(args[0]).native();
 
     using fuzzuf::algorithm::vuzzer::VUzzerSetting;
     using fuzzuf::algorithm::vuzzer::option::VUzzerTag;
@@ -156,7 +142,7 @@ std::unique_ptr<TFuzzer> BuildVUzzerFromArgs(FuzzerArgs &fuzzer_args, GlobalFuzz
     // Create VUzzerSetting
     std::shared_ptr<VUzzerSetting> setting(
         new VUzzerSetting(
-            args,
+            put.Args(),
             global_options.in_dir,
             global_options.out_dir,
             vuzzer_options.weight,

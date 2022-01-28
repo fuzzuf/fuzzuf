@@ -42,39 +42,38 @@ bool NativeLinuxExecutor::has_setup_sighandlers = false;
 
 NativeLinuxExecutor* NativeLinuxExecutor::active_instance = nullptr;
 
-// 前提: 
-//    - path_to_write_inputで指定されるパスにファイルが作成できる状態になっていること
-// 責務：
-//    - メンバの初期化をしつつ、以下の処理を順に行う
-//      * 引数次第では、このプロセスとその子孫が実行されるCPUのコアを指定する。指定の仕方は3種類ある:
-//         1. cpu_to_bindにNativeLinuxExecutor::CPUID_DO_NOT_BINDを渡して指定しない
-//         2. cpu_to_bindに0以上 cpu_core_count-1以下の整数値を渡して、コアの番号を指定する
-//         3. cpu_to_bindにNativeLinuxExecutor::CPUID_BIND_WHICHEVERを渡し、
-//            空いているCPUコアを本クラスに検索させ、それに指定する
-//         - 備考1（定義）:
-//           * プロセスp（とその子孫）をコアaにbindするとは、プロセスp（とその子孫）がコアaで実行されることを保証し、
-//             かつコアaでp（とその子孫）以外のFUZZUF関係のプロセスが動作しないことを意味する
-//           * 現状では、これはLinuxのsched_setaffinity依存の機能でしかなく、厳密に言うならば
-//             「sched_setaffinityを使って実行を許可するコアを1つに絞る」という機能。
-//              本当に定義通りに動作するのかを気になる場合はmanページとUtil::GetFreeCpuを参照すること
-//           * したがって、Linuxじゃない場合は、この処理はそもそも実行されない
-//         - 備考2（NativeLinuxExecutorがこの機能を持つ理由）
-//           * CPUコアの限定はNativeLinux特有の操作で、本来アルゴリズムが気にすることではない
-//           * したがって、このExecutorが持っているべき処理である
-//           * 一方、この処理はプロセス全体に影響を与える。単純には「1プロセスに1 executor」を意味する
-//           * 将来的には、これを解決するためにCPUコア・Executorを管理するクラスができるべきである
-//           * 当座はどの状況についても対応可能な3種類の選択肢を設けている
-//      * シグナルハンドラを設定する（non fork server mode向けの暫定の措置。消しますこれは）
-//      * PUTのコマンドライン引数の解析と前処理
-//      * PUTに対して入力を送るために使うファイルを生成
-//      * 共有メモリの設定
-//        - afl_shm_sizeには、AFL系のccでビルドされたPUTが使用する共有メモリのサイズを指定する。
-//        - bb_shm_sizeには、fuzzuf-ccでビルドされた、
-//          Basic Block Coverageを記録するPUTが使用する共有メモリのサイズを指定する。
-//        - 両者ともに、0に指定された場合は、使用しないものとみなし、確保を行わない
-//        - 両者ともに、kernel内部ではPAGE_SIZEの倍数に切り上げられてメモリが確保される
-//      * PUT向けの環境変数の設定
-//      * fork server modeの場合はfork serverの起動
+/**
+ * Precondition:
+ *   - A file can be created at path path_str_to_write_input.
+ * Postcondition:
+ *     - Run process below in order, with initializing members
+ *       * Depending on the args, CPU cores to run both this process and the descendant processes need to be specified. There are three method to specify:
+ *         1. Pass NativeLinuxExecutor::CPUID_DO_NOT_BIND to cpu_to_bind to specify nothing.
+ *         2. Pass integer value in [0, cpu core count) to cpu_to_bind to specify core number.
+ *         3. Pass NativeLinuxExecutor::CPUID BIND_WHICHEVER then this class looks for free cores and select it.
+ *
+ *         - Note1 (definition) :
+ *           * Binding process P (and thats descendant) to core a means that process p (and thats descendant) is warrantied running on core a and other FUZZUF related processes never run on core a.
+ *           * Currently, it is just a functionality depending on sched_setaffinity on Linux, and in precise word, it is a functionality that limit core which has permission to run to just one using sched_setaffinity.
+ *          Refer man pages and Util::GetFreeCpu if you wonder that works properly as described in definition.
+ *           * Therefore, this procedure is executed only on Linux
+ *         - Note2 (The reason Executor having this functionality)
+ *           * Limiting CPU cores is NativeLinuxExecutor specific operation that algorithms should not care.
+ *           * Therefore this Executor should handle it.
+ *           * On the other hand, this procedure affects whole the process. In simple word, it requires only 1 executor existing in 1 process.
+ *           * As the future work, the class managing CPU cores and executors should be introduced for solving this limitation.
+ *           * For the time being, 3 options which cover all situation are provided.
+ *       * Configure signal handlers (Temporary workaround for non fork server mode. This will be removed in future.)
+ *       * Parsing and preprocessing of commandline arguments of PUT.
+ *       * Generate a file for sending input to  PUT.
+ *       * Configure shared memory
+ *         - afl_shm_size should indicate the size of shared memory which PUT built using AFL style cc uses.
+ *         - bb_shm_size should indicate the size of shared memory that is used to record Basic Block Coverage by PUT built using fuzzuf-cc.
+ *         - If both parameters are set to zero, it is considered as unused, and never allocate.
+ *         - In kernel, Both parameters are round up to multiple of PAGE_SIZE, then memory is allocated.
+ *       * Configure environment variables for PUT
+ *       * If fork server mode, launch fork server.
+ */
 NativeLinuxExecutor::NativeLinuxExecutor(  
     const std::vector<std::string> &argv,
     u32 exec_timelimit_ms,
@@ -83,7 +82,7 @@ NativeLinuxExecutor::NativeLinuxExecutor(
     const fs::path &path_to_write_input,
     u32 afl_shm_size,
     u32  bb_shm_size,
-    int cpuid_to_bind,  // FIXME: bindに関するテストを足す(どうテストする？）
+    int cpuid_to_bind,  // FIXME: Add tests against binding(How is it tested?）
     bool record_stdout_and_err
 ) :
     Executor( argv, exec_timelimit_ms, exec_memlimit, path_to_write_input.string() ),
@@ -92,8 +91,8 @@ NativeLinuxExecutor::NativeLinuxExecutor(
     bb_shm_size( bb_shm_size ),
     binded_cpuid( std::nullopt ),
 
-    // cargv, stdin_modeはSetCArgvAndDecideInputModeで設定
-    cpu_core_count( Util::GetCpuCore() ), // これは暫定の実装です。ユーザー側から指定したい場合などは適宜実装を変更してください
+    // cargv and stdin_mode are initialized at SetCArgvAndDecideInputMode
+    cpu_core_count( Util::GetCpuCore() ), // This is a temporary implementation. Change the implementation properly if the value need to be specified from user side.
     bb_shmid( INVALID_SHMID ),
     afl_shmid( INVALID_SHMID ),
     forksrv_pid( 0 ),
@@ -144,23 +143,20 @@ NativeLinuxExecutor::NativeLinuxExecutor(
 #endif /* __linux__ */
 
     if (!has_setup_sighandlers) {
-        // 当座はグローバルにシグナルハンドラをセットするので、これはstaticなメソッド
-        // なのでhas_setup_handlersがtrueなら二度とセットする必要がない
+	// For the time being, as signal handler is set globally, this function is static method, therefore it is not needed to set again if has_setup_handlers is ture.
         SetupSignalHandlers();
         has_setup_sighandlers = true;
     }
-
-    // シグナルハンドラが参照できるように、自分自身をstaticなポインタに入れておく
-    // 複数のNativeLinuxExecutorが存在する場合にはactive_instanceが自分自身以外を指している場合があるため
-    // 以下のassert文を入れることができない
+    // Assign self address to static pointer to make signal handlers can refer.
+    // active_instance may refer other instance if multiple NativeLinuxExecutor exist, therefore following assertion is not appliable.
     // assert(active_instance == nullptr);
     active_instance = this;
 
     SetCArgvAndDecideInputMode();
     OpenExecutorDependantFiles();
 
-    // Executorの初期化をするこのタイミングで共有メモリを確保する
-    // 各 NativeLinuxExecutor::Run() でそのメモリを参照できればよい
+    // Allocate shared memory on initialization of Executor
+    // It is sufficient if each NativeLinuxExecutor::Run() can refer the memory
     SetupSharedMemories();
     SetupEnvironmentVariablesForTarget();
 
@@ -169,16 +165,16 @@ NativeLinuxExecutor::NativeLinuxExecutor(
     }
 }
 
-// 責務：
-//  - 自クラスが扱うリソースを解放し、データを無効化する
-//      - input_fd のファイルディスクリプタは閉じる。また、当該値を無効化する（誤動作防止）
-//      - fork server modeで動作しているときは、fork serverとの通信に使っていたpipeを閉じ、fork serverプロセスを殺す
-//  - 暫定的な役目: シグナルハンドラが参照するactive_instanceに自分が設定されている場合はそれをnullptrにして取り消す
+/**
+ * Postcondition:
+ *  - Free resources handled by this class, then invalidate data.
+ *      - Close input_fd file descriptor. then the value is invalidated (fail-safe)
+ *      - If running in fork server mode, close the pipes for communicating with fork server, then terminate fork server process.
+ *  - Temporary purpose: If actve_instance which signal handlers refer has a pointer to self value, assign nullptr to it and invalidate.
+ */
 NativeLinuxExecutor::~NativeLinuxExecutor() {
-    // 複数のNativeLinuxExecutorが存在する場合にはactive_instanceが自分自身以外を指している場合があるため
-    // 「active_instanceが自分ではなかったら、それはFuzzerHandle::Resetが呼ばれている」
-    // と判断し、何もしない。逆に、active_instanceが自分だったら、nullptrにする。
-    // 念の為nullptrとしているが、そもそもデストラクタが呼ばれる時点でハンドラが呼ばれることは現状ではありえないので、基本問題はない
+    // Since active_instance can refer another instance of multiple N, it is considered FuzzerHandle::Reset is called if active_instance is not self value, therefore do nothing. On the other hand, assign nullptr if active_instance is self value.
+    // Although, assigning nullptr just in case, since the handlers will never called when the destructor is called, it is basically not a problem.
     if (active_instance == this) {
         active_instance = nullptr;
     }
@@ -197,15 +193,13 @@ NativeLinuxExecutor::~NativeLinuxExecutor() {
 
     if (forksrv) {
         TerminateForkServer();
-
-        // 実際のPUTのプロセス(child_pid)はfork serverが管理すべきだが、
-        // 念の為killしてあげる（fork serverがkillで終了しているはずなのでゾンビにならない。したがってwaitしない）
+        // Although, PUT process should be handled by fork server, kill it just in case. (Since fork server is expected to be killed using kill, therefore it will never becoome a zombie. So never wait.)
         KillChildWithoutWait();
     }
 }
 
 void NativeLinuxExecutor::SetCArgvAndDecideInputMode() {
-    assert(!argv.empty()); // 流石におかしい
+    assert(!argv.empty()); // It's incorrect too far
 
     stdin_mode = true; // if we find @@, then assign false to stdin_mode
 
@@ -220,15 +214,17 @@ void NativeLinuxExecutor::SetCArgvAndDecideInputMode() {
     cargv.emplace_back(nullptr);
 }
 
-// fork serverを停止させ関連する値をすべて適切に消去する
-// 責務：
-//  - forksrv_{read,write}_fd が有効な値であるとき、
-//      - それらをcloseする
-//      - 値を無効化する（誤動作防止）
-//  - forksrv_pid が有効な値であるとき、
-//      - forksrv_pid が指すプロセスを終了する
-//      - waitpidによりforksrv_pidが指すプロセスの終了を刈り取る
-//      - また、forksrv_pid の値を無効化する（誤動作防止）
+/**
+ * Stop fork server, then delete relevant values properly.
+ * Postcondition:
+ *  - If forksrv_{read,write}_fd have valid values,
+ *      - Close them
+ *      - invalidate the values(fail-safe)
+ *  - If forksrv_pid has valid value,
+ *      - Terminate the process identified by forksrv_pid
+ *      - Reap the process terminating using waitpid
+ *      - Furthermore, invalidate the value of forksrv_pid(fail-safe)
+ */
 void NativeLinuxExecutor::TerminateForkServer() {
     if (fork_server_epoll_fd != -1) {
         close( fork_server_epoll_fd );
@@ -264,16 +260,17 @@ void NativeLinuxExecutor::TerminateForkServer() {
     }
 }
 
-
-// staticなメソッド
-// 前提:
-//  - この関数が呼び出される時点で、active_instanceが必ず非nullptrになっている
-//  - active_instanceはExecutorのインスタンスの有効なアドレスを保持すること
-//  - 自プロセスにグローバルタイマーが存在し、SIGALRMシグナルにより本関数が呼ばれること
-// 責務：
-//  - SIGALRMに対するシグナルハンドラとして動作する
-//      - 呼び出されたら、PUTが実行時間超過したものとしてactive_instance->child_pidをkillする
-//      - フラグactive_instance->child_timed_outをセットする
+/**
+ * An static method
+ * Precondition:
+ *  - active_instance has a non-nullptr value definitely when this function is called.
+ *  - active_instance has an address of valid Executor instance.
+ *  - The global timer exists in the self process, and the function is called for SIGALRM signal.
+ * Postcondition:
+ *  - The function works as signal handler for SIGALRM
+ *      - If called, the PUT is considered as expiring the execution time, therefore kill active_instance->child_pid.
+ *      - Set a flag active_instance->child_timed_out
+ */
 void NativeLinuxExecutor::AlarmHandler(int signum) {
     assert (signum == SIGALRM);
     assert (active_instance != nullptr);
@@ -281,15 +278,17 @@ void NativeLinuxExecutor::AlarmHandler(int signum) {
     active_instance->child_timed_out = true;
 }
 
-// staticなメソッド
-// 責務：
-//  - シグナルに対してfuzzufのプロセスがどう対応するのかを規定する
-//  - シグナルハンドラを必要とする場合はシグナルハンドラをセットする
-// FIXME: シグナルに対する設定はプロセス全体で共通となるため、
-// このプロセスで動作するすべてのfuzzerインスタンスが影響を受ける。
-// したがって場合によってはプロセスの設計を変更する可能性があり、
-// 現時点では単一のfuzzerインスタンスしか同時には利用しないという前提のもとで
-// 暫定的な対処としてこのstaticメソッドを入れている。
+/*
+ * An static method
+ * Postcondition:
+ *  - It defines how the fuzzuf process respond to signals.
+ *  - If signal handlers are needed, signal handlers are set.
+ * FIXME: Since the configuration on signal handlers is shared in whole process,
+ * it affects all fuzzuf instances running on the process.
+ * As the result, it requires change of process design in some cases,
+ * Therefore, the process design may be changed, 
+ * yet currently the static function is implemented under the expection that only one fuzzuf instance is used simultaneously.
+ */
 void NativeLinuxExecutor::SetupSignalHandlers() {
     struct sigaction sa;
 
@@ -298,8 +297,7 @@ void NativeLinuxExecutor::SetupSignalHandlers() {
     sa.sa_sigaction = NULL;
 
     sigemptyset(&sa.sa_mask);
-
-// 現状fuzzufでは以下のシグナルをどう処理するか等の取り決めがないので一旦無視
+// Since there is no agreement on handling following signals, ignoring for now.
 #if 0
     /* Various ways of saying "stop". */
 
@@ -359,23 +357,26 @@ namespace detail {
     }
 }
 
-// 前提：
-//  - input_fd は NativeLinuxExecutor::SetupIO() で設定されたファイルを指すファイルディスクリプタであること
-// 責務：
-//  - (1) input_fd が指すファイルの中身がファズ（長さが len である buf の中身）と一致すること
-//  - (2) 以下の要件を満たしたプロセスを実行すること（以降、これを満たすプロセスを「当該プロセス」と表記する）
-//      - コンストラクタ引数argv で指定されたコマンドおよびコマンド引数を与えること
-//      - 環境変数について以下の条件を満たすこと:
-//        * fuzzufのbasic blockカバレッジを利用する場合は環境変数__FUZZUF_SHM_IDを受け取り、指定されたidから共有メモリを開く。共有メモリにカバレッジを正しく書き込む（最悪満たしていなくてもカバレッジを取れないだけで動作自体はする）
-//        * AFLのedgeカバレッジを利用する場合は環境変数__AFL_SHM_IDを受け取り、指定されたidから共有メモリを開く。。共有メモリにカバレッジを正しく書き込む（最悪満たしていなくてもカバレッジが取れないだけで動作自体はする）
-//      - TODO: 環境変数についての要件を明記（Instrument toolに関わる事項。今挙げているのは主要なもののみなので、今後機能追加していったりすると増える可能性あり）
-//      - もし Executor::stdin_mode が true であるとき、input_fd を標準入力とすること
-//  - (3) 当該プロセスは引数 timeout_ms で指定された時間で実行が中止されること。ただし、この値が0である場合には、メンバ変数 exec_timelimit_ms の値を参考に制限時間を決める
-//  - (4) 本メソッドを終了するとき、当該プロセスは自発的に、または第三者のシグナルを契機に終了していること
-//  - (5) child_pid に当該プロセスのプロセスIDを代入すること
-//      - この責務の必要性は、本メソッド以外の第三者が当該プロセスを終了できるようにするため。
-//        今後は第三者が当該プロセスを終了することはあるか？→Signal handlerを使う場合などがありうる
-//        今後の拡張性のためこの責務を残しておく
+/**
+ * Precondition:
+ *  - input_fd has a file descriptor that is set by NativeLinuxExecutor::SetupIO()
+ * Postcondition:
+ *  - (1) The contents of file refered by input_fd matches to fuzz ( the contents of buf with length of len )
+ *  - (2) To execute process that satisfies following requirements ( process that satisfies them is notated as "competent process" ).
+ *      - Providing command and commandline arguments specified by constructor argument argv.
+ *      - Environment variables satisfy following condition:
+ *        * If fuzzuf's basic block coverage is used, receive environment variable __FUZZUF_SHM_ID, then open shared memory which has the specified id.
+ *        * If AFL's edge coverage is used, receive environment variable __AFL_SHM_ID, then open shared memory which has the specified id.
+ *      - TODO: Specify the requirements of environemnt variables (Items on instrument tool. Currently, only major things are mentioned, as so that can increase for implementing new features. )
+ *      - If Executor::stdin_mode is true, use input_fd as a standard input.
+ *    (3) Competent process stops execution after the time specified by timeout_ms. As the exception, if the value is 0, the time limit is determined using member variable exec_timelimit_ms.
+ *    (4) When the method exits, it is triggered by self or third-party signals.
+ *    (5) Assign process ID of competent process to child_pid
+ *      - This postcondition is needed for third-party to exit competent process
+ *        Is there need for third-party to exit the process in future? -> It might be used in the case signal handler is in use.
+ *        The postcondition is left for future extension.
+ */
+
 void NativeLinuxExecutor::Run(const u8 *buf, u32 len, u32 timeout_ms) {
     // locked until std::shared_ptr<u8> lock is used in other places
     while (lock.use_count() > 1) {
@@ -395,17 +396,17 @@ void NativeLinuxExecutor::Run(const u8 *buf, u32 len, u32 timeout_ms) {
     WriteTestInputToFile(buf, len);
 
     //#if 0
-    // TODO: 本来はDebugよりも重要度が低いTraceレベルの情報なので、ランレベルがDebugのときは表示されないようにしたい。
+    // TODO: Since the information priority is Trace level that is less important than Debug, it should be hidden when runlevel is Debug.
     DEBUG("Run: ");
     DEBUG("%s ", cargv[0]);
     std::for_each( cargv.begin(), cargv.end(), []( const char* v ) { DEBUG("%s ", v); } );
     DEBUG("\n")
     //#endif
 
-    // この構造体は親プロセスと子プロセスで共有される
-    // execvは成功した場合返って来ないので、初期値を成功(0)とし、失敗時に値をセットする
+    // This structure is shared by both parent process and child process.
+    // Since execv never returns on success, it is initialized as success(0), then set value on failed.
     auto child_state = fuzzuf::utils::interprocess::create_shared_object(
-      fuzzuf::executor::child_State{ 0, 0 }
+      fuzzuf::executor::ChildState{ 0, 0 }
     );
 
     std::array< int, 2u > stdout_fd{ 0, 0 };
@@ -414,15 +415,15 @@ void NativeLinuxExecutor::Run(const u8 *buf, u32 len, u32 timeout_ms) {
     boost::container::static_vector< std::uint8_t, read_size > read_buffer;
     bool timeout = true;
     if (forksrv) {
-        // 現在実装されていないpersistent modeでのみ必要な値tmp。
+	// The value tmp which is needed only on persistent mode that is currently not implemented.
         static u8 tmp[4];
 
-        // fork server にPUTのプロセスの生成をリクエスト
-        // fork serverに対して4バイトの値をpipeにwriteすることにより、PUTの実行の新しい開始をリクエストできる
-        // PUTが正常に起動した場合はpipeでPUTのプロセスのpidが返ってくる
-        // WriteFile, ReadFileは指定したバイト数だけ書き込み・読み込みができなかったら例外を吐く
+	// Request creating PUT process to fork server
+        // The new PUT execution can be requested to the fork server by writing 4byte values to the pipe.
+        // If the PUT launched successfully, the pid of PUT process is returned via the pipe.
+        // WriteFile, ReadFile throw exception if writing or reading couldn't consume specified bytes.
         try {
-            // FIXME: persistent mode実装時は、このtmpは前回の実行がタイムアウトしたかどうかを表す値にする必要がある
+            // FIXME: When persistent mode is implemented, this tmp must be set to the value that represent if the last execution failed for timeout.
             Util::WriteFile(forksrv_write_fd, tmp, 4);
 
             read_buffer.resize( 4u );
@@ -445,10 +446,10 @@ void NativeLinuxExecutor::Run(const u8 *buf, u32 len, u32 timeout_ms) {
                 else {
                     if ( event.events & EPOLLIN ) {
                         if ( event.data.fd == fork_server_stdout_fd )
-                            // バッファにはoutput_block_size以上のデータがある可能性があるが、レベルトリガなので問題ない
+                            // Although the buffer may contain data larger than output_block_size, that is not a problem as it is level trigger.
                             detail::read_chunk( stdout_buffer, fork_server_stdout_fd );
                         else if( event.data.fd == fork_server_stderr_fd )
-                            // バッファにはoutput_block_size以上のデータがある可能性があるが、レベルトリガなので問題ない
+                            // Although the buffer may contain data larger than output_block_size, that is not a problem as it is level trigger.
                             detail::read_chunk( stderr_buffer, fork_server_stderr_fd );
                         else if ( event.data.fd == forksrv_read_fd ) {
                             std::size_t cur_size = read_buffer.size();
@@ -542,11 +543,11 @@ void NativeLinuxExecutor::Run(const u8 *buf, u32 len, u32 timeout_ms) {
             if (stdin_mode) {
                 dup2(input_fd, 0);
             } else {
-                // stdin は /dev/null を割り当てる（「無」の入力を与える）
+		// stdin is bound to /dev/null ( Providing "nothing" as input ).
                 dup2(null_fd, 0);
             }
-            // 子プロセスで新しい実行可能バイナリを実行する
-            // 失敗した場合はその事をchild_stateに記録する
+            // Execute new executable binary on the child process.
+	    // If failed, that matter is recorded to child_state.
             child_state->exec_result = execv(cargv[0], (char**)cargv.data());
             child_state->exec_errno = errno;
 
@@ -559,8 +560,8 @@ void NativeLinuxExecutor::Run(const u8 *buf, u32 len, u32 timeout_ms) {
 
     int put_status; // PUT's status(retrieved via waitpid)
     if (forksrv) {
-        if( timeout ) { // hangするような入力が渡り、実行時間超過したと思われる
-            KillChildWithoutWait(); // タイムアウトしたPUTを殺した後、再度put_statusをfork serverからもらう
+        if( timeout ) { // The execution time may exceeded due to input that causes hanging was passed.
+            KillChildWithoutWait(); // After killing PUT that timed out, retrive put_status from fork server again.
             child_timed_out = true;
         }
 
@@ -585,16 +586,15 @@ void NativeLinuxExecutor::Run(const u8 *buf, u32 len, u32 timeout_ms) {
         else
             ERROR("Unable to communicate with fork server (OOM?)");
     } else {
-        // PUTがhangしたかどうかのフラグを初期化
-        // シグナルハンドラ内でセットされる
+	// Initialize a flag that indicate whether the PUT hanged.
+	// It is set in the signal handler.
         child_timed_out = false;
 
         static struct itimerval it;
 
-        // タイマーをセットし、timeoutした場合にはSIGALRMが発生するようにする
-        // SIGALRMのハンドラはNativeLinuxExecutor::AlarmHandlerに設定されており、
-        // 内部でPUTがキルされる
-        // ただしexec_timelimit_msが0に設定されている場合はSIGALRMを設定しない
+	// Set timer to make SIGALRM to be sent on timeout.
+	// The handler for SIGALRM is set to NativeLinuxExecutor::AlarmHandler, and the PUT is killed in inside.
+	// Yet SIGALRM is not set if exec_timelimit_ms is set to 0.
         if (exec_timelimit_ms) {        
             it.it_value.tv_sec = (timeout_ms / 1000);
             it.it_value.tv_usec = (timeout_ms % 1000) * 1000;
@@ -660,10 +660,10 @@ void NativeLinuxExecutor::Run(const u8 *buf, u32 len, u32 timeout_ms) {
                 else {
                     if( event.events & EPOLLIN ) {
                         if( event.data.fd == stdout_fd[ 0 ] )
-                            // バッファにはoutput_block_size以上のデータがある可能性があるが、レベルトリガなので問題ない
+                            // Although the buffer may contain data larger than output_block_size, that is not a problem as it is level trigger.
                             detail::read_chunk( stdout_buffer, stdout_fd[ 0 ] );
                         else if( event.data.fd == stderr_fd[ 0 ] )
-                            // バッファにはoutput_block_size以上のデータがある可能性があるが、レベルトリガなので問題ない
+                            // Although the buffer may contain data larger than output_block_size, that is not a problem as it is level trigger.
                             detail::read_chunk( stderr_buffer, stderr_fd[ 0 ] );
                     }
                     if( event.events == EPOLLHUP || event.events == EPOLLERR ) {
@@ -695,7 +695,7 @@ void NativeLinuxExecutor::Run(const u8 *buf, u32 len, u32 timeout_ms) {
             close( stderr_fd[ 0 ] );
         }
 
-        // タイマーをリセット        
+	// Reset the timer.
         if (exec_timelimit_ms) {
             it.it_value.tv_sec = 0;
             it.it_value.tv_usec = 0;
@@ -703,7 +703,7 @@ void NativeLinuxExecutor::Run(const u8 *buf, u32 len, u32 timeout_ms) {
         }
     }
 
-    // PUTのプロセスが停止しているわけではなく、終了している場合は（persistent mode以外はそうなるはず）child_pidがもういらないので0クリアでよい
+    // If the PUT process is not stopped but exited ( It should happen except in persistent mode ), since child_pid is no longer needed, it can be set to 0.
     if (!WIFSTOPPED(put_status)) child_pid = 0; 
     DEBUG("Exec Status %d (pid %d)\n", put_status, child_pid);
 
@@ -713,12 +713,12 @@ void NativeLinuxExecutor::Run(const u8 *buf, u32 len, u32 timeout_ms) {
 
     MEM_BARRIER();
 
-    // ここから先の実装が汚い。
-    // これ多分aflから残り続けてる実装で汚い気もするし直してもいいかも
+    // Following implementation is dirty.
+    // This may be inherited implementation from afl, and it may feel dirty, so it shall be fixed.
 
     u32 tb4 = 0;
 
-    // 子プロセスのexecvが失敗している場合実行が失敗したことにする
+    // Consider execution was failed if execv of child process failed.
     if ( child_state->exec_result < 0 )
         tb4 = EXEC_FAIL_SIG;
 
@@ -774,8 +774,8 @@ ExitStatusFeedback NativeLinuxExecutor::GetExitStatusFeedback() {
     return ExitStatusFeedback(last_exit_reason, last_signal);
 }
 
-// PUTに渡してconverage書き込んでもらうための共有メモリ群の初期化。
-// どのPUTに対してもこれらの共有メモリ渡して使い回す（毎回各PUT向けに確保すると重い）
+// Initialize shared memory group that the PUT writes the coverage.
+// These shared memory is reused for all PUTs (It is too slow to allocate for each PUT).
 void NativeLinuxExecutor::SetupSharedMemories() {
     if (afl_shm_size > 0) {
         afl_shmid = shmget(IPC_PRIVATE, afl_shm_size, IPC_CREAT | IPC_EXCL | 0600);
@@ -794,7 +794,7 @@ void NativeLinuxExecutor::SetupSharedMemories() {
     }
 }
 
-// 共有メモリは使い回すので、PUTに渡す前に毎回初期化してあげる
+// Since shared memory is reused, it is initialized every time before passed to PUT.
 void NativeLinuxExecutor::ResetSharedMemories() {
     if (afl_shm_size > 0) {
         std::memset(afl_trace_bits, 0, afl_shm_size);
@@ -807,7 +807,7 @@ void NativeLinuxExecutor::ResetSharedMemories() {
     MEM_BARRIER();
 }
 
-// Executorが死ぬときにSharedMemoryも消す
+// Delete SharedMemory when the Executor is deleted
 void NativeLinuxExecutor::EraseSharedMemories() {
     if (afl_shm_size > 0) {
         if (shmdt(afl_trace_bits) == -1) ERROR("shmdt() failed");
@@ -824,14 +824,14 @@ void NativeLinuxExecutor::EraseSharedMemories() {
     }
 }
 
-// afl-clang-fastやfuzzuf-ccでinsturmentを挿入されたPUTは、
-// 環境変数で色々解釈することが多く、その設定。
-// これは本来PUTを実行する子プロセスでやるべきことだが、
-// 現状ではPUTを実行するたびに変更しなければならない環境変数は存在せず
-// 親プロセスの環境変数を引き継ぐという性質を利用すると1回だけやっておくと良いことが分かる（まずければ移そう）
-// これの利点として、StrPrintfのせいでheap領域のCopy on Writeが無駄になるとかが避けられるとかもある
+// Since PUT that is instrumented using afl-clang-fast or fuzzuf-cc
+// interprets some environment variables, this is the configuration for it.
+// Although, this is actually what the child process running PUT should do,
+// since there are no environment variables need update for each PUT execution for now,
+// by using feature that environment variables are inherited to child process, it is enough to do just once ( let's move it if not ).
+// As the additional advantage, it can avoid to waste Copy on Write of heap region due to StrPrintf.
 void NativeLinuxExecutor::SetupEnvironmentVariablesForTarget() {
-    // 共有メモリのIDをPUTに渡す
+    // Pass the id of shared memory to PUT.
     if (afl_shm_size > 0) {
         std::string afl_shmstr = std::to_string(afl_shmid);
         setenv(AFL_SHM_ENV_VAR, afl_shmstr.c_str(), 1);
@@ -852,7 +852,7 @@ void NativeLinuxExecutor::SetupEnvironmentVariablesForTarget() {
         doing extra work post-fork(). */
     if (!getenv("LD_BIND_LAZY")) setenv("LD_BIND_NOW", "1", 1); 
 
-    // 以下のMSAN, ASAN, UBSAN向けの設定はそもそもAFL由来でfuzzufでは使っていないものなのであまり必要ないが、今後fuzzufにも競合せず組み込める機能だと思うので一応残しておく
+    // Since MSAN, ASAN and UBSAN related configurations below are inherited from AFL and not used in fuzzuf, it is not required. But since those functionality is  considered implementable without conflicts in fuzzuf in future, these configuration are left.
     setenv("ASAN_OPTIONS",
         "abort_on_error=1:"
         "detect_leaks=0:"
@@ -899,16 +899,17 @@ void NativeLinuxExecutor::SetupEnvironmentVariablesForTarget() {
 
 }
 
-// 前提：
-//  - 対象としているPUTがfork server modeに対応しているバイナリであること
-// 責務：
-//  - 子プロセスを生成し、子プロセス側でPUTをfork server modeで起動する
-//  - PUTに対して適切な制限（メモリ制限など）を設ける
-//  - 親プロセス（fuzzufが動く方のプロセス）と子プロセスのpipeのセットアップ
+/*
+ * Precondition:
+ *  - The target PUT is a binary that supports fork server mode.
+ * Postcondition:
+ *  - Generate child process, then launch PUT in fork server mode on the child process side.
+ *  - Apply proper limits ( ex. memory limits ) on PUT.
+ *  - Setup the pipe between parent process ( the process that runs fuzzuf ) and child process.
+ */
 void NativeLinuxExecutor::SetupForkServer() {
-
-    // pipeのfdのセット。
-    // それぞれ、parent -> child, child -> parent方向へのデータ送信に使う
+    // set of fd of pipe.
+    // Each is used for parent -> child and child -> parent data transfer.
     int par2chld[2], chld2par[2];
 
     if (pipe(par2chld) || pipe(chld2par)) ERROR("pipe() failed");
@@ -933,8 +934,8 @@ void NativeLinuxExecutor::SetupForkServer() {
         /* Umpf. On OpenBSD, the default fd limit for root users is set to
            soft 128. Let's try to fix that... */
 
-        // FORKSRV_FD_WRITE=199, FORKSRV_FD_READ=198なので必要なlimitは200だが
-        // 今後これらの定数が変更される可能性も考慮し、念の為std::max() + 1にしている
+	// Although since FORKSRV_FD_WRITE=199, FORKSRV_FD_READ=198, the required limit is 200,
+	// set std::max() + 1 to suppose those values are changed in future.
         long unsigned int needed_fd_lim = std::max(FORKSRV_FD_WRITE, FORKSRV_FD_READ) + 1;
         if (!getrlimit(RLIMIT_NOFILE, &r) && r.rlim_cur < needed_fd_lim) {
 
@@ -987,7 +988,7 @@ void NativeLinuxExecutor::SetupForkServer() {
         close(chld2par[1]);
 
         execve(cargv[0], (char**)cargv.data(), environ);
-        // TODO: fork server modeでないときに使われているEXEC_FAIL_SIGに相当するものは必要か検討
+	// TODO: It must be discussed whether it is needed that equivalent to EXEC_FAIL_SIG that is used in non-fork server mode.
         exit(0);
     }
 
@@ -1043,13 +1044,12 @@ void NativeLinuxExecutor::SetupForkServer() {
       ERROR("Unable to epoll read pipe");
     }
 
-    // 10秒の時間制限付き（AFL++が10秒に見えるのでそれに準拠）でfork serverの起動を待つ
-    // 起動したらhandshakeを向こうが送ってくる
+    // Wait for fork server to launch with 10 seconds of time limit (Conforming AFL++ that looks waiting 10 seconds.).
+    // The handshake is sent from remote on launched.
     u8 tmp[4];
     u32 time_limit = 10000;
     u32 res = Util::ReadFileTimed(forksrv_read_fd, &tmp, 4, time_limit);
-    
-    // FIXME: fork serverが失敗する原因は様々で、それぞれ応答が違って識別できたりするので、ちゃんと区別してあげたほうが親切
+    // FIXME: There are various reason to fail fork server, and as the responses varies and identifiable, it is more decent to classify them.
     if (res == 0 || res > time_limit) { 
         TerminateForkServer();
         ERROR("Fork server crashed");

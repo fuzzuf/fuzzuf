@@ -15,22 +15,27 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see http://www.gnu.org/licenses/.
  */
+/**
+ * @file remove_cvr.hpp
+ * @author Ricerca Security <fuzzuf-dev@ricsec.co.jp>
+ */
 #ifndef FUZZUF_INCLUDE_UTILS_REMOVE_CVR_HPP
 #define FUZZUF_INCLUDE_UTILS_REMOVE_CVR_HPP
 #include <type_traits>
 namespace fuzzuf::utils::type_traits {
-// 与えられた型Tをremove_referenceしてからremove_cvする
-// C++20のRemoveCvref互換
-/*
- * 例:
+/**
+ * Remove reference from T, then remove const and volatile
+ * This is compatible to C++20 std::remove_cvref_t
+ *
+ * example:
  * RemoveCvrT< const int& >
- * これはintと同義
+ * This is equivalent to int
  * RemoveCvrT< int&& >
- * これもintと同義
+ * This is also equivalent to int
  * RemoveCvrT< int >
- * これもintと同義
+ * This is also equivalent to int
  * RemoveCvrT< const int* >
- * これはint*と同義
+ * This is equivalent to int*
  */
 template <typename T>
 #if __cplusplus >= 202002L

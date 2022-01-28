@@ -1,6 +1,7 @@
 subdirs(
-  dict2mp
   bbcounts2
+  dict2mp
+  die
   polyexecutor
 )
 

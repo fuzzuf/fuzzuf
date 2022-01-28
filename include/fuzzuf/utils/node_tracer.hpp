@@ -15,6 +15,10 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see http://www.gnu.org/licenses/.
  */
+/**
+ * @file node_tracer.hpp
+ * @author Ricerca Security <fuzzuf-dev@ricsec.co.jp>
+ */
 #ifndef FUZZUF_INCLUDE_UTILS_NODE_TRACER_HPP
 #define FUZZUF_INCLUDE_UTILS_NODE_TRACER_HPP
 
@@ -33,7 +37,7 @@ namespace fuzzuf::utils {
 /**
  * @class NodeTracerTag
  * @brief
- * fuzzerの引数の型TにT::tagがあり、それがNodeTracerTagだった場合、その引数に対してノードのイベントが通知される
+ * If the fuzzer argument type T has member type T::tag and T::tag is NodeTracerTag, the argument is considered as node tracer to send events
  */
 struct NodeTracerTag {};
 
@@ -47,29 +51,28 @@ struct IsNodeTracer<
 template <typename T> constexpr bool is_node_tracer_v = IsNodeTracer<T>::value;
 
 enum class Checkpoint {
-  enter,     // ノードに入った
-  leave,     // ノードを出た
-  abort,     // ノードの処理を中断した
-  break_,    // ループから抜けた
-  continue_, // ループの中でcontinueした
-  finalize, // ループ後、条件分岐後に必ず実行される処理を開始した
-  mark // Markerノードを実行した
+  enter,     // entered to the node
+  leave,     // leaved from the node
+  abort,     // aborted from the node
+  break_,    // loop node finished the loop
+  continue_, // loop node is going to run at least one more cycle
+  finalize, // no longer used
+  mark // entered to the Marker node
 };
 
 /**
  * @class DumpTracer
- * @brief 受けとったイベントを全て文字列にしてsinkに出力するtracer
- * これをfuzzerに突っ込んでおくとデバッグ出力になる
- * このノードは追加引数を全て無視する
+ * @brief Simply serialize incoming events, then output it using sink
+ * It is handy way to generate debug output
+ * This node ignore all additional arguments
  */
 class DumpTracer {
 public:
   using tag = NodeTracerTag;
   DumpTracer(std::function<void(std::string &&)> &&s) : sink(std::move(s)) {}
   /**
-   * @fn
-   * コード上の位置情報がない文字列でないイベントを受けとった場合に呼ばれる関数
-   * 内容をシリアライズしてsinkに流す
+   * The function is called when an event with non-string value and without code location infomation is sent
+   * Serialize the value then output to sink
    */
   template <typename T>
   auto operator()(const T &v) const -> std::enable_if_t<
@@ -80,21 +83,18 @@ public:
     sink(std::move(m));
   }
   /**
-   * @fn
-   * コード上の位置情報がないstd::stringのイベントを受けとった場合に呼ばれる関数
-   * 内容をそのままsinkに流す
+   * The function is called when an event with std::string value and without code location infomation is sent
+   * Just output value to sink
    */
   void operator()(const std::string &v) const;
   /**
-   * @fn
-   * コード上の位置情報がないconst char*のイベントを受けとった場合に呼ばれる関数
-   * 内容をそのままsinkに流す
+   * The function is called when an event with const char* value and without code location infomation is sent
+   * Just output value to sink
    */
   void operator()(const char *v) const;
   /**
-   * @fn
-   * コード上の位置情報付きのイベントを受けとった場合に呼ばれる関数
-   * 内容をシリアライズしてsinkに流す
+   * The function is called when an event with code location infomation is sent
+   * Serialize the infomation then output to sink
    */
   template <typename Node, typename... Args>
   void operator()(
@@ -155,39 +155,35 @@ private:
 
 /**
  * @class MarkingTracer
- * @brief markイベントの発生箇所だけを記録していくtracer
- * 制御ノードのテストなどでノードの実行順序が正しい事を確認するのに使う
- * このノードは追加引数のうち先頭の要素をMarkerを識別するための情報として使う
+ * @brief Record only detail of markers
+ * This tracer is intended to check if control node is controlling flow properly in unit tests.
+ * This node uses first additional argument as the infomation to identify markers
  */
 class MarkingTracer {
 public:
   using tag = NodeTracerTag;
   using log_type = std::vector<std::pair<const char *, std::string>>;
   /**
-   * @fn
-   * コード上の位置情報がない文字列でないイベントを受けとった場合に呼ばれる関数
-   * MarkingTracerはCheckpoint::markが付いていないすべてのイベントを無視する
+   * The function is called when an event with non-string value and without code location infomation is sent
+   * MarkingTracer ignores all events without Checkpoint::mark
    */
   template <typename T>
   auto operator()(const T &) const -> std::enable_if_t<
       !std::is_same_v<utils::type_traits::RemoveCvrT<T>, char *> &&
       !std::is_same_v<utils::type_traits::RemoveCvrT<T>, std::string>> {}
   /**
-   * @fn
-   * コード上の位置情報がないstd::stringのイベントを受けとった場合に呼ばれる関数
-   * MarkingTracerはCheckpoint::markが付いていないすべてのイベントを無視する
+   * The function is called when an event with std::string value and without code location infomation is sent
+   * MarkingTracer ignores all events without Checkpoint::mark
    */
   void operator()(const std::string &) const {}
   /**
-   * @fn
-   * コード上の位置情報がないconst char*のイベントを受けとった場合に呼ばれる関数
-   * MarkingTracerはCheckpoint::markが付いていないすべてのイベントを無視する
+   * The function is called when an event with const char* value and without code location infomation is sent
+   * MarkingTracer ignores all events without Checkpoint::mark
    */
   void operator()(const char *) const {}
   /**
-   * @fn
-   * コード上の位置情報付きのイベントを受けとった場合に呼ばれる関数
-   * checkpointがCheckpoint::markだった場合ノード名と識別情報をlogに記録する
+   * The function is called when an event with code location infomation is sent
+   * record node name and identifier to the log if checkpoint is Checkpoint::mark
    */
   template <typename Node, typename Head, typename... Tail>
   void operator()(const char *, int, const char *node_name, const Node &,
@@ -199,9 +195,8 @@ public:
     }
   }
   /**
-   * @fn
-   * コード上の位置情報付きのイベントを受けとった場合に呼ばれる関数
-   * checkpointがCheckpoint::markだった場合ノード名をlogに記録する
+   * The function is called when an event with code location infomation is sent
+   * record node name to the log if checkpoint is Checkpoint::mark
    */
   template <typename Node>
   void operator()(const char *, int, const char *node_name, const Node &,
@@ -211,8 +206,7 @@ public:
     }
   }
   /**
-   * @fn
-   * logの内容を取り出す
+   * retrive recorded log
    */
   const log_type &get_log() const { return log; }
 
@@ -221,10 +215,12 @@ private:
 };
 
 /**
- * @class DumpTracer
- * @brief 受けとったイベントを全て文字列にしてsinkに出力するtracer
- * これをfuzzerに突っ込んでおくとデバッグ出力になる
- * このノードは追加引数を全て無視する
+ * @class ElapsedTimeTracer
+ * @brief Record time duration from Checkpoint::enter to Checkpoint::leave for each node names
+ * The tracer is intended to detect heavy node
+ * The tracer records two kind of durations
+ * Inclusive duration is elapsed time between enter and leave including whole child node execution time
+ * Exclusive duration is elapsed time between enter and leave excluding child node execution time
  */
 class ElapsedTimeTracer {
   struct ElapsedTimeT {
@@ -288,15 +284,14 @@ public:
     }
   }
   /**
-   * @fn
-   * コード上の位置情報がない文字列でないイベントを受けとった場合に呼ばれる関数
-   * 内容をシリアライズしてsinkに流す
+   * The function is called when an event without code location infomation is sent
+   * The tracer ignores events without location infomation
    */
   template <typename T> auto operator()(const T &v) const -> void {}
   /**
-   * @fn
-   * コード上の位置情報付きのイベントを受けとった場合に呼ばれる関数
-   * 内容をシリアライズしてsinkに流す
+   * The function is called when an event with code location infomation is sent
+   * If the checkpoint is enter, record begin date
+   * If the checkpoint is leave, subtract begin date from current date, then append the duration to total duration
    */
   template <typename Node, typename... Args>
   void operator()(const char *, int, const char *node_name, const Node &,

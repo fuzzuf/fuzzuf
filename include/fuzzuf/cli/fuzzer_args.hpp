@@ -17,5 +17,11 @@
  */
 #pragma once
 #include "fuzzuf/cli/command_line_args.hpp"
+#include <boost/program_options.hpp>
 
-using FuzzerArgs = CommandLineArgs;
+// TODO: Can we make this code better?
+struct FuzzerArgs /* : CommandLineArgs */ {
+    int argc;
+    const char** argv;
+    boost::program_options::options_description global_options_description;
+};

@@ -15,21 +15,23 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see http://www.gnu.org/licenses/.
  */
+/**
+ * @file select_seed.cpp
+ * @author Ricerca Security <fuzzuf-dev@ricsec.co.jp>
+ */
 #include "fuzzuf/algorithms/libfuzzer/select_seed.hpp"
 #include "fuzzuf/utils/for_each_multi_index_values.hpp"
 namespace fuzzuf::algorithm::libfuzzer::select_seed {
 
-/*
- * @fn
- * 現在のcorpusの各要素のfeatureの数と重みを出力する
- * 出力のフォーマットはlibFuzzer互換
+/**
+ * Display feature count and weight of current corpus elements in libFuzzer compatible format
  *
- * libFuzzerの対応箇所
+ * Corresponding code of original libFuzzer implementation
  * https://github.com/llvm/llvm-project/blob/llvmorg-12.0.1/compiler-rt/lib/fuzzer/FuzzerCorpus.h#L547
  *
- * @param corpus このcorpusの中身が出力される
- * @param weights corpusの各要素の重み
- * @param sink メッセージの出力先
+ * @param corpus Display elements of this corpus
+ * @param weights Weights of each corpus elements
+ * @param sink Callable with one string argument to display message
  */
 void dumpDistribution(FullCorpus &corpus, const std::vector<double> &weights,
                       const std::function<void(std::string &&)> &sink) {
@@ -47,14 +49,11 @@ void dumpDistribution(FullCorpus &corpus, const std::vector<double> &weights,
   sink(std::move(message));
 }
 
-/*
- * @fn
- * corpusの要素数と同サイズの整数の列を作る
+/**
+ * Generate integer sequence with same size to corpus
  *
- *
- *
- * @param corpus このcorpusの要素数が使用される
- * @param intervals 出力先
+ * @param corpus The source corpus
+ * @param intervals Destination
  */
 void generateIntervals(FullCorpus &corpus, std::vector<double> &intervals) {
   const std::size_t corpus_size = corpus.corpus.size();
@@ -62,15 +61,14 @@ void generateIntervals(FullCorpus &corpus, std::vector<double> &intervals) {
   std::iota(intervals.begin(), intervals.end(), 0);
 }
 
-/*
- * @fn
- * corpusの後ろの要素ほど選ばれやすい重みを生成する
+/**
+ * Generate distribution that select newer elements in higher probability.
  *
- * libFuzzerの対応箇所
+ * Corresponding code of original libFuzzer implementation
  * https://github.com/llvm/llvm-project/blob/llvmorg-12.0.1/compiler-rt/lib/fuzzer/FuzzerCorpus.h#L540
  *
- * @param corpus このcorpusの要素数が使用される
- * @param intervals 出力先
+ * @param corpus The weight is generated for the elements of this corpus
+ * @param intervals Destination
  */
 void generateVanillaSchedule(FullCorpus &corpus, std::vector<double> &weights) {
   const std::size_t corpus_size = corpus.corpus.size();

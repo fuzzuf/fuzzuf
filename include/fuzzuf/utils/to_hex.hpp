@@ -15,6 +15,10 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see http://www.gnu.org/licenses/.
  */
+/**
+ * @file to_hex.hpp
+ * @author Ricerca Security <fuzzuf-dev@ricsec.co.jp>
+ */
 #ifndef FUZZUF_INCLUDE_UTILS_TO_HEX_HPP
 #define FUZZUF_INCLUDE_UTILS_TO_HEX_HPP
 #include <cstdint>
@@ -22,17 +26,15 @@
 #include <vector>
 namespace fuzzuf::utils {
 /**
- * @fn
- * バイナリをhexdumpしたものを指定された文字列に書き出す
- * @param message 出力先
- * @param range ダンプするバイナリ
+ * Serialize binary data into stringized hexadecimal numbers
+ * @param message Destination
+ * @param range Binary data to serialize
  */
 void toHex(std::string &message, const std::vector<std::uint8_t> &range);
 /**
- * @fn
- * アドレスを16進数で文字列にして、指定された文字列に書き出す
- * @param message 出力先
- * @param value アドレス
+ * Serialize address into stringized hexadecimal number
+ * @param message Destination
+ * @param value Address to serialize
  */
 void toHex(std::string &message, std::uintptr_t value);
 } // namespace fuzzuf::utils

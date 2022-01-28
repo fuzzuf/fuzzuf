@@ -37,4 +37,5 @@ public:
     {}
 
     void ReceiveStopSignal(void) {}
+    bool ShouldEnd(void) { return false; }
 };

@@ -15,6 +15,10 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see http://www.gnu.org/licenses/.
  */
+/**
+ * @file check_capability.hpp
+ * @author Ricerca Security <fuzzuf-dev@ricsec.co.jp>
+ */
 #ifndef FUZZUF_INCLUDE_UTILS_CHECK_CAPABILITY_HPP
 #define FUZZUF_INCLUDE_UTILS_CHECK_CAPABILITY_HPP
 #include "fuzzuf/utils/void_t.hpp"

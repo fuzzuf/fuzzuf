@@ -15,6 +15,10 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see http://www.gnu.org/licenses/.
  */
+/**
+ * @file standard_typedef.hpp
+ * @author Ricerca Security <fuzzuf-dev@ricsec.co.jp>
+ */
 #ifndef FUZZUF_INCLUDE_ALGORITHM_LIBFUZZER_HIERARFLOW_STANDARD_TYPEDEF_HPP
 #define FUZZUF_INCLUDE_ALGORITHM_LIBFUZZER_HIERARFLOW_STANDARD_TYPEDEF_HPP
 
@@ -23,7 +27,7 @@
 #include <tuple>
 #include <type_traits>
 
-/*
+/**
  * Macro to generate standard typedefs for libFuzzer nodes.
  */
 #define FUZZUF_ALGORITHM_LIBFUZZER_HIERARFLOW_STANDARD_TYPEDEFS                \

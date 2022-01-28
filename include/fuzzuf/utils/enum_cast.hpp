@@ -15,6 +15,10 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see http://www.gnu.org/licenses/.
  */
+/**
+ * @file enum_cast.hpp
+ * @author Ricerca Security <fuzzuf-dev@ricsec.co.jp>
+ */
 #ifndef FUZZUF_INCLUDE_UTILS_ENUM_CAST_HPP
 #define FUZZUF_INCLUDE_UTILS_ENUM_CAST_HPP
 #include "fuzzuf/utils/check_capability.hpp"
@@ -22,11 +26,10 @@
 #include <string>
 #include <type_traits>
 
-/*
- * enumを値ではなく名前が一致するものにキャストする関数を作るためのマクロ群
- * 詳しい使い方はUtils/Status.hppで実際に使用している箇所を参照
+/**
+ * Macro to generate a function that casts enum to the matched label name instead of the integral value
+ * Detailed usage is available in Utils/Status.hpp 
  */
-
 #define FUZZUF_ENUM_CAST_CHECK(ns, name)                                       \
   namespace detail::enum_cast::ns {                                            \
   FUZZUF_CHECK_CAPABILITY(Has##name, has_##name, T ::name)                     \

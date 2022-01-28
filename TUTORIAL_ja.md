@@ -94,7 +94,7 @@ $ ./fuzzuf afl --in_dir=/tmp/input \
 
 ### 使用するファザーの変更
 
-fuzzufで利用できるファザーは、AFLだけではありません。次は、AFLFastを使って、同じテスト用バイナリをファジングします。AFLFastがどのようなファザーかについては、[AFLFastのドキュメント](/docs/algorithms/AFLFast/algorithm_ja.md)を参照してください。
+fuzzufで利用できるファザーは、AFLだけではありません。次は、AFLFastを使って、同じテスト用バイナリをファジングします。AFLFastがどのようなファザーかについては、[AFLFastのドキュメント](/docs/algorithms/aflfast/algorithm_ja.md)を参照してください。
 使用するファザーを変更するには、fuzzufのコマンドライン引数（およびそれに伴うオプション）を変えるだけです。先ほどのコマンドにおけるファザーの指定を、`afl`から`aflfast`に変えて実行してみましょう。
 
 ```shell

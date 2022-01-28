@@ -15,6 +15,10 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see http://www.gnu.org/licenses/.
  */
+/**
+ * @file add_to_corpus.hpp
+ * @author Ricerca Security <fuzzuf-dev@ricsec.co.jp>
+ */
 #ifndef FUZZUF_INCLUDE_ALGORITHM_LIBFUZZER_HIERARFLOW_ADD_TO_CORPUS_HPP
 #define FUZZUF_INCLUDE_ALGORITHM_LIBFUZZER_HIERARFLOW_ADD_TO_CORPUS_HPP
 #include "fuzzuf/algorithms/libfuzzer/executor/add_to_corpus.hpp"
@@ -33,8 +37,8 @@ namespace fuzzuf::algorithm::libfuzzer {
  * the feature count is left to 0, and added result will never be selected by
  * ChooseRandom Seed. The node takes 4 paths for state, corpus, input and
  * exec_result.
- * @tparm F Function type to define what arguments passes through this node.
- * @tparm Path Struct path to define which value to to use.
+ * @tparam F Function type to define what arguments passes through this node.
+ * @tparam Path Struct path to define which value to to use.
  */
 template <typename F, typename Path> class AddToCorpus {};
 template <typename R, typename... Args, typename Path>
@@ -43,7 +47,6 @@ class AddToCorpus<R(Args...), Path>
 public:
   FUZZUF_ALGORITHM_LIBFUZZER_HIERARFLOW_STANDARD_TYPEDEFS
   /**
-   * @fn
    * Constructor
    * @param force_add_to_corpus_
    * If true, execution result is inserted to corpus even if no features were
@@ -67,9 +70,8 @@ public:
         strict_match(strict_match_), path_prefix(path_prefix_),
         sink(std::move(sink_)) {}
   /**
-   * @fn
    * This callable is called on HierarFlow execution
-   * @param args arguments
+   * @param args Arguments
    * @return direction of next node
    */
   callee_ref_t operator()(Args... args) {

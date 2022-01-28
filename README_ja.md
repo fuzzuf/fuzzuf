@@ -52,24 +52,24 @@ HierarFlowのドキュメントは、近日中に追加される予定です。
 CGF（Coverage-guided Greybox Fuzzer）を代表する汎用ファザーの、fuzzufにおける再実装です。
 fuzzufではAFLが、単体のファザーとしてだけでなく、派生ファザー実装のためのテンプレートとしても提供されています。
 このAFLの実装は[fuzzuf/fuzzuf-afl-artifact](https://github.com/fuzzuf/fuzzuf-afl-artifact)で示しているようにオリジナルのAFLを可能な限り再現しており、かつ同等以上実行速度を実現しています。
-- [紹介とCLIの使い方](/docs/algorithms/AFL/algorithm_ja.md)
-- [アルゴリズム概要](/docs/algorithms/AFL/algorithm_ja.md#アルゴリズム概要)
-- [アルゴリズム詳細](/docs/algorithms/AFL/algorithm_ja.md##hashed-edge-coverage)
-- [fuzzufでの実装](/docs/algorithms/AFL/implementation_ja.md)
+- [紹介とCLIの使い方](/docs/algorithms/afl/algorithm_ja.md)
+- [アルゴリズム概要](/docs/algorithms/afl/algorithm_ja.md#アルゴリズム概要)
+- [アルゴリズム詳細](/docs/algorithms/afl/algorithm_ja.md##hashed-edge-coverage)
+- [fuzzufでの実装](/docs/algorithms/afl/implementation_ja.md)
 
 ### AFLFast
 
 上記のAFLテンプレートを利用した、AFLFastの実装です。パワースケジューリングの調整により、オリジナルのAFLからパフォーマンスの向上を図っています。
-- [紹介とCLIの使い方](/docs/algorithms/AFLFast/algorithm_ja.md)
-- [アルゴリズム概要](/docs/algorithms/AFLFast/algorithm_ja.md#アルゴリズム概要)
-- [アルゴリズム詳細](/docs/algorithms/AFLFast/algorithm_ja.md#パワースケジュールについて)
-- [fuzzufでの実装](/docs/algorithms/AFLFast/implementation_ja.md)
+- [紹介とCLIの使い方](/docs/algorithms/aflfast/algorithm_ja.md)
+- [アルゴリズム概要](/docs/algorithms/aflfast/algorithm_ja.md#アルゴリズム概要)
+- [アルゴリズム詳細](/docs/algorithms/aflfast/algorithm_ja.md#パワースケジュールについて)
+- [fuzzufでの実装](/docs/algorithms/aflfast/implementation_ja.md)
 
 ### VUzzer
 
 PUTのコントロールフローやデータフローを解析することでプログラムの構造を推測する、ミューテーションベースドファザーです。
 オリジナルのVUzzerではlibdft64を用いてデータフロー解析を行なっていましたが、モダンな環境では動作しないという問題がありました。そこで、fuzzufでは改造された[PolyTracker](https://github.com/fuzzuf/polytracker)を使用し、モダンな環境でもVUzzerを動作可能としています。
-- [紹介とCLIの使い方](/docs/algorithms/VUzzer/algorithm_ja.md)
+- [紹介とCLIの使い方](/docs/algorithms/vuzzer/algorithm_ja.md)
 - アルゴリズム概要
 - アルゴリズム詳細
 - fuzzufでの実装
@@ -77,20 +77,20 @@ PUTのコントロールフローやデータフローを解析することで�
 ### libFuzzer
 
 LLVMプロジェクトの、compiler-rtのライブラリのひとつとして提供されている、CGFです。
-- [紹介とCLIの使い方](/docs/algorithms/libFuzzer/manual.md) (英語)
-- [アルゴリズム概要](docs/algorithms/libFuzzer/algorithm_ja.md)
-- [アルゴリズム詳細](/docs/algorithms/libFuzzer/algorithm_ja.md#libfuzzerの仕組み)
-- [fuzzufでの実装](/docs/algorithms/libFuzzer/algorithm_ja.md#fuzzufにおける実装)
+- [紹介とCLIの使い方](/docs/algorithms/libfuzzer/manual.md) (英語)
+- [アルゴリズム概要](docs/algorithms/libfuzzer/algorithm_ja.md)
+- [アルゴリズム詳細](/docs/algorithms/libfuzzer/algorithm_ja.md#libfuzzerの仕組み)
+- [fuzzufでの実装](/docs/algorithms/libfuzzer/algorithm_ja.md#fuzzufにおける実装)
 
 ### Nezha
 
 ひとつの入力値を用いて、複数の異なる実装を持つPUTに対する実行結果の差分から、プログラムの不具合の発見を試みる、libFuzzerを元としたファザーです。
 fuzzufにおいて、差分によるファジング（differential fuzzing）のアルゴリズムが実装可能であることを示しています。
 
-- [紹介とCLIの使い方](/docs/algorithms/Nezha/manual.md) (英語)
-- [アルゴリズム概要](/docs/algorithms/Nezha/algorithm_ja.md)
-- [アルゴリズム詳細](/docs/algorithms/Nezha/algorithm_ja.md#nezha固有のノード)
-- [fuzzufでの実装](/docs/algorithms/Nezha/algorithm_ja.md#fuzzufにおける実装)
+- [紹介とCLIの使い方](/docs/algorithms/nezha/manual.md) (英語)
+- [アルゴリズム概要](/docs/algorithms/nezha/algorithm_ja.md)
+- [アルゴリズム詳細](/docs/algorithms/nezha/algorithm_ja.md#nezha固有のノード)
+- [fuzzufでの実装](/docs/algorithms/nezha/algorithm_ja.md#fuzzufにおける実装)
 
 ## ライセンス
 

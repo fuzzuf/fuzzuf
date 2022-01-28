@@ -15,6 +15,10 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see http://www.gnu.org/licenses/.
  */
+/**
+ * @file to_string.hpp
+ * @author Ricerca Security <fuzzuf-dev@ricsec.co.jp>
+ */
 #ifndef FUZZUF_INCLUDE_UTILS_TO_STRING_HPP
 #define FUZZUF_INCLUDE_UTILS_TO_STRING_HPP
 #include "fuzzuf/utils/range_traits.hpp"
@@ -33,7 +37,7 @@ namespace fuzzuf::utils {
 template <typename... T> bool toStringADL(std::string &dest, T &&...value);
 
 /*
- * 組み込みの数値型を文字列に変換する
+ * Serialize built-in numeric types
  */
 auto toString(std::string &dest, bool) -> bool;
 auto toString(std::string &dest, unsigned char) -> bool;
@@ -51,21 +55,19 @@ auto toString(std::string &dest, double) -> bool;
 auto toString(std::string &dest, long double) -> bool;
 
 /**
- * @fn
- * destにインデントを追記する
- * @param dest インデントの書き込み先
- * @param indent_count インデントの深さ
- * @param indent インデントに使う文字列
+ * Apppend indentation to dest
+ * @param dest Destination
+ * @param indent_count Depth of indentation
+ * @param indent String that is used as one level of indentation
  */
 void make_indent(std::string &dest, std::size_t indent_count,
                  const std::string &indent);
 
 /**
- * @fn
- * Boost.Serializationでstrong typedefされた値を文字列に変換する
- * @tparm T 値の型
- * @param dest 出力先
- * @param value 値
+ * Serialize values that was strong typedef-ed using Boost.Serialization
+ * @tparam T Type of value
+ * @param dest Destination
+ * @param value Value
  */
 template <typename T>
 auto toString(std::string &dest, const T &value) -> std::enable_if_t<
@@ -77,8 +79,8 @@ auto toString(std::string &dest, const T &value) -> std::enable_if_t<
   return toStringADL(dest, underlying_t(value));
 }
 
-/*
- * chronoの時間を文字列に変換する
+/**
+ * Serialize std::chrono durations
  */
 auto toString(std::string &, const std::chrono::nanoseconds &) -> bool;
 auto toString(std::string &, const std::chrono::microseconds &) -> bool;
@@ -95,18 +97,16 @@ auto toString(std::string &, const std::chrono::years &) -> bool;
 #endif
 
 /**
- * @fn
- * 文字列を文字列に追記する
+ * Serialize std::string (simply append to string)
  */
 auto toString(std::string &, const std::string &) -> bool;
 
 /**
- * @fn
- * std::pairを文字列に変換する
- * @tparm T1 firstの型
- * @tparm T2 secondの型
- * @param dest 出力先
- * @param value 値
+ * Serialize std::pair
+ * @tparam T1 First type
+ * @tparam T2 Second type
+ * @param dest Destination
+ * @param value Value
  */
 template <typename T1, typename T2>
 auto toString(std::string &dest, const std::pair<T1, T2> &value)
@@ -156,11 +156,10 @@ auto toString(std::string &dest, const std::tuple<T...> &value)
 } // namespace detail
 
 /**
- * @fn
- * std::tupleを文字列に変換する
- * @tparm T 要素の型
- * @param dest 出力先
- * @param value 値
+ * Serialize std::tuple
+ * @tparam T Type of elements
+ * @param dest Destination
+ * @param value Value
  */
 template <typename... T>
 auto toString(std::string &dest, const std::tuple<T...> &value)
@@ -175,12 +174,11 @@ auto toString(std::string &dest, const std::tuple<T...> &value)
 }
 
 /**
- * @fn
- * rangeの要件を満たす型の値を文字列に変換する
- * 要素の同地比較が不能な場合用
- * @tparm T 値の型
- * @param dest 出力先
- * @param value 値
+ * Serialize value of type that satisfies range concept
+ * For the case value_type doesn't satisfy equality comparable concept
+ * @tparam T Type of value
+ * @param dest Destination
+ * @param value Value
  */
 template <typename T>
 auto toString(std::string &dest, const T &value) -> std::enable_if_t<
@@ -208,12 +206,11 @@ auto toString(std::string &dest, const T &value) -> std::enable_if_t<
 }
 
 /**
- * @fn
- * rangeの要件を満たす型の値を文字列に変換する
- * 要素の同地比較が可能な場合用
- * @tparm T 値の型
- * @param dest 出力先
- * @param value 値
+ * Serialize value of type that satisfies range concept
+ * For the case value_type satisfies equality comparable concept
+ * @tparam T Type of value
+ * @param dest Destination
+ * @param value Value
  */
 template <typename T>
 auto toString(std::string &dest, const T &value) -> std::enable_if_t<
@@ -265,11 +262,10 @@ auto toString(std::string &dest, const T &value) -> std::enable_if_t<
 }
 
 /**
- * @fn
- * デリファレンス可能な型を文字列に変換する
- * @tparm T 要素の型
- * @param dest 出力先
- * @param value 値
+ * Serialize refered value of type that satisifies dereferenceable concept
+ * @tparam T Type of value
+ * @param dest Destination
+ * @param value Value
  */
 template <typename T>
 auto toString(std::string &dest, const T &value) -> std::enable_if_t<
@@ -285,8 +281,8 @@ auto toString(std::string &dest, const T &value) -> std::enable_if_t<
 
 /**
  * @class ToStringShortReady
- * @brief インデント指定なしのtoStringが定義されている型の場合trueが返る
- * @tparm T 任意型
+ * @brief Meta function that returns true if function ToString( dest, value ) is defined for type T
+ * @tparam T Any type
  */
 template <typename T, typename Enable = void>
 struct ToStringShortReady : public std::false_type {};
@@ -301,8 +297,8 @@ constexpr bool to_string_short_ready_v = ToStringShortReady<T>::value;
 
 /**
  * @class ToStringLongReady
- * @brief インデント指定付きのtoStringが定義されている型の場合trueが返る
- * @tparm T 任意型
+ * @brief Meta function that returns true if function ToString( dest, value, indent_depth, indent_str ) is defined for type T
+ * @tparam T Any type
  */
 template <typename T, typename Enable = void>
 struct ToStringLongReady : public std::false_type {};
@@ -318,11 +314,10 @@ template <typename T>
 constexpr bool to_string_long_ready_v = ToStringLongReady<T>::value;
 
 /**
- * @fn
- * ADLを含めてインデント指定無しのtoStringが利用可能な場合、それを使って値を文字列に変換する
- * @tparm T 値の型
- * @param dest 出力先
- * @param value 値
+ * Serialize value without indentation specifier using implementation above or user defined implementation that is available in the rage of ADL
+ * @tparam T Type of value
+ * @param dest Destination
+ * @param value Value
  */
 template <typename T>
 auto toStringADLInternal(std::string &dest, const T &value)
@@ -331,13 +326,12 @@ auto toStringADLInternal(std::string &dest, const T &value)
 }
 
 /**
- * @fn
- * ADLを含めてインデント指定付きのtoStringが利用可能な場合、それを使って値を文字列に変換する
- * @tparm T 値の型
- * @param dest 出力先
- * @param value 値
- * @param indent_count インデントの深さ
- * @param indent インデントに使う文字列
+ * Serialize value with indentation specifier using implementation above or user defined implementation that is available in the rage of ADL
+ * @tparam T Type of value
+ * @param dest Destination
+ * @param value Value
+ * @param indent_count Depth of indentation
+ * @param indent String that is used as one level of indentation
  */
 template <typename T>
 auto toStringADLInternal(std::string &dest, const T &value,
@@ -347,12 +341,12 @@ auto toStringADLInternal(std::string &dest, const T &value,
 }
 
 /**
- * @fn
- * インデント指定無しのtoStringを要求されているが、ADLを含めてインデント指定付きのtoStringしか見つからない場合、"
- * "を0段の状態でインデント付きのtoStringを使って文字列に変換する
- * @tparm T 値の型
- * @param dest 出力先
- * @param value 値
+ * Serialize value without indentation specifier using implementation above or user defined implementation that is available in the rage of ADL
+ * For the case only toString with indentation specifier is available
+ * This is equivalent to call toString( dest, value, 0, "  " )
+ * @tparam T Type of value
+ * @param dest Destination
+ * @param value Value
  */
 template <typename T>
 auto toStringADLInternal(std::string &dest, const T &value) -> std::enable_if_t<
@@ -361,13 +355,14 @@ auto toStringADLInternal(std::string &dest, const T &value) -> std::enable_if_t<
 }
 
 /**
- * @fn
- * インデント指定付きのtoStringを要求されているが、ADLを含めてインデント指定無しのtoStringしか見つからない場合、指定されたインデントを挿入してからインデント指定無しのtoStringを使って文字列に変換する
- * @tparm T 値の型
- * @param dest 出力先
- * @param value 値
- * @param indent_count インデントの深さ
- * @param indent インデントに使う文字列
+ * Serialize value with indentation specifier using implementation above or user defined implementation that is available in the rage of ADL
+ * For the case only toString without indentation specifier is available
+ * This insert indent first, then call toString( dest, value )
+ * @tparam T Type of value
+ * @param dest Destination
+ * @param value Value
+ * @param indent_count Depth of indentation
+ * @param indent String that is used as one level of indentation
  */
 template <typename T>
 auto toStringADLInternal(std::string &dest, const T &value,
@@ -380,9 +375,13 @@ auto toStringADLInternal(std::string &dest, const T &value,
   return result;
 }
 
+/**
+ * In most case, this is the only function that is expected to be called directly for serialization
+ */
 template <typename... T> bool toStringADL(std::string &dest, T &&...value) {
   return toStringADLInternal(dest, std::forward<T>(value)...);
 }
 
 } // namespace fuzzuf::utils
 #endif
+

@@ -20,19 +20,8 @@
  * @brief Executor for dynamic taint analysis tool, polytracker
  * @author Ricerca Security <fuzzuf-dev@ricsec.co.jp>
  */
-#include <cstddef>
-#include <cassert>
-#include <memory>
-#include <sstream>
-#include "fuzzuf/exceptions.hpp"
-#include "fuzzuf/executor/executor.hpp"
 #include "fuzzuf/executor/polytracker_executor.hpp"
-#include "fuzzuf/utils/workspace.hpp"
-#include "fuzzuf/utils/common.hpp"
-#include "fuzzuf/feedback/inplace_memory_feedback.hpp"
-#include "fuzzuf/feedback/exit_status_feedback.hpp"
-#include "fuzzuf/feedback/put_exit_reason_type.hpp"
-#include "fuzzuf/logger/logger.hpp"
+#include <sstream>
 
 PolyTrackerExecutor::PolyTrackerExecutor(                 
     const fs::path &path_to_executor,
@@ -44,13 +33,14 @@ PolyTrackerExecutor::PolyTrackerExecutor(
     u64 exec_memlimit,
     const fs::path &path_to_write_input
 ) :
-    ThirdPartyExecutor(argv, exec_timelimit_ms, exec_memlimit, path_to_write_input),
+    ProxyExecutor(argv, exec_timelimit_ms, exec_memlimit, path_to_write_input),
     path_str_to_executor( path_to_executor.string() ),
     path_str_to_db( path_to_db.string() ),
     path_str_to_inst_bin( path_to_inst_bin.string() ),
     path_str_to_output( path_to_output.string() )
 {
     SetCArgvAndDecideInputMode();
+    ProxyExecutor::Initilize();
 }
 
 void PolyTrackerExecutor::SetCArgvAndDecideInputMode() {

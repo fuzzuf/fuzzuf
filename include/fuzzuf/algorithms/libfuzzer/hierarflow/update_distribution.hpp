@@ -15,6 +15,10 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see http://www.gnu.org/licenses/.
  */
+/**
+ * @file update_distribution.hpp
+ * @author Ricerca Security <fuzzuf-dev@ricsec.co.jp>
+ */
 #ifndef FUZZUF_INCLUDE_ALGORITHM_LIBFUZZER_HIERARFLOW_UPDATE_DISTRIBUTION_HPP
 #define FUZZUF_INCLUDE_ALGORITHM_LIBFUZZER_HIERARFLOW_UPDATE_DISTRIBUTION_HPP
 #include "fuzzuf/algorithms/libfuzzer/hierarflow/standard_end.hpp"
@@ -31,10 +35,10 @@ namespace fuzzuf::algorithm::libfuzzer {
  * @brief Update probability of selecting each input in the corpus according to
  * the state of corpus. The node takes 3 path for state( to retrive configs
  * affecting to update ), corpus and RNG.
- * @tparm F Function type to define what arguments passes through this node.
- * @tparm llvm_version LLVM version. Probability calculation method varies
+ * @tparam F Function type to define what arguments passes through this node.
+ * @tparam llvm_version LLVM version. Probability calculation method varies
  * depending on LLVM version.
- * @tparm Path Struct path to define which value to to use.
+ * @tparam Path Struct path to define which value to to use.
  */
 template <typename F, Version llvm_version, typename Path>
 struct UpdateDistribution {};
@@ -44,15 +48,9 @@ struct UpdateDistribution<R(Args...), llvm_version, Path>
 public:
   FUZZUF_ALGORITHM_LIBFUZZER_HIERARFLOW_STANDARD_TYPEDEFS
   /**
-   * コンストラクタ
-   * @tparm Sink メッセージの出力先の型
-   * @param sink_ メッセージの出力先
-   */
-  /**
-   * @fn
    * Constructor
-   * @tparm Sink type of sink_
-   * @param sink_ callback function with one string argument to output message
+   * @tparam Sink Type of sink_
+   * @param sink_ Callback function with one string argument to output message
    */
   template <typename Sink>
   UpdateDistribution(std::size_t sparse_energy_updates_,
@@ -61,9 +59,8 @@ public:
         max_mutation_factor(max_mutation_factor_),
         sink(std::forward<Sink>(sink_)) {}
   /**
-   * @fn
    * This callable is called on HierarFlow execution
-   * @param args arguments
+   * @param args Arguments
    * @return direction of next node
    */
   callee_ref_t operator()(Args... args) {

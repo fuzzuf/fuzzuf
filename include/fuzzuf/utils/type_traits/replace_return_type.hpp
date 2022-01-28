@@ -15,18 +15,22 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see http://www.gnu.org/licenses/.
  */
+/**
+ * @file replace_return_type.hpp
+ * @author Ricerca Security <fuzzuf-dev@ricsec.co.jp>
+ */
 #ifndef FUZZUF_INCLUDE_UTILS_REPLACE_RETURN_TYPE_HPP
 #define FUZZUF_INCLUDE_UTILS_REPLACE_RETURN_TYPE_HPP
 #include <type_traits>
 namespace fuzzuf::utils::type_traits {
-/*
+/**
  * @class replace_return_type
- * @brief 関数の型Uの返り値の型をTに変更したものを返すメタ関数
- * 例:
+ * @brief Meta function to return a functin type with same arguments as U but returns T
+ * example:
  * replace_return_type_t< int, void( bool ) >
- * これはint( bool )と同義
- * @tparm T 変換後の返り値の型
- * @tparm U 関数の型
+ * This is equivalent to int( bool )
+ * @tparam T New return type
+ * @tparam U Function type
  *
  */
 template <typename T, typename U> struct replace_return_type {};

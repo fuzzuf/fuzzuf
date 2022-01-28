@@ -15,22 +15,26 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see http://www.gnu.org/licenses/.
  */
+/**
+ * @file get_nth.hpp
+ * @author Ricerca Security <fuzzuf-dev@ricsec.co.jp>
+ */
 #ifndef FUZZUF_INCLUDE_UTILS_GET_NTH_HPP
 #define FUZZUF_INCLUDE_UTILS_GET_NTH_HPP
 #include <type_traits>
 #include <utility>
 namespace fuzzuf::utils::type_traits {
-/*
+/**
  * @class GetNth
- * @brief 型Tのテンプレート引数や関数の引数からi番目の要素を取り出すメタ関数
- * 例:
+ * @brief
+ * Meta function to extract i-th type from template parameters or function argument types
+ * example:
  * GetNthT< 1, bool( int, float, double, char ) >
- * これはfloatと同義
+ * This is equivalent to float
  * GetNthT< 2, std::tuple< int, float, double, char > >
- * これはdoubleと同義
- * @tparm i i番目の要素を返す
- * @tparm U テンプレート引数を持つ型または関数の型
- *
+ * This is equivalent to double
+ * @tparam i i-th element is extracted
+ * @tparam U A type with template parameters or function type
  */
 template <unsigned int i, typename T, typename Enable = void> struct GetNth {};
 

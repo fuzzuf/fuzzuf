@@ -15,6 +15,10 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see http://www.gnu.org/licenses/.
  */
+/**
+ * @file insert_repeated_bytes.hpp
+ * @author Ricerca Security <fuzzuf-dev@ricsec.co.jp>
+ */
 #ifndef FUZZUF_INCLUDE_ALGORITHM_LIBFUZZER_MUTATION_INSERT_REPEATED_BYTES_HPP
 #define FUZZUF_INCLUDE_ALGORITHM_LIBFUZZER_MUTATION_INSERT_REPEATED_BYTES_HPP
 #include "fuzzuf/algorithms/libfuzzer/mutation_history.hpp"
@@ -25,18 +29,17 @@
 #include <type_traits>
 namespace fuzzuf::algorithm::libfuzzer::mutator {
 
-/*
- * @fn
+/**
  * Insert random length of 0x00 or 0xff at the random position of data
  *
  * Corresponding code of original libFuzzer implementation
  * https://github.com/llvm/llvm-project/blob/llvmorg-12.0.1/compiler-rt/lib/fuzzer/FuzzerMutate.cpp#L126
  *
- * @tparm RNG type of random number generator
- * @tparm Range container of the value
- * @param rng random number generator
- * @param data value to modify
- * @param max_size max length of value
+ * @tparam RNG Type of random number generator
+ * @tparam Range Container of the value
+ * @param rng Random number generator
+ * @param data Value to modify
+ * @param max_size Max length of value
  * @return length of post modification value
  */
 template <typename RNG, typename Range>

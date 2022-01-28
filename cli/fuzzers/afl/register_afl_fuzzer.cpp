@@ -18,6 +18,7 @@
 #include "fuzzuf/algorithms/afl/afl_fuzzer.hpp"
 #include "fuzzuf/cli/fuzzer_builder_register.hpp"
 #include "fuzzuf/cli/fuzzer/afl/build_afl_fuzzer_from_args.hpp"
+#include <boost/program_options.hpp>
 
 namespace fuzzuf::algorithm::afl {
 

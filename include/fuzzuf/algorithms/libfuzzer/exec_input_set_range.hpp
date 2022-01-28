@@ -15,6 +15,10 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see http://www.gnu.org/licenses/.
  */
+/**
+ * @file exec_input_set_range.hpp
+ * @author Ricerca Security <fuzzuf-dev@ricsec.co.jp>
+ */
 #ifndef FUZZUF_INCLUDE_ALGORITHM_LIBFUZZER_EXEC_INPUT_SET_RANGE_HPP
 #define FUZZUF_INCLUDE_ALGORITHM_LIBFUZZER_EXEC_INPUT_SET_RANGE_HPP
 #include "fuzzuf/exec_input/exec_input_set.hpp"
@@ -86,10 +90,10 @@ private:                                                                       \
 /**
  * @class BasicExecInputSetIterator
  * C++ Random access iterator compliant adaptor to traverse ExecInputSet elements.
- * @tparm unwrap
+ * @tparam unwrap
  * If true, dereferenced value is range of std::uint8_t.
  * Otherwise, dereferenced value is reference to ExecInput.
- * @tparm Reference Reference type to an element.
+ * @tparam Reference Reference type to an element.
  */
 template <bool unwrap, typename Reference> class BasicExecInputSetIterator {};
 template <typename Reference>
@@ -160,10 +164,10 @@ enum class ExecInputSetRangeInsertMode {
 /**
  * @class ExecInputSetRange
  * A range adaptor to make ExecInputSet to C++ range compliant.
- * @tparm unwrap
+ * @tparam unwrap
  * If true, dereferenced value is range of std::uint8_t.
  * Otherwise, dereferenced value is reference to ExecInput.
- * @tparm mode Specify how to insert value.
+ * @tparam mode Specify how to insert value.
  */
 template <bool unwrap, ExecInputSetRangeInsertMode mode>
 class ExecInputSetRange {
@@ -254,8 +258,15 @@ struct ExecInputSetRangeT {};
 template <bool unwrap, ExecInputSetRangeInsertMode mode>
 constexpr auto exec_input_set_range = ExecInputSetRangeT<unwrap, mode>();
 
-/*
+/**
  * Create ExecInputSetRange
+ *
+ * @tparam T base range type
+ * @tparam unwrap If ture, dereferenced value is range of std::uint8_t.
+ * Otherwise, dereferenced value is reference to ExecInput.
+ * @tparam mode Specify how to insert value.
+ * @param p base range
+ * @return p piped to ExecInputSetRange
  */
 template <typename T, bool unwrap, ExecInputSetRangeInsertMode mode>
 auto operator|(T &p, const ExecInputSetRangeT<unwrap, mode> &)

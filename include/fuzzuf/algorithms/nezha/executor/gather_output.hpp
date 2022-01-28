@@ -15,6 +15,10 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see http://www.gnu.org/licenses/.
  */
+/**
+ * @file gather_output.hpp
+ * @author Ricerca Security <fuzzuf-dev@ricsec.co.jp>
+ */
 #ifndef FUZZUF_INCLUDE_ALGORITHM_NEZHA_EXECUTOR_GATHER_OUTPUT_HPP
 #define FUZZUF_INCLUDE_ALGORITHM_NEZHA_EXECUTOR_GATHER_OUTPUT_HPP
 #include "fuzzuf/utils/range_traits.hpp"
@@ -23,13 +27,12 @@
 namespace fuzzuf::algorithm::nezha::executor {
 
 /**
- * @fn
- * ターゲットを実行して得られた標準出力のハッシュをoutput_diffに追加する
+ * Calculate hash value of output, then append it to output_diff
  *
- * @tparm InputInfo 実行結果の型
- * @tparm OutputDiff output_diffの型
- * @param exec_result 実行結果
- * @param output_diff std::size_t型を要素とするappendableなコンテナ
+ * @tparam Range Range of std::uint8_t
+ * @tparam OutputDiff Container of std::size_t
+ * @param output Standard output
+ * @param output_diff Container of hash values
  */
 template <typename Range, typename OutputDiff>
 auto GatherOutput(const Range &output, OutputDiff &output_diff)

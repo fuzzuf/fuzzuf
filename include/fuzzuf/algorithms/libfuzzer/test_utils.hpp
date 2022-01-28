@@ -15,6 +15,11 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see http://www.gnu.org/licenses/.
  */
+/**
+ * @file test_utils.hpp
+ * @brief some utilities to write tests quicly
+ * @author Ricerca Security <fuzzuf-dev@ricsec.co.jp>
+ */
 #ifndef FUZZUF_INCLUDE_ALGORITHMS_LIBFUZZER_TEST_UTILS_HPP
 #define FUZZUF_INCLUDE_ALGORITHMS_LIBFUZZER_TEST_UTILS_HPP
 #include "fuzzuf/algorithms/libfuzzer/dictionary.hpp"
@@ -32,12 +37,11 @@
 #include <cstdint>
 #include <vector>
 
-// テストを書くときに頻繁に書くことになるコードをまとめた物
 namespace fuzzuf::algorithm::libfuzzer::test {
 
 /*
- * テスト用のState
- * 乱数生成器がランダムでない値を返すようになっている
+ * State for tests
+ * The RNG returns not random values
  */
 
 using RNG = fuzzuf::utils::not_random::Sequential<unsigned int>;
@@ -48,13 +52,14 @@ using State = fuzzuf::algorithm::libfuzzer::State;
 using ElapsedTimeClock = std::chrono::system_clock::time_point;
 using DictHistory = dictionary::DictionaryHistory<Dict>;
 /*
- * テスト用の入力値
+ * Input value examples
  */
 auto getSeed1() -> Range;
 auto getSeed2() -> Range;
 
-/*
- * test.dictの内容をmanual_dictにロードする
+/**
+ * Load contents of test.dict to manual_dict
+ * @param dict destination
  */
 void LoadDictionary(
     fuzzuf::algorithm::libfuzzer::dictionary::StaticDictionary &dict);
@@ -75,7 +80,7 @@ struct Variables {
   std::size_t last_corpus_update_run = 0u;
 };
 
-// fuzzer全体を動かすのに必要な引数を持つ型
+// Function type that has arguments required to run all functionalities.
 using Full = bool(Variables &, utils::DumpTracer &, utils::ElapsedTimeTracer &);
 
 namespace sp = utils::struct_path;
@@ -112,8 +117,12 @@ struct Order {
 using MutationPaths = decltype(Order::rng && Order::input &&
                                Order::max_length && Order::mutation_history);
 
-/*
- * ノードLを単品で実行する
+/**
+ * Execute Hierarflow node L alone
+ * 
+ * @tparm L the node type
+ * @tparm Input input value type
+ * @param data input value
  */
 template <template <typename...> typename L, typename Input>
 void run_hierarflow(Input &data) {
@@ -130,8 +139,12 @@ void run_hierarflow(Input &data) {
   ett.dump([](std::string &&m) { std::cout << m << std::flush; });
 }
 
-/*
- * ノードLを2つ || で繋いだ状態のものを実行する
+/**
+ * Connect two nodes of L by ||, then execute it
+ * 
+ * @tparm L the node type
+ * @tparm Input input value type
+ * @param data input value
  */
 template <template <typename...> typename L, typename Input>
 void run_hierarflow_logical_or(Input &data) {
@@ -150,8 +163,12 @@ void run_hierarflow_logical_or(Input &data) {
   ett.dump([](std::string &&m) { std::cout << m << std::flush; });
 }
 
-/*
- * ノードLを2つ << で繋いだ状態のものを実行する
+/**
+ * Connect two nodes of L by <<, then execute it
+ * 
+ * @tparm L the node type
+ * @tparm Input input value type
+ * @param data input value
  */
 template <template <typename...> typename L, typename Input>
 void run_hierarflow_shift_left(Input &data) {
@@ -168,8 +185,13 @@ void run_hierarflow_shift_left(Input &data) {
   std::copy(v.input[0].begin(), v.input[0].end(), std::back_inserter(data));
   ett.dump([](std::string &&m) { std::cout << m << std::flush; });
 }
-/*
- * HierarFlowのノードにする前の生のmutatorを直接実行する
+/**
+ * run mutator once without HierarFlow
+ * 
+ * @tparm Func callable type with four arguments that represents RNG, input value, max input value length, mutation history
+ * @tparm Input input value type
+ * @param the mutator to call
+ * @param data input value
  */
 template <typename Func, typename Input>
 void run_direct(Func func, Input &data) {
@@ -177,8 +199,13 @@ void run_direct(Func func, Input &data) {
   std::minstd_rand rng;
   func(rng, data, 40000u, history);
 }
-/*
- * HierarFlowのノードにする前の生のmutatorを直接2回実行する
+/**
+ * run mutator twice without HierarFlow
+ * 
+ * @tparm Func callable type with four arguments that represents RNG, input value, max input value length, mutation history
+ * @tparm Input input value type
+ * @param the mutator to call
+ * @param data input value
  */
 template <typename Func, typename Input>
 void run_direct_twice(Func func, Input &data) {

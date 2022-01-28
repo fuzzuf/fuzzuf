@@ -15,6 +15,10 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see http://www.gnu.org/licenses/.
  */
+/**
+ * @file marker.hpp
+ * @author Ricerca Security <fuzzuf-dev@ricsec.co.jp>
+ */
 #ifndef FUZZUF_INCLUDE_ALGORITHM_LIBFUZZER_HIERARFLOW_MARKER_HPP
 #define FUZZUF_INCLUDE_ALGORITHM_LIBFUZZER_HIERARFLOW_MARKER_HPP
 #include "fuzzuf/algorithms/libfuzzer/hierarflow/simple_function.hpp"
@@ -34,8 +38,8 @@ namespace fuzzuf::algorithm::libfuzzer {
  * This node is intended to make debugging easier.
  * The node takes no any paths.
  *
- * @tparm F Function type to define what arguments passes through this node.
- * @tparm T event detail type.
+ * @tparam F Function type to define what arguments passes through this node.
+ * @tparam T Event detail type.
  */
 template <typename F, typename T> struct Marker {};
 template <typename R, typename... Args, typename T>
@@ -43,15 +47,13 @@ struct Marker<R(Args...), T>
     : public HierarFlowRoutine<R(Args...), R(Args...)> {
   FUZZUF_ALGORITHM_LIBFUZZER_HIERARFLOW_STANDARD_TYPEDEFS
   /**
-   * @fn
    * Constructor
    * @param info_ Event datail. This value is passed as is to NodeTracer.
    */
   Marker(T &&info_) : info(std::move(info_)) {}
   /**
-   * @fn
    * This callable is called on HierarFlow execution
-   * @param args arguments
+   * @param args Arguments
    * @return direction of next node
    */
   callee_ref_t operator()(Args... args) {

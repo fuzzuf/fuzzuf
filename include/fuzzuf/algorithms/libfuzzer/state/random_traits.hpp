@@ -15,6 +15,10 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see http://www.gnu.org/licenses/.
  */
+/**
+ * @file random_traits.hpp
+ * @author Ricerca Security <fuzzuf-dev@ricsec.co.jp>
+ */
 #ifndef FUZZUF_INCLUDE_ALGORITHM_LIBFUZZER_RANDOM_TRAITS_HPP
 #define FUZZUF_INCLUDE_ALGORITHM_LIBFUZZER_RANDOM_TRAITS_HPP
 #include "fuzzuf/utils/check_capability.hpp"

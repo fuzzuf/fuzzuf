@@ -15,6 +15,10 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see http://www.gnu.org/licenses/.
  */
+/**
+ * @file repeat.hpp
+ * @author Ricerca Security <fuzzuf-dev@ricsec.co.jp>
+ */
 #ifndef FUZZUF_INCLUDE_ALGORITHM_LIBFUZZER_HIERARFLOW_REPEAT_HPP
 #define FUZZUF_INCLUDE_ALGORITHM_LIBFUZZER_HIERARFLOW_REPEAT_HPP
 #include "fuzzuf/algorithms/libfuzzer/hierarflow/simple_function.hpp"
@@ -29,7 +33,7 @@ namespace fuzzuf::algorithm::libfuzzer {
  * @brief Invoke all child nodes n times. n is defined at the node creation.
  * This node modifies flow.
  * The node takes no any Paths.
- * @tparm F Function type to define what arguments passes through this node.
+ * @tparam F Function type to define what arguments passes through this node.
  */
 template <typename F> struct StaticRepeat {};
 template <typename R, typename... Args>
@@ -38,15 +42,13 @@ class StaticRepeat<R(Args...)>
 public:
   FUZZUF_ALGORITHM_LIBFUZZER_HIERARFLOW_STANDARD_TYPEDEFS
   /**
-   * @fn
    * Constructor
-   * @param cycle_ number of loop cycles
+   * @param cycle_ Number of loop cycles
    */
   StaticRepeat(std::size_t cycle_) : cycle(cycle_) {}
   /**
-   * @fn
    * This callable is called on HierarFlow execution
-   * @param args arguments
+   * @param args Arguments
    * @return direction of next node
    */
   callee_ref_t operator()(Args... args) {
@@ -72,8 +74,8 @@ private:
  * total cycles. Total cycles is defined at the node creation. The node takes 1
  * path for loop counter. Note that loop counter must be incremented maually, or
  * this node will never complete.
- * @tparm F Function type to define what arguments passes through this node.
- * @tparm Path Struct path to define which value to to use.
+ * @tparam F Function type to define what arguments passes through this node.
+ * @tparam Path Struct path to define which value to to use.
  */
 template <typename F, typename Path> struct PartiallyDynamicRepeat {};
 template <typename R, typename... Args, typename Path>
@@ -83,13 +85,12 @@ public:
   FUZZUF_ALGORITHM_LIBFUZZER_HIERARFLOW_STANDARD_TYPEDEFS
   /**
    * Constructor
-   * @param cycle_ number of loop cycles
+   * @param cycle_ Number of loop cycles
    */
   PartiallyDynamicRepeat(std::size_t cycle_) : cycle(cycle_) {}
   /**
-   * @fn
    * This callable is called on HierarFlow execution
-   * @param args arguments
+   * @param args Arguments
    * @return direction of next node
    */
   callee_ref_t operator()(Args... args) {
@@ -131,8 +132,8 @@ private:
  * total cycles. Total cycles is specified by the Path. The node takes 2 paths
  * for loop counter and total cycles. Note that loop counter must be incremented
  * maually, or this node will never complete.
- * @tparm F Function type to define what arguments passes through this node.
- * @tparm Path Struct path to define which value to to use.
+ * @tparam F Function type to define what arguments passes through this node.
+ * @tparam Path Struct path to define which value to to use.
  */
 template <typename F, typename Path> struct DynamicRepeat {};
 template <typename R, typename... Args, typename Path>
@@ -141,9 +142,8 @@ class DynamicRepeat<R(Args...), Path>
 public:
   FUZZUF_ALGORITHM_LIBFUZZER_HIERARFLOW_STANDARD_TYPEDEFS
   /**
-   * @fn
    * This callable is called on HierarFlow execution
-   * @param args arguments
+   * @param args Arguments
    * @return direction of next node
    */
   callee_ref_t operator()(Args... args) {

@@ -15,11 +15,15 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see http://www.gnu.org/licenses/.
  */
+/**
+ * @file standard_end.hpp
+ * @author Ricerca Security <fuzzuf-dev@ricsec.co.jp>
+ */
 #ifndef FUZZUF_INCLUDE_ALGORITHM_LIBFUZZER_HIERARFLOW_STANDARD_END_HPP
 #define FUZZUF_INCLUDE_ALGORITHM_LIBFUZZER_HIERARFLOW_STANDARD_END_HPP
 
 #include "fuzzuf/algorithms/libfuzzer/hierarflow/trace.hpp"
-/*
+/**
  * Macro to generate standard child nodes invocation.
  */
 #define FUZZUF_ALGORITHM_LIBFUZZER_HIERARFLOW_STANDARD_END(name)               \

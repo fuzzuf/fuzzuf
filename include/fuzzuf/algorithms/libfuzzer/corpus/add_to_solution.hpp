@@ -15,6 +15,10 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see http://www.gnu.org/licenses/.
  */
+/**
+ * @file add_to_solution.hpp
+ * @author Ricerca Security <fuzzuf-dev@ricsec.co.jp>
+ */
 #ifndef FUZZUF_INCLUDE_ALGORITHM_LIBFUZZER_CORPUS_ADD_TO_SOLUTION_HPP
 #define FUZZUF_INCLUDE_ALGORITHM_LIBFUZZER_CORPUS_ADD_TO_SOLUTION_HPP
 #include "fuzzuf/algorithms/libfuzzer/state/corpus.hpp"
@@ -33,20 +37,16 @@
 namespace fuzzuf::algorithm::libfuzzer::corpus {
 
 /**
- * @fn
- * corpusに入力値を追加する
- * 入力値にはIDが振られ、corpus.inputsに追加される
- * corpus.corpusには入力値のIDと実行結果が追加される
+ * Store execution result on the persistent storage
  *
- * libFuzzerの対応箇所
+ * Corresponding code of original libFuzzer implementation
  * https://github.com/llvm/llvm-project/blob/llvmorg-12.0.1/compiler-rt/lib/fuzzer/FuzzerCorpus.h#L208
  *
- * @tparm persistent trueの場合永続化する
- * @tparm Corpus full corpusの型
- * @tparm Range 入力値の型
- * @param corpus 入力を追加する先のcorpus
- * @param range 入力値
- * @param testcase_ 入力値に対応する実行結果
+ * @tparam Range Contiguous Range of std::uint8_t
+ * @tparam InputInfo Type to provide execution result
+ * @param range Input value that was passed to the executor
+ * @param testcase_ Execution result that was produced by the executor
+ * @param path_prefix Directory to output solutions
  */
 template <typename Range, typename InputInfo>
 auto AddToSolution(Range &range, InputInfo &testcase_,

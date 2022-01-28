@@ -49,6 +49,7 @@ public:
     void BuildFuzzFlow(void);
 
     void ReceiveStopSignal(void);
+    bool ShouldEnd(void) { return false; }
 
     void Reset(void);
     void Release(void);

@@ -24,3 +24,9 @@ file(
     ${CMAKE_CURRENT_SOURCE_DIR}/calc/
     DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/calc/
 )
+
+file(
+    COPY
+    ${CMAKE_CURRENT_SOURCE_DIR}/quickjs/
+    DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/quickjs/
+)

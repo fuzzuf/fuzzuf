@@ -15,6 +15,10 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see http://www.gnu.org/licenses/.
  */
+/**
+ * @file sha1.hpp
+ * @author Ricerca Security <fuzzuf-dev@ricsec.co.jp>
+ */
 #ifndef FUZZUF_INCLUDE_UTILS_SHA1_HPP
 #define FUZZUF_INCLUDE_UTILS_SHA1_HPP
 #include "fuzzuf/utils/type_traits/remove_cvr.hpp"
@@ -29,14 +33,13 @@ auto ToSerializedSha1Contiguous(const std::vector<std::uint8_t> &range)
     -> std::string;
 }
 
-/*
- * @fn
+/**
  * Calculate sha1 hash of the data in the range that is not std::vector<
  * std::uint8_t >, then serialize the hash in hexadecimal string. This format is
  * typically used to determine the name of input in libFuzzer.
- * @tparm Range C++17 range concept compliant range with std::uint8_t as
+ * @tparam Range C++17 range concept compliant range with std::uint8_t as
  * value_type excluding std::vector< std::uint8_t >
- * @param range the range containing data
+ * @param range The range containing data
  * @return hexadecimal string
  */
 template <typename Range>
@@ -47,13 +50,12 @@ auto ToSerializedSha1(const Range &range)
   std::vector<std::uint8_t> contiguous(range.begin(), range.end());
   return detail::ToSerializedSha1Contiguous(contiguous);
 }
-/*
- * @fn
+/**
  * Calculate sha1 hash of the data in std::vector< std::uint8_t >, then
  * serialize the hash in hexadecimal string. This format is typically used to
  * determine the name of input in libFuzzer.
- * @tparm Range the range type that must be std::vector< std::uint8_t >
- * @param range the range containing data
+ * @tparam Range The range type that must be std::vector< std::uint8_t >
+ * @param range The range containing data
  * @return hexadecimal string
  */
 template <typename Range>

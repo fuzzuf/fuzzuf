@@ -22,6 +22,7 @@
 #include <boost/test/unit_test.hpp>
 #include <config.h>
 #include <system_error>
+#include <iostream>
 
 // テスト用の辞書からレベル0(デフォルト)以上(==全ての要素)の内容を正しく読める事を確認する
 // 辞書のエントリのkeyが 名前, '@', { 数値 }

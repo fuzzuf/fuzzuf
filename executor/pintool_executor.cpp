@@ -15,31 +15,20 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see http://www.gnu.org/licenses/.
  */
-#include <cstddef>
-#include <cassert>
-#include <memory>
-#include "fuzzuf/algorithms/afl/afl_option.hpp"
-#include "fuzzuf/exceptions.hpp"
-#include "fuzzuf/executor/executor.hpp"
 #include "fuzzuf/executor/pintool_executor.hpp"
-#include "fuzzuf/utils/workspace.hpp"
-#include "fuzzuf/utils/common.hpp"
-#include "fuzzuf/feedback/inplace_memory_feedback.hpp"
-#include "fuzzuf/feedback/exit_status_feedback.hpp"
-#include "fuzzuf/feedback/put_exit_reason_type.hpp"
-#include "fuzzuf/logger/logger.hpp"
 
 PinToolExecutor::PinToolExecutor(  
-    const fs::path &path_to_tool_exec,
-    const std::vector<std::string> &targv,             
+    const fs::path &proxy_path,
+    const std::vector<std::string> &pargv,
     const std::vector<std::string> &argv,
     u32 exec_timelimit_ms,
     u64 exec_memlimit,
-    const fs::path &path_to_write_input    
+    const fs::path &path_to_write_input
 ) :
-    ThirdPartyExecutor( path_to_tool_exec, targv, argv, exec_timelimit_ms, exec_memlimit, path_to_write_input)
+    ProxyExecutor ( proxy_path, pargv, argv, exec_timelimit_ms, exec_memlimit, path_to_write_input )
 {    
     SetCArgvAndDecideInputMode();
+    ProxyExecutor::Initilize();
 }
 
 void PinToolExecutor::SetCArgvAndDecideInputMode() {
@@ -47,10 +36,10 @@ void PinToolExecutor::SetCArgvAndDecideInputMode() {
     
     stdin_mode = true; // if we find @@, then assign false to stdin_mode
 
-    cargv.emplace_back(path_str_to_tool_exec.c_str());
+    cargv.emplace_back(proxy_path.c_str());
     cargv.emplace_back("-t");
 
-    for (const auto& v : targv ) {
+    for (const auto& v : pargv ) {
         cargv.emplace_back(v.c_str());
     }
     

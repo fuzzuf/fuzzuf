@@ -15,6 +15,10 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see http://www.gnu.org/licenses/.
  */
+/**
+ * @file corpus.hpp
+ * @author Ricerca Security <fuzzuf-dev@ricsec.co.jp>
+ */
 #ifndef FUZZUF_INCLUDE_ALGORITHM_LIBFUZZER_STATE_CORPUS_HPP
 #define FUZZUF_INCLUDE_ALGORITHM_LIBFUZZER_STATE_CORPUS_HPP
 #include "fuzzuf/algorithms/libfuzzer/state/input_info.hpp"
@@ -33,7 +37,9 @@ struct Sequential {};
 struct ByName {};
 struct ById {};
 
-// libFuzzerはtestcaseの並び順を利用する為、corpusは並び順を覚えられるコンテナでなければならない
+/**
+ * Since libFuzzer uses insertion order, corpus must provide both sequential index and hashed index.
+ */
 using PartialCorpus = boost::multi_index::multi_index_container<
     InputInfo,
     boost::multi_index::indexed_by<
@@ -49,9 +55,9 @@ using PartialCorpus = boost::multi_index::multi_index_container<
 
 /**
  * @class is_partial_corpus
- * @brief 与えられた型TがPartialCorpus型の要件を満たす場合にtrueを返すメタ関数
+ * @brief Meta function to check if the type satisfies PartialCorpus concept
  *
- * @tparm T 任意の型
+ * @tparam T Type to check
  */
 template <typename T, typename Enable = void>
 struct is_partial_corpus : public std::false_type {};
@@ -70,20 +76,20 @@ constexpr bool is_partial_corpus_v = is_partial_corpus<T>::value;
 
 /**
  * @class FullCorpus
- * 入力値のコンテナと入力値以外の実行結果の詳細のコンテナを合わせたもの
+ * Pair of container to store input values and container to store execution results
  */
 struct FullCorpus {
-  // 保存されている入力値
+  // container to store input values
   ExecInputSet inputs;
-  // 保存されている入力値に付随する情報
+  // container to store execution results
   PartialCorpus corpus;
 };
 
 /**
  * @class is_full_corpus
- * @brief 与えられた型TがFullCorpus型の要件を満たす場合にtrueを返すメタ関数
+ * @brief Meta function to check if the type satisfies FullCorpus concept
  *
- * @tparm T 任意の型
+ * @tparam T Type to check
  */
 template <typename T, typename Enable = void>
 struct is_full_corpus : public std::false_type {};
@@ -99,23 +105,21 @@ template <typename T>
 constexpr bool is_full_corpus_v = is_full_corpus<T>::value;
 
 /**
- * @fn
- * PartialCorpusを文字列に変換する
- * @param dest 出力先
- * @param value 値
- * @param index_count インデントの深さ
- * @param indent インデントに使う文字列
+ * Serialize PartialCorpus into string
+ * @param dest Serialized string is stored in this value
+ * @param value Partial corpus to serialize
+ * @param index_count Initial indentation depth
+ * @param indent String to insert for indentation
  */
 bool toString(std::string &dest, const PartialCorpus &value,
               std::size_t indent_count, const std::string &indent);
 
 /**
- * @fn
- * FullCorpusを文字列に変換する
- * @param dest 出力先
- * @param value 値
- * @param index_count インデントの深さ
- * @param indent インデントに使う文字列
+ * Serialize FullCorpus into string
+ * @param dest Serialized string is stored in this value
+ * @param value Full corpus to serialize
+ * @param index_count Initial indentation depth
+ * @param indent String to insert for indentation
  */
 bool toString(std::string &dest, const FullCorpus &value,
               std::size_t indent_count, const std::string &indent);

@@ -1098,7 +1098,7 @@ public:
   /**
    * @brief Parses the given argument vector.
    *
-   * @param gnu if true, parse() will not stop at the first non-option argument.
+   * @param gnu If true, parse() will not stop at the first non-option argument.
    * Instead it will reorder arguments so that all non-options are at the end.
    * This is the default behaviour of GNU getopt() but is not conforming to
    * POSIX. @n Note, that once the argument vector has been reordered, the @c
@@ -1370,8 +1370,8 @@ struct Parser::Action {
 
   /**
    * @brief Called by Parser::workhorse() after finishing the parse.
-   * @param numargs the number of non-option arguments remaining
-   * @param args pointer to the first remaining non-option argument (if numargs
+   * @param numargs The number of non-option arguments remaining
+   * @param args Pointer to the first remaining non-option argument (if numargs
    * > 0).
    *
    * @return
@@ -1422,12 +1422,12 @@ class Parser::StoreOptionAction : public Parser::Action {
 public:
   /**
    * @brief Creates a new StoreOption action.
-   * @param parser_ the parser whose op_count should be updated.
-   * @param options_ each Option @c o is chained into the linked list @c
+   * @param parser_ The parser whose op_count should be updated.
+   * @param options_ Each Option @c o is chained into the linked list @c
    * options_[o.desc->index]
-   * @param buffer_ each Option is appended to this array as long as there's a
+   * @param buffer_ Each Option is appended to this array as long as there's a
    * free slot.
-   * @param bufmax_ number of slots in @c buffer_. @c -1 means "large enough".
+   * @param bufmax_ Number of slots in @c buffer_. @c -1 means "large enough".
    */
   StoreOptionAction(Parser &parser_, Option options_[], Option buffer_[],
                     int bufmax_)
@@ -1810,7 +1810,7 @@ struct PrintUsageImplementation {
    * @param write Spaces and possibly a line break are written via this functor
    * to get the desired indentation @c want_x .
    * @param[in,out] x the current indentation. Set to @c want_x by this method.
-   * @param want_x the desired indentation.
+   * @param want_x The desired indentation.
    */
   static void indent(IStringWriter &write, int &x, int want_x) {
     int indent = want_x - x;
@@ -2279,9 +2279,9 @@ struct PrintUsageImplementation {
      *
      * No \\n is written by this method after the last line that is written.
      *
-     * @param write where to write the data.
-     * @param data the new chunk of data to write.
-     * @param len the length of the chunk of data to write.
+     * @param write Where to write the data.
+     * @param data The new chunk of data to write.
+     * @param len The length of the chunk of data to write.
      */
     void process(IStringWriter &write, const char *data, int len) {
       wrote_something = false;
@@ -2732,8 +2732,8 @@ struct PrintUsageImplementation {
  * against malicious UTF-8 sequences.
  *
  * @param prn The output method to use. See the examples above.
- * @param usage the Descriptor[] array whose @c help texts will be formatted.
- * @param width the maximum number of characters per output line. Note that this
+ * @param usage The Descriptor[] array whose @c help texts will be formatted.
+ * @param width The maximum number of characters per output line. Note that this
  * number is in actual characters, not bytes. printUsage() supports UTF-8 in @c
  * help and will count multi-byte UTF-8 sequences properly. Asian wide
  * characters are counted as 2 characters.

@@ -15,6 +15,10 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see http://www.gnu.org/licenses/.
  */
+/**
+ * @file gather.hpp
+ * @author Ricerca Security <fuzzuf-dev@ricsec.co.jp>
+ */
 #ifndef FUZZUF_INCLUDE_ALGORITHM_NEZHA_HIERARFLOW_GATHER_HPP
 #define FUZZUF_INCLUDE_ALGORITHM_NEZHA_HIERARFLOW_GATHER_HPP
 #include "fuzzuf/algorithms/nezha/executor/gather_output.hpp"
@@ -26,8 +30,8 @@ namespace fuzzuf::algorithm::nezha {
  * @class GatherOutput
  * @brief Append hash value of value specified by the Path to the value specified by the Path.
  * This node takes two Paths for value to be hashed and container to append hash value.
- * @tparm F Function type to define what arguments passes through this node.
- * @tparm Path Struct path to define which value to to use.
+ * @tparam F Function type to define what arguments passes through this node.
+ * @tparam Path Struct path to define which value to to use.
  */
 FUZZUF_ALGORITHM_LIBFUZZER_HIERARFLOW_SIMPLE_FUNCTION(GatherOutput,
                                                       executor::GatherOutput)

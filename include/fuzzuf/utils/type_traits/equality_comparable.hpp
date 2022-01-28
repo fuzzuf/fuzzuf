@@ -15,6 +15,10 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see http://www.gnu.org/licenses/.
  */
+/**
+ * @file equality_comparable.hpp
+ * @author Ricerca Security <fuzzuf-dev@ricsec.co.jp>
+ */
 #ifndef FUZZUF_INCLUDE_UTILS_EQUALITY_COMPARABLE_HPP
 #define FUZZUF_INCLUDE_UTILS_EQUALITY_COMPARABLE_HPP
 
@@ -68,8 +72,8 @@ struct is_weakly_equality_comparable_with<
                                T>::type &>())>::value> {};
 } // namespace detail
 
-// 与えられた型Tが等値比較可能である場合trueを返す
-// C++20のequality_comparable concept互換
+// Return true if given type T is equality comparable
+// This is compatible to C++20 standard equality_comparable concept
 template <typename T>
 struct is_equality_comparable
     : public detail::is_weakly_equality_comparable_with<T, T> {};
@@ -77,12 +81,12 @@ struct is_equality_comparable
 template <typename T>
 constexpr bool is_equality_comparable_v = is_equality_comparable<T>::value;
 
-// 与えられた型TとUが等値比較可能である場合trueを返す
-// C++20のequality_comparable_with conceptサブセット
-// 本来TとUのcommon_reference_withが取れる事を
-// 確認しなければならないが、common_reference_withを
-// 実装するには力技実装を要するbasic_common_referenceが
-// 必要になる為確認していない
+// Return true if given type T and U are equality comparable
+// This is subset of C++20 standard equality_comparable_with concept
+// Complete equality_comparable_with concept requires common_reference_with
+// concept is satisfied on T and U. Since common_reference_with contains
+// basic_common_reference that requires brute force implementation, this
+// check is not implemented.
 template <typename T, typename U>
 struct is_equality_comparable_with
     : public std::integral_constant<

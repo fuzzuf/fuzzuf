@@ -17,37 +17,19 @@
  */
 #pragma once
 
-#include <cstddef>
-#include <cassert>
-#include <memory>
-#include <vector>
-#include <string>
-#include "fuzzuf/utils/filesystem.hpp"
-#include "fuzzuf/exceptions.hpp"
-#include "fuzzuf/executor/executor.hpp"
-#include "fuzzuf/executor/third_party_executor.hpp"
-#include "fuzzuf/utils/common.hpp"
-#include "fuzzuf/feedback/file_feedback.hpp"
-#include "fuzzuf/feedback/exit_status_feedback.hpp"
+#include "fuzzuf/executor/proxy_executor.hpp"
 
-class PinToolExecutor : public ThirdPartyExecutor {
+class PinToolExecutor : public ProxyExecutor {
 public:
 
     PinToolExecutor(  
-        const fs::path &path_to_tool_exec,
+        const fs::path &proxy_path,
         const std::vector<std::string> &pargv,             
         const std::vector<std::string> &argv,
         u32 exec_timelimit_ms,
         u64 exec_memlimit,
         const fs::path &path_to_write_input
     );
-    ~PinToolExecutor(){};
 
-    PinToolExecutor( const PinToolExecutor& ) = delete;
-    PinToolExecutor( PinToolExecutor&& ) = delete;
-    PinToolExecutor &operator=( const PinToolExecutor& ) = delete;
-    PinToolExecutor &operator=( PinToolExecutor&& ) = delete;
-    PinToolExecutor() = delete;
-    
-    void SetCArgvAndDecideInputMode();    
+    void SetCArgvAndDecideInputMode();
 };

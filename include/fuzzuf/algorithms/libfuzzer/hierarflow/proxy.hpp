@@ -15,6 +15,10 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see http://www.gnu.org/licenses/.
  */
+/**
+ * @file proxy.hpp
+ * @author Ricerca Security <fuzzuf-dev@ricsec.co.jp>
+ */
 #ifndef FUZZUF_INCLUDE_ALGORITHM_LIBFUZZER_HIERARFLOW_PROXY_HPP
 #define FUZZUF_INCLUDE_ALGORITHM_LIBFUZZER_HIERARFLOW_PROXY_HPP
 #include "fuzzuf/algorithms/libfuzzer/do_nothing.hpp"
@@ -28,7 +32,7 @@ namespace fuzzuf::algorithm::libfuzzer {
  * Since the node is not actually "no operation", and the function is same as
  * Proxy node, this node is deprecated. The node takes no any paths.
  *
- * @tparm F Function type to define what arguments passes through this node.
+ * @tparam F Function type to define what arguments passes through this node.
  */
 FUZZUF_ALGORITHM_LIBFUZZER_HIERARFLOW_SIMPLE_FUNCTION(Proxy, DoNothing)
 } // namespace fuzzuf::algorithm::libfuzzer

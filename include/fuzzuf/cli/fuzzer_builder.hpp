@@ -22,5 +22,7 @@
 #include "fuzzuf/cli/fuzzer_args.hpp"
 #include "fuzzuf/cli/global_fuzzer_options.hpp"
 
+#include <boost/program_options.hpp>
+
 // Used only for CLI
 using FuzzerBuilder = std::function<std::unique_ptr<Fuzzer>(FuzzerArgs&, GlobalFuzzerOptions&)>;

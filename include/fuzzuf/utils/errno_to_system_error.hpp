@@ -15,14 +15,18 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see http://www.gnu.org/licenses/.
  */
+/**
+ * @file errno_to_system_error.hpp.hpp
+ * @author Ricerca Security <fuzzuf-dev@ricsec.co.jp>
+ */
 #ifndef FUZZUF_INCLUDE_UTILS_ERRNO_TO_SYSTEM_ERROR_HPP
 #define FUZZUF_INCLUDE_UTILS_ERRNO_TO_SYSTEM_ERROR_HPP
 #include <string>
 #include <system_error>
 namespace fuzzuf::utils {
-/*
- * 引数で渡されたerrnoを持つstd::system_errorを作る
- * std::error_codeで定義されていないエラーコードは近い物に変換される事がある
+/**
+ * Convert errno value to corresponding std::system_error
+ * If the direct corresponding code is not available, the code which has close meaning is used
  */
 auto errno_to_system_error(int e) -> std::system_error;
 auto errno_to_system_error(int e, const char *) -> std::system_error;

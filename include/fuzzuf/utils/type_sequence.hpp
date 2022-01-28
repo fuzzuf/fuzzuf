@@ -15,19 +15,23 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see http://www.gnu.org/licenses/.
  */
+/**
+ * @file type_sequence.hpp
+ * @author Ricerca Security <fuzzuf-dev@ricsec.co.jp>
+ */
 #ifndef FUZZUF_INCLUDE_UTILS_TYPE_SEQUENCE_HPP
 #define FUZZUF_INCLUDE_UTILS_TYPE_SEQUENCE_HPP
 
 namespace fuzzuf::utils {
 /**
  * @class TypeSequenceT
- * @brief 任意の数の型を並べる事ができる型
- * 型計算をする際に複数の型のタプルとして使う
- * @tparm T 型
+ * @brief A template type with variable number of template parameter types
+ * This is intended to use as tuple for type calculation
+ * @tparam T Types
  *
- * 例:
+ * example:
  * TypeSequenceT< int, float >
- * これ自体が何かの効果を持つわけではなく、型の列をテンプレート引数で要求している箇所に対して「型の列を渡したい以上の意味はない」事を明示しながら型の列を渡すのに使う
+ * The type itself doesn't have any effects. Instead, it is used to pass sequence of type to other meta functions with declaring that the type has no more  meanings than just a sequence of type.
  */
 template <typename... T> struct TypeSequenceT {};
 } // namespace fuzzuf::utils

@@ -15,6 +15,10 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see http://www.gnu.org/licenses/.
  */
+/**
+ * @file shared_range.hpp
+ * @author Ricerca Security <fuzzuf-dev@ricsec.co.jp>
+ */
 #ifndef FUZZUF_INCLUDE_UTILS_SHARED_RANGE_HPP
 #define FUZZUF_INCLUDE_UTILS_SHARED_RANGE_HPP
 #include "fuzzuf/utils/range_traits.hpp"
@@ -23,15 +27,16 @@
 #include <memory>
 #include <type_traits>
 namespace fuzzuf::utils::range {
-// U型の値を持ちT型のイテレータに対する操作を全てforwardingする
-// U型の値はイテレータをコピーすると一緒にコピーされる
-// UにT型のイテレータの持ち主のコンテナへのスマートポインタを渡す事で、イテレータが1つでも残っている限りコンテナが消えないように出来る
-/*
- * 例:
+/**
+ * @class shared_iterator
+ * @brief Iterator adaptor that holds value of U and forward all operations to iterator of type T
+ * value of U is copied when this iterator is copied
+ * The main purpose of this adaptor is to keep smart pointer to the container during at least one iterator is alive
+ *
+ * example:
  * std::shared_ptr< std::vector< int > > a{ new std::vector< int >{ ... } };
  * b = a|shared;
- * bは*aと同じ振る舞いをし、bが破棄されるまでaの参照カウントを上げたままにするrangeになる
- * rangeを要求している関数に「使い終わったら破棄しておいて」まで任せるのに便利
+ * b behave as same as *a, and keep reference count of a to be incremented until b is destroyed
  */
 
 template <typename T, typename U, typename Enable = void>
@@ -62,7 +67,7 @@ class shared_iterator {};
     return old;                                                                \
   }
 
-// 条件: Tのイテレータカテゴリはinput_iteratorである
+// requirements: the itartor category of T is input_iterator
 template <typename T, typename U>
 class shared_iterator<T, std::shared_ptr<U>,
                       std::enable_if_t<std::is_same_v<
@@ -75,7 +80,7 @@ private:
   base_iter_t p;
   std::shared_ptr<U> sp;
 };
-// 条件: Tのイテレータカテゴリはforward_iteratorである
+// requirements: the itartor category of T is forward_iterator
 template <typename T, typename U>
 class shared_iterator<T, std::shared_ptr<U>,
                       std::enable_if_t<std::is_same_v<
@@ -93,7 +98,7 @@ private:
   base_iter_t p;
   std::shared_ptr<U> sp;
 };
-// 条件: Tのイテレータカテゴリはbidirectional_iteratorである
+// requirements: the itartor category of T is bidirectional_iterator
 template <typename T, typename U>
 class shared_iterator<T, std::shared_ptr<U>,
                       std::enable_if_t<std::is_same_v<
@@ -122,7 +127,7 @@ private:
   base_iter_t p;
   std::shared_ptr<U> sp;
 };
-// 条件: Tのイテレータカテゴリはrandom_access_iteratorである
+// requirements: the itartor category of T is random_access_iterator
 template <typename T, typename U>
 class shared_iterator<T, std::shared_ptr<U>,
                       std::enable_if_t<std::is_same_v<
@@ -174,7 +179,7 @@ private:
   std::shared_ptr<U> sp;
 };
 
-// 条件: Tのイテレータカテゴリはrandom_access_iteratorである
+// requirements: the itartor category of T is random_access_iterator
 template <typename T, typename U>
 auto operator+(typename shared_iterator<T, U>::difference_type l,
                const shared_iterator<T, U> &r)
@@ -186,7 +191,7 @@ auto operator+(typename shared_iterator<T, U>::difference_type l,
 }
 
 #if __cplusplus >= 202002L
-// 条件: Tのイテレータカテゴリはcontiguous_iteratorである
+// requirements: the itartor category of T is contiguous_iterator
 template <typename T, typename U>
 class shared_iterator<T, std::shared_ptr<U>,
                       std::enable_if_t<std::is_same_v<
@@ -237,7 +242,7 @@ private:
   std::shared_ptr<U> sp;
 };
 
-// 条件: Tのイテレータカテゴリはcontiguous_iteratorである
+// requirements: the itartor category of T is contiguous_iterator
 template <typename T, typename U>
 auto operator+(typename shared_iterator<T, U>::difference_type l,
                const shared_iterator<T, U> &r)
@@ -249,7 +254,7 @@ auto operator+(typename shared_iterator<T, U>::difference_type l,
 }
 
 #endif
-// 条件: Rはrangeである
+// requirements: R satisfies range concept
 template <typename R>
 auto make_shared_range(const std::shared_ptr<R> &v) -> std::enable_if_t<
     is_range_v<R>, boost::iterator_range<shared_iterator<RangeIteratorT<R>,

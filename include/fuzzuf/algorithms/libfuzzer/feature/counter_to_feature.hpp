@@ -15,6 +15,10 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see http://www.gnu.org/licenses/.
  */
+/**
+ * @file counter_to_feature.hpp
+ * @author Ricerca Security <fuzzuf-dev@ricsec.co.jp>
+ */
 #ifndef FUZZUF_INCLUDE_ALGORITHM_LIBFUZZER_FEATURE_COUNTER_TO_DEPTH_HPP
 #define FUZZUF_INCLUDE_ALGORITHM_LIBFUZZER_FEATURE_COUNTER_TO_DEPTH_HPP
 
@@ -22,14 +26,13 @@ namespace fuzzuf::algorithm::libfuzzer::feature {
 
 // Given a non-zero Counter returns a number in the range [0,7].
 /**
- * @fn
  * convert coverage counter value to lower 3bits of feature ID.
  *
  * Corresponding code of original libFuzzer implementation
  * https://github.com/llvm/llvm-project/blob/llvmorg-12.0.1/compiler-rt/lib/fuzzer/FuzzerTracePC.h#L213
  *
- * @tparm T type of counter
- * @param counter counter
+ * @tparam T Type of counter
+ * @param counter Counter
  * @return lower 3bits of feature ID
  */
 template <typename T> unsigned int CounterToFeature(T counter) {

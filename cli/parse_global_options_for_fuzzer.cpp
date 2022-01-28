@@ -24,105 +24,99 @@
 #include "fuzzuf/utils/common.hpp"
 #include <string>
 
-inline void CheckIfOptionHasValue(option::Option &opt) {
-    if (!opt.arg) {
-        throw exceptions::cli_error(Util::StrPrintf("Option %s does not have value", opt.name), __FILE__, __LINE__);
-    }
-}
+#include <optional>
+#include <string>
+#include <boost/program_options.hpp>
+#include <boost/optional.hpp>
+#include "fuzzuf/utils/filesystem.hpp"
+#include "fuzzuf/utils/common.hpp"
+#include "fuzzuf/logger/logger.hpp"
+#include "fuzzuf/exceptions.hpp"
+
+namespace po = boost::program_options;
 
 FuzzerArgs ParseGlobalOptionsForFuzzer(GlobalArgs &global_args, GlobalFuzzerOptions &global_options) {
-    enum optionIndex { 
-        Unknown,
-        Help,
-        InDir,
-        OutDir,
-        ExecTimelimitMs, 
-        ExecMemLimit,
-        Logger,
-        LogFile,
-    };
+    // Parse a sub-command
+    po::positional_options_description subcommand;
+    subcommand.add("fuzzer", 1);
+    subcommand.add("fargs", -1);
 
-    const option::Descriptor usage[] = {
-        {optionIndex::Unknown, 0, "" , "" ,option::Arg::None, "Usage: fuzzuf [fuzzer] [options]\n\n"
-            "Options:" },
-        {optionIndex::Help, 0, "", "help", option::Arg::None, "    --help \tPrint this help." },
-        {optionIndex::InDir, 0, "", "in_dir", option::Arg::Optional, "    --in_dir IN_DIR \tSet seed dir. Default is `./seeds`." },
-        {optionIndex::OutDir, 0, "", "out_dir", option::Arg::Optional, "    --out_dir OUT_DIR \tSet output dir. Default is `/tmp/fuzzuf-out_dir`." },
-        {optionIndex::ExecTimelimitMs, 0, "", "exec_timelimit_ms",option::Arg::Optional, "    --exec_timelimit_ms EXEC_TIME_LIMIT \tLimit execution time of PUT. Unit is milli-seconds." },
-        {optionIndex::ExecMemLimit, 0, "", "exec_memlimit",option::Arg::Optional, "    --exec_memlimit EXEC_MEMORY_LIMIT \tLimit memory usage for PUT execution. " },
-        {optionIndex::LogFile, 0, "", "log_file",option::Arg::Optional, "    --log_file LOG_FILE \tEnable LogFile logger and set the log file path for LogFile logger" },
-        {0, 0, 0, 0, 0, 0}
-    };
+    // Allocate variables to heap since `global_desc` outlives from this function
+    auto log_file = new std::string();
+    auto exec_timelimit_ms = new boost::optional<u32>();
+    auto exec_memlimit = new boost::optional<u32>();
 
-    option::Stats  stats(usage, global_args.argc, global_args.argv);
-    option::Option options[stats.options_max], buffer[stats.buffer_max];
-    option::Parser parse(usage, global_args.argc, global_args.argv, options, buffer);
+    // Define global options
+    po::options_description global_desc("Global options");
+    global_desc.add_options()
+        ("fuzzer", 
+            po::value<std::string>(&global_options.fuzzer), 
+            "Specify fuzzer to be used in your fuzzing campaign.")
+        ("help", 
+            po::bool_switch(&global_options.help), 
+            "Produce help message.")
+        ("in_dir,i", 
+            po::value<std::string>(&global_options.in_dir), 
+            "Set seed dir. Default is `./seeds`.")
+        ("out_dir,o", 
+            po::value<std::string>(&global_options.out_dir), 
+            "Set output dir. Default is `/tmp/fuzzuf-out_dir`.")
+        ("exec_timelimit_ms", 
+            po::value<boost::optional<u32>>(exec_timelimit_ms),
+            "Limit execution time of PUT. Unit is milli-seconds.")
+        ("exec_memlimit", 
+            po::value<boost::optional<u32>>(exec_memlimit),
+            "Limit memory usage for PUT execution.")
+        ("log_file", 
+            po::value<std::string>(log_file), 
+            "Enable LogFile logger and set the log file path for LogFile logger")
+    ;
 
-    if (parse.error()) {
-        throw exceptions::cli_error(Util::StrPrintf("Failed to parse command line"), __FILE__, __LINE__);
-    }
+    // Dummy options to parse global options but not PUT options
+    // NOTE: PUT options are parsed at fuzzer builder
+    po::options_description fargs("Fuzzer options");
+    fargs.add_options()
+      ("fargs", po::value<std::vector<std::string>>(), "Specify Fuzzer options and PUT args.") // pargs is not captured while parsing global options
+    ;
 
-    // Trace level log
-    // DEBUG("[*] ParseGlobalOptionsForFuzzer: argc = %d", global_args.argc);
-    // DEBUG("[*] ParseGlobalOptionsForFuzzer: parse.optionsCount() = %d", parse.optionsCount());
-    // DEBUG("[*] ParseGlobalOptionsForFuzzer: parse.nonOptionsCount() = %d", parse.nonOptionsCount());
+    // Obtain global fuzzing campaign settings from the command line
+    po::variables_map vm;
+    po::store(
+        po::command_line_parser(global_args.argc, global_args.argv)
+            .options(global_desc.add(fargs)).positional(subcommand).allow_unregistered().run(),
+        vm
+        );
+    po::notify(vm);
 
-    for (int i = 0; i < parse.optionsCount(); ++i) {
-        option::Option& opt = buffer[i];
-
-        switch(opt.index()) {
-            case optionIndex::InDir: {
-                CheckIfOptionHasValue(opt);
-                global_options.in_dir = opt.arg;
-                break;
-            }
-            case optionIndex::OutDir: {
-                CheckIfOptionHasValue(opt);
-                global_options.out_dir = opt.arg;
-                break;
-            }
-            case optionIndex::ExecTimelimitMs: {
-                CheckIfOptionHasValue(opt);
-                if (!CheckIfStringIsDecimal(opt.arg)) {
-                    throw exceptions::cli_error(
-                        Util::StrPrintf("Option \"--exec_timelimit_ms\" has non decimal caractors: %s", opt.arg),
-                        __FILE__, __LINE__);
-                }
-                global_options.exec_timelimit_ms = atoi(opt.arg);
-                break;
-            }
-            case optionIndex::ExecMemLimit: {
-                CheckIfOptionHasValue(opt);
-                if (!CheckIfStringIsDecimal(opt.arg)) {
-                    throw exceptions::cli_error(
-                        Util::StrPrintf("Option \"--exec_memlimit\" has non decimal caractors: %s", opt.arg),
-                        __FILE__, __LINE__);
-                }
-                global_options.exec_memlimit = atoi(opt.arg);
-                break;
-            }
-            case optionIndex::LogFile: {
-                 CheckIfOptionHasValue(opt);
-                 global_options.logger = Logger::LogFile;
-                 global_options.log_file = fs::path(opt.arg);
-                 break;
-            }
-            default: {
-                throw exceptions::cli_error(
-                    Util::StrPrintf("Unknown option or missing handler for option \"%s\"", opt.name),
-                    __FILE__, __LINE__);
-            }
+    // Show a usage and exit because none of fuzzers are specified
+    // TODO: Provide better help message
+    if (vm.count("fuzzer") == 0) {
+        if (global_options.help) {
+            std::cout << "fuzzuf" << std::endl;
+            std::cout << global_desc << std::endl;
+            exit(0);
+        } else {
+            throw exceptions::cli_error("`fuzzer` is not specified in command line. Run with `--help` to check usage", __FILE__, __LINE__);
         }
     }
+    DEBUG("[*] global_options.fuzzer = %s", global_options.fuzzer.c_str());
 
-    if (options[optionIndex::Help]) {
-        // Show help message
-        option::printUsage(std::cout, usage);
-        global_options.help = true;
+    // Store values to `global_options` manually 
+    // since type T = { std::optional, fs::path, Logger (enum) }, is not cpmatible with po::value<T>()
+    if (*exec_timelimit_ms) {
+        global_options.exec_timelimit_ms = exec_timelimit_ms->value();
+    }
+    if (*exec_memlimit) {
+        global_options.exec_memlimit = exec_memlimit->value();
+    }
+    if (log_file->length() > 0) {
+        global_options.log_file = fs::path(*log_file);
+        global_options.logger = Logger::LogFile;
     }
 
     return FuzzerArgs {
-        .argc = parse.nonOptionsCount(),
-        .argv = parse.nonOptions()
+        .argc = global_args.argc,
+        .argv = global_args.argv,
+        .global_options_description = global_desc
     };
 }

@@ -15,6 +15,10 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see http://www.gnu.org/licenses/.
  */
+/**
+ * @file to_ascii.hpp
+ * @author Ricerca Security <fuzzuf-dev@ricsec.co.jp>
+ */
 #ifndef FUZZUF_INCLUDE_ALGORITHM_LIBFUZZER_MUTATION_TO_ASCII_HPP
 #define FUZZUF_INCLUDE_ALGORITHM_LIBFUZZER_MUTATION_TO_ASCII_HPP
 #include "fuzzuf/utils/range_traits.hpp"
@@ -22,15 +26,14 @@
 #include <type_traits>
 namespace fuzzuf::algorithm::libfuzzer::mutator {
 
-/*
- * @fn
+/**
  * Apply bitmask 0x7F for each elements of data and replace value to space if the masked value is not std::isspace() nor std::isprint().
  *
  * Corresponding code of original libFuzzer implementation
  * https://github.com/llvm/llvm-project/blob/llvmorg-12.0.1/compiler-rt/lib/fuzzer/FuzzerUtil.cpp#L59
  *
- * @tparm Range range to modify
- * @param data range to modify
+ * @tparam Range Range to modify
+ * @param data Range to modify
  * @return True if modified. Otherwise false.
  */
 template <typename Range>

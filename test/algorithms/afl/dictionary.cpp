@@ -23,6 +23,7 @@
 #include "fuzzuf/algorithms/afl/afl_dict_data.hpp"
 #include "fuzzuf/exceptions.hpp"
 #include <config.h>
+#include <iostream>
 
 using AFLDictData = fuzzuf::algorithm::afl::dictionary::AFLDictData;
 using dict_t = std::vector< AFLDictData >;

@@ -15,6 +15,10 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see http://www.gnu.org/licenses/.
  */
+/**
+ * @file zip_range.hpp
+ * @author Ricerca Security <fuzzuf-dev@ricsec.co.jp>
+ */
 #ifndef FUZZUF_INCLUDE_UTILS_ZIP_RANGE_HPP
 #define FUZZUF_INCLUDE_UTILS_ZIP_RANGE_HPP
 #include "fuzzuf/utils/minimum_iterator_category.hpp"
@@ -28,15 +32,14 @@ namespace fuzzuf::utils::range {
 /**
  * @class zip_iterator
  * @brief
- * 複数のイテレータを束ねてデリファレンスするとstd::get可能な値を返すイテレータにするイテレータアダプタ
- * @tparm T イテレータの型
+ * Iterator adaptor that combine multiple iterators and return an iterator that std::get is available for the dereferenced value
+ * @tparam T Type of iterators
  *
- * 例:
+ * example:
  * std::vector< int > a{ ... };
  * std::vector< float > b{ ... };
  * c = zip( a, b );
- * cはaの要素とbの要素を1つづつ含むstd::tuple< int&, float&
- * >型の値を返すiteratorのrangeになる
+ * c is a range with iterator that returns std::tuple< int&, float& > that refers each element from a and b
  */
 template <typename... T> class zip_iterator {
 public:
@@ -94,9 +97,8 @@ private:
 };
 
 /**
- * @fn
- * 引数として渡された全てのrangeの中で最も短いrangeの長さを返す
- * 引数が無い場合はstd::numeric_limits< size_t >::max()が返る
+ * Return shortest range size in the ranges in arguments
+ * If no ranges are passed, return value is std::numeric_limits< size_t >::max()
  */
 auto minimum_rangeSize() -> std::size_t;
 
@@ -106,11 +108,10 @@ auto minimum_rangeSize(const Head &head, const Tail &...tail) -> std::size_t {
 }
 
 /**
- * @fn
- * zip rangeを作る
- * 与えられたrange全てを束ねてzip_iteratorを要素とするrangeを作る
- * @tparm R rangeの型
- * @param v range
+ * Create zip range
+ * Combine multiple range into a range with zip_iterator as the iterator
+ * @tparam R Type of ranges
+ * @param v Ranges
  */
 template <typename... R> auto zip(R &...v) {
   const auto size = minimum_rangeSize(v...);

@@ -15,6 +15,10 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see http://www.gnu.org/licenses/.
  */
+/**
+ * @file for_each.hpp
+ * @author Ricerca Security <fuzzuf-dev@ricsec.co.jp>
+ */
 #ifndef FUZZUF_INCLUDE_ALGORITHM_LIBFUZZER_HIERARFLOW_FOR_EACH_HPP
 #define FUZZUF_INCLUDE_ALGORITHM_LIBFUZZER_HIERARFLOW_FOR_EACH_HPP
 #include "fuzzuf/algorithms/libfuzzer/hierarflow/standard_typedef.hpp"
@@ -31,10 +35,10 @@ namespace fuzzuf::algorithm::libfuzzer {
  * defined at the node creation. On each loop head, a value from the container
  * is assigned to to value specified by the Path. This node modifies flow. The
  * node takes 1 path to write a value from container.
- * @tparm F Function type to define what arguments passes through this node.
- * @tparm Data Container type. The value_type of type container must be
+ * @tparam F Function type to define what arguments passes through this node.
+ * @tparam Data Container type. The value_type of type container must be
  * assignable to the value specified by the Path.
- * @tparm Path Struct path to define which value to to use.
+ * @tparam Path Struct path to define which value to to use.
  */
 template <typename F, typename Data, typename Path> class ForEachStaticData {};
 template <typename R, typename... Args, typename Data, typename Path>
@@ -43,16 +47,14 @@ class ForEachStaticData<R(Args...), Data, Path>
 public:
   FUZZUF_ALGORITHM_LIBFUZZER_HIERARFLOW_STANDARD_TYPEDEFS
   /**
-   * @fn
    * Constructor
    * All arguments are transfered to constructor of the container
    */
   template <typename... T>
   ForEachStaticData(T &&...args) : data(std::forward<T>(args)...) {}
   /**
-   * @fn
    * This callable is called on HierarFlow execution
-   * @param args arguments
+   * @param args Arguments
    * @return direction of next node
    */
   callee_ref_t operator()(Args... args) {
@@ -82,21 +84,13 @@ private:
 
 /**
  * @class ForEachDynamicData
- * @brief
- * 引数で渡ってきたデータの各要素を指定された引数に代入して都度子ノードを実行する
- * @tparm F このノードを通る引数を定義するための関数型
- * @tparm from from番目の引数をデータを保持するコンテナと見做す
- * @tparm to to番目の引数にコンテナの要素を代入する
- */
-/**
- * @class ForEachDynamicData
  * @brief This node invokes all child nodes for each values in the container
  * specified by the Path. On each loop head, a value from the container is
  * assigned to to value specified by the Path. This node modifies flow. The node
  * takes 2 paths. 1 for container and the other for writing a value from
  * container.
- * @tparm F Function type to define what arguments passes through this node.
- * @tparm Path Struct path to define which value to to use.
+ * @tparam F Function type to define what arguments passes through this node.
+ * @tparam Path Struct path to define which value to to use.
  */
 template <typename F, typename Path> struct ForEachDynamicData {};
 template <typename R, typename... Args, typename Path>
@@ -104,9 +98,8 @@ struct ForEachDynamicData<R(Args...), Path>
     : public HierarFlowRoutine<R(Args...), R(Args...)> {
   FUZZUF_ALGORITHM_LIBFUZZER_HIERARFLOW_STANDARD_TYPEDEFS
   /**
-   * @fn
    * This callable is called on HierarFlow execution
-   * @param args arguments
+   * @param args Arguments
    * @return direction of next node
    */
   callee_ref_t operator()(Args... args) {

@@ -15,6 +15,10 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see http://www.gnu.org/licenses/.
  */
+/**
+ * @file calc_max_length.hpp
+ * @author Ricerca Security <fuzzuf-dev@ricsec.co.jp>
+ */
 #ifndef FUZZUF_INCLUDE_ALGORITHM_LIBFUZZER_CALC_MAX_LENGTH_HPP
 #define FUZZUF_INCLUDE_ALGORITHM_LIBFUZZER_CALC_MAX_LENGTH_HPP
 #include "fuzzuf/utils/range_traits.hpp"
@@ -23,7 +27,6 @@
 #include <utility>
 
 /**
- * @fn
  * Decide max input value length using initial input values.
  * If the longest initial input value is longer than ( 1 << 20 ) bytes, the max
  * input value length is ( 1 << 20 ) If the longest initial input value is
@@ -35,8 +38,8 @@
  * Corresponding code of original libFuzzer implementation
  * https://github.com/llvm/llvm-project/blob/llvmorg-12.0.1/compiler-rt/lib/fuzzer/FuzzerLoop.cpp#L373
  *
- * @tparm Range range of range that contains initial inputs as element
- * @param inputs initial input values
+ * @tparam Range Range of range that contains initial inputs as element
+ * @param inputs Initial input values
  * @return max input value length
  */
 namespace fuzzuf::algorithm::libfuzzer {

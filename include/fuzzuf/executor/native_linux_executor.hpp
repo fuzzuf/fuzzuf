@@ -30,17 +30,6 @@
 #include "fuzzuf/feedback/inplace_memory_feedback.hpp"
 #include "fuzzuf/feedback/exit_status_feedback.hpp"
 
-namespace fuzzuf::executor {
-
-struct child_State {
-  int exec_result;
-  int exec_errno;
-};
-
-using output_t = std::vector< std::uint8_t >;
-constexpr std::size_t output_block_size = 512u;
-}
-
 // A class for fuzz execution under native Linux environment (i.e. the Linux environment where the fuzzer tracer and the fuzz target are the same)
 //
 // Responsibility:

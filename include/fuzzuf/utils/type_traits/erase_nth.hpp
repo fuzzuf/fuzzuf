@@ -15,6 +15,10 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see http://www.gnu.org/licenses/.
  */
+/**
+ * @file erase_nth.hpp
+ * @author Ricerca Security <fuzzuf-dev@ricsec.co.jp>
+ */
 #ifndef FUZZUF_INCLUDE_UTILS_ERASE_NTH_HPP
 #define FUZZUF_INCLUDE_UTILS_ERASE_NTH_HPP
 #include <type_traits>
@@ -62,18 +66,17 @@ struct erase_nth<i, std::integer_sequence<T, prev...>,
 };
 } // namespace detail
 
-/*
+/**
  * @class erase_nth
  * @brief
- * 型Uのテンプレート引数や関数の引数からi番目の要素を削除した型を返すメタ関数
- * 例:
+ * Meta function to remove i-th element from template parameters or function argument types
+ * example:
  * erase_nth_t< 1, bool( int, float, double, char ) >
- * これは bool( int, double, char )と同義
+ * This is equivalent to bool( int, double, char )
  * erase_nth_t< 2, std::tuple< int, float, double, char > >
- * これは std::tuple< int, float, char >と同義
- * @tparm i i番目の要素を削除する
- * @tparm U テンプレート引数を持つ型または関数の型
- *
+ * This is equivalent to std::tuple< int, float, char >
+ * @tparam i Remove i-th element
+ * @tparam U A type with template parameters or function type
  */
 template <unsigned int i, typename U> struct erase_nth {};
 template <unsigned int i, template <typename...> typename L, typename... U>

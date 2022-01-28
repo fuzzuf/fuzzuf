@@ -21,6 +21,17 @@
 #include "fuzzuf/utils/common.hpp"
 #include "fuzzuf/feedback/put_exit_reason_type.hpp"
 
+namespace fuzzuf::executor {
+
+struct ChildState {
+  int exec_result;
+  int exec_errno;
+};
+
+using output_t = std::vector< std::uint8_t >;
+constexpr std::size_t output_block_size = 512u;
+}
+
 // A base class that abstracts any kinds of execution environments and fuzz executions.
 // Inherit this class if you want to derive `FooBarExecutor` for a new execution environment, FooBar.
 // The following notes are applied to this class and its derivatives.

@@ -15,6 +15,10 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see http://www.gnu.org/licenses/.
  */
+/**
+ * @file sha1.cpp
+ * @author Ricerca Security <fuzzuf-dev@ricsec.co.jp>
+ */
 #include "fuzzuf/utils/sha1.hpp"
 #include "fuzzuf/utils/type_traits/remove_cvr.hpp"
 #include <boost/spirit/include/karma.hpp>

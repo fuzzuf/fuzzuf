@@ -15,6 +15,10 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see http://www.gnu.org/licenses/.
  */
+/**
+ * @file input_info.cpp
+ * @author Ricerca Security <fuzzuf-dev@ricsec.co.jp>
+ */
 #include "fuzzuf/algorithms/libfuzzer/state/input_info.hpp"
 #include "fuzzuf/algorithms/libfuzzer/exec_input_set_range.hpp"
 #include "fuzzuf/algorithms/libfuzzer/state/corpus.hpp"
@@ -22,17 +26,15 @@
 
 namespace fuzzuf::algorithm::libfuzzer {
 
-/*
- * @fn
- * 入力値のenergyを更新する
+/**
+ * Update energy of input value.
  *
- * libFuzzerの対応箇所
+ * Corresponding code of original libFuzzer implementation
  * https://github.com/llvm/llvm-project/blob/llvmorg-12.0.1/compiler-rt/lib/fuzzer/FuzzerCorpus.h#L74
  *
- * @param global_number_of_features 既知のfeatureの総数
- * @param scale_per_exec_time
- * energyを実行時間の平均からの外れ具合でスケールさせる
- * @param average_unit_execution_time 実行時間の平均
+ * @param global_number_of_features Total number of known features
+ * @param scale_per_exec_time If true, scale energy by variance of execution time
+ * @param average_unit_execution_time Average of execution time
  */
 void InputInfo::updateEnergy(
     std::size_t global_number_of_features, bool scale_per_exec_time,
@@ -92,11 +94,12 @@ void InputInfo::updateEnergy(
   }
 }
 
-/*
- * libFuzzerの対応箇所
+/**
+ * Delete feature Idx and its frequency from FeatureFreqs.
+ *
+ * Corresponding code of original libFuzzer implementation
  * https://github.com/llvm/llvm-project/blob/llvmorg-12.0.1/compiler-rt/lib/fuzzer/FuzzerCorpus.h#L51
  */
-// Delete feature Idx and its frequency from FeatureFreqs.
 auto InputInfo::delete_feature_freq(std::uint32_t index) -> bool {
   if (feature_freqs.empty()) {
     return false;
@@ -115,8 +118,8 @@ auto InputInfo::delete_feature_freq(std::uint32_t index) -> bool {
   return false;
 }
 
-/*
- * libFuzzerの対応箇所
+/**
+ * Corresponding code of original libFuzzer implementation
  * https://github.com/llvm/llvm-project/blob/llvmorg-12.0.1/compiler-rt/lib/fuzzer/FuzzerCorpus.h#L122
  *
  */

@@ -15,6 +15,10 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see http://www.gnu.org/licenses/.
  */
+/**
+ * @file void_t.hpp
+ * @author Ricerca Security <fuzzuf-dev@ricsec.co.jp>
+ */
 #ifndef FUZZUF_INCLUDE_UTILS_VOID_T_HPP
 #define FUZZUF_INCLUDE_UTILS_VOID_T_HPP
 
@@ -23,9 +27,9 @@
 #endif
 
 namespace fuzzuf::utils {
-/*
- * clangには-std=c++17以上でもC++ core issue
- * 1558の修正が反映されない不具合があり、この問題を回避するためにstd::void_tではなくワークアラウンドを行ったvoid_tを使う必要がる
+/**
+ * clang has problem described in C++ core issue 1558 even if -std=c++17 or higher is specified.
+ * As the result, void_t must be re-defined with workaround to avoid this problem.
  * http://www.open-std.org/jtc1/sc22/wg21/docs/cwg_defects.html#1558
  */
 #ifdef __clang__

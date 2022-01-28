@@ -15,6 +15,10 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see http://www.gnu.org/licenses/.
  */
+/**
+ * @file copy_part.hpp
+ * @author Ricerca Security <fuzzuf-dev@ricsec.co.jp>
+ */
 #ifndef FUZZUF_INCLUDE_ALGORITHM_LIBFUZZER_MUTATION_COPY_PART_HPP
 #define FUZZUF_INCLUDE_ALGORITHM_LIBFUZZER_MUTATION_COPY_PART_HPP
 #include "fuzzuf/algorithms/libfuzzer/mutation/utils.hpp"
@@ -25,18 +29,17 @@
 #include <type_traits>
 namespace fuzzuf::algorithm::libfuzzer::mutator {
 
-/*
- * @fn
+/**
  * Copy random range of data to random range of data, or insert random range of data to random position.
  *
  * Corresponding code of original libFuzzer implementation
  * https://github.com/llvm/llvm-project/blob/llvmorg-12.0.1/compiler-rt/lib/fuzzer/FuzzerMutate.cpp#L338
  *
- * @tparm RNG type of random number generator
- * @tparm Range container of the value
- * @param rng random number generator
- * @param data value to modify
- * @param max_size max length of value
+ * @tparam RNG Type of random number generator
+ * @tparam Range Container of the value
+ * @param rng Random number generator
+ * @param data Value to modify
+ * @param max_size Max length of value
  * @return length of post modification value
  */
 template <typename RNG, typename Range>

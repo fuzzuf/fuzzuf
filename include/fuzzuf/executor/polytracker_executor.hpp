@@ -22,20 +22,9 @@
  */
 #pragma once
 
-#include <cstddef>
-#include <cassert>
-#include <memory>
-#include <vector>
-#include <string>
-#include "fuzzuf/utils/filesystem.hpp"
-#include "fuzzuf/exceptions.hpp"
-#include "fuzzuf/executor/executor.hpp"
-#include "fuzzuf/executor/third_party_executor.hpp"
-#include "fuzzuf/utils/common.hpp"
-#include "fuzzuf/feedback/file_feedback.hpp"
-#include "fuzzuf/feedback/exit_status_feedback.hpp"
+#include "fuzzuf/executor/proxy_executor.hpp"
 
-class PolyTrackerExecutor : public ThirdPartyExecutor {
+class PolyTrackerExecutor : public ProxyExecutor {
 public:
     const std::string path_str_to_executor; // Path to executor bin
     const std::string path_str_to_db; // Path to taint database
@@ -51,15 +40,8 @@ public:
         const std::vector<std::string> &argv,
         u32 exec_timelimit_ms,
         u64 exec_memlimit,
-        const fs::path &path_to_write_input    
+        const fs::path &path_to_write_input
     );
-    ~PolyTrackerExecutor(){};
 
-    PolyTrackerExecutor( const PolyTrackerExecutor& ) = delete;
-    PolyTrackerExecutor( PolyTrackerExecutor&& ) = delete;
-    PolyTrackerExecutor &operator=( const PolyTrackerExecutor& ) = delete;
-    PolyTrackerExecutor &operator=( PolyTrackerExecutor&& ) = delete;
-    PolyTrackerExecutor() = delete;
-    
-    void SetCArgvAndDecideInputMode();    
+    void SetCArgvAndDecideInputMode();
 };

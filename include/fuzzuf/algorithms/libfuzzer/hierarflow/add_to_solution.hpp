@@ -15,6 +15,10 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see http://www.gnu.org/licenses/.
  */
+/**
+ * @file add_to_solution.hpp
+ * @author Ricerca Security <fuzzuf-dev@ricsec.co.jp>
+ */
 #ifndef FUZZUF_INCLUDE_ALGORITHM_LIBFUZZER_HIERARFLOW_ADD_TO_SOLUTION_HPP
 #define FUZZUF_INCLUDE_ALGORITHM_LIBFUZZER_HIERARFLOW_ADD_TO_SOLUTION_HPP
 #include "fuzzuf/algorithms/libfuzzer/executor/add_to_solution.hpp"
@@ -32,8 +36,8 @@ namespace fuzzuf::algorithm::libfuzzer {
  * @brief Insert execution result to solutions if the result is added to corpus
  * and target returned error status on exit. The node takes 2 paths for input
  * and exec_result.
- * @tparm F Function type to define what arguments passes through this node.
- * @tparm Path Struct path to define which value to to use.
+ * @tparam F Function type to define what arguments passes through this node.
+ * @tparam Path Struct path to define which value to to use.
  */
 template <typename F, typename Path> struct AddToSolution {};
 template <typename R, typename... Args, typename Path>
@@ -42,19 +46,17 @@ struct AddToSolution<R(Args...), Path>
 public:
   FUZZUF_ALGORITHM_LIBFUZZER_HIERARFLOW_STANDARD_TYPEDEFS
   /**
-   * @fn
    * Constructor
    * @param crashed_only_
    * If true, the result is added only if the target returned error status.
    * Otherwise, all passed execution results are added.
-   * @param path_prefix_ directory path to output solutions
+   * @param path_prefix_ Directory path to output solutions
    */
   AddToSolution(bool crashed_only_, const fs::path &path_prefix_)
       : crashed_only(crashed_only_), path_prefix(path_prefix_) {}
   /**
-   * @fn
    * This callable is called on HierarFlow execution
-   * @param args arguments
+   * @param args Arguments
    * @return direction of next node
    */
   callee_ref_t operator()(Args... args) {

@@ -15,6 +15,10 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see http://www.gnu.org/licenses/.
  */
+/**
+ * @file add_to_corpus.hpp
+ * @author Ricerca Security <fuzzuf-dev@ricsec.co.jp>
+ */
 #ifndef FUZZUF_INCLUDE_ALGORITHM_LIBFUZZER_EXECUTOR_ADD_TO_CORPUS_HPP
 #define FUZZUF_INCLUDE_ALGORITHM_LIBFUZZER_EXECUTOR_ADD_TO_CORPUS_HPP
 #include "fuzzuf/algorithms/libfuzzer/corpus/add_to_corpus.hpp"
@@ -30,7 +34,6 @@
 namespace fuzzuf::algorithm::libfuzzer::executor {
 
 /**
- * @fn
  * Insert execution result to corpus if that has features
  * Note that, CollectFeatures must be applied to the execution result ahead, or
  * the feature count is left to 0, and added result will never be selected by
@@ -39,18 +42,18 @@ namespace fuzzuf::algorithm::libfuzzer::executor {
  * Corresponding code of original libFuzzer implementation
  * https://github.com/llvm/llvm-project/blob/llvmorg-12.0.1/compiler-rt/lib/fuzzer/FuzzerLoop.cpp#L525
  *
- * @tparm State libFuzzer state object type
- * @tparm Corpus FullCorpus type to add new execution result
- * @tparm Range Contiguous Range of std::uint8_t
- * @tparm InputInfo Type to provide execution result
- * @param state libFuzzer state object
+ * @tparam State LibFuzzer state object type
+ * @tparam Corpus FullCorpus type to add new execution result
+ * @tparam Range Contiguous Range of std::uint8_t
+ * @tparam InputInfo Type to provide execution result
+ * @param state LibFuzzer state object
  * @param corpus FullCorpus to add new execution result
  * @param range Input value that was passed to the executor
  * @param exec_result Execution result that was produced by the executor
  * @param force_add_to_corpus If true, the execution result is added to the
  * corpus regardless of features. Otherwise, the execution result is added to
  * the corpus if the execution found novel features.
- * @param may_delete_file set may_delete_file attribute to the execution result
+ * @param may_delete_file Set may_delete_file attribute to the execution result
  * ( This attribute is not used in current fuzzuf's implementation ).
  * @param persistent If true, the input is written to both memory and storage.
  * Otherwise, the input is stored on the memory only.

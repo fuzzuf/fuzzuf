@@ -22,7 +22,7 @@
 // Used only for CLI
 // NOTE: A struct dealing with a raw pointer.
 //       Beware that the lifetime of this struct must not be longer than that of pointers.
-//       This is partly due to the fact that fuzzuf uses The Lean Mean C++ Option Parser.
+//       This is partly due to using raw pointers while parsing command line options.
 //       Maybe we don't have to worry about the lifetime issues when parsing argv originates from main(argc, argv).
 struct CommandLineArgs {
     int argc;
