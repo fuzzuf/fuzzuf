@@ -99,3 +99,4 @@ fuzzuf is licensed under the GNU Affero General Public License v3.0. Some codes 
 
 This project has received funding from the Acquisition, Technology & Logistics Agency (ATLA) under the Innovative Science and Technology Initiative for Security 2020 (JPJ004596).
 
+*
