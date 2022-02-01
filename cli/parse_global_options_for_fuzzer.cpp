@@ -42,9 +42,9 @@ FuzzerArgs ParseGlobalOptionsForFuzzer(GlobalArgs &global_args, GlobalFuzzerOpti
     subcommand.add("fargs", -1);
 
     // Allocate variables to heap since `global_desc` outlives from this function
-    auto log_file = new std::string();
-    auto exec_timelimit_ms = new boost::optional<u32>();
-    auto exec_memlimit = new boost::optional<u32>();
+    auto log_file = std::string();
+    auto exec_timelimit_ms = boost::optional<u32>();
+    auto exec_memlimit = boost::optional<u32>();
 
     // Define global options
     po::options_description global_desc("Global options");
@@ -62,13 +62,13 @@ FuzzerArgs ParseGlobalOptionsForFuzzer(GlobalArgs &global_args, GlobalFuzzerOpti
             po::value<std::string>(&global_options.out_dir), 
             "Set output dir. Default is `/tmp/fuzzuf-out_dir`.")
         ("exec_timelimit_ms", 
-            po::value<boost::optional<u32>>(exec_timelimit_ms),
+            po::value<boost::optional<u32>>(&exec_timelimit_ms),
             "Limit execution time of PUT. Unit is milli-seconds.")
         ("exec_memlimit", 
-            po::value<boost::optional<u32>>(exec_memlimit),
+            po::value<boost::optional<u32>>(&exec_memlimit),
             "Limit memory usage for PUT execution.")
         ("log_file", 
-            po::value<std::string>(log_file), 
+            po::value<std::string>(&log_file), 
             "Enable LogFile logger and set the log file path for LogFile logger")
     ;
 
@@ -103,14 +103,14 @@ FuzzerArgs ParseGlobalOptionsForFuzzer(GlobalArgs &global_args, GlobalFuzzerOpti
 
     // Store values to `global_options` manually 
     // since type T = { std::optional, fs::path, Logger (enum) }, is not cpmatible with po::value<T>()
-    if (*exec_timelimit_ms) {
-        global_options.exec_timelimit_ms = exec_timelimit_ms->value();
+    if (exec_timelimit_ms) {
+        global_options.exec_timelimit_ms = exec_timelimit_ms.value();
     }
-    if (*exec_memlimit) {
-        global_options.exec_memlimit = exec_memlimit->value();
+    if (exec_memlimit) {
+        global_options.exec_memlimit = exec_memlimit.value();
     }
-    if (log_file->length() > 0) {
-        global_options.log_file = fs::path(*log_file);
+    if (log_file.length() > 0) {
+        global_options.log_file = fs::path(log_file);
         global_options.logger = Logger::LogFile;
     }
 
