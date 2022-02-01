@@ -29,7 +29,7 @@ struct GlobalFuzzerOptions {
     std::string in_dir;                     // Required; TODO: fs::path might be better
     std::string out_dir;                    // Required
     std::optional<u32> exec_timelimit_ms;   // Optional
-    std::optional<u32> exec_memlimit;       // Optional
+    std::optional<u64> exec_memlimit;       // Optional
     Logger logger;                          // Required
     std::optional<fs::path> log_file;       // Optional
 

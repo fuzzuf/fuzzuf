@@ -220,7 +220,7 @@ void DIEState::ReadTestcases(void) {
     if (!fs::is_regular_file(st) || js_size == 0)
       continue; // Skip empty files and non-regular files
 
-    if (js_size > afl::option::GetMaxFile<Tag>())
+    if (js_size > option::GetMaxFile())
       EXIT("Test case '%s' is too big (%s, limit is %s)",
            path_js.c_str(),
            afl::util::DescribeMemorySize(js_size).c_str(),

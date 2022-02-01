@@ -29,4 +29,8 @@ namespace fuzzuf::algorithm::die::option {
 
 struct DIETag {};
 
+constexpr u32 GetMaxFile(void) { 
+  return 4 * 1024 * 1024; // 4MB
+}
+
 } // namespace fuzzuf::algorithm::die::option

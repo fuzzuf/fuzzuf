@@ -153,6 +153,12 @@ std::unique_ptr<TFuzzer> BuildDIEFuzzerFromArgs(FuzzerArgs &fuzzer_args,
     die_options.cmd_node = fuzzuf::utils::which("node").string();
   }
 
+  if (global_options.exec_memlimit < 32*1024*1024) {
+    /* Memory limit is probably too small */
+    ACTF("Current memory limit is maybe too small for some JS engines.\n"
+         "You can change it by `--exec_memlimit` option.");
+  }
+
   using fuzzuf::algorithm::die::DIESetting;
   using fuzzuf::algorithm::die::option::DIETag;
   using fuzzuf::algorithm::afl::option::GetExecTimeout;
