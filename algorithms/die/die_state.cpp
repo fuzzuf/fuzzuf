@@ -280,7 +280,7 @@ void DIEState::ReadTestcases(void) {
            path_type.string()}; // path of output type file
     status = Util::ExecuteCommand(cmd);
 
-    if (status != 0) {
+    if (status != 0 || !fs::exists(path_type)) {
       /* Skip if profiling failed */
       ACTF("Profiling failed :(");
       continue;
