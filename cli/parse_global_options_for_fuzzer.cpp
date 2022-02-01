@@ -44,7 +44,7 @@ FuzzerArgs ParseGlobalOptionsForFuzzer(GlobalArgs &global_args, GlobalFuzzerOpti
     // Allocate variables to heap since `global_desc` outlives from this function
     auto log_file = new std::string();
     auto exec_timelimit_ms = new boost::optional<u32>();
-    auto exec_memlimit = new boost::optional<u32>();
+    auto exec_memlimit = new boost::optional<u64>();
 
     // Define global options
     po::options_description global_desc("Global options");
@@ -65,7 +65,7 @@ FuzzerArgs ParseGlobalOptionsForFuzzer(GlobalArgs &global_args, GlobalFuzzerOpti
             po::value<boost::optional<u32>>(exec_timelimit_ms),
             "Limit execution time of PUT. Unit is milli-seconds.")
         ("exec_memlimit", 
-            po::value<boost::optional<u32>>(exec_memlimit),
+            po::value<boost::optional<u64>>(exec_memlimit),
             "Limit memory usage for PUT execution.")
         ("log_file", 
             po::value<std::string>(log_file), 
