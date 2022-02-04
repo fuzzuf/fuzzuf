@@ -37,4 +37,11 @@ BOOST_AUTO_TEST_CASE(NautilusGrammartecContextSimple) {
     RuleChild("asd"),
     RuleChild("{C}", ctx)
   };
+  BOOST_CHECK_EQUAL(std::holds_alternative<PlainRule>(r.value()), true);
+  PlainRule rl = std::get<PlainRule>(r.value());
+  BOOST_CHECK_EQUAL(rl.children == soll, true);
+  BOOST_CHECK_EQUAL(r.Nonterms()[0] == ctx.NTID("A"), true);
+  BOOST_CHECK_EQUAL(r.Nonterms()[1] == ctx.NTID("B"), true);
+  BOOST_CHECK_EQUAL(r.Nonterms()[2] == ctx.NTID("C"), true);
+  
 }

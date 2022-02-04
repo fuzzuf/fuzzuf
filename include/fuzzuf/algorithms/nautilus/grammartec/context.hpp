@@ -38,7 +38,8 @@ public:
 
   //Rule& GetRule(RuleID r);
   void Initialize(size_t max_len);
-  NTermID AquireNTID(std::string& nt);
+  NTermID AquireNTID(const std::string& nt);
+  NTermID NTID(const std::string& nt);
 
 private:
   //std::vector<Rule> _rules;

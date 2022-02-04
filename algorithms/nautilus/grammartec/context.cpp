@@ -38,7 +38,7 @@ Rule& GetRule(RuleID r) {
 }
 */
 
-NTermID Context::AquireNTID(std::string& nt) {
+NTermID Context::AquireNTID(const std::string& nt) {
   NTermID next_id(_nt_ids_to_name.size());
 
   NTermID id = _names_to_nt_id.find(nt) == _names_to_nt_id.end()
@@ -49,6 +49,11 @@ NTermID Context::AquireNTID(std::string& nt) {
     _nt_ids_to_name[id] = nt;
 
   return id;
+}
+
+NTermID Context::NTID(const std::string& nt) {
+  assert (_names_to_nt_id.find(nt) != _names_to_nt_id.end());
+  return _names_to_nt_id[nt];
 }
 
 } // namespace fuzzuf::algorithms::nautilus::grammartec

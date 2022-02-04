@@ -38,7 +38,10 @@ struct RuleChild {
 public:
   RuleChild(std::string lit);
   RuleChild(std::string nt, Context& ctx);
-  std::variant<Term, NTerm> value() { return _rule_child; }
+  const std::variant<Term, NTerm> value() const { return _rule_child; }
+  inline bool operator==(const RuleChild& others) const {
+    return _rule_child == others.value();
+  }
 
   std::string SplitNTDescription(std::string& nonterm);
 
@@ -55,12 +58,6 @@ struct PlainRule {
     : nonterm(nonterm),
       children(children),
       nonterms(nonterms) {}
-  /*
-  PlainRule(const PlainRule& r)
-    : nonterm(r.nonterm),
-      children(r.children),
-      nonterms(r.nonterms) {}
-  */
 
   NTermID nonterm;
   std::vector<RuleChild> children;
@@ -90,10 +87,11 @@ struct RegExpRule {
 struct Rule {
 public:
   Rule(Context& ctx, std::string nonterm, std::string format);
-  //std::variant<PlainRule, ScriptRule, RegExpRule> value() { return _rule; }
+  std::variant<PlainRule, ScriptRule, RegExpRule> value() { return _rule; }
 
-  std::vector<uint8_t> Unescape(std::string& bytes);
+  std::string Unescape(const std::string& bytes);
   std::vector<RuleChild> Tokenize(std::string& format, Context& ctx);
+  std::vector<NTermID> Nonterms();
 
 private:
   std::variant<PlainRule, ScriptRule, RegExpRule> _rule;
