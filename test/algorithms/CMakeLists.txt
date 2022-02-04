@@ -3,6 +3,7 @@ subdirs(
   aflfast
   die
   libfuzzer
+  nautilus
   nezha
   vuzzer
 )
