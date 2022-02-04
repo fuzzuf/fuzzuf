@@ -43,5 +43,23 @@ BOOST_AUTO_TEST_CASE(NautilusGrammartecContextSimple) {
   BOOST_CHECK_EQUAL(r.Nonterms()[0] == ctx.NTID("A"), true);
   BOOST_CHECK_EQUAL(r.Nonterms()[1] == ctx.NTID("B"), true);
   BOOST_CHECK_EQUAL(r.Nonterms()[2] == ctx.NTID("C"), true);
-  
+}
+
+BOOST_AUTO_TEST_CASE(NautilusGrammartecContext) {
+  Context ctx;
+  RuleID r0 = ctx.AddRule("C", "c{B}c");
+  RuleID r1 = ctx.AddRule("B", "b{A}b");
+  ctx.AddRule("A", "a {A}");
+  ctx.AddRule("A", "a {A}");
+  ctx.AddRule("A", "a {A}");
+  ctx.AddRule("A", "a {A}");
+  ctx.AddRule("A", "a {A}");
+  RuleID r3 = ctx.AddRule("A", "a");
+  ctx.Initialize(5);
+  BOOST_CHECK_EQUAL(ctx.GetMinLenForNT(ctx.NTID("A")), 1);
+  BOOST_CHECK_EQUAL(ctx.GetMinLenForNT(ctx.NTID("B")), 2);
+  BOOST_CHECK_EQUAL(ctx.GetMinLenForNT(ctx.NTID("C")), 3);
+  r0 = r0;
+  r1 = r1;
+  r3 = r3;
 }

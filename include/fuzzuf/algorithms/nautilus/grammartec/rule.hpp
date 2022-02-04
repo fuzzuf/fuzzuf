@@ -36,14 +36,15 @@ using NTerm = NTermID;
 
 struct RuleChild {
 public:
-  RuleChild(std::string lit);
-  RuleChild(std::string nt, Context& ctx);
+  RuleChild(const std::string& lit);
+  RuleChild(const std::string& nt, Context& ctx);
   const std::variant<Term, NTerm> value() const { return _rule_child; }
   inline bool operator==(const RuleChild& others) const {
     return _rule_child == others.value();
   }
 
-  std::string SplitNTDescription(std::string& nonterm);
+  std::string DebugShow(Context& ctx);
+  std::string SplitNTDescription(const std::string& nonterm);
 
 private:
   std::variant<Term, NTerm> _rule_child;
@@ -58,6 +59,7 @@ struct PlainRule {
     : nonterm(nonterm),
       children(children),
       nonterms(nonterms) {}
+  std::string DebugShow(Context& ctx);
 
   NTermID nonterm;
   std::vector<RuleChild> children;
@@ -69,6 +71,7 @@ struct ScriptRule {
              std::vector<NTermID> nonterms)
     : nonterm(nonterm),
       nonterms(nonterms) {}
+  std::string DebugShow(Context& ctx);
 
   NTermID nonterm;
   std::vector<NTermID> nonterms;
@@ -78,6 +81,7 @@ struct ScriptRule {
 struct RegExpRule {
   RegExpRule(NTermID nonterm)
     : nonterm(nonterm) {}
+  std::string DebugShow(Context& ctx);
 
   NTermID nonterm;
   // Hir hir;
@@ -86,15 +90,19 @@ struct RegExpRule {
 
 struct Rule {
 public:
-  Rule(Context& ctx, std::string nonterm, std::string format);
+  Rule(Context& ctx, const std::string& nonterm, const std::string& format);
   std::variant<PlainRule, ScriptRule, RegExpRule> value() { return _rule; }
 
+  std::string DebugShow(Context& ctx);
   std::string Unescape(const std::string& bytes);
-  std::vector<RuleChild> Tokenize(std::string& format, Context& ctx);
+  std::vector<RuleChild> Tokenize(const std::string& format, Context& ctx);
   std::vector<NTermID> Nonterms();
+  NTermID Nonterm();
 
 private:
   std::variant<PlainRule, ScriptRule, RegExpRule> _rule;
 };
+
+std::string ShowBytes(std::string bs);
 
 } // namespace fuzzuf::algorithms::nautilus::grammartec

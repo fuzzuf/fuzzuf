@@ -20,8 +20,11 @@
  * @brief Rule for context-free grammar
  * @author Ricerca Security <fuzzuf-dev@ricsec.co.jp>
  */
+#include <iomanip>
 #include <iterator>
 #include <regex>
+#include <sstream>
+#include <string>
 #include "fuzzuf/algorithms/nautilus/grammartec/context.hpp"
 #include "fuzzuf/algorithms/nautilus/grammartec/rule.hpp"
 #include "fuzzuf/exceptions.hpp"
@@ -37,7 +40,7 @@ namespace fuzzuf::algorithms::nautilus::grammartec {
  * @param (nonterm) Nonterminal symbol
  * @param (format) Format string
  */
-Rule::Rule(Context& ctx, std::string nonterm, std::string format) {
+Rule::Rule(Context& ctx, const std::string& nonterm, const std::string& format) {
   std::vector<RuleChild> children = Rule::Tokenize(format, ctx);
   std::vector<NTermID> nonterms;
 
@@ -49,6 +52,16 @@ Rule::Rule(Context& ctx, std::string nonterm, std::string format) {
   }
 
   _rule = PlainRule{ctx.AquireNTID(nonterm), children, nonterms};
+}
+
+/**
+ * @fn
+ * @brief Describe this rule
+ * @param (ctx) Context
+ * @return Human-readable string of this rule
+ */
+std::string Rule::DebugShow(Context& ctx) {
+  return std::visit([&ctx](auto r) { return r.DebugShow(ctx); }, _rule);
 }
 
 /**
@@ -92,7 +105,7 @@ std::string Rule::Unescape(const std::string& bytes) {
  * @param (ctx) Context
  * @return Children rules
  */
-std::vector<RuleChild> Rule::Tokenize(std::string& format, Context& ctx) {
+std::vector<RuleChild> Rule::Tokenize(const std::string& format, Context& ctx) {
   static std::regex TOKENIZER(R"((\{[^}\\]+\})|((?:[^{\\]|\\\{|\\\}|\\)+))");
 
   std::vector<RuleChild> r;
@@ -121,7 +134,7 @@ std::vector<RuleChild> Rule::Tokenize(std::string& format, Context& ctx) {
 /**
  * @fn
  * @brief Get matching nonterms
- * @return NTermID of this rule
+ * @return Vector of NTermID of this rule
  */
 std::vector<NTermID> Rule::Nonterms() {
   if (std::holds_alternative<PlainRule>(_rule)) {
@@ -135,10 +148,19 @@ std::vector<NTermID> Rule::Nonterms() {
 
 /**
  * @fn
+ * @brief Get matching nonterm
+ * @return NTermID of this rule
+ */
+NTermID Rule::Nonterm() {
+  return std::visit([](auto r) { return r.nonterm; }, _rule);
+}
+
+/**
+ * @fn
  * @brief Construct RuleChild from literal
  * @param (lit) Literal string
  */
-RuleChild::RuleChild(std::string lit) {
+RuleChild::RuleChild(const std::string& lit) {
   _rule_child = lit;
 }
 
@@ -148,9 +170,23 @@ RuleChild::RuleChild(std::string lit) {
  * @param (nt) Nonterminal symbol
  * @param (ctx) Context
  */
-RuleChild::RuleChild(std::string nt, Context& ctx) {
+RuleChild::RuleChild(const std::string& nt, Context& ctx) {
   std::string nonterm = SplitNTDescription(nt);
   _rule_child = NTerm(ctx.AquireNTID(nonterm));
+}
+
+/**
+ * @fn
+ * @brief Describe RuleChild as string
+ * @param (ctx) Context
+ * @return Human-readable string
+ */
+std::string RuleChild::DebugShow(Context& ctx) {
+  if (std::holds_alternative<NTerm>(_rule_child)) {
+    return ctx.NTIDToString(std::get<NTerm>(_rule_child));
+  } else {
+    return ShowBytes(std::get<Term>(_rule_child));
+  }
 }
 
 /**
@@ -159,7 +195,7 @@ RuleChild::RuleChild(std::string nt, Context& ctx) {
  * @param (nonterm) Nonterminal symbol
  * @return Extracted symbol
  */
-std::string RuleChild::SplitNTDescription(std::string& nonterm) {
+std::string RuleChild::SplitNTDescription(const std::string& nonterm) {
   std::smatch m;
   static std::regex SPLITTER(R"(^\{([A-Z][a-zA-Z_\-0-9]*)(?::([a-zA-Z_\-0-9]*))?\}$)");
 
@@ -175,6 +211,54 @@ std::string RuleChild::SplitNTDescription(std::string& nonterm) {
   }
 
   return m[1].str();
+}
+
+std::string PlainRule::DebugShow(Context& ctx) {
+  std::string res = "";
+  for (size_t i = 0; i < children.size(); i++) {
+    res += children[i].DebugShow(ctx);
+    if (i != children.size() - 1) res += ", ";
+  }
+  return ctx.NTIDToString(nonterm) + " => " + res;
+}
+
+std::string ScriptRule::DebugShow(Context& ctx) {
+  std::string res = "";
+  for (size_t i = 0; i < nonterms.size(); i++) {
+    res += ctx.NTIDToString(nonterms[i]);
+    if (i != nonterms.size() - 1) res += ", ";
+  }
+  return ctx.NTIDToString(nonterm) + " => " + res;
+}
+
+std::string RegExpRule::DebugShow(Context& ctx) {
+  return ctx.NTIDToString(nonterm) + " => [TODO] HIR";
+}
+
+std::string ShowBytes(std::string bs) {
+  std::stringstream ss;
+  for (size_t i = 0; i < bs.size(); i++) {
+    char c = bs[i];
+    if (0x20 <= c && c <= 0x7e) {
+      ss << c;
+    } else {
+      switch (c) {
+        case '\t': ss << "\\t"; break;
+        case '\r': ss << "\\r"; break;
+        case '\n': ss << "\\n"; break;
+        case '\'': ss << "\\'"; break;
+        case '"': ss << "\\\""; break;
+        case '\\': ss << "\\\\"; break;
+        default:
+          ss << "\\x"
+             << std::setfill('0') << std::setw(2)
+             << std::hex << (uint8_t)c;
+          break;
+      }
+    }
+  }
+
+  return ss.str();
 }
 
 } // namespace fuzzuf::algorithms::nautilus::grammartec

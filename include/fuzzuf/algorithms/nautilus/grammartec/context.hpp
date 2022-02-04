@@ -22,6 +22,7 @@
  */
 #pragma once
 
+#include <optional>
 #include <string>
 #include <unordered_map>
 #include <vector>
@@ -36,13 +37,24 @@ class Context {
 public:
   Context() : _max_len(0) {}
 
-  //Rule& GetRule(RuleID r);
   void Initialize(size_t max_len);
+  Rule& GetRule(RuleID r);
+  std::string NTIDToString(NTermID nt);
+  size_t GetMinLenForNT(NTermID nt);
+
   NTermID AquireNTID(const std::string& nt);
   NTermID NTID(const std::string& nt);
 
+  RuleID AddRule(const std::string& nt, const std::string& format);
+
+  size_t CalcNumOptionsForRule(RuleID r);
+  void CalcNumOptions();
+  std::optional<size_t> CalcMinLenForRule(RuleID r);
+  void CalcRuleOrder();
+  void CalcMinLen();
+
 private:
-  //std::vector<Rule> _rules;
+  std::vector<Rule> _rules;
   std::unordered_map<NTermID, std::vector<RuleID>> _nts_to_rules;
   std::unordered_map<NTermID, std::string> _nt_ids_to_name;
   std::unordered_map<std::string, NTermID> _names_to_nt_id;
