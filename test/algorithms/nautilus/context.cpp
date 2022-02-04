@@ -22,6 +22,7 @@
 #include <vector>
 #include "fuzzuf/algorithms/nautilus/grammartec/context.hpp"
 #include "fuzzuf/algorithms/nautilus/grammartec/rule.hpp"
+#include "fuzzuf/algorithms/nautilus/grammartec/tree.hpp"
 
 
 using namespace fuzzuf::algorithms::nautilus::grammartec;
@@ -59,7 +60,12 @@ BOOST_AUTO_TEST_CASE(NautilusGrammartecContext) {
   BOOST_CHECK_EQUAL(ctx.GetMinLenForNT(ctx.NTID("A")), 1);
   BOOST_CHECK_EQUAL(ctx.GetMinLenForNT(ctx.NTID("B")), 2);
   BOOST_CHECK_EQUAL(ctx.GetMinLenForNT(ctx.NTID("C")), 3);
-  r0 = r0;
-  r1 = r1;
-  r3 = r3;
+  Tree tree({}, ctx);
+  tree.GenerateFromNT(ctx.NTID("C"), 3, ctx);
+  std::vector<RuleIDOrCustom> trules = {
+    RuleIDOrCustom(r0),
+    RuleIDOrCustom(r1),
+    RuleIDOrCustom(r3)
+  };
+  BOOST_CHECK_EQUAL(tree.rules() == trules, true);
 }

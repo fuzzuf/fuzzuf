@@ -300,6 +300,7 @@ set(
   algorithms/nautilus/fuzzer/nautilus_fuzzer.cpp
   algorithms/nautilus/grammartec/context.cpp
   algorithms/nautilus/grammartec/rule.cpp
+  algorithms/nautilus/grammartec/tree.cpp
   algorithms/nezha/fuzzer.cpp
   algorithms/vuzzer/vuzzer.cpp
   algorithms/vuzzer/vuzzer_mutation_hierarflow_routines.cpp

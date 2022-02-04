@@ -28,6 +28,8 @@
 #include "fuzzuf/algorithms/nautilus/grammartec/context.hpp"
 #include "fuzzuf/algorithms/nautilus/grammartec/rule.hpp"
 #include "fuzzuf/exceptions.hpp"
+#include "fuzzuf/utils/common.hpp"
+#include "fuzzuf/utils/random.hpp"
 
 
 namespace fuzzuf::algorithms::nautilus::grammartec {
@@ -268,6 +270,68 @@ void Context::CalcMinLen() {
   } while (something_changed);
 
   CalcRuleOrder();
+}
+
+size_t Context::GetRandomLen(size_t number_of_children,
+                             size_t total_remaining_len) {
+  ssize_t res = total_remaining_len;
+  ssize_t iters = number_of_children - 1;
+
+  for (ssize_t i = 0; i < iters; i++) {
+    ssize_t proposal = fuzzuf::utils::random::Rand<ssize_t>(
+      0, total_remaining_len + 1
+    );
+    if (proposal < res)
+      res = proposal;
+  }
+
+  return res;
+}
+
+std::vector<RuleID> Context::GetApplicableRules(size_t max_len, NTermID nt,
+                                                size_t p_include_short_rules) {
+  std::vector<RuleID> res;
+
+  for (RuleID rid: _nts_to_rules[nt]) {
+    if (_rules_to_min_size[rid] > max_len) break;
+    if (_rules_to_num_options[rid] > 1
+        || fuzzuf::utils::random::Rand<size_t>(0, 99) <= p_include_short_rules)
+      res.push_back(rid);
+  }
+
+  return res;
+}
+
+RuleID Context::GetRandomRuleForNT(NTermID nt, size_t max_len) {
+  size_t p_include_short_rules;
+  // TODO: what's this?
+  if (_nts_to_num_options[nt] < 10) {
+    p_include_short_rules = 100 * 0;
+  } else if (max_len > 100) {
+    p_include_short_rules = 2 * 0;
+  } else if (max_len > 20) {
+    p_include_short_rules = 50 * 0;
+  } else {
+    p_include_short_rules = 100 * 0;
+  }
+
+  std::vector<RuleID> applicable_rules = GetApplicableRules(
+    max_len, nt, p_include_short_rules
+  );
+  if (applicable_rules.size() > 0) {
+    return fuzzuf::utils::random::Choose(applicable_rules);
+  }
+
+  applicable_rules = GetApplicableRules(max_len, nt, 100);
+  if (applicable_rules.size() > 0) {
+    return fuzzuf::utils::random::Choose(applicable_rules);
+  }
+
+  throw exceptions::fuzzuf_runtime_error(
+    Util::StrPrintf("There is no way to derive %s within %d steps",
+                    _nt_ids_to_name[nt], max_len),
+    __FILE__, __LINE__
+  );
 }
 
 } // namespace fuzzuf::algorithms::nautilus::grammartec

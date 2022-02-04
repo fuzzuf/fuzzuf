@@ -19,15 +19,15 @@
  * @file random.cpp
  * @author Ricerca Security <fuzzuf-dev@ricsec.co.jp>
  */
-#include <random>
+#include "fuzzuf/utils/random.hpp"
+
+
 namespace fuzzuf::utils::random {
-namespace {
-  std::random_device rd;
-  std::default_random_engine eng(rd());
-}
-  int RandInt(int lower, int upper) {
-    std::uniform_int_distribution<int> distr(lower, upper);
-    return distr(eng);
-  }
+
+int RandInt(int lower, int upper) {
+  // TODO: remove this function
+  std::uniform_int_distribution<int> distr(lower, upper);
+  return distr(eng);
 }
 
+}

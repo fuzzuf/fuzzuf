@@ -23,11 +23,32 @@
 
 #ifndef FUZZUF_INCLUDE_UTILS_RANDOM_HPP
 #define FUZZUF_INCLUDE_UTILS_RANDOM_HPP
+#include <random>
+
+
 namespace fuzzuf::utils::random {
-  /* FIXME: Unify the designs of RNG(random number generators) and probability distributions. 
-  ** See the TODO.md.
-  */
-  int RandInt(int lower, int upper);
+
+namespace {
+  std::random_device rd;
+  std::default_random_engine eng(rd());
+}
+
+/* FIXME: Unify the designs of RNG(random number generators) and probability distributions. 
+** See the TODO.md.
+*/
+int RandInt(int lower, int upper);
+
+template <class T>
+T Rand(T lower, T upper) {
+  std::uniform_int_distribution<T> distr(lower, upper);
+  return distr(eng);
+}
+
+template <class T>
+T Choose(std::vector<T> v) {
+  assert (v.size() > 0);
+  return v[Rand<size_t>(0, v.size() - 1)];
+}
 }
 #endif
 

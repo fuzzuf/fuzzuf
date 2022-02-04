@@ -22,6 +22,8 @@
  */
 #pragma once
 
+#include <string>
+#include <utility>
 #include <variant>
 #include <vector>
 #include "fuzzuf/algorithms/nautilus/grammartec/newtypes.hpp"
@@ -29,6 +31,7 @@
 
 namespace fuzzuf::algorithms::nautilus::grammartec {
 
+class Tree;
 class Context;
 
 using Term = std::string;
@@ -48,6 +51,26 @@ public:
 
 private:
   std::variant<Term, NTerm> _rule_child;
+};
+
+
+using Custom = std::pair<RuleID, std::string>;
+
+struct RuleIDOrCustom {
+public:
+  RuleIDOrCustom(RuleID rid)
+    : _rule_id_or_custom(rid) {}
+  RuleIDOrCustom(RuleID rid, std::string s)
+    : _rule_id_or_custom(Custom(rid, s)) {}
+  const std::variant<RuleID, Custom> value() const { return _rule_id_or_custom; }
+  inline bool operator==(const RuleIDOrCustom& others) const {
+    return _rule_id_or_custom == others.value();
+  }
+  const RuleID ID() const;
+  const std::string& Data() const;
+  
+private:
+  std::variant<RuleID, Custom> _rule_id_or_custom;
 };
 
 
@@ -79,8 +102,7 @@ struct ScriptRule {
 };
 
 struct RegExpRule {
-  RegExpRule(NTermID nonterm)
-    : nonterm(nonterm) {}
+  RegExpRule(NTermID nonterm) : nonterm(nonterm) {}
   std::string DebugShow(Context& ctx);
 
   NTermID nonterm;
@@ -91,18 +113,21 @@ struct RegExpRule {
 struct Rule {
 public:
   Rule(Context& ctx, const std::string& nonterm, const std::string& format);
-  std::variant<PlainRule, ScriptRule, RegExpRule> value() { return _rule; }
+  const std::variant<PlainRule, ScriptRule, RegExpRule>& value() const {
+    return _rule;
+  }
 
   std::string DebugShow(Context& ctx);
   std::string Unescape(const std::string& bytes);
   std::vector<RuleChild> Tokenize(const std::string& format, Context& ctx);
   std::vector<NTermID> Nonterms();
   NTermID Nonterm();
+  size_t Generate(Tree& tree, Context& ctx, size_t len);
 
 private:
   std::variant<PlainRule, ScriptRule, RegExpRule> _rule;
 };
 
-std::string ShowBytes(std::string bs);
+std::string ShowBytes(const std::string& bs);
 
 } // namespace fuzzuf::algorithms::nautilus::grammartec

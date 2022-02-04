@@ -53,6 +53,10 @@ public:
   void CalcRuleOrder();
   void CalcMinLen();
 
+  std::vector<RuleID> GetApplicableRules(size_t max_len, NTermID nt, size_t p_include_short_rules);
+  size_t GetRandomLen(size_t number_of_children, size_t total_remaining_len);
+  RuleID GetRandomRuleForNT(NTermID nt, size_t len);
+
 private:
   std::vector<Rule> _rules;
   std::unordered_map<NTermID, std::vector<RuleID>> _nts_to_rules;

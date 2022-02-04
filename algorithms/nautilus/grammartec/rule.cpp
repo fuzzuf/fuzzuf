@@ -27,6 +27,7 @@
 #include <string>
 #include "fuzzuf/algorithms/nautilus/grammartec/context.hpp"
 #include "fuzzuf/algorithms/nautilus/grammartec/rule.hpp"
+#include "fuzzuf/algorithms/nautilus/grammartec/tree.hpp"
 #include "fuzzuf/exceptions.hpp"
 #include "fuzzuf/utils/common.hpp"
 
@@ -137,6 +138,7 @@ std::vector<RuleChild> Rule::Tokenize(const std::string& format, Context& ctx) {
  * @return Vector of NTermID of this rule
  */
 std::vector<NTermID> Rule::Nonterms() {
+  // TODO: reference it
   if (std::holds_alternative<PlainRule>(_rule)) {
     return std::get<PlainRule>(_rule).nonterms;
   } else if (std::holds_alternative<ScriptRule>(_rule)) {
@@ -153,6 +155,63 @@ std::vector<NTermID> Rule::Nonterms() {
  */
 NTermID Rule::Nonterm() {
   return std::visit([](auto r) { return r.nonterm; }, _rule);
+}
+
+/**
+ * @fn
+ */
+size_t Rule::Generate(Tree& tree, Context& ctx, size_t len) {
+  size_t minimal_needed_len = 0;
+  for (NTermID nt: Nonterms())
+    minimal_needed_len += ctx.GetMinLenForNT(nt);
+  assert (minimal_needed_len <= len);
+
+  size_t remaining_len = len - minimal_needed_len;
+
+  size_t total_size = 1;
+  NodeID paren(tree.Size() - 1);
+
+  std::vector<NTermID> nonterms = Nonterms();
+  for (size_t i = 0; i < nonterms.size(); i++) {
+    size_t cur_child_max_len;
+    std::vector<NTermID> new_nterms(nonterms.begin() + i, nonterms.end());
+
+    if (new_nterms.size() != 0) {
+      cur_child_max_len = ctx.GetRandomLen(new_nterms.size(), remaining_len);
+    } else {
+      cur_child_max_len = remaining_len;
+    }
+    cur_child_max_len += ctx.GetMinLenForNT(nonterms[i]);
+
+    RuleID rid = ctx.GetRandomRuleForNT(nonterms[i], cur_child_max_len);
+    RuleIDOrCustom rule_or_custom =
+      std::holds_alternative<RegExpRule>(ctx.GetRule(rid).value())
+      ? RuleIDOrCustom(rid, "[FIXME] what's this?")
+      : RuleIDOrCustom(rid);
+
+    assert (tree.rules().size() == tree.sizes().size());
+    assert (tree.paren().size() == tree.sizes().size());
+
+    size_t offset = tree.Size();
+    tree.rules().push_back(rule_or_custom);
+    tree.sizes().push_back(0);
+    tree.paren().push_back(NodeID(0));
+
+    size_t consumed_len = ctx.GetRule(rid).Generate(
+      tree, ctx, cur_child_max_len - 1
+    );
+    tree.sizes()[offset] = consumed_len;
+    tree.paren()[offset] = paren;
+
+    assert (consumed_len <= cur_child_max_len);
+    assert (consumed_len >= ctx.GetMinLenForNT(nonterms[i]));
+
+    remaining_len += ctx.GetMinLenForNT(nonterms[i]);
+    remaining_len -= consumed_len;
+    total_size += consumed_len;
+  }
+
+  return total_size;
 }
 
 /**
@@ -213,6 +272,34 @@ std::string RuleChild::SplitNTDescription(const std::string& nonterm) {
   return m[1].str();
 }
 
+/**
+ * @fn
+ * @brief Get RuleID of RuleIDOrCustom
+ * @return RuleID
+ */
+const RuleID RuleIDOrCustom::ID() const {
+  if (std::holds_alternative<RuleID>(_rule_id_or_custom)) {
+    return std::get<RuleID>(_rule_id_or_custom);
+  } else {
+    return std::get<Custom>(_rule_id_or_custom).first;
+  }
+}
+
+/**
+ * @fn
+ * @brief Get data of RuleIDOrCustom
+ * @return Data (exception thrown if rule is not Custom)
+ */
+const std::string& RuleIDOrCustom::Data() const {
+  if (std::holds_alternative<RuleID>(_rule_id_or_custom)) {
+    throw exceptions::fuzzuf_runtime_error(
+      "Cannot get data on a normal rule", __FILE__, __LINE__
+    );
+  } else {
+    return std::get<Custom>(_rule_id_or_custom).second;
+  }
+}
+
 std::string PlainRule::DebugShow(Context& ctx) {
   std::string res = "";
   for (size_t i = 0; i < children.size(); i++) {
@@ -235,7 +322,7 @@ std::string RegExpRule::DebugShow(Context& ctx) {
   return ctx.NTIDToString(nonterm) + " => [TODO] HIR";
 }
 
-std::string ShowBytes(std::string bs) {
+std::string ShowBytes(const std::string& bs) {
   std::stringstream ss;
   for (size_t i = 0; i < bs.size(); i++) {
     char c = bs[i];
