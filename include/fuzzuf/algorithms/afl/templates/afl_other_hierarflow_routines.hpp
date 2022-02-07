@@ -102,13 +102,9 @@ NullableRef<HierarFlowCallee<void(void)>> SelectSeedTemplate<State>::operator()(
             sync_fuzzers(use_argv);
 #endif
 
-        assert(state.current_entry < state.case_queue.size());
-
-    } else {
-
         // FIXME: here assert is used
         // this assert ensures that the container "case_queue" has the key "state.current_entry" (since case_queue is a vector)
-        assert(state.current_entry + 1 < state.case_queue.size());
+        assert(state.current_entry < state.case_queue.size());
 
     }
 
