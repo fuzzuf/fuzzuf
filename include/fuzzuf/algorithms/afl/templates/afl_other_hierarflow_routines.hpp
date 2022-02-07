@@ -75,7 +75,7 @@ SelectSeedTemplate<State>::SelectSeedTemplate(State &state)
 
 template<class State>
 NullableRef<HierarFlowCallee<void(void)>> SelectSeedTemplate<State>::operator()(void) {
-    if (state.current_entry + 1 >= state.case_queue.size()) {
+    if (state.current_entry >= state.case_queue.size()) {
         state.queue_cycle++;
         state.current_entry = state.seek_to; // seek_to is used in resume mode
         state.seek_to = 0;
