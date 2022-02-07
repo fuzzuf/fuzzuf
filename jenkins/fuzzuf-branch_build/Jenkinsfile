@@ -28,7 +28,7 @@ atla_branch_build2( 'fuzzuf', 'atla', "${BRANCH}" ) {
           stage( 'deploy doc' ) {
             dir( "build_"+dist_info[ "type" ]+'_'+dist_info[ "version" ]+'/docs' ) {
               withCredentials([usernamePassword(credentialsId: 'github_ricsec-bot_username_token', usernameVariable: 'ZZZZZ_USERNAME', passwordVariable: 'ZZZZZ_PASSWORD' )]) {
-                sh('git push https://${ZZZZZ_USERNAME}:${ZZZZZ_PASSWORD}@github.com/RICSecLab/fuzzuf-doxygen-docs.git')
+                sh('git push '+env.DOC_GIT_URL.replaceFirst(/github.com/,"${ZZZZZ_USERNAME}:${ZZZZZ_PASSWORD}@github.com") )
               }
             }
           }
