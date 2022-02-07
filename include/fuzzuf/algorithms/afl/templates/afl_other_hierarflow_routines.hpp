@@ -75,7 +75,7 @@ SelectSeedTemplate<State>::SelectSeedTemplate(State &state)
 
 template<class State>
 NullableRef<HierarFlowCallee<void(void)>> SelectSeedTemplate<State>::operator()(void) {
-    if (state.current_entry + 1 >= state.case_queue.size()) {
+    if (state.current_entry >= state.case_queue.size()) {
         state.queue_cycle++;
         state.current_entry = state.seek_to; // seek_to is used in resume mode
         state.seek_to = 0;
@@ -102,15 +102,16 @@ NullableRef<HierarFlowCallee<void(void)>> SelectSeedTemplate<State>::operator()(
             sync_fuzzers(use_argv);
 #endif
 
+        // FIXME: here assert is used
+        // this assert ensures that the container "case_queue" has the key "state.current_entry" (since case_queue is a vector)
+        assert(state.current_entry < state.case_queue.size());
+
     }
 
-    // FIXME: here assert is used
-    // this assert ensures that the container "case_queue" has the key "state.current_entry" (since case_queue is a vector)
-    assert(state.current_entry + 1 < state.case_queue.size());
-
     // get the testcase indexed by state.current_entry and start mutations
-    auto& testcase = state.case_queue[state.current_entry++];
+    auto& testcase = state.case_queue[state.current_entry];
     this->CallSuccessors(testcase);
+    state.current_entry++;
 
 #if 0
     auto skipped_fuzz = CallSuccessors(testcase);
