@@ -141,10 +141,10 @@ std::vector<NTermID> Rule::Nonterms() {
   // TODO: reference it
   if (std::holds_alternative<PlainRule>(_rule)) {
     return std::get<PlainRule>(_rule).nonterms;
-  } else if (std::holds_alternative<ScriptRule>(_rule)) {
-    return std::get<ScriptRule>(_rule).nonterms;
   } else {
-    return {};
+    throw exceptions::not_implemented(
+      "Only PlainRule is supported", __FILE__, __LINE__
+    );
   }
 }
 
@@ -184,10 +184,8 @@ size_t Rule::Generate(Tree& tree, Context& ctx, size_t len) {
     cur_child_max_len += ctx.GetMinLenForNT(nonterms[i]);
 
     RuleID rid = ctx.GetRandomRuleForNT(nonterms[i], cur_child_max_len);
-    RuleIDOrCustom rule_or_custom =
-      std::holds_alternative<RegExpRule>(ctx.GetRule(rid).value())
-      ? RuleIDOrCustom(rid, "[FIXME] what's this?")
-      : RuleIDOrCustom(rid);
+    // NOTE: RegExpRule should work differently here
+    RuleIDOrCustom rule_or_custom = RuleIDOrCustom(rid);
 
     assert (tree.rules().size() == tree.sizes().size());
     assert (tree.paren().size() == tree.sizes().size());
@@ -307,19 +305,6 @@ std::string PlainRule::DebugShow(Context& ctx) {
     if (i != children.size() - 1) res += ", ";
   }
   return ctx.NTIDToString(nonterm) + " => " + res;
-}
-
-std::string ScriptRule::DebugShow(Context& ctx) {
-  std::string res = "";
-  for (size_t i = 0; i < nonterms.size(); i++) {
-    res += ctx.NTIDToString(nonterms[i]);
-    if (i != nonterms.size() - 1) res += ", ";
-  }
-  return ctx.NTIDToString(nonterm) + " => " + res;
-}
-
-std::string RegExpRule::DebugShow(Context& ctx) {
-  return ctx.NTIDToString(nonterm) + " => [TODO] HIR";
 }
 
 std::string ShowBytes(const std::string& bs) {

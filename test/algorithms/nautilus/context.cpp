@@ -69,3 +69,40 @@ BOOST_AUTO_TEST_CASE(NautilusGrammartecContext) {
   };
   BOOST_CHECK_EQUAL(tree.rules() == trules, true);
 }
+
+BOOST_AUTO_TEST_CASE(NautilusGrammartecGenerateLen) {
+  Context ctx;
+  RuleID r0 = ctx.AddRule("E", "({E}+{E})");
+  RuleID r1 = ctx.AddRule("E", "({E}*{E})");
+  RuleID r2 = ctx.AddRule("E", "({E}-{E})");
+  RuleID r3 = ctx.AddRule("E", "({E}/{E})");
+  RuleID r4 = ctx.AddRule("E", "1");
+  ctx.Initialize(11);
+  BOOST_CHECK_EQUAL(ctx.GetMinLenForNT(ctx.NTID("E")), 1);
+
+  for (size_t i = 0; i < 100; i++) {
+    Tree tree({}, ctx);
+    tree.GenerateFromNT(ctx.NTID("E"), 9, ctx);
+    BOOST_CHECK_EQUAL(tree.rules().size() < 10, true);
+    BOOST_CHECK_EQUAL(tree.rules().size() >= 1, true);
+  }
+
+  std::vector<RuleIDOrCustom> rules = {
+    RuleIDOrCustom(r0), RuleIDOrCustom(r1), RuleIDOrCustom(r4),
+    RuleIDOrCustom(r4), RuleIDOrCustom(r4)
+  };
+  Tree tree(rules, ctx);
+  std::string data = "";
+  tree.UnparseTo(ctx, data);
+  BOOST_CHECK_EQUAL(data, "((1*1)+1)");
+
+  rules = {
+    RuleIDOrCustom(r0), RuleIDOrCustom(r1), RuleIDOrCustom(r2),
+    RuleIDOrCustom(r3), RuleIDOrCustom(r4), RuleIDOrCustom(r4),
+    RuleIDOrCustom(r4), RuleIDOrCustom(r4), RuleIDOrCustom(r4)
+  };
+  tree = Tree(rules, ctx);
+  data = "";
+  tree.UnparseTo(ctx, data);
+  BOOST_CHECK_EQUAL(data, "((((1/1)-1)*1)+1)");
+}

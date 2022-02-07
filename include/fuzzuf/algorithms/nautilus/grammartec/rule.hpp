@@ -89,31 +89,11 @@ struct PlainRule {
   std::vector<NTermID> nonterms;
 };
 
-struct ScriptRule {
-  ScriptRule(NTermID nonterm,
-             std::vector<NTermID> nonterms)
-    : nonterm(nonterm),
-      nonterms(nonterms) {}
-  std::string DebugShow(Context& ctx);
-
-  NTermID nonterm;
-  std::vector<NTermID> nonterms;
-  //PyObject script;
-};
-
-struct RegExpRule {
-  RegExpRule(NTermID nonterm) : nonterm(nonterm) {}
-  std::string DebugShow(Context& ctx);
-
-  NTermID nonterm;
-  // Hir hir;
-};
-
 
 struct Rule {
 public:
   Rule(Context& ctx, const std::string& nonterm, const std::string& format);
-  const std::variant<PlainRule, ScriptRule, RegExpRule>& value() const {
+  const std::variant<PlainRule>& value() const {
     return _rule;
   }
 
@@ -125,7 +105,8 @@ public:
   size_t Generate(Tree& tree, Context& ctx, size_t len);
 
 private:
-  std::variant<PlainRule, ScriptRule, RegExpRule> _rule;
+  // NOTE: ScriptRule and RegExpRule not implemented
+  std::variant<PlainRule> _rule;
 };
 
 std::string ShowBytes(const std::string& bs);

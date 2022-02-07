@@ -2,7 +2,7 @@
  * fuzzuf
  * Copyright (C) 2022 Ricerca Security
  * 
-S * This program is free software: you can redistribute it and/or modify
+ * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
@@ -20,6 +20,7 @@ S * This program is free software: you can redistribute it and/or modify
  * @brief Tree for context-free grammar
  * @author Ricerca Security <fuzzuf-dev@ricsec.co.jp>
  */
+#include <iostream>
 #include "fuzzuf/algorithms/nautilus/grammartec/tree.hpp"
 #include "fuzzuf/exceptions.hpp"
 
@@ -42,6 +43,8 @@ Tree::Tree(std::vector<RuleIDOrCustom> rules, Context& ctx)
   if (_rules.size() > 0)
     CalcSubTreeSizesAndParents(ctx);
 }
+
+
 
 void Tree::CalcSubTreeSizesAndParents(Context& ctx) {
   CalcParents(ctx);
@@ -91,30 +94,69 @@ void Tree::CalcSizes() {
     _sizes[static_cast<size_t>(_paren[i])] += _sizes[i];
 }
 
+/**
+ * @fn
+ * @brief Get rule ID by node ID
+ * @param (n) Node ID
+ * @return Rule ID
+ */
 RuleID Tree::GetRuleID(NodeID n) {
   return _rules[static_cast<size_t>(n)].ID();
 }
 
+/**
+ * @fn
+ * @brief Get the number of current rules
+ * @return Number of rules
+ */
 size_t Tree::Size() {
   return _rules.size();
 }
 
-Tree Tree::ToTree(Context&) {
+/**
+ * @fn
+ * @brief Copy this tree
+ * @return New tree copied from current tree
+ */
+Tree Tree::ToTree(Context&) { // Context is unused in Tree impl
   return Tree(_rules, _sizes, _paren);
 }
 
+/**
+ * @fn
+ * @brief Get rule by node ID
+ * @param (n) Node ID
+ * @param (ctx) Context
+ * @return Rule corresponding to node ID
+ */
 Rule& Tree::GetRule(NodeID n, Context& ctx) {
   return ctx.GetRule(GetRuleID(n));
 }
 
+/**
+ * @fn
+ * @brief Get custom rule data by node ID
+ * @param (n) Node ID
+ * @return Data of rule (throws exception if rule is not Custom)
+ */
 std::string Tree::GetCustomRuleData(NodeID n) {
   return _rules[static_cast<size_t>(n)].Data();
 }
 
+/**
+ * @fn
+ * @brief Get rule ID or custom by node ID
+ * @param (n) Node ID
+ * @return RuleIDOrCustom corresponding to node ID
+ */
 RuleIDOrCustom& Tree::GetRuleOrCustom(NodeID n) {
   return _rules[static_cast<size_t>(n)];
 }
 
+/**
+ * @fn
+ * @brief Remove every rule
+ */
 void Tree::Truncate() {
   _rules.clear();
   _sizes.clear();
@@ -127,18 +169,7 @@ void Tree::GenerateFromNT(NTermID start, size_t len, Context& ctx) {
 }
 
 void Tree::GenerateFromRule(RuleID ruleid, size_t max_len, Context& ctx) {
-  // TODO: Is this branch necessary?
-  if (std::holds_alternative<RegExpRule>(ctx.GetRule(ruleid).value())) {
-
-    /* RegExpRule */
-    RuleIDOrCustom rid(ruleid, "[FIXME] what's this");
-    Truncate();
-    _rules.push_back(rid);
-    _sizes.push_back(0);
-    _paren.push_back(NodeID(0));
-    _sizes[0] = _rules.size(); // TODO: Check if this is always 1
-
-  } else {
+  if (std::holds_alternative<PlainRule>(ctx.GetRule(ruleid).value())) {
 
     /* PlainRule or ScriptRule */
     Truncate();
@@ -146,9 +177,174 @@ void Tree::GenerateFromRule(RuleID ruleid, size_t max_len, Context& ctx) {
     _sizes.push_back(0);
     _paren.push_back(NodeID(0));
     ctx.GetRule(ruleid).Generate(*this, ctx, max_len);
+    
     _sizes[0] = _rules.size(); // TODO: Check if this is always 1
 
+  } else {
+
+    // NOTE: RegExpRule should work differently here
+    throw exceptions::not_implemented(
+      "Only PlainRule is supported", __FILE__, __LINE__
+    );
+
   }
+}
+
+
+/**
+ * @fn
+ * @brief Get nonterminal ID by NodeID
+ * @param (n) NodeID
+ * @param (ctx) Context
+ * @return Nonterminal symbol ID
+ */
+NTermID TreeLike::GetNontermID(NodeID n, Context& ctx) {
+  return GetRule(n, ctx).Nonterm();
+}
+
+void TreeLike::Unparse(NodeID id, Context& ctx, std::string& data) {
+  Unparser(id, data, *this, ctx).Unparse();
+}
+
+void TreeLike::UnparseTo(Context& ctx, std::string& data) {
+  Unparse(NodeID(0), ctx, data);
+}
+
+std::string TreeLike::UnparseNodeToVec(NodeID n, Context& ctx) {
+  std::string data;
+  Unparse(n, ctx, data);
+  return data;
+}
+
+std::string TreeLike::UnparseToVec(Context& ctx) {
+  return UnparseNodeToVec(NodeID(0), ctx);
+}
+
+
+/**
+ * @fn
+ * @brief Construct Unparser
+ * @param (nid) Node ID
+ * @param (w) Data
+ * @param (tree) Tree
+ * @param (ctx) Context
+ */
+Unparser::Unparser(NodeID nid, std::string& w, TreeLike& tree, Context& ctx)
+  : _tree(tree), _w(w), _ctx(ctx) {
+  _i = static_cast<size_t>(nid);
+  _stack = {UnparseStep(tree.GetRule(NodeID(_i), ctx).Nonterm())};
+  _buffers.clear();
+}
+
+/**
+ * @fn
+ * @brief Forward one step for unparse
+ * @return True if successful
+ */
+bool Unparser::UnparseOneStep() {
+  if (_stack.size() == 0)
+    return false;
+
+  auto data = _stack.back().value();
+  _stack.pop_back();
+
+  if (std::holds_alternative<Term>(data)) {
+    Write(std::get<Term>(data));
+
+  } else if (std::holds_alternative<NTerm>(data)) {
+    Nonterm(std::get<NTerm>(data));
+
+  } else if (std::holds_alternative<TPushBuffer>(data)) {
+    PushBuffer();
+
+  } else {
+    throw exceptions::unreachable(
+      "Unexpected stack top", __FILE__, __LINE__
+    );
+  }
+
+  return true;
+}
+
+/**
+ * @fn
+ * @brief Do unparse step for Term
+ * @param (data) Term
+ */
+void Unparser::Write(std::string& data) {
+  if (_buffers.size() > 0) {
+    _buffers.back() << data;
+  } else {
+    _w += data;
+  }
+}
+
+/**
+ * @fn
+ * @brief Do unparse step for Nonterm
+ * @param (nt) Nonterminal
+ */
+void Unparser::Nonterm(NTermID nt) {
+  NextRule(nt);
+}
+
+/**
+ * @fn
+ * @brief Do unparse step for PushBuffer
+ */
+void Unparser::PushBuffer() {
+  _buffers.push_back(std::stringstream());
+}
+
+void Unparser::NextRule(NTermID nt) {
+  NodeID nid(_i);
+  Rule& rule = _tree.GetRule(nid, _ctx);
+  assert(nt == rule.Nonterm());
+
+  _i++;
+
+  if (std::holds_alternative<PlainRule>(rule.value())) {
+
+    NextPlain(std::get<PlainRule>(rule.value()));
+
+  } else {
+
+    throw exceptions::not_implemented(
+      "Only PlainRule is supported", __FILE__, __LINE__
+    );
+
+  }
+}
+
+/**
+ * @fn
+ * @brief Unparse next plain rule
+ * @param (r) Plain rule
+ */
+void Unparser::NextPlain(PlainRule r) {
+  for (auto it = r.children.rbegin(); it != r.children.rend(); it++) {
+    RuleChild rule_child = *it;
+
+    UnparseStep op;
+    if (std::holds_alternative<Term>(rule_child.value())) {
+      op = UnparseStep(std::get<Term>(rule_child.value()));
+
+    } else if (std::holds_alternative<NTerm>(rule_child.value())) {
+      op = UnparseStep(std::get<NTerm>(rule_child.value()));
+
+    } else {
+      throw exceptions::unreachable(
+        "Unexpected RuleChild type", __FILE__, __LINE__
+      );
+    }
+
+    _stack.push_back(op);
+  }
+}
+
+NodeID Unparser::Unparse() {
+  while (UnparseOneStep());
+  return NodeID(_i);
 }
 
 } // namespace fuzzuf::algorithms::nautilus::grammartec;
