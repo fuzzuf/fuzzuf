@@ -101,6 +101,7 @@ public:
   std::string Unescape(const std::string& bytes);
   std::vector<RuleChild> Tokenize(const std::string& format, Context& ctx);
   std::vector<NTermID> Nonterms();
+  size_t NumberOfNonterms();
   NTermID Nonterm();
   size_t Generate(Tree& tree, Context& ctx, size_t len);
 

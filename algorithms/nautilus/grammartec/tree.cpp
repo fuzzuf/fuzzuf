@@ -102,7 +102,7 @@ void Tree::CalcSizes() {
   for (size_t& size: _sizes)
     size = 1;
 
-  for (size_t i = Size(); i > 0; i--)
+  for (size_t i = Size() - 1; i > 0; i--)
     _sizes[static_cast<size_t>(_paren[i])] += _sizes[i];
 }
 

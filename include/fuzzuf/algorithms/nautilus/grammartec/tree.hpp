@@ -22,6 +22,7 @@
  */
 #pragma once
 
+#include <optional>
 #include <sstream>
 #include <string>
 #include <utility>

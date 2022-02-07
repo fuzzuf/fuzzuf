@@ -49,3 +49,29 @@ set_target_properties(
 if( ENABLE_HEAVY_TEST )
 add_test( NAME "nautilus.context" COMMAND test-nautilus-context )
 endif()
+
+add_executable( test-nautilus-tree tree.cpp )
+target_link_libraries(
+  test-nautilus-tree
+  test-common
+  fuzzuf
+  ${FUZZUF_LIBRARIES}
+  Boost::unit_test_framework
+)
+target_include_directories(
+  test-nautilus-tree
+  PRIVATE
+  ${FUZZUF_INCLUDE_DIRS}
+  ${CMAKE_SOURCE_DIR}/test/common
+)
+set_target_properties(
+  test-nautilus-tree
+  PROPERTIES COMPILE_FLAGS "${ADDITIONAL_COMPILE_FLAGS_STR}"
+)
+set_target_properties(
+  test-nautilus-tree
+  PROPERTIES LINK_FLAGS "${ADDITIONAL_COMPILE_FLAGS_STR}"
+)
+if( ENABLE_HEAVY_TEST )
+add_test( NAME "nautilus.tree" COMMAND test-nautilus-tree )
+endif()

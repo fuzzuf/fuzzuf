@@ -150,6 +150,15 @@ std::vector<NTermID> Rule::Nonterms() {
 
 /**
  * @fn
+ * @brief Get number of nonterms
+ * @return Number of nonterms
+ */
+size_t Rule::NumberOfNonterms() {
+  return Nonterms().size();
+}
+
+/**
+ * @fn
  * @brief Get matching nonterm
  * @return NTermID of this rule
  */
@@ -157,9 +166,6 @@ NTermID Rule::Nonterm() {
   return std::visit([](auto r) { return r.nonterm; }, _rule);
 }
 
-/**
- * @fn
- */
 size_t Rule::Generate(Tree& tree, Context& ctx, size_t len) {
   size_t minimal_needed_len = 0;
   for (NTermID nt: Nonterms())

@@ -40,10 +40,10 @@ BOOST_AUTO_TEST_CASE(NautilusGrammartecContextSimple) {
   };
   BOOST_CHECK_EQUAL(std::holds_alternative<PlainRule>(r.value()), true);
   PlainRule rl = std::get<PlainRule>(r.value());
-  BOOST_CHECK_EQUAL(rl.children == soll, true);
-  BOOST_CHECK_EQUAL(r.Nonterms()[0] == ctx.NTID("A"), true);
-  BOOST_CHECK_EQUAL(r.Nonterms()[1] == ctx.NTID("B"), true);
-  BOOST_CHECK_EQUAL(r.Nonterms()[2] == ctx.NTID("C"), true);
+  BOOST_CHECK(rl.children == soll);
+  BOOST_CHECK(r.Nonterms()[0] == ctx.NTID("A"));
+  BOOST_CHECK(r.Nonterms()[1] == ctx.NTID("B"));
+  BOOST_CHECK(r.Nonterms()[2] == ctx.NTID("C"));
 }
 
 BOOST_AUTO_TEST_CASE(NautilusGrammartecContext) {
@@ -67,7 +67,7 @@ BOOST_AUTO_TEST_CASE(NautilusGrammartecContext) {
     RuleIDOrCustom(r1),
     RuleIDOrCustom(r3)
   };
-  BOOST_CHECK_EQUAL(tree.rules() == trules, true);
+  BOOST_CHECK(tree.rules() == trules);
 }
 
 BOOST_AUTO_TEST_CASE(NautilusGrammartecGenerateLen) {
@@ -83,8 +83,8 @@ BOOST_AUTO_TEST_CASE(NautilusGrammartecGenerateLen) {
   for (size_t i = 0; i < 100; i++) {
     Tree tree({}, ctx);
     tree.GenerateFromNT(ctx.NTID("E"), 9, ctx);
-    BOOST_CHECK_EQUAL(tree.rules().size() < 10, true);
-    BOOST_CHECK_EQUAL(tree.rules().size() >= 1, true);
+    BOOST_CHECK(tree.rules().size() < 10);
+    BOOST_CHECK(tree.rules().size() >= 1);
   }
 
   std::vector<RuleIDOrCustom> rules = {
