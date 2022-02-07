@@ -44,13 +44,21 @@ Tree::Tree(std::vector<RuleIDOrCustom> rules, Context& ctx)
     CalcSubTreeSizesAndParents(ctx);
 }
 
-
-
+/**
+ * @fn
+ * @brief Calculate subtree sizes and parents
+ * @param (ctx) Context
+ */
 void Tree::CalcSubTreeSizesAndParents(Context& ctx) {
   CalcParents(ctx);
   CalcSizes();
 }
 
+/**
+ * @fn
+ * @brief Calculate parents
+ * @param (ctx) Context
+ */
 void Tree::CalcParents(Context& ctx) {
   if (Size() == 0)
     return;
@@ -86,6 +94,10 @@ void Tree::CalcParents(Context& ctx) {
   }
 }
 
+/**
+ * @fn
+ * @brief Calculate sizes
+ */
 void Tree::CalcSizes() {
   for (size_t& size: _sizes)
     size = 1;
@@ -163,11 +175,25 @@ void Tree::Truncate() {
   _paren.clear();
 }
 
+/**
+ * @fn
+ * @brief Generate tree from nonterminal
+ * @param (start) Nonterminal symbol ID
+ * @param (len) Maximum length for getting random rule for `start`
+ * @param (ctx) Context
+ */
 void Tree::GenerateFromNT(NTermID start, size_t len, Context& ctx) {
   RuleID rid = ctx.GetRandomRuleForNT(start, len);
   GenerateFromRule(rid, len - 1, ctx);
 }
 
+/**
+ * @fn
+ * @brief Generate tree from rule
+ * @param (ruleid) Rule ID
+ * @param (max_len) Maximum length
+ * @param (ctx) Context
+ */
 void Tree::GenerateFromRule(RuleID ruleid, size_t max_len, Context& ctx) {
   if (std::holds_alternative<PlainRule>(ctx.GetRule(ruleid).value())) {
 
@@ -202,10 +228,23 @@ NTermID TreeLike::GetNontermID(NodeID n, Context& ctx) {
   return GetRule(n, ctx).Nonterm();
 }
 
+/**
+ * @fn
+ * @brief Unparse tree into grammar string
+ * @param (id) Node ID
+ * @param (ctx) Context
+ * @param (data) Reference to string to store result
+ */
 void TreeLike::Unparse(NodeID id, Context& ctx, std::string& data) {
   Unparser(id, data, *this, ctx).Unparse();
 }
 
+/**
+ * @fn
+ * @brief Convert tree into grammar string
+ * @param (ctx) Context
+ * @param (data) Reference to string to store result
+ */
 void TreeLike::UnparseTo(Context& ctx, std::string& data) {
   Unparse(NodeID(0), ctx, data);
 }
@@ -249,13 +288,12 @@ bool Unparser::UnparseOneStep() {
   _stack.pop_back();
 
   if (std::holds_alternative<Term>(data)) {
+    // Terminal symbol
     Write(std::get<Term>(data));
 
   } else if (std::holds_alternative<NTerm>(data)) {
+    // Nonterminal symbol
     Nonterm(std::get<NTerm>(data));
-
-  } else if (std::holds_alternative<TPushBuffer>(data)) {
-    PushBuffer();
 
   } else {
     throw exceptions::unreachable(
@@ -268,7 +306,7 @@ bool Unparser::UnparseOneStep() {
 
 /**
  * @fn
- * @brief Do unparse step for Term
+ * @brief Operation for terminal symbols
  * @param (data) Term
  */
 void Unparser::Write(std::string& data) {
@@ -281,7 +319,7 @@ void Unparser::Write(std::string& data) {
 
 /**
  * @fn
- * @brief Do unparse step for Nonterm
+ * @brief Operation for nonterminal symbols
  * @param (nt) Nonterminal
  */
 void Unparser::Nonterm(NTermID nt) {
@@ -290,12 +328,9 @@ void Unparser::Nonterm(NTermID nt) {
 
 /**
  * @fn
- * @brief Do unparse step for PushBuffer
+ * @brief Operation for nonterminal symbols
+ * @param (nt) Nonterminal
  */
-void Unparser::PushBuffer() {
-  _buffers.push_back(std::stringstream());
-}
-
 void Unparser::NextRule(NTermID nt) {
   NodeID nid(_i);
   Rule& rule = _tree.GetRule(nid, _ctx);
@@ -304,7 +339,7 @@ void Unparser::NextRule(NTermID nt) {
   _i++;
 
   if (std::holds_alternative<PlainRule>(rule.value())) {
-
+    // Operation for plain rules
     NextPlain(std::get<PlainRule>(rule.value()));
 
   } else {
@@ -318,7 +353,7 @@ void Unparser::NextRule(NTermID nt) {
 
 /**
  * @fn
- * @brief Unparse next plain rule
+ * @brief Operation for plain rules
  * @param (r) Plain rule
  */
 void Unparser::NextPlain(PlainRule r) {
@@ -327,9 +362,11 @@ void Unparser::NextPlain(PlainRule r) {
 
     UnparseStep op;
     if (std::holds_alternative<Term>(rule_child.value())) {
+      // Push as terminal
       op = UnparseStep(std::get<Term>(rule_child.value()));
 
     } else if (std::holds_alternative<NTerm>(rule_child.value())) {
+      // Push as tonterminal
       op = UnparseStep(std::get<NTerm>(rule_child.value()));
 
     } else {
@@ -339,11 +376,19 @@ void Unparser::NextPlain(PlainRule r) {
     }
 
     _stack.push_back(op);
+
   }
 }
 
+/**
+ * @fn
+ * @brief Unparse all rules
+ * @return Node ID (step count)
+ */
 NodeID Unparser::Unparse() {
+  // Unparse while stack is not empty
   while (UnparseOneStep());
+
   return NodeID(_i);
 }
 

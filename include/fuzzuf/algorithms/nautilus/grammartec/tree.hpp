@@ -84,18 +84,16 @@ private:
 };
 
 
-// NOTE: TScript not implemented
-using TPushBuffer = int;
-
+// NOTE: TScript (as well as PushBuffer) not implemented
 struct UnparseStep {
 public:
   UnparseStep() : _step(0) {}
   UnparseStep(Term t) : _step(t) {}
   UnparseStep(NTermID nt) : _step(nt) {}
-  std::variant<TPushBuffer, Term, NTerm> value() { return _step; }
+  std::variant<Term, NTerm> value() { return _step; }
 
 private:
-  std::variant<TPushBuffer, Term, NTerm> _step;
+  std::variant<Term, NTerm> _step;
 };
 
 
@@ -105,7 +103,6 @@ public:
   bool UnparseOneStep();
   void Write(std::string& data);
   void Nonterm(NTermID nt);
-  void PushBuffer();
   void NextRule(NTermID nt);
   void NextPlain(PlainRule r);
   NodeID Unparse();

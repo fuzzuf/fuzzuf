@@ -272,6 +272,13 @@ void Context::CalcMinLen() {
   CalcRuleOrder();
 }
 
+/**
+ * @fn
+ * @brief Get random length
+ * @param (number_of_children) Number of children rules
+ * @param (total_remaining_len) Remaining length
+ * @return Random length
+ */
 size_t Context::GetRandomLen(size_t number_of_children,
                              size_t total_remaining_len) {
   ssize_t res = total_remaining_len;
@@ -288,6 +295,14 @@ size_t Context::GetRandomLen(size_t number_of_children,
   return res;
 }
 
+/**
+ * @fn
+ * @brief Get list of applicable rules
+ * @param (max_len) Maximum length for rule
+ * @param (nt) Nonterminal symbol ID
+ * @param (p_include_short_rules) Threshold to select rule (0 to 100)
+ * @return Vector of rule IDs
+ */
 std::vector<RuleID> Context::GetApplicableRules(size_t max_len, NTermID nt,
                                                 size_t p_include_short_rules) {
   std::vector<RuleID> res;
@@ -302,9 +317,17 @@ std::vector<RuleID> Context::GetApplicableRules(size_t max_len, NTermID nt,
   return res;
 }
 
+/**
+ * @fn
+ * @brief Get random rule for a nonterminal symbol
+ * @param (nt) Nonterminal symbol ID
+ * @param (max_len) Maximum length for rule
+ * @return Selected rule ID
+ */
 RuleID Context::GetRandomRuleForNT(NTermID nt, size_t max_len) {
   size_t p_include_short_rules;
-  // TODO: what's this?
+
+  // TODO: Is the original implementation correct?
   if (_nts_to_num_options[nt] < 10) {
     p_include_short_rules = 100 * 0;
   } else if (max_len > 100) {
