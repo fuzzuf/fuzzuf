@@ -109,8 +109,9 @@ NullableRef<HierarFlowCallee<void(void)>> SelectSeedTemplate<State>::operator()(
     }
 
     // get the testcase indexed by state.current_entry and start mutations
-    auto& testcase = state.case_queue[state.current_entry++];
+    auto& testcase = state.case_queue[state.current_entry];
     this->CallSuccessors(testcase);
+    state.current_entry++;
 
 #if 0
     auto skipped_fuzz = CallSuccessors(testcase);
