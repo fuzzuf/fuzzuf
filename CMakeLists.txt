@@ -299,6 +299,7 @@ set(
   algorithms/libfuzzer/config.cpp
   algorithms/nautilus/fuzzer/nautilus_fuzzer.cpp
   algorithms/nautilus/grammartec/context.cpp
+  algorithms/nautilus/grammartec/mutator.cpp
   algorithms/nautilus/grammartec/recursion_info.cpp
   algorithms/nautilus/grammartec/rule.cpp
   algorithms/nautilus/grammartec/tree.cpp

@@ -20,7 +20,6 @@
  * @brief Tree for context-free grammar
  * @author Ricerca Security <fuzzuf-dev@ricsec.co.jp>
  */
-#include <iostream>
 #include <unordered_set>
 #include "fuzzuf/algorithms/nautilus/grammartec/recursion_info.hpp"
 #include "fuzzuf/algorithms/nautilus/grammartec/tree.hpp"
@@ -110,12 +109,56 @@ void Tree::CalcSizes() {
 
 /**
  * @fn
+ * @brief Get slice of rules by Node IDs
+ * @param (from) Start node ID of slice
+ * @param (to) End node ID of slice
+ * @return Vector of RuleIDOrCustom derived from slice
+ */
+std::vector<RuleIDOrCustom> Tree::Slice(NodeID from, NodeID to) {
+  return std::vector<RuleIDOrCustom> (
+    _rules.begin() + static_cast<size_t>(from), 
+    _rules.begin() + static_cast<size_t>(to)
+  );
+}
+
+/**
+ * @fn
  * @brief Get rule ID by node ID
  * @param (n) Node ID
  * @return Rule ID
  */
 RuleID Tree::GetRuleID(NodeID n) {
   return _rules[static_cast<size_t>(n)].ID();
+}
+
+/**
+ * @fn
+ * @brief Get subtree size by node ID
+ * @param (n) Node ID
+ * @return Subtree size
+ */
+size_t Tree::SubTreeSize(NodeID n) {
+  return _sizes[static_cast<size_t>(n)];
+}
+
+/**
+ * @fn
+ * @brief Construct TreeMutation by this tree and new tree
+ * @param (n) Node ID
+ * @param (other)
+ * @param (other_node)
+ * @return TreeMutation instance
+ */
+TreeMutation Tree::MutateReplaceFromTree(
+  NodeID n, Tree other, NodeID other_node
+) {
+  size_t old_size = SubTreeSize(n);
+  size_t new_size = other.SubTreeSize(other_node);
+  return TreeMutation(
+    Slice(NodeID(0), n),                            // prefix
+    other.Slice(other_node, other_node + new_size), // repl
+    Slice(n + old_size, NodeID(_rules.size()))      // postfix
+  );
 }
 
 /**
@@ -248,6 +291,97 @@ std::optional<std::vector<RecursionInfo>> Tree::CalcRecursions(Context& ctx) {
 }
 
 
+
+/**
+ * @fn
+ * @brief Get rule at specific node ID
+ * @param (n) Node ID
+ * @return RuleIDOrCustom
+ */
+RuleIDOrCustom& TreeMutation::GetAt(NodeID n) {
+  size_t i = static_cast<size_t>(n);
+  size_t end0 = _prefix.size();
+  size_t end1 = end0 + _repl.size();
+  size_t end2 = end1 + _postfix.size();
+
+  if (i < end0) {
+    return _prefix[i];
+
+  } else if (i < end1) {
+    return _repl[i - end0];
+
+  } else if (i < end2) {
+    return _postfix[i - end1];
+
+  }
+
+  throw exceptions::fuzzuf_runtime_error(
+    "Index out of bound for rule access", __FILE__, __LINE__
+  );
+}
+
+/**
+ * @fn
+ * @brief Get rule ID by node ID
+ * @param (n) Node ID
+ * @return Rule ID
+ */
+RuleID TreeMutation::GetRuleID(NodeID n) {
+  return GetAt(n).ID();
+}
+
+/**
+ * @fn
+ * @brief Get the number of current rules
+ * @return Number of rules
+ */
+size_t TreeMutation::Size() {
+  return _prefix.size() + _repl.size() + _postfix.size();
+}
+
+/**
+ * @fn
+ * @brief Create a new tree from TreeMutation
+ * @return New tree copied from current tree
+ */
+Tree TreeMutation::ToTree(Context& ctx) {
+  std::vector<RuleIDOrCustom> vec;
+  vec.insert(vec.end(), _prefix.begin(), _prefix.end());
+  vec.insert(vec.end(), _repl.begin(), _repl.end());
+  vec.insert(vec.end(), _postfix.begin(), _postfix.end());
+  return Tree(vec, ctx);
+}
+
+/**
+ * @fn
+ * @brief Get rule by node ID
+ * @param (n) Node ID
+ * @param (ctx) Context
+ * @return Rule corresponding to node ID
+ */
+Rule& TreeMutation::GetRule(NodeID n, Context& ctx) {
+  return ctx.GetRule(GetRuleID(n));
+}
+
+/**
+ * @fn
+ * @brief Get rule ID or custom by node ID
+ * @param (n) Node ID
+ * @return RuleIDOrCustom corresponding to node ID
+ */
+RuleIDOrCustom& TreeMutation::GetRuleOrCustom(NodeID n) {
+  return GetAt(n);
+}
+
+/**
+ * @fn
+ * @brief Get custom rule data by node ID
+ * @param (n) Node ID
+ * @return Data of rule (throws exception if rule is not Custom)
+ */
+std::string TreeMutation::GetCustomRuleData(NodeID n) {
+  return GetAt(n).Data();
+}
 
 /**
  * @fn

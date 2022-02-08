@@ -36,6 +36,12 @@
 namespace fuzzuf::algorithms::nautilus::grammartec {
 
 class RecursionInfo;
+class Tree;
+class TreeLike;
+class TreeMutation;
+class Unparser;
+class UnparserStep;
+
 
 class TreeLike {
 public:
@@ -71,10 +77,13 @@ public:
   virtual Rule& GetRule(NodeID n, Context& ctx);
   virtual RuleIDOrCustom& GetRuleOrCustom(NodeID n);
   virtual std::string GetCustomRuleData(NodeID n);
+  size_t SubTreeSize(NodeID n);
+  TreeMutation MutateReplaceFromTree(NodeID n, Tree other, NodeID other_node);
 
   void CalcSubTreeSizesAndParents(Context &ctx);
   void CalcParents(Context &ctx);
   void CalcSizes();
+  std::vector<RuleIDOrCustom> Slice(NodeID from, NodeID to);
 
   void Truncate();
   void GenerateFromNT(NTermID start, size_t len, Context& ctx);
@@ -86,6 +95,27 @@ private:
   std::vector<RuleIDOrCustom> _rules;
   std::vector<size_t> _sizes;
   std::vector<NodeID> _paren;
+};
+
+class TreeMutation: public TreeLike {
+public:
+  TreeMutation(std::vector<RuleIDOrCustom> prefix,
+               std::vector<RuleIDOrCustom> repl,
+               std::vector<RuleIDOrCustom> postfix)
+    : _prefix(prefix), _repl(repl), _postfix(postfix) {}
+  RuleIDOrCustom& GetAt(NodeID n);
+
+  virtual RuleID GetRuleID(NodeID n);
+  virtual size_t Size();
+  virtual Tree ToTree(Context& ctx);
+  virtual Rule& GetRule(NodeID n, Context& ctx);
+  virtual RuleIDOrCustom& GetRuleOrCustom(NodeID n);
+  virtual std::string GetCustomRuleData(NodeID n);
+
+private:
+  std::vector<RuleIDOrCustom> _prefix;
+  std::vector<RuleIDOrCustom> _repl;
+  std::vector<RuleIDOrCustom> _postfix;
 };
 
 
