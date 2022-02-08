@@ -170,7 +170,7 @@ size_t RecursionInfo::GetNumberOfRecursions() {
 
 /**
  * @fn
- * @brief Construct loaded dice sampler
+ * @brief Construct sampler using Walker'S Alias Method
  * @param (probs) Vector of probabilities
  */
 LoadedDiceSampler::LoadedDiceSampler(std::vector<double>& probs) {
@@ -178,10 +178,12 @@ LoadedDiceSampler::LoadedDiceSampler(std::vector<double>& probs) {
   double inv_n = 1.0 / n;
 
   std::vector<std::pair<size_t, double>> tmp;
-  for (size_t i = 0; i < probs.size(); i++)
+  for (size_t i = 0; i < probs.size(); i++) {
     tmp.push_back(std::pair<size_t, double>(i, probs[i]));
+  }
 
   while (tmp.size() > 1) {
+    /* Descending sort */
     std::sort(tmp.begin(), tmp.end(),
               [](auto a, auto b) {
                 return a.second > b.second;
@@ -198,7 +200,8 @@ LoadedDiceSampler::LoadedDiceSampler(std::vector<double>& probs) {
 
   auto [last_i, last_p] = tmp.back();
   tmp.pop_back();
-  // last value should always be exactly 1 but we consider precision
+
+  /* Last value should always be exactly 1 but we consider precision */
   assert (0.999 < last_p * n && last_p * n < 1.001);
 
   _entries.push_back(
