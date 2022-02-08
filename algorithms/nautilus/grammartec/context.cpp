@@ -52,7 +52,7 @@ void Context::Initialize(size_t max_len) {
  * @return Rule referenced by RuleID
  */
 Rule& Context::GetRule(RuleID r) {
-  return _rules[static_cast<size_t>(r)];
+  return _rules.at(static_cast<size_t>(r));
 }
 
 /**
@@ -82,7 +82,7 @@ size_t Context::GetNumChildren(RuleIDOrCustom& r) {
  * @return String describing NTermID
  */
 std::string Context::NTIDToString(NTermID nt) {
-  return _nt_ids_to_name[nt];
+  return _nt_ids_to_name.at(nt);
 }
 
 /**
@@ -92,7 +92,7 @@ std::string Context::NTIDToString(NTermID nt) {
  * @return Minimum length
  */
 size_t Context::GetMinLenForNT(NTermID nt) {
-  return _nts_to_min_size[nt];
+  return _nts_to_min_size.at(nt);
 }
 
 /**
@@ -121,8 +121,7 @@ NTermID Context::AquireNTID(const std::string& nt) {
  * @return NTermID of nt (An exception thrown if nt not found)
  */
 NTermID Context::NTID(const std::string& nt) {
-  assert (_names_to_nt_id.find(nt) != _names_to_nt_id.end());
-  return _names_to_nt_id[nt];
+  return _names_to_nt_id.at(nt);
 }
 
 /**

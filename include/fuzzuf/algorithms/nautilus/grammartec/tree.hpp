@@ -103,6 +103,9 @@ public:
                std::vector<RuleIDOrCustom> repl,
                std::vector<RuleIDOrCustom> postfix)
     : _prefix(prefix), _repl(repl), _postfix(postfix) {}
+  const std::vector<RuleIDOrCustom>& prefix() const { return _prefix; }
+  const std::vector<RuleIDOrCustom>& repl() const { return _repl; }
+  const std::vector<RuleIDOrCustom>& postfix() const { return _postfix; }
   RuleIDOrCustom& GetAt(NodeID n);
 
   virtual RuleID GetRuleID(NodeID n);

@@ -15,7 +15,7 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see http://www.gnu.org/licenses/.
  */
-#define BOOST_TEST_MODULE nautilus.context
+#define BOOST_TEST_MODULE nautilus.tree
 #define BOOST_TEST_DYN_LINK
 
 #include <boost/test/unit_test.hpp>

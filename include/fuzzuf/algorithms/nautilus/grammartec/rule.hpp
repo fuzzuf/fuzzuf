@@ -58,6 +58,7 @@ using Custom = std::pair<RuleID, std::string>;
 
 struct RuleIDOrCustom {
 public:
+  RuleIDOrCustom() {} // for vector
   RuleIDOrCustom(RuleID rid)
     : _rule_id_or_custom(rid) {}
   RuleIDOrCustom(RuleID rid, std::string s)

@@ -148,11 +148,11 @@ std::pair<NodeID, NodeID> RecursionInfo::GetRandomRecursionPair()  {
 std::pair<NodeID, NodeID> RecursionInfo::GetRecursionPairByOffset(
   size_t offset
 ) {
-  NodeID node1 = _node_by_offset[offset];
+  NodeID node1 = _node_by_offset.at(offset);
   NodeID node2 = node1;
 
-  for (size_t i = 0; i < _depth_by_offset[offset]; i++) {
-    node2 = _recursive_parents[node1];
+  for (size_t i = 0; i < _depth_by_offset.at(offset); i++) {
+    node2 = _recursive_parents.at(node1);
   }
 
   return std::pair<NodeID, NodeID>(node2, node1);

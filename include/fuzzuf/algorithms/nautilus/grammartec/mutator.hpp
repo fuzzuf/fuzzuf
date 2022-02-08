@@ -27,6 +27,7 @@
 #include <unordered_set>
 #include "fuzzuf/algorithms/nautilus/grammartec/context.hpp"
 #include "fuzzuf/algorithms/nautilus/grammartec/newtypes.hpp"
+#include "fuzzuf/algorithms/nautilus/grammartec/recursion_info.hpp"
 #include "fuzzuf/algorithms/nautilus/grammartec/rule.hpp"
 #include "fuzzuf/algorithms/nautilus/grammartec/tree.hpp"
 
@@ -34,9 +35,10 @@
 namespace fuzzuf::algorithms::nautilus::grammartec {
 
 using FTester = std::function<bool(
-  TreeMutation&,
-  std::unordered_set<size_t>&,
-  Context&
+  TreeMutation&, std::unordered_set<size_t>&, Context&
+)>;
+using FTesterMut = std::function<void(
+  TreeMutation&, Context&
 )>;
 
 class Mutator {
@@ -47,6 +49,10 @@ public:
                     Context& ctx,
                     size_t start_index, size_t end_index,
                     FTester& tester);
+  void MutRandomRecursion(Tree& tree,
+                          std::vector<RecursionInfo>& recursions,
+                          Context& ctx,
+                          FTesterMut& tester);
   static std::optional<Tree> TestAndConvert(
     Tree& tree_a, NodeID n_a,
     Tree& tree_b, NodeID n_b,

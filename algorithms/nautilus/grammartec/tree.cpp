@@ -36,8 +36,9 @@ namespace fuzzuf::algorithms::nautilus::grammartec {
  */
 Tree::Tree(std::vector<RuleIDOrCustom> rules, Context& ctx)
   : _rules(rules) {
-  _sizes.reserve(_rules.size());
-  _paren.reserve(_rules.size());
+  /* resize: Not only allocate buffer but also change size */
+  _sizes.resize(_rules.size());
+  _paren.resize(_rules.size());
   std::fill(_sizes.begin(), _sizes.end(), 0);
   std::fill(_paren.begin(), _paren.end(), NodeID(0));
 
@@ -128,7 +129,7 @@ std::vector<RuleIDOrCustom> Tree::Slice(NodeID from, NodeID to) {
  * @return Rule ID
  */
 RuleID Tree::GetRuleID(NodeID n) {
-  return _rules[static_cast<size_t>(n)].ID();
+  return _rules.at(static_cast<size_t>(n)).ID();
 }
 
 /**
@@ -138,7 +139,7 @@ RuleID Tree::GetRuleID(NodeID n) {
  * @return Subtree size
  */
 size_t Tree::SubTreeSize(NodeID n) {
-  return _sizes[static_cast<size_t>(n)];
+  return _sizes.at(static_cast<size_t>(n));
 }
 
 /**
@@ -197,7 +198,7 @@ Rule& Tree::GetRule(NodeID n, Context& ctx) {
  * @return Data of rule (throws exception if rule is not Custom)
  */
 std::string Tree::GetCustomRuleData(NodeID n) {
-  return _rules[static_cast<size_t>(n)].Data();
+  return _rules.at(static_cast<size_t>(n)).Data();
 }
 
 /**
@@ -207,7 +208,7 @@ std::string Tree::GetCustomRuleData(NodeID n) {
  * @return RuleIDOrCustom corresponding to node ID
  */
 RuleIDOrCustom& Tree::GetRuleOrCustom(NodeID n) {
-  return _rules[static_cast<size_t>(n)];
+  return _rules.at(static_cast<size_t>(n));
 }
 
 /**
@@ -500,7 +501,7 @@ void Unparser::Nonterm(NTermID nt) {
 void Unparser::NextRule(NTermID nt) {
   NodeID nid(_i);
   Rule& rule = _tree.GetRule(nid, _ctx);
-  assert(nt == rule.Nonterm());
+  assert (nt == rule.Nonterm());
 
   _i++;
 
