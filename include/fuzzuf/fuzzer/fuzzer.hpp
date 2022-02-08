@@ -24,10 +24,11 @@ class Fuzzer {
 public:
     virtual ~Fuzzer() {}
 
-    virtual void OneLoop(void) {};
+    virtual void BuildFuzzFlow(void) {}
+    virtual void OneLoop(void) {}
 
     // do not call non aync-signal-safe functions inside because this function can be called during signal handling
     virtual void ReceiveStopSignal(void) = 0;
 
-    virtual bool ShouldEnd(void) { return false; };
+    virtual bool ShouldEnd(void) { return false; }
 };
