@@ -31,6 +31,7 @@
 
 namespace fuzzuf::algorithms::nautilus::grammartec {
 
+struct RuleIDOrCustom;
 class Rule;
 
 class Context {
@@ -39,6 +40,8 @@ public:
 
   void Initialize(size_t max_len);
   Rule& GetRule(RuleID r);
+  NTermID GetNT(RuleIDOrCustom& r);
+  size_t GetNumChildren(RuleIDOrCustom& r);
   std::string NTIDToString(NTermID nt);
   size_t GetMinLenForNT(NTermID nt);
 

@@ -35,6 +35,8 @@
 
 namespace fuzzuf::algorithms::nautilus::grammartec {
 
+class RecursionInfo;
+
 class TreeLike {
 public:
   virtual RuleID GetRuleID(NodeID n) = 0;
@@ -77,6 +79,8 @@ public:
   void Truncate();
   void GenerateFromNT(NTermID start, size_t len, Context& ctx);
   void GenerateFromRule(RuleID ruleid, size_t max_len, Context& ctx);
+
+  std::optional<std::vector<RecursionInfo>> CalcRecursions(Context& ctx);
 
 private:
   std::vector<RuleIDOrCustom> _rules;

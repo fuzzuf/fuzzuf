@@ -21,6 +21,8 @@
  * @author Ricerca Security <fuzzuf-dev@ricsec.co.jp>
  */
 #include <iostream>
+#include <unordered_set>
+#include "fuzzuf/algorithms/nautilus/grammartec/recursion_info.hpp"
 #include "fuzzuf/algorithms/nautilus/grammartec/tree.hpp"
 #include "fuzzuf/exceptions.hpp"
 
@@ -215,6 +217,36 @@ void Tree::GenerateFromRule(RuleID ruleid, size_t max_len, Context& ctx) {
 
   }
 }
+
+/**
+ * @fn
+ * @brief Calculate recursions
+ * @param (ctx) Context
+ * @return Vector of recursion info if successful (std::optional)
+ */
+std::optional<std::vector<RecursionInfo>> Tree::CalcRecursions(Context& ctx) {
+  std::vector<RecursionInfo> ret;
+  std::unordered_set<NTermID> done_nterms;
+
+  for (RuleIDOrCustom& rule: _rules) {
+    NTermID nterm = ctx.GetNT(rule);
+    if (done_nterms.find(nterm) == done_nterms.end()) {
+      try {
+        ret.push_back(RecursionInfo(*this, nterm, ctx));
+      } catch (const char*) {
+        // pass
+      }
+
+      done_nterms.insert(nterm);
+    }
+  }
+
+  if (ret.empty())
+    return std::nullopt;
+
+  return ret;
+}
+
 
 
 /**

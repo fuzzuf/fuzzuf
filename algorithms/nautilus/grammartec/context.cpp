@@ -57,6 +57,26 @@ Rule& Context::GetRule(RuleID r) {
 
 /**
  * @fn
+ * @brief Get nonterminal ID by RuleIDOrCustom
+ * @param (r) RuleIDOrCustom
+ * @return Nonterminal ID
+ */
+NTermID Context::GetNT(RuleIDOrCustom& r) {
+  return GetRule(r.ID()).Nonterm();
+}
+
+/**
+ * @fn
+ * @brief Get number of children by RuleIDOrCustom
+ * @param (r) RuleIDOrCustom
+ * @return Number of children
+ */
+size_t Context::GetNumChildren(RuleIDOrCustom& r) {
+  return GetRule(r.ID()).NumberOfNonterms();
+}
+
+/**
+ * @fn
  * @brief Describe NTermID as string
  * @param (nt) NTermID
  * @return String describing NTermID
@@ -285,7 +305,7 @@ size_t Context::GetRandomLen(size_t number_of_children,
   ssize_t iters = number_of_children - 1;
 
   for (ssize_t i = 0; i < iters; i++) {
-    ssize_t proposal = fuzzuf::utils::random::Rand<ssize_t>(
+    ssize_t proposal = fuzzuf::utils::random::Random<ssize_t>(
       0, total_remaining_len + 1
     );
     if (proposal < res)
@@ -310,7 +330,7 @@ std::vector<RuleID> Context::GetApplicableRules(size_t max_len, NTermID nt,
   for (RuleID rid: _nts_to_rules[nt]) {
     if (_rules_to_min_size[rid] > max_len) break;
     if (_rules_to_num_options[rid] > 1
-        || fuzzuf::utils::random::Rand<size_t>(0, 99) <= p_include_short_rules)
+        || fuzzuf::utils::random::Random<size_t>(0, 99) <= p_include_short_rules)
       res.push_back(rid);
   }
 

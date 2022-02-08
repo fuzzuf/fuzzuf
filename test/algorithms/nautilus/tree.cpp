@@ -21,6 +21,7 @@
 #include <boost/test/unit_test.hpp>
 #include <vector>
 #include "fuzzuf/algorithms/nautilus/grammartec/context.hpp"
+#include "fuzzuf/algorithms/nautilus/grammartec/recursion_info.hpp"
 #include "fuzzuf/algorithms/nautilus/grammartec/rule.hpp"
 #include "fuzzuf/algorithms/nautilus/grammartec/tree.hpp"
 
@@ -31,12 +32,14 @@ size_t CalcSubTreeSizesAndParentsRecTest(Tree& tree, NodeID n, Context& ctx) {
   NodeID cur(n + 1);
   size_t size = 1;
   size_t iter_n = tree.GetRule(n, ctx).NumberOfNonterms();
+
   for (size_t i = 0; i < iter_n; i++) {
     tree.paren()[static_cast<size_t>(cur)] = n;
     size_t sub_size = CalcSubTreeSizesAndParentsRecTest(tree, cur, ctx);
     cur = cur + sub_size;
     size += sub_size;
   }
+
   tree.sizes()[static_cast<size_t>(n)] = size;
   return size;
 }
@@ -54,10 +57,12 @@ BOOST_AUTO_TEST_CASE(NautilusGrammartecTreeCalcSizesIter) {
   ctx.AddRule("A", "a32");
   ctx.Initialize(50);
   Tree tree({}, ctx);
+
   for (size_t i = 0; i < 100; i++) {
     tree.Truncate();
     tree.GenerateFromNT(ctx.NTID("C"), 50, ctx);
     CalcSubTreeSizesAndParentsRecTest(tree, NodeID(0), ctx);
+
     std::vector<size_t> vec1 = tree.sizes();
     tree.CalcSizes();
     std::vector<size_t> vec2 = tree.sizes();
@@ -78,10 +83,12 @@ BOOST_AUTO_TEST_CASE(NautilusGrammartecTreeCalcParenIter) {
   ctx.AddRule("A", "a32");
   ctx.Initialize(50);
   Tree tree({}, ctx);
+
   for (size_t i = 0; i < 100; i++) {
     tree.Truncate();
     tree.GenerateFromNT(ctx.NTID("C"), 50, ctx);
     CalcSubTreeSizesAndParentsRecTest(tree, NodeID(0), ctx);
+
     std::vector<NodeID> vec1 = tree.paren();
     tree.CalcParents(ctx);
     std::vector<NodeID> vec2 = tree.paren();
@@ -102,9 +109,11 @@ BOOST_AUTO_TEST_CASE(NautilusGrammartecTreeUnparseIter) {
   ctx.AddRule("A", "a32");
   ctx.Initialize(50);
   Tree tree({}, ctx);
+
   for (size_t i = 0; i < 100; i++) {
     tree.Truncate();
     tree.GenerateFromNT(ctx.NTID("C"), 50, ctx);
+
     std::string s1 = "", s2 = "";
     tree.Unparse(NodeID(0), ctx, s1);
     tree.Unparse(NodeID(0), ctx, s2);
@@ -112,7 +121,6 @@ BOOST_AUTO_TEST_CASE(NautilusGrammartecTreeUnparseIter) {
   }
 }
 
-/*
 BOOST_AUTO_TEST_CASE(NautilusGrammartecTreeFindRecursions) {
   Context ctx;
   ctx.AddRule("C", "c{B}c");
@@ -126,11 +134,28 @@ BOOST_AUTO_TEST_CASE(NautilusGrammartecTreeFindRecursions) {
   ctx.Initialize(20);
   Tree tree({}, ctx);
   bool some_recursion = false;
+
   for (size_t i = 0; i < 100; i++) {
     tree.Truncate();
     tree.GenerateFromNT(ctx.NTID("C"), 20, ctx);
-    //tree.CalcRecursions(ctx);
+
+    if (auto recursions = tree.CalcRecursions(ctx)) {
+      BOOST_CHECK(recursions.value().size() != 0);
+
+      for (RecursionInfo& recursion_info: recursions.value()) {
+        for (size_t offset = 0;
+             offset < recursion_info.GetNumberOfRecursions();
+             offset++) {
+          std::pair<NodeID, NodeID> tuple
+            = recursion_info.GetRecursionPairByOffset(offset);
+          some_recursion = true;
+
+          BOOST_CHECK(static_cast<size_t>(tuple.first)
+                      < static_cast<size_t>(tuple.second));
+        }
+      }
+    }
   }
+
   BOOST_CHECK(some_recursion);
 }
-*/

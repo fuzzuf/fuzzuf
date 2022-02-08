@@ -23,14 +23,24 @@
 
 #ifndef FUZZUF_INCLUDE_UTILS_RANDOM_HPP
 #define FUZZUF_INCLUDE_UTILS_RANDOM_HPP
+#include <limits>
 #include <random>
-
+#include <type_traits>
 
 namespace fuzzuf::utils::random {
 
+template<class T>
+using uniform_distribution = typename std::conditional<
+  std::is_floating_point<T>::value, std::uniform_real_distribution<T>,
+  typename std::conditional<
+    std::is_integral<T>::value, std::uniform_int_distribution<T>,
+    void
+  >::type
+>::type;
+
 namespace {
-  std::random_device rd;
-  std::default_random_engine eng(rd());
+std::random_device rd;
+std::default_random_engine eng(rd());
 }
 
 /* FIXME: Unify the designs of RNG(random number generators) and probability distributions. 
@@ -38,16 +48,41 @@ namespace {
 */
 int RandInt(int lower, int upper);
 
+/**
+ * @fn
+ * @brief Get a random value in [lower, upper]
+ * @param (lower) Lower bound
+ * @param (upper) Upper bound
+ * @return Random value
+ */
 template <class T>
-T Rand(T lower, T upper) {
-  std::uniform_int_distribution<T> distr(lower, upper);
-  return distr(eng);
+T Random(T lower, T upper) {
+  uniform_distribution<T> dist(lower, upper);
+  return dist(eng);
 }
 
+/**
+ * @fn
+ * @brief Get a random value
+ * @return Random value
+ */
+template <class T>
+T Random() {
+  uniform_distribution<T> dist(std::numeric_limits<T>::min(),
+                               std::numeric_limits<T>::max());
+  return dist(eng);
+}
+
+/**
+ * @fn
+ * @brief Choose a random element from vector
+ * @param (v) Vector
+ * @return Randomly chosen element
+ */
 template <class T>
 T Choose(std::vector<T> v) {
   assert (v.size() > 0);
-  return v[Rand<size_t>(0, v.size() - 1)];
+  return v[Random<size_t>(0, v.size() - 1)];
 }
 }
 #endif
