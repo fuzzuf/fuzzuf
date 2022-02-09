@@ -30,7 +30,7 @@ using namespace fuzzuf::algorithms::nautilus::grammartec;
 BOOST_AUTO_TEST_CASE(NautilusGrammartecContextSimple) {
   Context ctx;
   Rule r(ctx, "F", "foo{A:a}\\{bar\\}{B:b}asd{C}");
-  std::vector<RuleChild> soll = {
+  std::vector<RuleChild> soll{
     RuleChild("foo"),
     RuleChild("{A:a}", ctx),
     RuleChild("{bar}"),
@@ -39,7 +39,8 @@ BOOST_AUTO_TEST_CASE(NautilusGrammartecContextSimple) {
     RuleChild("{C}", ctx)
   };
   BOOST_CHECK_EQUAL(std::holds_alternative<PlainRule>(r.value()), true);
-  PlainRule rl = std::get<PlainRule>(r.value());
+
+  const PlainRule& rl = std::get<PlainRule>(r.value());
   BOOST_CHECK(rl.children == soll);
   BOOST_CHECK(r.Nonterms()[0] == ctx.NTID("A"));
   BOOST_CHECK(r.Nonterms()[1] == ctx.NTID("B"));
@@ -48,35 +49,35 @@ BOOST_AUTO_TEST_CASE(NautilusGrammartecContextSimple) {
 
 BOOST_AUTO_TEST_CASE(NautilusGrammartecContext) {
   Context ctx;
-  RuleID r0 = ctx.AddRule("C", "c{B}c");
-  RuleID r1 = ctx.AddRule("B", "b{A}b");
+  const RuleID& r0 = ctx.AddRule("C", "c{B}c");
+  const RuleID& r1 = ctx.AddRule("B", "b{A}b");
   ctx.AddRule("A", "a {A}");
   ctx.AddRule("A", "a {A}");
   ctx.AddRule("A", "a {A}");
   ctx.AddRule("A", "a {A}");
   ctx.AddRule("A", "a {A}");
-  RuleID r3 = ctx.AddRule("A", "a");
+  const RuleID& r3 = ctx.AddRule("A", "a");
   ctx.Initialize(5);
+
   BOOST_CHECK_EQUAL(ctx.GetMinLenForNT(ctx.NTID("A")), 1);
   BOOST_CHECK_EQUAL(ctx.GetMinLenForNT(ctx.NTID("B")), 2);
   BOOST_CHECK_EQUAL(ctx.GetMinLenForNT(ctx.NTID("C")), 3);
+
   Tree tree({}, ctx);
   tree.GenerateFromNT(ctx.NTID("C"), 3, ctx);
-  std::vector<RuleIDOrCustom> trules = {
-    RuleIDOrCustom(r0),
-    RuleIDOrCustom(r1),
-    RuleIDOrCustom(r3)
+  std::vector<RuleIDOrCustom> trules{
+    RuleIDOrCustom(r0), RuleIDOrCustom(r1), RuleIDOrCustom(r3)
   };
   BOOST_CHECK(tree.rules() == trules);
 }
 
 BOOST_AUTO_TEST_CASE(NautilusGrammartecGenerateLen) {
   Context ctx;
-  RuleID r0 = ctx.AddRule("E", "({E}+{E})");
-  RuleID r1 = ctx.AddRule("E", "({E}*{E})");
-  RuleID r2 = ctx.AddRule("E", "({E}-{E})");
-  RuleID r3 = ctx.AddRule("E", "({E}/{E})");
-  RuleID r4 = ctx.AddRule("E", "1");
+  const RuleID& r0 = ctx.AddRule("E", "({E}+{E})");
+  const RuleID& r1 = ctx.AddRule("E", "({E}*{E})");
+  const RuleID& r2 = ctx.AddRule("E", "({E}-{E})");
+  const RuleID& r3 = ctx.AddRule("E", "({E}/{E})");
+  const RuleID& r4 = ctx.AddRule("E", "1");
   ctx.Initialize(11);
   BOOST_CHECK_EQUAL(ctx.GetMinLenForNT(ctx.NTID("E")), 1);
 
@@ -87,12 +88,12 @@ BOOST_AUTO_TEST_CASE(NautilusGrammartecGenerateLen) {
     BOOST_CHECK(tree.rules().size() >= 1);
   }
 
-  std::vector<RuleIDOrCustom> rules = {
+  std::vector<RuleIDOrCustom> rules{
     RuleIDOrCustom(r0), RuleIDOrCustom(r1), RuleIDOrCustom(r4),
     RuleIDOrCustom(r4), RuleIDOrCustom(r4)
   };
   Tree tree(rules, ctx);
-  std::string data = "";
+  std::string data;
   tree.UnparseTo(ctx, data);
   BOOST_CHECK_EQUAL(data, "((1*1)+1)");
 

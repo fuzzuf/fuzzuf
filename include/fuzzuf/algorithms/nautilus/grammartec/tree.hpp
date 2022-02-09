@@ -53,10 +53,10 @@ public:
   virtual const std::string& GetCustomRuleData(const NodeID& n) const = 0;
   const NTermID& GetNontermID(const NodeID& n, Context& ctx) const;
 
-  void Unparse(const NodeID& id, Context& ctx, std::string& data);
-  void UnparseTo(Context& ctx, std::string& data);
-  std::string UnparseNodeToVec(const NodeID& n, Context& ctx);
-  std::string UnparseToVec(Context& ctx);
+  void Unparse(const NodeID& id, Context& ctx, std::string& data) const;
+  void UnparseTo(Context& ctx, std::string& data) const;
+  std::string UnparseNodeToVec(const NodeID& n, Context& ctx) const;
+  std::string UnparseToVec(Context& ctx) const;
 };
 
 
@@ -84,6 +84,7 @@ public:
   void CalcParents(Context &ctx);
   void CalcSizes();
   std::vector<RuleIDOrCustom> Slice(const NodeID& from, const NodeID& to) const;
+  std::optional<NodeID> GetParent(const NodeID& n) const;
 
   void Truncate();
   void GenerateFromNT(const NTermID& start, size_t len, Context& ctx);
@@ -137,7 +138,10 @@ private:
 
 struct Unparser {
 public:
-  Unparser(NodeID nid, std::string& w, TreeLike& tree, Context& ctx);
+  Unparser(const NodeID& nid,
+           std::string& w,
+           const TreeLike& tree,
+           Context& ctx);
   bool UnparseOneStep();
   void Write(const std::string& data);
   void Nonterm(const NTermID& nt);
@@ -146,7 +150,7 @@ public:
   NodeID Unparse();
 
 private:
-  TreeLike& _tree;
+  const TreeLike& _tree;
   std::vector<UnparseStep> _stack;
   std::vector<std::stringstream> _buffers;
   std::string& _w;

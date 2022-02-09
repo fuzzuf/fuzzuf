@@ -104,7 +104,7 @@ size_t Context::GetMinLenForNT(const NTermID& nt) const {
 NTermID Context::AquireNTID(const std::string& nt) {
   NTermID next_id(_nt_ids_to_name.size()); // New NTermID
 
-  NTermID id = _names_to_nt_id.find(nt) == _names_to_nt_id.end()
+  NTermID& id = _names_to_nt_id.find(nt) == _names_to_nt_id.end()
     ? (_names_to_nt_id[nt] = next_id) // not exists
     : _names_to_nt_id[nt];            // exists
 
@@ -133,7 +133,7 @@ const NTermID& Context::NTID(const std::string& nt) const {
  */
 RuleID Context::AddRule(const std::string& nt, const std::string& format) {
   RuleID rid(_rules.size()); // New rule ID
-  NTermID ntid = AquireNTID(nt);
+  const NTermID& ntid = AquireNTID(nt);
 
   _rules.emplace_back(*this, nt, format);
 
@@ -154,7 +154,7 @@ RuleID Context::AddRule(const std::string& nt, const std::string& format) {
 size_t Context::CalcNumOptionsForRule(const RuleID& r) const {
   size_t res = 1;
 
-  for (NTermID nt_id: GetRule(r).Nonterms()) {
+  for (const NTermID& nt_id: GetRule(r).Nonterms()) {
     size_t v = _nts_to_num_options.find(nt_id) == _nts_to_num_options.end()
       ? 1
       : _nts_to_num_options.at(nt_id);
@@ -172,7 +172,7 @@ size_t Context::CalcNumOptionsForRule(const RuleID& r) const {
  * @brief Calculate number of options
  */
 void Context::CalcNumOptions() {
-  for (auto elem: _nts_to_rules) {
+  for (auto& elem: _nts_to_rules) {
     if (_nts_to_num_options.find(elem.first) == _nts_to_num_options.end()) {
       _nts_to_num_options[elem.first] = _rules.size();
     }
@@ -185,7 +185,7 @@ void Context::CalcNumOptions() {
     for (size_t i = 0; i < _rules.size(); i++) {
       RuleID rid(i);
       size_t num = CalcNumOptionsForRule(rid);
-      NTermID nt = GetRule(rid).Nonterm();
+      const NTermID& nt = GetRule(rid).Nonterm();
 
       if (_nts_to_num_options.find(nt) == _nts_to_num_options.end())
         _nts_to_num_options[nt] = num;
@@ -210,7 +210,7 @@ void Context::CalcNumOptions() {
 std::optional<size_t> Context::CalcMinLenForRule(const RuleID& r) const {
   size_t res = 1;
 
-  for (NTermID nt_id: GetRule(r).Nonterms()) {
+  for (const NTermID& nt_id: GetRule(r).Nonterms()) {
     if (_nts_to_min_size.find(nt_id) == _nts_to_min_size.end()) {
       return std::nullopt;
     } else {
@@ -229,7 +229,7 @@ void Context::CalcRuleOrder() {
   for (auto& elem: _nts_to_rules) {
     std::vector<RuleID>& rules = elem.second;
     std::sort(rules.begin(), rules.end(),
-              [this](RuleID r1, RuleID r2) {
+              [this](RuleID& r1, RuleID& r2) {
                 return _rules_to_min_size.at(r1) < _rules_to_min_size.at(r2);
               });
   }
@@ -241,8 +241,10 @@ void Context::CalcRuleOrder() {
  */
 void Context::CalcMinLen() {
   bool something_changed;
+
   do {
     std::vector<RuleID> unknown_rules;
+    unknown_rules.reserve(_rules.size());
     for (size_t i = 0; i < _rules.size(); i++) {
       unknown_rules.emplace_back(i);
     }
@@ -252,13 +254,13 @@ void Context::CalcMinLen() {
       size_t last_len = unknown_rules.size();
 
       /* Remove every rule with known minimum length */
-      for (auto it = unknown_rules.rbegin();
-           it != unknown_rules.rend();
-           it++) {
-        RuleID rule = *it;
+      for (auto it = unknown_rules.crbegin();
+           it != unknown_rules.crend();
+           ++it) {
+        const RuleID& rule = *it;
 
         if (std::optional<size_t> min = CalcMinLenForRule(rule)) {
-          NTermID nt = GetRule(rule).Nonterm();
+          const NTermID& nt = GetRule(rule).Nonterm();
 
           if (_nts_to_min_size.find(nt) == _nts_to_min_size.end())
             _nts_to_min_size[nt] = min.value();
@@ -270,13 +272,15 @@ void Context::CalcMinLen() {
           }
 
           _rules_to_min_size[rule] = min.value();
-          unknown_rules.erase(it.base());
+
+          /* Be careful base of reverse iterator is off by one */
+          unknown_rules.erase(--(it.base()));
         }
       }
 
       if (last_len == unknown_rules.size()) {
         std::cerr << "Found unproductive rules: (missing base/non recursive case?)" << std::endl;
-        for (RuleID r: unknown_rules) {
+        for (RuleID& r: unknown_rules) {
           std::cerr << GetRule(r).DebugShow(*this) << std::endl;
         }
         throw exceptions::fuzzuf_runtime_error(
@@ -302,7 +306,7 @@ size_t Context::GetRandomLen(size_t number_of_children,
   ssize_t iters = number_of_children - 1;
 
   for (ssize_t i = 0; i < iters; i++) {
-    ssize_t proposal = fuzzuf::utils::random::Random<ssize_t>(
+    ssize_t proposal = utils::random::Random<ssize_t>(
       0, total_remaining_len + 1
     );
     if (proposal < res)
@@ -327,7 +331,7 @@ std::vector<RuleID> Context::GetApplicableRules(
 ) const {
   std::vector<RuleID> res;
 
-  for (RuleID rid: _nts_to_rules.at(nt)) {
+  for (const RuleID& rid: _nts_to_rules.at(nt)) {
     if (_rules_to_min_size.at(rid) > max_len) break;
     if (_rules_to_num_options.at(rid) > 1
         || utils::random::Random<size_t>(0, 99) <= p_include_short_rules)

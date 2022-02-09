@@ -28,7 +28,9 @@
 
 using namespace fuzzuf::algorithms::nautilus::grammartec;
 
-size_t CalcSubTreeSizesAndParentsRecTest(Tree& tree, NodeID n, Context& ctx) {
+size_t CalcSubTreeSizesAndParentsRecTest(
+  Tree& tree, const NodeID& n, Context& ctx
+) {
   NodeID cur(n + 1);
   size_t size = 1;
   size_t iter_n = tree.GetRule(n, ctx).NumberOfNonterms();
@@ -63,9 +65,9 @@ BOOST_AUTO_TEST_CASE(NautilusGrammartecTreeCalcSizesIter) {
     tree.GenerateFromNT(ctx.NTID("C"), 50, ctx);
     CalcSubTreeSizesAndParentsRecTest(tree, NodeID(0), ctx);
 
-    std::vector<size_t> vec1 = tree.sizes();
+    std::vector<size_t>& vec1 = tree.sizes();
     tree.CalcSizes();
-    std::vector<size_t> vec2 = tree.sizes();
+    std::vector<size_t>& vec2 = tree.sizes();
     BOOST_CHECK(vec1 == vec2);
   }
 }
@@ -89,9 +91,9 @@ BOOST_AUTO_TEST_CASE(NautilusGrammartecTreeCalcParenIter) {
     tree.GenerateFromNT(ctx.NTID("C"), 50, ctx);
     CalcSubTreeSizesAndParentsRecTest(tree, NodeID(0), ctx);
 
-    std::vector<NodeID> vec1 = tree.paren();
+    std::vector<NodeID>& vec1 = tree.paren();
     tree.CalcParents(ctx);
-    std::vector<NodeID> vec2 = tree.paren();
+    std::vector<NodeID>& vec2 = tree.paren();
     BOOST_CHECK(vec1 == vec2);
   }
 }
@@ -114,7 +116,7 @@ BOOST_AUTO_TEST_CASE(NautilusGrammartecTreeUnparseIter) {
     tree.Truncate();
     tree.GenerateFromNT(ctx.NTID("C"), 50, ctx);
 
-    std::string s1 = "", s2 = "";
+    std::string s1, s2;
     tree.Unparse(NodeID(0), ctx, s1);
     tree.Unparse(NodeID(0), ctx, s2);
     BOOST_CHECK(s1 == s2);

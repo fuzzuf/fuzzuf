@@ -37,10 +37,8 @@ namespace fuzzuf::algorithms::nautilus::grammartec {
 Tree::Tree(std::vector<RuleIDOrCustom> rules, Context& ctx)
   : _rules(rules) {
   /* resize: Not only allocate buffer but also change size */
-  _sizes.resize(_rules.size());
-  _paren.resize(_rules.size());
-  std::fill(_sizes.begin(), _sizes.end(), 0);
-  std::fill(_paren.begin(), _paren.end(), NodeID(0));
+  _sizes.resize(_rules.size(), 0);
+  _paren.resize(_rules.size(), NodeID(0));
 
   if (_rules.size() > 0)
     CalcSubTreeSizesAndParents(ctx);
@@ -70,7 +68,7 @@ void Tree::CalcParents(Context& ctx) {
 
   for (size_t i = 0; i < Size(); i++) {
     NodeID node_id(i);
-    NTermID nonterm = GetRule(node_id, ctx).Nonterm();
+    const NTermID& nonterm = GetRule(node_id, ctx).Nonterm();
 
     if (stack.size() == 0)
       throw exceptions::fuzzuf_runtime_error(
@@ -86,9 +84,9 @@ void Tree::CalcParents(Context& ctx) {
 
     _paren[i] = node;
 
-    Rule rule = GetRule(node_id, ctx);
+    const Rule& rule = GetRule(node_id, ctx);
     std::vector<NTermID> nonterms = rule.Nonterms();
-    for (auto it = nonterms.rbegin(); it != nonterms.rend(); ++it) {
+    for (auto it = nonterms.crbegin(); it != nonterms.crend(); ++it) {
       stack.emplace_back(*it, node_id);
     }
   }
@@ -116,12 +114,24 @@ void Tree::CalcSizes() {
 std::vector<RuleIDOrCustom> Tree::Slice(
   const NodeID& from, const NodeID& to
 ) const {
-  assert (static_cast<size_t>(from) <= static_cast<size_t>(to)
-          && static_cast<size_t>(to) < _rules.size());
   return std::vector<RuleIDOrCustom> (
     _rules.begin() + static_cast<size_t>(from), 
     _rules.begin() + static_cast<size_t>(to)
   );
+}
+
+/**
+ * @fn
+ * @brief Get parent node ID of a node
+ * @param (n) Node ID to get parent of
+ * @return Parent node ID if exists, otherwise nothing (meaning the node is root)
+ */
+std::optional<NodeID> Tree::GetParent(const NodeID& n) const {
+  if (static_cast<size_t>(n) != 0) {
+    return _paren.at(static_cast<size_t>(n));
+  }
+  /* None if root node */
+  return std::nullopt;
 }
 
 /**
@@ -231,7 +241,7 @@ void Tree::Truncate() {
  * @param (ctx) Context
  */
 void Tree::GenerateFromNT(const NTermID& start, size_t len, Context& ctx) {
-  RuleID rid = ctx.GetRandomRuleForNT(start, len);
+  const RuleID& rid = ctx.GetRandomRuleForNT(start, len);
   GenerateFromRule(rid, len - 1, ctx);
 }
 
@@ -274,8 +284,8 @@ std::optional<std::vector<RecursionInfo>> Tree::CalcRecursions(Context& ctx) {
   std::vector<RecursionInfo> ret;
   std::unordered_set<NTermID> done_nterms;
 
-  for (RuleIDOrCustom& rule: _rules) {
-    NTermID nterm = ctx.GetNT(rule);
+  for (const RuleIDOrCustom& rule: _rules) {
+    const NTermID& nterm = ctx.GetNT(rule);
     if (done_nterms.find(nterm) == done_nterms.end()) {
       try {
         ret.emplace_back(*this, nterm, ctx);
@@ -404,7 +414,7 @@ const NTermID& TreeLike::GetNontermID(const NodeID& n, Context& ctx) const {
  * @param (ctx) Context
  * @param (data) Reference to string to store result
  */
-void TreeLike::Unparse(const NodeID& id, Context& ctx, std::string& data) {
+void TreeLike::Unparse(const NodeID& id, Context& ctx, std::string& data) const {
   Unparser(id, data, *this, ctx).Unparse();
 }
 
@@ -414,17 +424,17 @@ void TreeLike::Unparse(const NodeID& id, Context& ctx, std::string& data) {
  * @param (ctx) Context
  * @param (data) Reference to string to store result
  */
-void TreeLike::UnparseTo(Context& ctx, std::string& data) {
+void TreeLike::UnparseTo(Context& ctx, std::string& data) const {
   Unparse(NodeID(0), ctx, data);
 }
 
-std::string TreeLike::UnparseNodeToVec(const NodeID& n, Context& ctx) {
+std::string TreeLike::UnparseNodeToVec(const NodeID& n, Context& ctx) const {
   std::string data;
   Unparse(n, ctx, data);
   return data;
 }
 
-std::string TreeLike::UnparseToVec(Context& ctx) {
+std::string TreeLike::UnparseToVec(Context& ctx) const {
   return UnparseNodeToVec(NodeID(0), ctx);
 }
 
@@ -437,13 +447,11 @@ std::string TreeLike::UnparseToVec(Context& ctx) {
  * @param (tree) Tree
  * @param (ctx) Context
  */
-Unparser::Unparser(NodeID nid, std::string& w, TreeLike& tree, Context& ctx)
-  : _tree(tree), _w(w), _ctx(ctx) {
+Unparser::Unparser(
+  const NodeID& nid, std::string& w, const TreeLike& tree, Context& ctx
+) : _tree(tree), _w(w), _ctx(ctx) {
   _i = static_cast<size_t>(nid);
-
-  _stack.clear();
   _stack.emplace_back(tree.GetRule(NodeID(_i), ctx).Nonterm());
-
   _buffers.clear();
 }
 
@@ -456,7 +464,7 @@ bool Unparser::UnparseOneStep() {
   if (_stack.size() == 0)
     return false;
 
-  auto data = _stack.back().value();
+  auto& data = _stack.back().value();
   _stack.pop_back();
 
   if (std::holds_alternative<Term>(data)) {

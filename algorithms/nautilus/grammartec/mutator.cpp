@@ -26,6 +26,17 @@
 
 namespace fuzzuf::algorithms::nautilus::grammartec {
 
+/**
+ * @fn
+ * @brief Minimize tree so that it satisfies some constraints
+ * @param (tree) Tree
+ * @param (bits) Set of bits to be passed to tester
+ * @param (ctx) Context
+ * @param (start_index) Beginning of node ID
+ * @param (end_index) End of node ID
+ * @param (tester) Tester function to check if a tree satisfies constraints
+ * @return Returns true if minimization is complete, otherwise false
+ */
 bool Mutator::MinimizeTree(Tree& tree,
                            std::unordered_set<size_t>& bits,
                            Context& ctx,
@@ -42,7 +53,7 @@ bool Mutator::MinimizeTree(Tree& tree,
       if (std::optional<Tree> t = Mutator::TestAndConvert(
             tree, n, _scratchpad, NodeID(0), ctx, bits, tester
           )) {
-        tree = t.value();
+        tree = t.value(); // TODO: Check this
       }
     }
 
@@ -53,6 +64,44 @@ bool Mutator::MinimizeTree(Tree& tree,
 
   return true;
 };
+
+/**
+ * @fn
+ * @brief Minimize tree so that it satisfies some constraints
+ * @param (tree) Tree
+ * @param (bits) Set of bits to be passed to tester
+ * @param (ctx) Context
+ * @param (start_index) Beginning of node ID
+ * @param (end_index) End of node ID
+ * @param (tester) Tester function to check if a tree satisfies constraints
+ * @return Returns true if minimization is complete, otherwise false
+ */
+bool Mutator::MinimizeRec(Tree& tree,
+                          std::unordered_set<size_t>& bits,
+                          Context& ctx,
+                          size_t start_index, size_t end_index,
+                          FTester& tester) {
+  size_t i = start_index;
+
+  while (i < tree.Size()) {
+    NodeID n(i);
+
+    if (auto parent = Mutator::FindParentWithNT(tree, n, ctx)) {
+      if (auto t = Mutator::TestAndConvert(
+            tree, parent.value(), tree, n, ctx, bits, tester
+          )) {
+        tree = t.value(); // TODO: Check this
+        i = static_cast<size_t>(parent.value());
+      }
+    }
+
+    if (++i == end_index) {
+      return false;
+    }
+  }
+
+  return true;
+}
 
 /**
  * @fn
@@ -142,6 +191,30 @@ void Mutator::MutRandomRecursion(Tree& tree,
 
 /**
  * @fn
+ * @brief Find parent of a node by Nonterminal
+ * @param (tree) Tree
+ * @param (node) Node ID to get parent of
+ * @param (ctx) Context
+ */
+std::optional<NodeID> Mutator::FindParentWithNT(
+  Tree& tree, const NodeID& node, Context& ctx
+) {
+  const NTermID& nt = tree.GetRule(node, ctx).Nonterm();
+
+  NodeID cur = node;
+  while (std::optional<NodeID> parent = tree.GetParent(cur)) {
+    if (tree.GetRule(parent.value(), ctx).Nonterm() == nt) {
+      return parent.value();
+    }
+
+    cur = parent.value();
+  }
+
+  return std::nullopt;
+}
+
+/**
+ * @fn
  * @brief Convert tree after test
  * @param (tree_a) First tree
  * @param (n_a) First node ID
@@ -152,14 +225,15 @@ void Mutator::MutRandomRecursion(Tree& tree,
  * @param (tester) Tester function
  */
 std::optional<Tree> Mutator::TestAndConvert(
-  Tree& tree_a, NodeID n_a,
-  Tree& tree_b, NodeID n_b,
+  Tree& tree_a, const NodeID& n_a,
+  Tree& tree_b, const NodeID& n_b,
   Context& ctx,
   std::unordered_set<size_t>& fresh_bits,
   FTester& tester
 ) {
   TreeMutation repl = tree_a.MutateReplaceFromTree(n_a, tree_b, n_b);
   if (tester(repl, fresh_bits, ctx)) {
+    /* Mutated to a tree satisfying constraints by tester */
     return repl.ToTree(ctx);
   }
 

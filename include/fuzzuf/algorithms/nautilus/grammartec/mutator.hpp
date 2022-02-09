@@ -49,13 +49,22 @@ public:
                     Context& ctx,
                     size_t start_index, size_t end_index,
                     FTester& tester);
+  bool MinimizeRec(Tree& tree,
+                   std::unordered_set<size_t>& bits,
+                   Context& ctx,
+                   size_t start_index, size_t end_index,
+                   FTester& tester);
   void MutRandomRecursion(Tree& tree,
                           std::vector<RecursionInfo>& recursions,
                           Context& ctx,
                           FTesterMut& tester);
+
+  static std::optional<NodeID> FindParentWithNT(
+    Tree& tree, const NodeID& node, Context& ctx
+  );
   static std::optional<Tree> TestAndConvert(
-    Tree& tree_a, NodeID n_a,
-    Tree& tree_b, NodeID n_b,
+    Tree& tree_a, const NodeID& n_a,
+    Tree& tree_b, const NodeID& n_b,
     Context& ctx,
     std::unordered_set<size_t>& fresh_bits,
     FTester& tester
