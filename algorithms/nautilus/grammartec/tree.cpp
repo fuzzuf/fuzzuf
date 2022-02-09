@@ -440,7 +440,10 @@ std::string TreeLike::UnparseToVec(Context& ctx) {
 Unparser::Unparser(NodeID nid, std::string& w, TreeLike& tree, Context& ctx)
   : _tree(tree), _w(w), _ctx(ctx) {
   _i = static_cast<size_t>(nid);
-  _stack = {UnparseStep(tree.GetRule(NodeID(_i), ctx).Nonterm())};
+
+  _stack.clear();
+  _stack.emplace_back(tree.GetRule(NodeID(_i), ctx).Nonterm());
+
   _buffers.clear();
 }
 
@@ -478,7 +481,7 @@ bool Unparser::UnparseOneStep() {
  * @brief Operation for terminal symbols
  * @param (data) Term
  */
-void Unparser::Write(std::string& data) {
+void Unparser::Write(const std::string& data) {
   if (_buffers.size() > 0) {
     _buffers.back() << data;
   } else {
@@ -491,7 +494,7 @@ void Unparser::Write(std::string& data) {
  * @brief Operation for nonterminal symbols
  * @param (nt) Nonterminal
  */
-void Unparser::Nonterm(NTermID nt) {
+void Unparser::Nonterm(const NTermID& nt) {
   NextRule(nt);
 }
 
@@ -500,7 +503,8 @@ void Unparser::Nonterm(NTermID nt) {
  * @brief Operation for nonterminal symbols
  * @param (nt) Nonterminal
  */
-void Unparser::NextRule(NTermID nt) {
+void Unparser::NextRule(const NTermID& nt)
+{
   NodeID nid(_i);
   const Rule& rule = _tree.GetRule(nid, _ctx);
   assert (nt == rule.Nonterm());
@@ -525,9 +529,9 @@ void Unparser::NextRule(NTermID nt) {
  * @brief Operation for plain rules
  * @param (r) Plain rule
  */
-void Unparser::NextPlain(PlainRule r) {
-  for (auto it = r.children.rbegin(); it != r.children.rend(); it++) {
-    RuleChild rule_child = *it;
+void Unparser::NextPlain(const PlainRule& r) {
+  for (auto it = r.children.crbegin(); it != r.children.crend(); it++) {
+    const RuleChild& rule_child = *it;
 
     if (std::holds_alternative<Term>(rule_child.value())) {
       // Push as terminal

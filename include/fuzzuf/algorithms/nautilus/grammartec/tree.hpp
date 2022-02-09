@@ -128,7 +128,7 @@ public:
   UnparseStep() : _step(0) {}
   UnparseStep(Term t) : _step(t) {}
   UnparseStep(NTermID nt) : _step(nt) {}
-  std::variant<Term, NTerm> value() { return _step; }
+  const std::variant<Term, NTerm> value() const { return _step; }
 
 private:
   std::variant<Term, NTerm> _step;
@@ -139,10 +139,10 @@ struct Unparser {
 public:
   Unparser(NodeID nid, std::string& w, TreeLike& tree, Context& ctx);
   bool UnparseOneStep();
-  void Write(std::string& data);
-  void Nonterm(NTermID nt);
-  void NextRule(NTermID nt);
-  void NextPlain(PlainRule r);
+  void Write(const std::string& data);
+  void Nonterm(const NTermID& nt);
+  void NextRule(const NTermID& nt);
+  void NextPlain(const PlainRule& r);
   NodeID Unparse();
 
 private:
