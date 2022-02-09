@@ -20,6 +20,14 @@
 #include "fuzzuf/executor/proxy_executor.hpp"
 
 // A class for fuzz executions with Intel PT
+// NOTE:
+// This executor provides path coverage feedback introduced in PTrix (https://arxiv.org/pdf/1905.10499.pdf).
+// The original PTrix implementation uses two bitmaps: trace_bits and pt_fav_bits.
+// trace_bits records the last TIP IP hash value in the current context represented as one bit.
+// This trace_bits semantics is quite different from the traditional AFL edge coverage, so we cannot use the trace_bits for calculating top_rated[] on AFL.
+// The PTrix implementation introduces pt_fav_bits to calculate top_rated[].
+// From the above reasons, we should consider renaming trace_bits so that fuzzers can distinguish the shared memory semantics.
+// https://github.com/junxzm1990/afl-pt/blob/master/afl-2.42b/pt-fuzz-fast.c#L1226-#L1229
 class PTExecutor : public ProxyExecutor {
 public:
     static constexpr const char* PATH_SHM_ENV_VAR = "__AFL_SHM_ID"; // TODO: Use different environment variable.
