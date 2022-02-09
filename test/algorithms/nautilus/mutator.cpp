@@ -19,9 +19,12 @@
 #define BOOST_TEST_DYN_LINK
 
 #include <boost/test/unit_test.hpp>
+#include "fuzzuf/algorithms/nautilus/grammartec/context.hpp"
 #include "fuzzuf/algorithms/nautilus/grammartec/mutator.hpp"
 #include "fuzzuf/algorithms/nautilus/grammartec/newtypes.hpp"
 #include "fuzzuf/algorithms/nautilus/grammartec/recursion_info.hpp"
+#include "fuzzuf/algorithms/nautilus/grammartec/rule.hpp"
+#include "fuzzuf/algorithms/nautilus/grammartec/tree.hpp"
 
 
 using namespace fuzzuf::algorithms::nautilus::grammartec;

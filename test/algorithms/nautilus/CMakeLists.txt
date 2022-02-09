@@ -101,3 +101,29 @@ set_target_properties(
 if( ENABLE_HEAVY_TEST )
 add_test( NAME "nautilus.mutator" COMMAND test-nautilus-mutator )
 endif()
+
+add_executable( test-nautilus-chunkstore chunkstore.cpp )
+target_link_libraries(
+  test-nautilus-chunkstore
+  test-common
+  fuzzuf
+  ${FUZZUF_LIBRARIES}
+  Boost::unit_test_framework
+)
+target_include_directories(
+  test-nautilus-chunkstore
+  PRIVATE
+  ${FUZZUF_INCLUDE_DIRS}
+  ${CMAKE_SOURCE_DIR}/test/common
+)
+set_target_properties(
+  test-nautilus-chunkstore
+  PROPERTIES COMPILE_FLAGS "${ADDITIONAL_COMPILE_FLAGS_STR}"
+)
+set_target_properties(
+  test-nautilus-chunkstore
+  PROPERTIES LINK_FLAGS "${ADDITIONAL_COMPILE_FLAGS_STR}"
+)
+if( ENABLE_HEAVY_TEST )
+add_test( NAME "nautilus.chunkstore" COMMAND test-nautilus-chunkstore )
+endif()
