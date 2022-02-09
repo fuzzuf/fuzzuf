@@ -51,7 +51,7 @@ void Context::Initialize(size_t max_len) {
  * @param (r) RuleID
  * @return Rule referenced by RuleID
  */
-Rule& Context::GetRule(RuleID r) {
+Rule& Context::GetRule(const RuleID& r) {
   return _rules.at(static_cast<size_t>(r));
 }
 
@@ -81,7 +81,7 @@ size_t Context::GetNumChildren(RuleIDOrCustom& r) {
  * @param (nt) NTermID
  * @return String describing NTermID
  */
-std::string Context::NTIDToString(NTermID nt) {
+std::string& Context::NTIDToString(NTermID& nt) {
   return _nt_ids_to_name.at(nt);
 }
 
@@ -91,7 +91,7 @@ std::string Context::NTIDToString(NTermID nt) {
  * @param (nt) Nonterminal symbol
  * @return Minimum length
  */
-size_t Context::GetMinLenForNT(NTermID nt) {
+size_t Context::GetMinLenForNT(const NTermID& nt) {
   return _nts_to_min_size.at(nt);
 }
 
@@ -120,7 +120,7 @@ NTermID Context::AquireNTID(const std::string& nt) {
  * @param (nt) Nonterminal symbol
  * @return NTermID of nt (An exception thrown if nt not found)
  */
-NTermID Context::NTID(const std::string& nt) {
+const NTermID& Context::NTID(const std::string& nt) {
   return _names_to_nt_id.at(nt);
 }
 

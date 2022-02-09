@@ -281,7 +281,7 @@ std::string RuleChild::SplitNTDescription(const std::string& nonterm) {
  * @brief Get RuleID of RuleIDOrCustom
  * @return RuleID
  */
-const RuleID RuleIDOrCustom::ID() const {
+const RuleID& RuleIDOrCustom::ID() const {
   if (std::holds_alternative<RuleID>(_rule_id_or_custom)) {
     return std::get<RuleID>(_rule_id_or_custom);
   } else {

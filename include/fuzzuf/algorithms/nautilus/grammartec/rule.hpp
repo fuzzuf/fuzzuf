@@ -67,7 +67,7 @@ public:
   inline bool operator==(const RuleIDOrCustom& others) const {
     return _rule_id_or_custom == others.value();
   }
-  const RuleID ID() const;
+  const RuleID& ID() const;
   const std::string& Data() const;
   
 private:

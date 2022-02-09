@@ -39,14 +39,14 @@ public:
   Context() : _max_len(0) {}
 
   void Initialize(size_t max_len);
-  Rule& GetRule(RuleID r);
+  Rule& GetRule(const RuleID& r);
   NTermID GetNT(RuleIDOrCustom& r);
   size_t GetNumChildren(RuleIDOrCustom& r);
-  std::string NTIDToString(NTermID nt);
-  size_t GetMinLenForNT(NTermID nt);
+  std::string& NTIDToString(NTermID& nt);
+  size_t GetMinLenForNT(const NTermID& nt);
 
   NTermID AquireNTID(const std::string& nt);
-  NTermID NTID(const std::string& nt);
+  const NTermID& NTID(const std::string& nt);
 
   RuleID AddRule(const std::string& nt, const std::string& format);
 

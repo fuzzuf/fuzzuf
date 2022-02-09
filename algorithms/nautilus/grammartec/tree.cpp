@@ -126,7 +126,7 @@ std::vector<RuleIDOrCustom> Tree::Slice(NodeID from, NodeID to) {
  * @param (n) Node ID
  * @return Rule ID
  */
-RuleID Tree::GetRuleID(NodeID n) {
+const RuleID& Tree::GetRuleID(const NodeID& n) {
   return _rules.at(static_cast<size_t>(n)).ID();
 }
 
@@ -325,7 +325,7 @@ RuleIDOrCustom& TreeMutation::GetAt(NodeID n) {
  * @param (n) Node ID
  * @return Rule ID
  */
-RuleID TreeMutation::GetRuleID(NodeID n) {
+const RuleID& TreeMutation::GetRuleID(const NodeID& n) {
   return GetAt(n).ID();
 }
 

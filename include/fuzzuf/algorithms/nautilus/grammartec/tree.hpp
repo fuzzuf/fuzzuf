@@ -45,7 +45,7 @@ class UnparserStep;
 
 class TreeLike {
 public:
-  virtual RuleID GetRuleID(NodeID n) = 0;
+  virtual const RuleID& GetRuleID(const NodeID& n) = 0;
   virtual size_t Size() = 0;
   virtual Tree ToTree(Context& ctx) = 0;
   virtual Rule& GetRule(NodeID n, Context& ctx) = 0;
@@ -71,7 +71,7 @@ public:
   std::vector<size_t>& sizes() { return _sizes; }
   std::vector<NodeID>& paren() { return _paren; }
 
-  virtual RuleID GetRuleID(NodeID n);
+  virtual const RuleID& GetRuleID(const NodeID& n);
   virtual size_t Size();
   virtual Tree ToTree(Context& ctx);
   virtual Rule& GetRule(NodeID n, Context& ctx);
@@ -108,7 +108,7 @@ public:
   const std::vector<RuleIDOrCustom>& postfix() const { return _postfix; }
   RuleIDOrCustom& GetAt(NodeID n);
 
-  virtual RuleID GetRuleID(NodeID n);
+  virtual const RuleID& GetRuleID(const NodeID& n);
   virtual size_t Size();
   virtual Tree ToTree(Context& ctx);
   virtual Rule& GetRule(NodeID n, Context& ctx);
