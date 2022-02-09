@@ -19,6 +19,7 @@
 #define BOOST_TEST_DYN_LINK
 
 #include <boost/test/unit_test.hpp>
+#include "fuzzuf/algorithms/nautilus/grammartec/chunkstore.hpp"
 #include "fuzzuf/algorithms/nautilus/grammartec/context.hpp"
 #include "fuzzuf/algorithms/nautilus/grammartec/mutator.hpp"
 #include "fuzzuf/algorithms/nautilus/grammartec/newtypes.hpp"
@@ -172,5 +173,31 @@ BOOST_AUTO_TEST_CASE(NautilusGrammartecMutatorDeterministicRule) {
 
     mutator.MutRules(tree,ctx, 0, tree.Size(), tester);
     BOOST_CHECK(count > 2);
+  }
+}
+
+BOOST_AUTO_TEST_CASE(NautilusGrammartecMutatorDeterministicSplice) {
+  Context ctx;
+  ChunkStore cks("/tmp/nautilus");
+  RuleID r1 = ctx.AddRule("A", "a {A:a}");
+  ctx.AddRule("A", "b {A:a}");
+  RuleID r3 = ctx.AddRule("A", "c {A:a}");
+  ctx.AddRule("A", "a");
+  ctx.Initialize(101);
+
+  Tree tree = ctx.GenerateTreeFromRule(r3, 100);
+  cks.AddTree(tree, ctx);
+
+  for (size_t i = 0; i < 100; i++) {
+    Tree tree = ctx.GenerateTreeFromRule(r1, 100);
+    Mutator mutator(ctx);
+    std::string unparse = tree.UnparseToVec(ctx);
+
+    FTesterMut tester =
+      [&unparse](TreeMutation& tree_mut, Context& ctx) {
+        BOOST_CHECK(tree_mut.UnparseToVec(ctx) != unparse);
+      };
+
+    mutator.MutSplice(tree, ctx,cks, tester);
   }
 }

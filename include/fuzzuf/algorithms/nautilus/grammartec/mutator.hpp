@@ -25,6 +25,7 @@
 #include <functional>
 #include <optional>
 #include <unordered_set>
+#include "fuzzuf/algorithms/nautilus/grammartec/chunkstore.hpp"
 #include "fuzzuf/algorithms/nautilus/grammartec/context.hpp"
 #include "fuzzuf/algorithms/nautilus/grammartec/newtypes.hpp"
 #include "fuzzuf/algorithms/nautilus/grammartec/recursion_info.hpp"
@@ -58,6 +59,10 @@ public:
                 Context& ctx,
                 size_t start_index, size_t end_index,
                 FTesterMut& tester);
+  void MutSplice(Tree& tree,
+                 Context &ctx,
+                 ChunkStore& cks,
+                 FTesterMut& tester);
   void MutRandomRecursion(Tree& tree,
                           std::vector<RecursionInfo>& recursions,
                           Context& ctx,

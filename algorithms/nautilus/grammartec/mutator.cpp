@@ -105,7 +105,7 @@ bool Mutator::MinimizeRec(Tree& tree,
 
 /**
  * @fn
- * @brief Mutate rules so that it satisfies some constraints
+ * @brief Mutate tree and call tester
  * @param (tree) Tree
  * @param (ctx) Context
  * @param (start_index) Beginning of node ID
@@ -142,6 +142,28 @@ bool Mutator::MutRules(Tree& tree,
   }
 
   return false;
+}
+
+/**
+ * @fn
+ * @brief Mutate tree and call tester
+ * @param (tree) Tree
+ * @param (ctx) Context
+ * @param (cks) Chunk store
+ * @param (tester) Tester function
+ */
+void Mutator::MutSplice(Tree& tree,
+                        Context &ctx,
+                        ChunkStore& cks,
+                        FTesterMut& tester) {
+  NodeID n(utils::random::Random<size_t>(0, tree.Size() - 1));
+  const RuleID& old_rule_id = tree.GetRuleID(n);
+
+  if (auto r = cks.GetAlternativeTo(old_rule_id, ctx)) {
+    auto& [repl_tree, repl_node] = r.value();
+    TreeMutation repl = tree.MutateReplaceFromTree(n, repl_tree, repl_node);
+    tester(repl, ctx);
+  }
 }
 
 /**
