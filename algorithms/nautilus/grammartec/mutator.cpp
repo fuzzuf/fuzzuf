@@ -70,7 +70,7 @@ void Mutator::MutRandomRecursion(Tree& tree,
 
   size_t max_len_of_recursions = 2 << utils::random::Random<size_t>(1, 10);
 
-  RecursionInfo recursion_info = utils::random::Choose(recursions);
+  RecursionInfo& recursion_info = utils::random::Choose(recursions);
   auto [rec0, rec1] = recursion_info.GetRandomRecursionPair();
 
   size_t recursion_len_pre = static_cast<size_t>(rec1) - static_cast<size_t>(rec0);

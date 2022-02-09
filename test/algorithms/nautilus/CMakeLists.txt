@@ -101,29 +101,3 @@ set_target_properties(
 if( ENABLE_HEAVY_TEST )
 add_test( NAME "nautilus.mutator" COMMAND test-nautilus-mutator )
 endif()
-
-add_executable( test-nautilus-dice loaded_dice.cpp )
-target_link_libraries(
-  test-nautilus-dice
-  test-common
-  fuzzuf
-  ${FUZZUF_LIBRARIES}
-  Boost::unit_test_framework
-)
-target_include_directories(
-  test-nautilus-dice
-  PRIVATE
-  ${FUZZUF_INCLUDE_DIRS}
-  ${CMAKE_SOURCE_DIR}/test/common
-)
-set_target_properties(
-  test-nautilus-dice
-  PROPERTIES COMPILE_FLAGS "${ADDITIONAL_COMPILE_FLAGS_STR}"
-)
-set_target_properties(
-  test-nautilus-dice
-  PROPERTIES LINK_FLAGS "${ADDITIONAL_COMPILE_FLAGS_STR}"
-)
-if( ENABLE_HEAVY_TEST )
-add_test( NAME "nautilus.dice" COMMAND test-nautilus-dice )
-endif()

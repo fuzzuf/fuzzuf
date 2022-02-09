@@ -29,25 +29,12 @@
 #include "fuzzuf/algorithms/nautilus/grammartec/context.hpp"
 #include "fuzzuf/algorithms/nautilus/grammartec/newtypes.hpp"
 #include "fuzzuf/algorithms/nautilus/grammartec/tree.hpp"
+#include "fuzzuf/utils/random.hpp"
 
 
 namespace fuzzuf::algorithms::nautilus::grammartec {
 
-class LoadedDiceSampler {
-public:
-  struct AliasEntry {
-    size_t val;
-    size_t alias;
-    double prob_of_val;
-  };
-  LoadedDiceSampler() {} // for vector
-  LoadedDiceSampler(std::vector<double>& probs);
-  size_t Sample();
-
-private:
-  std::vector<AliasEntry> _entries;
-};
-
+using fuzzuf::utils::random::WalkerDiscreteDistribution;
 
 using Parent = std::tuple<std::unordered_map<NodeID, NodeID>,
                           std::vector<NodeID>,
@@ -57,7 +44,9 @@ class RecursionInfo {
 public:
   RecursionInfo(Tree& t, NTermID n, Context& ctx);
   static std::optional<Parent> FindParents(Tree& t, NTermID nt, Context& ctx);
-  static LoadedDiceSampler BuildSampler(std::vector<size_t>& depth);
+  static WalkerDiscreteDistribution<size_t> BuildSampler(
+    std::vector<size_t>& depth
+  );
 
   std::pair<NodeID, NodeID> GetRandomRecursionPair();
   std::pair<NodeID, NodeID> GetRecursionPairByOffset(size_t offset);
@@ -65,7 +54,7 @@ public:
 
 private:
   std::unordered_map<NodeID, NodeID> _recursive_parents;
-  LoadedDiceSampler _sampler;
+  WalkerDiscreteDistribution<size_t> _sampler;
   std::vector<size_t> _depth_by_offset;
   std::vector<NodeID> _node_by_offset;
 };

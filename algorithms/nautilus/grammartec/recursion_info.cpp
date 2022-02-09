@@ -32,6 +32,8 @@
 
 namespace fuzzuf::algorithms::nautilus::grammartec {
 
+using fuzzuf::utils::random::WalkerDiscreteDistribution;
+
 /**
  * @fn
  * @brief Construct recursion info
@@ -51,7 +53,7 @@ RecursionInfo::RecursionInfo(Tree& t, NTermID n, Context& ctx) {
 
   std::tie(recursive_parents, node_by_offset, depth_by_offset) = r.value();
 
-  LoadedDiceSampler sampler = RecursionInfo::BuildSampler(depth_by_offset);
+  auto sampler = RecursionInfo::BuildSampler(depth_by_offset);
 
   _recursive_parents = recursive_parents;
   _sampler = sampler;
@@ -111,23 +113,12 @@ std::optional<Parent> RecursionInfo::FindParents(
  * @fn
  * @brief Normalize depth and build sampler
  * @param (depth) Vector of depth
- * @return Sampler (`LoadedDiceSampler`)
+ * @return Discrete distribution sampler
  */
-LoadedDiceSampler RecursionInfo::BuildSampler(std::vector<size_t>& depth) {
-  std::vector<double> weights;
-  for (size_t d: depth)
-    weights.push_back(static_cast<double>(d));
-
-  /* Calculate sum of depth */
-  double norm = std::accumulate(weights.begin(), weights.end(), 0.0);
-  assert (norm > 0.0);
-
-  /* Normalize depth */
-  for (double& v: weights) {
-    v /= norm;
-  }
-
-  return LoadedDiceSampler(weights);
+WalkerDiscreteDistribution<size_t> RecursionInfo::BuildSampler(
+  std::vector<size_t>& depth
+) {
+  return WalkerDiscreteDistribution<size_t>(depth);
 }
 
 /**
@@ -136,7 +127,7 @@ LoadedDiceSampler RecursionInfo::BuildSampler(std::vector<size_t>& depth) {
  * @return A pair of Node IDs
  */
 std::pair<NodeID, NodeID> RecursionInfo::GetRandomRecursionPair()  {
-  return GetRecursionPairByOffset(_sampler.Sample());
+  return GetRecursionPairByOffset(_sampler());
 }
 
 /**
@@ -165,65 +156,6 @@ std::pair<NodeID, NodeID> RecursionInfo::GetRecursionPairByOffset(
  */
 size_t RecursionInfo::GetNumberOfRecursions() {
   return _node_by_offset.size();
-}
-
-
-/**
- * @fn
- * @brief Construct sampler using Walker'S Alias Method
- * @param (probs) Vector of probabilities
- */
-LoadedDiceSampler::LoadedDiceSampler(std::vector<double>& probs) {
-  double n = static_cast<double>(probs.size());
-  double inv_n = 1.0 / n;
-
-  std::vector<std::pair<size_t, double>> tmp;
-  for (size_t i = 0; i < probs.size(); i++) {
-    tmp.push_back(std::pair<size_t, double>(i, probs[i]));
-  }
-
-  while (tmp.size() > 1) {
-    /* Descending sort */
-    std::sort(tmp.begin(), tmp.end(),
-              [](auto a, auto b) {
-                return a.second > b.second;
-              });
-
-    auto [min_i, min_p] = tmp.back();
-    tmp.pop_back();
-
-    auto& [max_i, max_p] = tmp[0];
-    _entries.push_back(AliasEntry{min_i, max_i, min_p * n});
-
-    max_p -= inv_n - min_p;
-  }
-
-  auto [last_i, last_p] = tmp.back();
-  tmp.pop_back();
-
-  /* Last value should always be exactly 1 but we consider precision */
-  assert (0.999 < last_p * n && last_p * n < 1.001);
-
-  _entries.push_back(
-    AliasEntry{last_i, std::numeric_limits<size_t>::max(), 1.0}
-  );
-}
-
-/**
- * @fn
- * @brief Get sample
- * @return Randomly chosen entry value or alias
- */
-size_t LoadedDiceSampler::Sample() {
-  size_t index = fuzzuf::utils::random::Random<size_t>(0, _entries.size()-1);
-  double coin = fuzzuf::utils::random::Random<double>(0.0, 1.0);
-  AliasEntry& entry = _entries[index];
-
-  if (coin > entry.prob_of_val) {
-    return entry.alias;
-  }
-
-  return entry.val;
 }
 
 } // namespace fuzzuf::algorithms::nautilus::grammartec
