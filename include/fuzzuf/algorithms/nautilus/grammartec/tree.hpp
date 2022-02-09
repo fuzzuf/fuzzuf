@@ -62,7 +62,7 @@ public:
 
 class Tree: public TreeLike {
 public:
-  Tree(std::vector<RuleIDOrCustom> rules, Context &ctx);
+  Tree(std::vector<RuleIDOrCustom> rules, Context& ctx);
   Tree(std::vector<RuleIDOrCustom> rules,
        std::vector<size_t> sizes,
        std::vector<NodeID> paren)

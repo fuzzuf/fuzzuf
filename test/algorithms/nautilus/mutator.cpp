@@ -87,9 +87,9 @@ BOOST_AUTO_TEST_CASE(NautilusGrammartecMutatorMinimizeTree) {
     Tree tree(rules, ctx);
     Mutator mutator(ctx);
     FTester tester =
-      [&tree](TreeMutation& tree_mut,
-              std::unordered_set<size_t>&,
-              Context& ctx) -> bool {
+      [](TreeMutation& tree_mut,
+         std::unordered_set<size_t>&,
+         Context& ctx) -> bool {
         if (tree_mut.UnparseToVec(ctx).find("a1") != std::string::npos) {
           return true;
         } else {
@@ -97,9 +97,8 @@ BOOST_AUTO_TEST_CASE(NautilusGrammartecMutatorMinimizeTree) {
         }
       };
 
-    size_t tree_size = tree.Size();
     std::unordered_set<size_t> bits;
-    mutator.MinimizeTree(tree, bits, ctx, 0, tree_size, tester);
+    mutator.MinimizeTree(tree, bits, ctx, 0, tree.Size(), tester);
 
     std::string unparse = tree.UnparseToVec(ctx);
     BOOST_CHECK(unparse.find("a1") != std::string::npos);
@@ -128,9 +127,9 @@ BOOST_AUTO_TEST_CASE(NautilusGrammartecMutatorMinimizeRec) {
     Tree tree(rules, ctx);
     Mutator mutator(ctx);
     FTester tester =
-      [&tree](TreeMutation& tree_mut,
-              std::unordered_set<size_t>&,
-              Context& ctx) -> bool {
+      [](TreeMutation& tree_mut,
+         std::unordered_set<size_t>&,
+         Context& ctx) -> bool {
         if (tree_mut.UnparseToVec(ctx).find("a1") != std::string::npos) {
           return true;
         } else {
@@ -138,14 +137,37 @@ BOOST_AUTO_TEST_CASE(NautilusGrammartecMutatorMinimizeRec) {
         }
       };
 
-    size_t tree_size = tree.Size();
     std::unordered_set<size_t> bits;
-    mutator.MinimizeRec(tree, bits, ctx, 0, tree_size, tester);
+    mutator.MinimizeRec(tree, bits, ctx, 0, tree.Size(), tester);
 
     std::string unparse = tree.UnparseToVec(ctx);
     BOOST_CHECK(unparse.find("a1") != std::string::npos);
     BOOST_CHECK(unparse.find("a2") == std::string::npos);
     BOOST_CHECK(unparse.find("b2") == std::string::npos);
     BOOST_CHECK(unparse.find("b3") == std::string::npos);
+  }
+}
+
+BOOST_AUTO_TEST_CASE(NautilusGrammartecMutatorDeterministicRule) {
+  Context ctx;
+  RuleID r1 = ctx.AddRule("A", "a {A:a}");
+  ctx.AddRule("A", "b {A:a}");
+  ctx.AddRule("A", "a");
+  ctx.Initialize(101);
+
+  for (size_t i = 0; i < 100; i++) {
+    Tree tree = ctx.GenerateTreeFromRule(r1, 100);
+    Mutator mutator(ctx);
+    std::string unparse = tree.UnparseToVec(ctx);
+    size_t count = 0;
+
+    FTesterMut tester =
+      [&count, &unparse](TreeMutation& tree_mut, Context& ctx) {
+        BOOST_CHECK(tree_mut.UnparseToVec(ctx) != unparse);
+        count++;
+      };
+
+    mutator.MutRules(tree,ctx, 0, tree.Size(), tester);
+    BOOST_CHECK(count > 2);
   }
 }

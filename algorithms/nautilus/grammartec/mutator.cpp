@@ -105,6 +105,47 @@ bool Mutator::MinimizeRec(Tree& tree,
 
 /**
  * @fn
+ * @brief Mutate rules so that it satisfies some constraints
+ * @param (tree) Tree
+ * @param (ctx) Context
+ * @param (start_index) Beginning of node ID
+ * @param (end_index) End of node ID
+ * @param (tester) Tester function to check if a tree satisfies constraints
+ * @return Returns true if minimization is complete, otherwise false
+ */
+bool Mutator::MutRules(Tree& tree,
+                       Context& ctx,
+                       size_t start_index, size_t end_index,
+                       FTesterMut& tester) {
+  for (size_t i = start_index; i < end_index; i++) {
+    if (i == tree.Size()) {
+      return true;
+    }
+
+    NodeID n(i);
+    const RuleID& old_rule_id = tree.GetRuleID(n);
+    const std::vector<RuleID>& rule_ids = ctx.GetRulesForNT(
+      ctx.GetNT(RuleIDOrCustom(old_rule_id))
+    );
+
+    for (const RuleID& new_rule_id: rule_ids) {
+      if (old_rule_id != new_rule_id) {
+        size_t random_size = ctx.GetRandomLenForRuleID(new_rule_id);
+        _scratchpad.GenerateFromRule(new_rule_id, random_size, ctx);
+
+        TreeMutation repl = tree.MutateReplaceFromTree(
+          n, _scratchpad, NodeID(0)
+        );
+        tester(repl, ctx);
+      }
+    }
+  }
+
+  return false;
+}
+
+/**
+ * @fn
  * @brief Mutate tree randomly with recursion
  * @param (tree) Tree
  * @param (recursion) Vector of recursion info

@@ -27,6 +27,7 @@
 #include <vector>
 #include "fuzzuf/algorithms/nautilus/grammartec/context.hpp"
 #include "fuzzuf/algorithms/nautilus/grammartec/rule.hpp"
+#include "fuzzuf/algorithms/nautilus/grammartec/tree.hpp"
 #include "fuzzuf/exceptions.hpp"
 #include "fuzzuf/utils/common.hpp"
 #include "fuzzuf/utils/random.hpp"
@@ -379,6 +380,59 @@ RuleID Context::GetRandomRuleForNT(const NTermID& nt, size_t max_len) const {
                     _nt_ids_to_name.at(nt).c_str(), max_len),
     __FILE__, __LINE__
   );
+}
+
+/**
+ * @fn
+ * @brief Get random length for a rule
+ * @param (rule_id) Rule ID (not used)
+ * @return Length
+ */
+size_t Context::GetRandomLenForRuleID(const RuleID&) const {
+  return _max_len; // TODO: this should be random
+}
+
+/**
+ * @fn
+ * @brief Get random length for a nonterminal
+ * @param (nt) Nonterminal symbol ID (not used)
+ * @return Length
+ */
+size_t Context::GetRandomLenForNT(const NTermID&) const {
+  return _max_len; // TODO: this should be random
+}
+
+/**
+ * @fn
+ * @brief Get rules by nonterminal ID
+ * @param (nt) Nonterminal symbol ID
+ * @return Vector of rule IDs
+ */
+const std::vector<RuleID>& Context::GetRulesForNT(const NTermID& nt) const {
+  return _nts_to_rules.at(nt);
+}
+
+/**
+ * @fn
+ * @brief Generate a random tree from nonterminal
+ * @param (nt) Nonterminal symbol ID
+ * @param (max_len) Maximum length
+ * @return Generated tree
+ */
+Tree Context::GenerateTreeFromNT(const NTermID& nt, size_t max_len) {
+  return GenerateTreeFromRule(GetRandomRuleForNT(nt, max_len), max_len-1);
+}
+
+/**
+ * @fn
+ * @brief Generate a tree from rule
+ * @param (r) Rule ID
+ * @param (len) Length
+ */
+Tree Context::GenerateTreeFromRule(const RuleID& r, size_t len) {
+  Tree tree({}, *this);
+  tree.GenerateFromRule(r, len, *this);
+  return tree;
 }
 
 } // namespace fuzzuf::algorithms::nautilus::grammartec

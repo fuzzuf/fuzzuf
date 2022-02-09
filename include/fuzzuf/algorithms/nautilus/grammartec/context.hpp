@@ -33,6 +33,7 @@ namespace fuzzuf::algorithms::nautilus::grammartec {
 
 struct RuleIDOrCustom;
 class Rule;
+class Tree;
 
 class Context {
 public:
@@ -63,6 +64,11 @@ public:
     size_t max_len, const NTermID& nt, size_t p_include_short_rules
   ) const;
   RuleID GetRandomRuleForNT(const NTermID& nt, size_t len) const;
+  size_t GetRandomLenForRuleID(const RuleID&) const;
+  size_t GetRandomLenForNT(const NTermID&) const;
+  const std::vector<RuleID>& GetRulesForNT(const NTermID& nt) const;
+  Tree GenerateTreeFromNT(const NTermID& nt, size_t max_len);
+  Tree GenerateTreeFromRule(const RuleID& r, size_t len);
 
 private:
   std::vector<Rule> _rules;

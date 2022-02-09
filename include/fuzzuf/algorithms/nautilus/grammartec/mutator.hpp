@@ -54,6 +54,10 @@ public:
                    Context& ctx,
                    size_t start_index, size_t end_index,
                    FTester& tester);
+  bool MutRules(Tree& tree,
+                Context& ctx,
+                size_t start_index, size_t end_index,
+                FTesterMut& tester);
   void MutRandomRecursion(Tree& tree,
                           std::vector<RecursionInfo>& recursions,
                           Context& ctx,
