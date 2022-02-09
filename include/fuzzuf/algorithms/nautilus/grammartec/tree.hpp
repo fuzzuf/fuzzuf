@@ -48,9 +48,9 @@ public:
   virtual const RuleID& GetRuleID(const NodeID& n) = 0;
   virtual size_t Size() = 0;
   virtual Tree ToTree(Context& ctx) = 0;
-  virtual Rule& GetRule(NodeID n, Context& ctx) = 0;
-  virtual RuleIDOrCustom& GetRuleOrCustom(NodeID n) = 0;
-  virtual std::string GetCustomRuleData(NodeID n) = 0;
+  virtual const Rule& GetRule(const NodeID& n, Context& ctx) = 0;
+  virtual const RuleIDOrCustom& GetRuleOrCustom(const NodeID& n) = 0;
+  virtual const std::string& GetCustomRuleData(const NodeID& n) = 0;
   NTermID GetNontermID(NodeID n, Context& ctx);
 
   void Unparse(NodeID id, Context& ctx, std::string& data);
@@ -74,9 +74,9 @@ public:
   virtual const RuleID& GetRuleID(const NodeID& n);
   virtual size_t Size();
   virtual Tree ToTree(Context& ctx);
-  virtual Rule& GetRule(NodeID n, Context& ctx);
-  virtual RuleIDOrCustom& GetRuleOrCustom(NodeID n);
-  virtual std::string GetCustomRuleData(NodeID n);
+  virtual const Rule& GetRule(const NodeID& n, Context& ctx);
+  virtual const RuleIDOrCustom& GetRuleOrCustom(const NodeID& n);
+  virtual const std::string& GetCustomRuleData(const NodeID& n);
   size_t SubTreeSize(NodeID n);
   TreeMutation MutateReplaceFromTree(NodeID n, Tree other, NodeID other_node);
 
@@ -111,9 +111,9 @@ public:
   virtual const RuleID& GetRuleID(const NodeID& n);
   virtual size_t Size();
   virtual Tree ToTree(Context& ctx);
-  virtual Rule& GetRule(NodeID n, Context& ctx);
-  virtual RuleIDOrCustom& GetRuleOrCustom(NodeID n);
-  virtual std::string GetCustomRuleData(NodeID n);
+  virtual const Rule& GetRule(const NodeID& n, Context& ctx);
+  virtual const RuleIDOrCustom& GetRuleOrCustom(const NodeID& n);
+  virtual const std::string& GetCustomRuleData(const NodeID& n);
 
 private:
   std::vector<RuleIDOrCustom> _prefix;

@@ -37,7 +37,7 @@ class Context;
 using Term = std::string;
 using NTerm = NTermID;
 
-struct RuleChild {
+class RuleChild {
 public:
   RuleChild(const std::string& lit);
   RuleChild(const std::string& nt, Context& ctx);
@@ -46,7 +46,7 @@ public:
     return _rule_child == others.value();
   }
 
-  std::string DebugShow(Context& ctx);
+  std::string DebugShow(Context& ctx) const;
   std::string SplitNTDescription(const std::string& nonterm);
 
 private:
@@ -56,7 +56,7 @@ private:
 
 using Custom = std::pair<RuleID, std::string>;
 
-struct RuleIDOrCustom {
+class RuleIDOrCustom {
 public:
   RuleIDOrCustom() {} // for vector
   RuleIDOrCustom(RuleID rid)
@@ -83,7 +83,7 @@ struct PlainRule {
     : nonterm(nonterm),
       children(children),
       nonterms(nonterms) {}
-  std::string DebugShow(Context& ctx);
+  std::string DebugShow(Context& ctx) const;
 
   NTermID nonterm;
   std::vector<RuleChild> children;
@@ -91,20 +91,20 @@ struct PlainRule {
 };
 
 
-struct Rule {
+class Rule {
 public:
   Rule(Context& ctx, const std::string& nonterm, const std::string& format);
   const std::variant<PlainRule>& value() const {
     return _rule;
   }
 
-  std::string DebugShow(Context& ctx);
+  std::string DebugShow(Context& ctx) const;
   std::string Unescape(const std::string& bytes);
   std::vector<RuleChild> Tokenize(const std::string& format, Context& ctx);
-  std::vector<NTermID> Nonterms();
-  size_t NumberOfNonterms();
-  NTermID Nonterm();
-  size_t Generate(Tree& tree, Context& ctx, size_t len);
+  std::vector<NTermID> Nonterms() const;
+  size_t NumberOfNonterms() const;
+  NTermID Nonterm() const;
+  size_t Generate(Tree& tree, Context& ctx, size_t len) const;
 
 private:
   // NOTE: ScriptRule and RegExpRule not implemented

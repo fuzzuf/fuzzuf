@@ -61,7 +61,7 @@ Rule::Rule(Context& ctx, const std::string& nonterm, const std::string& format) 
  * @param (ctx) Context
  * @return Human-readable string of this rule
  */
-std::string Rule::DebugShow(Context& ctx) {
+std::string Rule::DebugShow(Context& ctx) const {
   return std::visit([&ctx](auto r) { return r.DebugShow(ctx); }, _rule);
 }
 
@@ -137,7 +137,7 @@ std::vector<RuleChild> Rule::Tokenize(const std::string& format, Context& ctx) {
  * @brief Get matching nonterms
  * @return Vector of NTermID of this rule
  */
-std::vector<NTermID> Rule::Nonterms() {
+std::vector<NTermID> Rule::Nonterms() const {
   // TODO: reference it
   if (std::holds_alternative<PlainRule>(_rule)) {
     return std::get<PlainRule>(_rule).nonterms;
@@ -153,7 +153,7 @@ std::vector<NTermID> Rule::Nonterms() {
  * @brief Get number of nonterms
  * @return Number of nonterms
  */
-size_t Rule::NumberOfNonterms() {
+size_t Rule::NumberOfNonterms() const {
   return Nonterms().size();
 }
 
@@ -162,11 +162,11 @@ size_t Rule::NumberOfNonterms() {
  * @brief Get matching nonterm
  * @return NTermID of this rule
  */
-NTermID Rule::Nonterm() {
+NTermID Rule::Nonterm() const {
   return std::visit([](auto r) { return r.nonterm; }, _rule);
 }
 
-size_t Rule::Generate(Tree& tree, Context& ctx, size_t len) {
+size_t Rule::Generate(Tree& tree, Context& ctx, size_t len) const {
   size_t minimal_needed_len = 0;
   for (NTermID nt: Nonterms())
     minimal_needed_len += ctx.GetMinLenForNT(nt);
@@ -244,7 +244,7 @@ RuleChild::RuleChild(const std::string& nt, Context& ctx) {
  * @param (ctx) Context
  * @return Human-readable string
  */
-std::string RuleChild::DebugShow(Context& ctx) {
+std::string RuleChild::DebugShow(Context& ctx) const {
   if (std::holds_alternative<NTerm>(_rule_child)) {
     return ctx.NTIDToString(std::get<NTerm>(_rule_child));
   } else {
@@ -304,7 +304,7 @@ const std::string& RuleIDOrCustom::Data() const {
   }
 }
 
-std::string PlainRule::DebugShow(Context& ctx) {
+std::string PlainRule::DebugShow(Context& ctx) const {
   std::string res = "";
   for (size_t i = 0; i < children.size(); i++) {
     res += children[i].DebugShow(ctx);

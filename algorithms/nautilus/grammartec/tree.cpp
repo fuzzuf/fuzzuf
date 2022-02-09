@@ -185,7 +185,7 @@ Tree Tree::ToTree(Context&) { // Context is unused in Tree impl
  * @param (ctx) Context
  * @return Rule corresponding to node ID
  */
-Rule& Tree::GetRule(NodeID n, Context& ctx) {
+const Rule& Tree::GetRule(const NodeID& n, Context& ctx) {
   return ctx.GetRule(GetRuleID(n));
 }
 
@@ -195,7 +195,7 @@ Rule& Tree::GetRule(NodeID n, Context& ctx) {
  * @param (n) Node ID
  * @return Data of rule (throws exception if rule is not Custom)
  */
-std::string Tree::GetCustomRuleData(NodeID n) {
+const std::string& Tree::GetCustomRuleData(const NodeID& n) {
   return _rules.at(static_cast<size_t>(n)).Data();
 }
 
@@ -205,7 +205,7 @@ std::string Tree::GetCustomRuleData(NodeID n) {
  * @param (n) Node ID
  * @return RuleIDOrCustom corresponding to node ID
  */
-RuleIDOrCustom& Tree::GetRuleOrCustom(NodeID n) {
+const RuleIDOrCustom& Tree::GetRuleOrCustom(const NodeID& n) {
   return _rules.at(static_cast<size_t>(n));
 }
 
@@ -358,7 +358,7 @@ Tree TreeMutation::ToTree(Context& ctx) {
  * @param (ctx) Context
  * @return Rule corresponding to node ID
  */
-Rule& TreeMutation::GetRule(NodeID n, Context& ctx) {
+const Rule& TreeMutation::GetRule(const NodeID& n, Context& ctx) {
   return ctx.GetRule(GetRuleID(n));
 }
 
@@ -368,7 +368,7 @@ Rule& TreeMutation::GetRule(NodeID n, Context& ctx) {
  * @param (n) Node ID
  * @return RuleIDOrCustom corresponding to node ID
  */
-RuleIDOrCustom& TreeMutation::GetRuleOrCustom(NodeID n) {
+const RuleIDOrCustom& TreeMutation::GetRuleOrCustom(const NodeID& n) {
   return GetAt(n);
 }
 
@@ -378,7 +378,7 @@ RuleIDOrCustom& TreeMutation::GetRuleOrCustom(NodeID n) {
  * @param (n) Node ID
  * @return Data of rule (throws exception if rule is not Custom)
  */
-std::string TreeMutation::GetCustomRuleData(NodeID n) {
+const std::string& TreeMutation::GetCustomRuleData(const NodeID& n) {
   return GetAt(n).Data();
 }
 
@@ -498,7 +498,7 @@ void Unparser::Nonterm(NTermID nt) {
  */
 void Unparser::NextRule(NTermID nt) {
   NodeID nid(_i);
-  Rule& rule = _tree.GetRule(nid, _ctx);
+  const Rule& rule = _tree.GetRule(nid, _ctx);
   assert (nt == rule.Nonterm());
 
   _i++;

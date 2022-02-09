@@ -51,7 +51,7 @@ void Context::Initialize(size_t max_len) {
  * @param (r) RuleID
  * @return Rule referenced by RuleID
  */
-Rule& Context::GetRule(const RuleID& r) {
+const Rule& Context::GetRule(const RuleID& r) {
   return _rules.at(static_cast<size_t>(r));
 }
 
@@ -81,7 +81,7 @@ size_t Context::GetNumChildren(RuleIDOrCustom& r) {
  * @param (nt) NTermID
  * @return String describing NTermID
  */
-std::string& Context::NTIDToString(NTermID& nt) {
+const std::string& Context::NTIDToString(const NTermID& nt) {
   return _nt_ids_to_name.at(nt);
 }
 
