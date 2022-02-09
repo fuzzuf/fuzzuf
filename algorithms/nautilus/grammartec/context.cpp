@@ -51,7 +51,7 @@ void Context::Initialize(size_t max_len) {
  * @param (r) RuleID
  * @return Rule referenced by RuleID
  */
-const Rule& Context::GetRule(const RuleID& r) {
+const Rule& Context::GetRule(const RuleID& r) const {
   return _rules.at(static_cast<size_t>(r));
 }
 
@@ -61,7 +61,7 @@ const Rule& Context::GetRule(const RuleID& r) {
  * @param (r) RuleIDOrCustom
  * @return Nonterminal ID
  */
-NTermID Context::GetNT(RuleIDOrCustom& r) {
+const NTermID& Context::GetNT(const RuleIDOrCustom& r) const {
   return GetRule(r.ID()).Nonterm();
 }
 
@@ -71,7 +71,7 @@ NTermID Context::GetNT(RuleIDOrCustom& r) {
  * @param (r) RuleIDOrCustom
  * @return Number of children
  */
-size_t Context::GetNumChildren(RuleIDOrCustom& r) {
+size_t Context::GetNumChildren(const RuleIDOrCustom& r) const {
   return GetRule(r.ID()).NumberOfNonterms();
 }
 
@@ -81,7 +81,7 @@ size_t Context::GetNumChildren(RuleIDOrCustom& r) {
  * @param (nt) NTermID
  * @return String describing NTermID
  */
-const std::string& Context::NTIDToString(const NTermID& nt) {
+const std::string& Context::NTIDToString(const NTermID& nt) const {
   return _nt_ids_to_name.at(nt);
 }
 
@@ -91,7 +91,7 @@ const std::string& Context::NTIDToString(const NTermID& nt) {
  * @param (nt) Nonterminal symbol
  * @return Minimum length
  */
-size_t Context::GetMinLenForNT(const NTermID& nt) {
+size_t Context::GetMinLenForNT(const NTermID& nt) const {
   return _nts_to_min_size.at(nt);
 }
 
@@ -120,7 +120,7 @@ NTermID Context::AquireNTID(const std::string& nt) {
  * @param (nt) Nonterminal symbol
  * @return NTermID of nt (An exception thrown if nt not found)
  */
-const NTermID& Context::NTID(const std::string& nt) {
+const NTermID& Context::NTID(const std::string& nt) const {
   return _names_to_nt_id.at(nt);
 }
 
@@ -151,13 +151,13 @@ RuleID Context::AddRule(const std::string& nt, const std::string& format) {
  * @param (r) RuleID
  * @return Number of options
  */
-size_t Context::CalcNumOptionsForRule(RuleID r) {
+size_t Context::CalcNumOptionsForRule(const RuleID& r) const {
   size_t res = 1;
 
   for (NTermID nt_id: GetRule(r).Nonterms()) {
     size_t v = _nts_to_num_options.find(nt_id) == _nts_to_num_options.end()
       ? 1
-      : _nts_to_num_options[nt_id];
+      : _nts_to_num_options.at(nt_id);
     if (__builtin_mul_overflow(res, v, &res)) {
       /* Saturate instead of overflow */
       res = std::numeric_limits<size_t>::max();
@@ -207,14 +207,14 @@ void Context::CalcNumOptions() {
  * @param (r) RuleID
  * @return Minimum length (nullopt on failure)
  */
-std::optional<size_t> Context::CalcMinLenForRule(RuleID r) {
+std::optional<size_t> Context::CalcMinLenForRule(const RuleID& r) const {
   size_t res = 1;
 
   for (NTermID nt_id: GetRule(r).Nonterms()) {
     if (_nts_to_min_size.find(nt_id) == _nts_to_min_size.end()) {
       return std::nullopt;
     } else {
-      res += _nts_to_min_size[nt_id];
+      res += _nts_to_min_size.at(nt_id);
     }
   }
 
@@ -230,8 +230,7 @@ void Context::CalcRuleOrder() {
     std::vector<RuleID>& rules = elem.second;
     std::sort(rules.begin(), rules.end(),
               [this](RuleID r1, RuleID r2) {
-                // [TODO] Is this correct?
-                return _rules_to_min_size[r1] < _rules_to_min_size[r2];
+                return _rules_to_min_size.at(r1) < _rules_to_min_size.at(r2);
               });
   }
 }
@@ -298,7 +297,7 @@ void Context::CalcMinLen() {
  * @return Random length
  */
 size_t Context::GetRandomLen(size_t number_of_children,
-                             size_t total_remaining_len) {
+                             size_t total_remaining_len) const {
   ssize_t res = total_remaining_len;
   ssize_t iters = number_of_children - 1;
 
@@ -321,14 +320,17 @@ size_t Context::GetRandomLen(size_t number_of_children,
  * @param (p_include_short_rules) Threshold to select rule (0 to 100)
  * @return Vector of rule IDs
  */
-std::vector<RuleID> Context::GetApplicableRules(size_t max_len, NTermID nt,
-                                                size_t p_include_short_rules) {
+std::vector<RuleID> Context::GetApplicableRules(
+  size_t max_len,
+  const NTermID& nt,
+  size_t p_include_short_rules
+) const {
   std::vector<RuleID> res;
 
-  for (RuleID rid: _nts_to_rules[nt]) {
-    if (_rules_to_min_size[rid] > max_len) break;
-    if (_rules_to_num_options[rid] > 1
-        || fuzzuf::utils::random::Random<size_t>(0, 99) <= p_include_short_rules)
+  for (RuleID rid: _nts_to_rules.at(nt)) {
+    if (_rules_to_min_size.at(rid) > max_len) break;
+    if (_rules_to_num_options.at(rid) > 1
+        || utils::random::Random<size_t>(0, 99) <= p_include_short_rules)
       res.emplace_back(rid);
   }
 
@@ -342,11 +344,11 @@ std::vector<RuleID> Context::GetApplicableRules(size_t max_len, NTermID nt,
  * @param (max_len) Maximum length for rule
  * @return Selected rule ID
  */
-RuleID Context::GetRandomRuleForNT(NTermID nt, size_t max_len) {
+RuleID Context::GetRandomRuleForNT(const NTermID& nt, size_t max_len) const {
   size_t p_include_short_rules;
 
   // TODO: Is the original implementation correct?
-  if (_nts_to_num_options[nt] < 10) {
+  if (_nts_to_num_options.at(nt) < 10) {
     p_include_short_rules = 100 * 0;
   } else if (max_len > 100) {
     p_include_short_rules = 2 * 0;
@@ -370,7 +372,7 @@ RuleID Context::GetRandomRuleForNT(NTermID nt, size_t max_len) {
 
   throw exceptions::fuzzuf_runtime_error(
     Util::StrPrintf("There is no way to derive %s within %d steps",
-                    _nt_ids_to_name[nt].c_str(), max_len),
+                    _nt_ids_to_name.at(nt).c_str(), max_len),
     __FILE__, __LINE__
   );
 }

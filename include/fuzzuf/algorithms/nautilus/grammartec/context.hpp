@@ -39,26 +39,30 @@ public:
   Context() : _max_len(0) {}
 
   void Initialize(size_t max_len);
-  const Rule& GetRule(const RuleID& r);
-  NTermID GetNT(RuleIDOrCustom& r);
-  size_t GetNumChildren(RuleIDOrCustom& r);
-  const std::string& NTIDToString(const NTermID& nt);
-  size_t GetMinLenForNT(const NTermID& nt);
+  const Rule& GetRule(const RuleID& r) const;
+  const NTermID& GetNT(const RuleIDOrCustom& r) const;
+  size_t GetNumChildren(const RuleIDOrCustom& r) const;
+  const std::string& NTIDToString(const NTermID& nt) const;
+  size_t GetMinLenForNT(const NTermID& nt) const;
 
   NTermID AquireNTID(const std::string& nt);
-  const NTermID& NTID(const std::string& nt);
+  const NTermID& NTID(const std::string& nt) const;
 
   RuleID AddRule(const std::string& nt, const std::string& format);
 
-  size_t CalcNumOptionsForRule(RuleID r);
+  size_t CalcNumOptionsForRule(const RuleID& r) const;
   void CalcNumOptions();
-  std::optional<size_t> CalcMinLenForRule(RuleID r);
+  std::optional<size_t> CalcMinLenForRule(const RuleID& r) const;
   void CalcRuleOrder();
   void CalcMinLen();
 
-  std::vector<RuleID> GetApplicableRules(size_t max_len, NTermID nt, size_t p_include_short_rules);
-  size_t GetRandomLen(size_t number_of_children, size_t total_remaining_len);
-  RuleID GetRandomRuleForNT(NTermID nt, size_t len);
+  size_t GetRandomLen(
+    size_t number_of_children, size_t total_remaining_len
+  ) const;
+  std::vector<RuleID> GetApplicableRules(
+    size_t max_len, const NTermID& nt, size_t p_include_short_rules
+  ) const;
+  RuleID GetRandomRuleForNT(const NTermID& nt, size_t len) const;
 
 private:
   std::vector<Rule> _rules;

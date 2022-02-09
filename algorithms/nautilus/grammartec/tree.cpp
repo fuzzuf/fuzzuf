@@ -77,7 +77,7 @@ void Tree::CalcParents(Context& ctx) {
         "Not a valid tree for unparsing!", __FILE__, __LINE__
       );
 
-    auto [nterm_id, node] = stack[stack.size() - 1];
+    auto [nterm_id, node] = stack.back();
     stack.pop_back();
     if (nterm_id != nonterm)
       throw exceptions::fuzzuf_runtime_error(
@@ -103,7 +103,7 @@ void Tree::CalcSizes() {
     size = 1;
 
   for (size_t i = Size() - 1; i > 0; i--)
-    _sizes[static_cast<size_t>(_paren[i])] += _sizes[i];
+    _sizes.at(static_cast<size_t>(_paren.at(i))) += _sizes[i];
 }
 
 /**
@@ -116,6 +116,8 @@ void Tree::CalcSizes() {
 std::vector<RuleIDOrCustom> Tree::Slice(
   const NodeID& from, const NodeID& to
 ) const {
+  assert (static_cast<size_t>(from) <= static_cast<size_t>(to)
+          && static_cast<size_t>(to) < _rules.size());
   return std::vector<RuleIDOrCustom> (
     _rules.begin() + static_cast<size_t>(from), 
     _rules.begin() + static_cast<size_t>(to)
@@ -249,8 +251,8 @@ void Tree::GenerateFromRule(const RuleID& ruleid, size_t max_len, Context& ctx) 
     _sizes.emplace_back(0);
     _paren.emplace_back(0);
     ctx.GetRule(ruleid).Generate(*this, ctx, max_len);
-    
-    _sizes[0] = _rules.size(); // TODO: Check if this is always 1
+
+    _sizes[0] = _rules.size();
 
   } else {
 
