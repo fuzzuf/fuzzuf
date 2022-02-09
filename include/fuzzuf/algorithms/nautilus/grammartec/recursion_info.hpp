@@ -42,15 +42,15 @@ using Parent = std::tuple<std::unordered_map<NodeID, NodeID>,
 
 class RecursionInfo {
 public:
-  RecursionInfo(Tree& t, NTermID n, Context& ctx);
-  static std::optional<Parent> FindParents(Tree& t, NTermID nt, Context& ctx);
-  static WalkerDiscreteDistribution<size_t> BuildSampler(
-    std::vector<size_t>& depth
-  );
+  RecursionInfo(Tree& t, const NTermID& n, Context& ctx);
 
-  std::pair<NodeID, NodeID> GetRandomRecursionPair();
-  std::pair<NodeID, NodeID> GetRecursionPairByOffset(size_t offset);
-  size_t GetNumberOfRecursions();
+  std::pair<NodeID, NodeID> GetRandomRecursionPair() const;
+  std::pair<NodeID, NodeID> GetRecursionPairByOffset(size_t offset) const;
+  size_t GetNumberOfRecursions() const;
+
+  static std::optional<Parent> FindParents(
+    Tree& t, const NTermID& nt, Context& ctx
+  );
 
 private:
   std::unordered_map<NodeID, NodeID> _recursive_parents;

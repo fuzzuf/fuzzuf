@@ -47,7 +47,7 @@ public:
   }
 
   std::string DebugShow(Context& ctx) const;
-  std::string SplitNTDescription(const std::string& nonterm);
+  std::string SplitNTDescription(const std::string& nonterm) const;
 
 private:
   std::variant<Term, NTerm> _rule_child;
@@ -58,15 +58,18 @@ using Custom = std::pair<RuleID, std::string>;
 
 class RuleIDOrCustom {
 public:
-  RuleIDOrCustom() {} // for vector
+  RuleIDOrCustom() = delete;
   RuleIDOrCustom(RuleID rid)
     : _rule_id_or_custom(rid) {}
   RuleIDOrCustom(RuleID rid, std::string s)
     : _rule_id_or_custom(Custom(rid, s)) {}
-  const std::variant<RuleID, Custom> value() const { return _rule_id_or_custom; }
+  const std::variant<RuleID, Custom> value() const {
+    return _rule_id_or_custom;
+  }
   inline bool operator==(const RuleIDOrCustom& others) const {
     return _rule_id_or_custom == others.value();
   }
+
   const RuleID& ID() const;
   const std::string& Data() const;
   
@@ -76,10 +79,10 @@ private:
 
 
 struct PlainRule {
-  PlainRule() {} // default constructor for variant
+  PlainRule() {}; // for variant
   PlainRule(NTermID nonterm,
-            std::vector<RuleChild> children,
-            std::vector<NTermID> nonterms)
+            std::vector<RuleChild>& children,
+            std::vector<NTermID>& nonterms)
     : nonterm(nonterm),
       children(children),
       nonterms(nonterms) {}
@@ -99,12 +102,15 @@ public:
   }
 
   std::string DebugShow(Context& ctx) const;
-  std::string Unescape(const std::string& bytes);
-  std::vector<RuleChild> Tokenize(const std::string& format, Context& ctx);
-  std::vector<NTermID> Nonterms() const;
+  const std::vector<NTermID>& Nonterms() const;
   size_t NumberOfNonterms() const;
-  NTermID Nonterm() const;
+  const NTermID& Nonterm() const;
   size_t Generate(Tree& tree, Context& ctx, size_t len) const;
+
+  static std::string Unescape(const std::string& bytes);
+  static std::vector<RuleChild> Tokenize(
+    const std::string& format, Context& ctx
+  );
 
 private:
   // NOTE: ScriptRule and RegExpRule not implemented

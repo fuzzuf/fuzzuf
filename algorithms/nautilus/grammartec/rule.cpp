@@ -78,7 +78,7 @@ std::string Rule::Unescape(const std::string& bytes) {
   }
 
   /* Convert "\{" into "{" and "\}" into "}" */
-  std::string res = "";
+  std::string res;
   size_t i;
   for (i = 0; i < bytes.size(); i++) {
     if (bytes[i] == '\\' && bytes[i+1] == '{') {
@@ -137,10 +137,10 @@ std::vector<RuleChild> Rule::Tokenize(const std::string& format, Context& ctx) {
  * @brief Get matching nonterms
  * @return Vector of NTermID of this rule
  */
-std::vector<NTermID> Rule::Nonterms() const {
-  // TODO: reference it
+const std::vector<NTermID>& Rule::Nonterms() const {
   if (std::holds_alternative<PlainRule>(_rule)) {
     return std::get<PlainRule>(_rule).nonterms;
+
   } else {
     throw exceptions::not_implemented(
       "Only PlainRule is supported", __FILE__, __LINE__
@@ -162,8 +162,8 @@ size_t Rule::NumberOfNonterms() const {
  * @brief Get matching nonterm
  * @return NTermID of this rule
  */
-NTermID Rule::Nonterm() const {
-  return std::visit([](auto r) { return r.nonterm; }, _rule);
+const NTermID& Rule::Nonterm() const {
+  return std::visit([](auto& r) -> const NTermID& { return r.nonterm; }, _rule);
 }
 
 size_t Rule::Generate(Tree& tree, Context& ctx, size_t len) const {
@@ -258,7 +258,7 @@ std::string RuleChild::DebugShow(Context& ctx) const {
  * @param (nonterm) Nonterminal symbol
  * @return Extracted symbol
  */
-std::string RuleChild::SplitNTDescription(const std::string& nonterm) {
+std::string RuleChild::SplitNTDescription(const std::string& nonterm) const {
   std::smatch m;
   static std::regex SPLITTER(R"(^\{([A-Z][a-zA-Z_\-0-9]*)(?::([a-zA-Z_\-0-9]*))?\}$)");
 
@@ -305,7 +305,7 @@ const std::string& RuleIDOrCustom::Data() const {
 }
 
 std::string PlainRule::DebugShow(Context& ctx) const {
-  std::string res = "";
+  std::string res;
   for (size_t i = 0; i < children.size(); i++) {
     res += children[i].DebugShow(ctx);
     if (i != children.size() - 1) res += ", ";

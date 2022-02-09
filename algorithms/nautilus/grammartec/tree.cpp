@@ -113,7 +113,9 @@ void Tree::CalcSizes() {
  * @param (to) End node ID of slice
  * @return Vector of RuleIDOrCustom derived from slice
  */
-std::vector<RuleIDOrCustom> Tree::Slice(NodeID from, NodeID to) {
+std::vector<RuleIDOrCustom> Tree::Slice(
+  const NodeID& from, const NodeID& to
+) const {
   return std::vector<RuleIDOrCustom> (
     _rules.begin() + static_cast<size_t>(from), 
     _rules.begin() + static_cast<size_t>(to)
@@ -126,7 +128,7 @@ std::vector<RuleIDOrCustom> Tree::Slice(NodeID from, NodeID to) {
  * @param (n) Node ID
  * @return Rule ID
  */
-const RuleID& Tree::GetRuleID(const NodeID& n) {
+const RuleID& Tree::GetRuleID(const NodeID& n) const {
   return _rules.at(static_cast<size_t>(n)).ID();
 }
 
@@ -136,7 +138,7 @@ const RuleID& Tree::GetRuleID(const NodeID& n) {
  * @param (n) Node ID
  * @return Subtree size
  */
-size_t Tree::SubTreeSize(NodeID n) {
+size_t Tree::SubTreeSize(const NodeID& n) const {
   return _sizes.at(static_cast<size_t>(n));
 }
 
@@ -165,7 +167,7 @@ TreeMutation Tree::MutateReplaceFromTree(
  * @brief Get the number of current rules
  * @return Number of rules
  */
-size_t Tree::Size() {
+size_t Tree::Size() const {
   return _rules.size();
 }
 
@@ -174,7 +176,7 @@ size_t Tree::Size() {
  * @brief Copy this tree
  * @return New tree copied from current tree
  */
-Tree Tree::ToTree(Context&) { // Context is unused in Tree impl
+Tree Tree::ToTree(Context&) const { // Context is unused in Tree impl
   return Tree(_rules, _sizes, _paren);
 }
 
@@ -185,7 +187,7 @@ Tree Tree::ToTree(Context&) { // Context is unused in Tree impl
  * @param (ctx) Context
  * @return Rule corresponding to node ID
  */
-const Rule& Tree::GetRule(const NodeID& n, Context& ctx) {
+const Rule& Tree::GetRule(const NodeID& n, Context& ctx) const {
   return ctx.GetRule(GetRuleID(n));
 }
 
@@ -195,7 +197,7 @@ const Rule& Tree::GetRule(const NodeID& n, Context& ctx) {
  * @param (n) Node ID
  * @return Data of rule (throws exception if rule is not Custom)
  */
-const std::string& Tree::GetCustomRuleData(const NodeID& n) {
+const std::string& Tree::GetCustomRuleData(const NodeID& n) const {
   return _rules.at(static_cast<size_t>(n)).Data();
 }
 
@@ -205,7 +207,7 @@ const std::string& Tree::GetCustomRuleData(const NodeID& n) {
  * @param (n) Node ID
  * @return RuleIDOrCustom corresponding to node ID
  */
-const RuleIDOrCustom& Tree::GetRuleOrCustom(const NodeID& n) {
+const RuleIDOrCustom& Tree::GetRuleOrCustom(const NodeID& n) const {
   return _rules.at(static_cast<size_t>(n));
 }
 
@@ -226,7 +228,7 @@ void Tree::Truncate() {
  * @param (len) Maximum length for getting random rule for `start`
  * @param (ctx) Context
  */
-void Tree::GenerateFromNT(NTermID start, size_t len, Context& ctx) {
+void Tree::GenerateFromNT(const NTermID& start, size_t len, Context& ctx) {
   RuleID rid = ctx.GetRandomRuleForNT(start, len);
   GenerateFromRule(rid, len - 1, ctx);
 }
@@ -238,7 +240,7 @@ void Tree::GenerateFromNT(NTermID start, size_t len, Context& ctx) {
  * @param (max_len) Maximum length
  * @param (ctx) Context
  */
-void Tree::GenerateFromRule(RuleID ruleid, size_t max_len, Context& ctx) {
+void Tree::GenerateFromRule(const RuleID& ruleid, size_t max_len, Context& ctx) {
   if (std::holds_alternative<PlainRule>(ctx.GetRule(ruleid).value())) {
 
     /* PlainRule or ScriptRule */
@@ -297,7 +299,7 @@ std::optional<std::vector<RecursionInfo>> Tree::CalcRecursions(Context& ctx) {
  * @param (n) Node ID
  * @return RuleIDOrCustom
  */
-RuleIDOrCustom& TreeMutation::GetAt(NodeID n) {
+const RuleIDOrCustom& TreeMutation::GetAt(const NodeID& n) const {
   size_t i = static_cast<size_t>(n);
   size_t end0 = _prefix.size();
   size_t end1 = end0 + _repl.size();
@@ -325,7 +327,7 @@ RuleIDOrCustom& TreeMutation::GetAt(NodeID n) {
  * @param (n) Node ID
  * @return Rule ID
  */
-const RuleID& TreeMutation::GetRuleID(const NodeID& n) {
+const RuleID& TreeMutation::GetRuleID(const NodeID& n) const {
   return GetAt(n).ID();
 }
 
@@ -334,7 +336,7 @@ const RuleID& TreeMutation::GetRuleID(const NodeID& n) {
  * @brief Get the number of current rules
  * @return Number of rules
  */
-size_t TreeMutation::Size() {
+size_t TreeMutation::Size() const {
   return _prefix.size() + _repl.size() + _postfix.size();
 }
 
@@ -343,7 +345,7 @@ size_t TreeMutation::Size() {
  * @brief Create a new tree from TreeMutation
  * @return New tree copied from current tree
  */
-Tree TreeMutation::ToTree(Context& ctx) {
+Tree TreeMutation::ToTree(Context& ctx) const {
   std::vector<RuleIDOrCustom> vec;
   vec.insert(vec.end(), _prefix.begin(), _prefix.end());
   vec.insert(vec.end(), _repl.begin(), _repl.end());
@@ -358,7 +360,7 @@ Tree TreeMutation::ToTree(Context& ctx) {
  * @param (ctx) Context
  * @return Rule corresponding to node ID
  */
-const Rule& TreeMutation::GetRule(const NodeID& n, Context& ctx) {
+const Rule& TreeMutation::GetRule(const NodeID& n, Context& ctx) const {
   return ctx.GetRule(GetRuleID(n));
 }
 
@@ -368,7 +370,7 @@ const Rule& TreeMutation::GetRule(const NodeID& n, Context& ctx) {
  * @param (n) Node ID
  * @return RuleIDOrCustom corresponding to node ID
  */
-const RuleIDOrCustom& TreeMutation::GetRuleOrCustom(const NodeID& n) {
+const RuleIDOrCustom& TreeMutation::GetRuleOrCustom(const NodeID& n) const {
   return GetAt(n);
 }
 
@@ -378,7 +380,7 @@ const RuleIDOrCustom& TreeMutation::GetRuleOrCustom(const NodeID& n) {
  * @param (n) Node ID
  * @return Data of rule (throws exception if rule is not Custom)
  */
-const std::string& TreeMutation::GetCustomRuleData(const NodeID& n) {
+const std::string& TreeMutation::GetCustomRuleData(const NodeID& n) const {
   return GetAt(n).Data();
 }
 
@@ -389,7 +391,7 @@ const std::string& TreeMutation::GetCustomRuleData(const NodeID& n) {
  * @param (ctx) Context
  * @return Nonterminal symbol ID
  */
-NTermID TreeLike::GetNontermID(NodeID n, Context& ctx) {
+const NTermID& TreeLike::GetNontermID(const NodeID& n, Context& ctx) const {
   return GetRule(n, ctx).Nonterm();
 }
 
@@ -400,7 +402,7 @@ NTermID TreeLike::GetNontermID(NodeID n, Context& ctx) {
  * @param (ctx) Context
  * @param (data) Reference to string to store result
  */
-void TreeLike::Unparse(NodeID id, Context& ctx, std::string& data) {
+void TreeLike::Unparse(const NodeID& id, Context& ctx, std::string& data) {
   Unparser(id, data, *this, ctx).Unparse();
 }
 
@@ -414,7 +416,7 @@ void TreeLike::UnparseTo(Context& ctx, std::string& data) {
   Unparse(NodeID(0), ctx, data);
 }
 
-std::string TreeLike::UnparseNodeToVec(NodeID n, Context& ctx) {
+std::string TreeLike::UnparseNodeToVec(const NodeID& n, Context& ctx) {
   std::string data;
   Unparse(n, ctx, data);
   return data;

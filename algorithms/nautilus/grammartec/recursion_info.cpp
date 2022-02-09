@@ -42,7 +42,7 @@ using fuzzuf::utils::random::WalkerDiscreteDistribution;
  * @param (ctx) Context
  * @note This constructor may throw an exception of `const char*`
  */
-RecursionInfo::RecursionInfo(Tree& t, NTermID n, Context& ctx) {
+RecursionInfo::RecursionInfo(Tree& t, const NTermID& n, Context& ctx) {
   std::unordered_map<NodeID, NodeID> recursive_parents;
   std::vector<NodeID> node_by_offset;
   std::vector<size_t> depth_by_offset;
@@ -53,7 +53,7 @@ RecursionInfo::RecursionInfo(Tree& t, NTermID n, Context& ctx) {
 
   std::tie(recursive_parents, node_by_offset, depth_by_offset) = r.value();
 
-  auto sampler = RecursionInfo::BuildSampler(depth_by_offset);
+  auto sampler = WalkerDiscreteDistribution<size_t>(depth_by_offset);
 
   _recursive_parents = recursive_parents;
   _sampler = sampler;
@@ -70,7 +70,7 @@ RecursionInfo::RecursionInfo(Tree& t, NTermID n, Context& ctx) {
  * @return A tuple of NodeID->NodeID map, vector of NodeID, and vector of depth (std::optional)
  */
 std::optional<Parent> RecursionInfo::FindParents(
-  Tree& t, NTermID nt, Context& ctx
+  Tree& t, const NTermID& nt, Context& ctx
 ) {
   using Stack = std::pair<std::optional<NodeID>, size_t>;
   std::vector<Stack> stack;
@@ -111,22 +111,10 @@ std::optional<Parent> RecursionInfo::FindParents(
 
 /**
  * @fn
- * @brief Normalize depth and build sampler
- * @param (depth) Vector of depth
- * @return Discrete distribution sampler
- */
-WalkerDiscreteDistribution<size_t> RecursionInfo::BuildSampler(
-  std::vector<size_t>& depth
-) {
-  return WalkerDiscreteDistribution<size_t>(depth);
-}
-
-/**
- * @fn
  * @brief Get a random recursion pair
  * @return A pair of Node IDs
  */
-std::pair<NodeID, NodeID> RecursionInfo::GetRandomRecursionPair()  {
+std::pair<NodeID, NodeID> RecursionInfo::GetRandomRecursionPair() const {
   return GetRecursionPairByOffset(_sampler());
 }
 
@@ -138,7 +126,7 @@ std::pair<NodeID, NodeID> RecursionInfo::GetRandomRecursionPair()  {
  */
 std::pair<NodeID, NodeID> RecursionInfo::GetRecursionPairByOffset(
   size_t offset
-) {
+) const {
   NodeID node1 = _node_by_offset.at(offset);
   NodeID node2 = node1;
 
@@ -154,7 +142,7 @@ std::pair<NodeID, NodeID> RecursionInfo::GetRecursionPairByOffset(
  * @brief Get number of recursions
  * @return Number of recursions
  */
-size_t RecursionInfo::GetNumberOfRecursions() {
+size_t RecursionInfo::GetNumberOfRecursions() const {
   return _node_by_offset.size();
 }
 
