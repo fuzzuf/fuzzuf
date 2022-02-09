@@ -98,16 +98,18 @@ void Mutator::MutRandomRecursion(Tree& tree,
                     + recursion_len_post * num_of_recursions);
 
   for (size_t i = 0; i < num_of_recursions * recursion_len_pre; i++) {
-    rules_new.push_back(tree.GetRuleOrCustom(rec0 + (i % recursion_len_pre)));
-    sizes_new.push_back(
+    rules_new.emplace_back(
+      tree.GetRuleOrCustom(rec0 + (i % recursion_len_pre))
+    );
+    sizes_new.emplace_back(
       tree.sizes().at(static_cast<size_t>(rec0) + (i % recursion_len_pre))
     );
   }
 
   /* Append ending of original tree */
   for (size_t i = 0; i < postfix; i++) {
-    rules_new.push_back(tree.GetRuleOrCustom(rec1 + i));
-    sizes_new.push_back(tree.sizes().at(static_cast<size_t>(rec1) + i));
+    rules_new.emplace_back(tree.GetRuleOrCustom(rec1 + i));
+    sizes_new.emplace_back(tree.sizes().at(static_cast<size_t>(rec1) + i));
   }
 
   /* Adjust the sizes */
@@ -120,10 +122,10 @@ void Mutator::MutRandomRecursion(Tree& tree,
 
   /* Append post recursion */
   for (size_t i = 0; i < num_of_recursions * recursion_len_post; i++) {
-    rules_new.push_back(
+    rules_new.emplace_back(
       tree.GetRuleOrCustom(rec1 + postfix + (i % recursion_len_post))
     );
-    sizes_new.push_back(
+    sizes_new.emplace_back(
       tree.sizes().at(
         static_cast<size_t>(rec1) + postfix + (i % recursion_len_post)
       )

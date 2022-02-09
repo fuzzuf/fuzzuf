@@ -133,15 +133,14 @@ NTermID Context::NTID(const std::string& nt) {
  */
 RuleID Context::AddRule(const std::string& nt, const std::string& format) {
   RuleID rid(_rules.size()); // New rule ID
-  Rule rule(*this, nt, format);
   NTermID ntid = AquireNTID(nt);
 
-  _rules.push_back(rule);
+  _rules.emplace_back(*this, nt, format);
 
   // Register this rule
   if (_nts_to_rules.find(ntid) == _nts_to_rules.end())
     _nts_to_rules[ntid] = {};
-  _nts_to_rules[ntid].push_back(rid);
+  _nts_to_rules[ntid].emplace_back(rid);
 
   return rid;
 }
@@ -246,7 +245,7 @@ void Context::CalcMinLen() {
   do {
     std::vector<RuleID> unknown_rules;
     for (size_t i = 0; i < _rules.size(); i++) {
-      unknown_rules.push_back(RuleID(i));
+      unknown_rules.emplace_back(i);
     }
     something_changed = false;
 
@@ -330,7 +329,7 @@ std::vector<RuleID> Context::GetApplicableRules(size_t max_len, NTermID nt,
     if (_rules_to_min_size[rid] > max_len) break;
     if (_rules_to_num_options[rid] > 1
         || fuzzuf::utils::random::Random<size_t>(0, 99) <= p_include_short_rules)
-      res.push_back(rid);
+      res.emplace_back(rid);
   }
 
   return res;

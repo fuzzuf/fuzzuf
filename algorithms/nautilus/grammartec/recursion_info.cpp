@@ -74,7 +74,7 @@ std::optional<Parent> RecursionInfo::FindParents(
 ) {
   using Stack = std::pair<std::optional<NodeID>, size_t>;
   std::vector<Stack> stack;
-  stack.push_back(Stack(std::nullopt, 0));
+  stack.emplace_back(std::nullopt, 0);
 
   std::optional<Parent> res = std::nullopt;
 
@@ -92,8 +92,8 @@ std::optional<Parent> RecursionInfo::FindParents(
           std::tie(parents, ids, weights) = res.value();
 
         parents[node] = maybe_parent.value();
-        ids.push_back(node);
-        weights.push_back(depth);
+        ids.emplace_back(node);
+        weights.emplace_back(depth);
 
         res = Parent(parents, ids, weights);
       }
@@ -102,7 +102,7 @@ std::optional<Parent> RecursionInfo::FindParents(
     }
 
     for (size_t j = 0; j < ctx.GetNumChildren(t.rules()[i]); j++) {
-      stack.push_back(Stack(maybe_parent, depth + 1));
+      stack.emplace_back(maybe_parent, depth + 1);
     }
   }
 

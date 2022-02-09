@@ -66,9 +66,7 @@ void Tree::CalcParents(Context& ctx) {
     return;
 
   std::vector<std::pair<NTermID, NodeID>> stack;
-  stack.push_back(
-    std::pair<NTermID, NodeID>(GetRule(NodeID(0), ctx).Nonterm(), NodeID(0))
-  );
+  stack.emplace_back(GetRule(NodeID(0), ctx).Nonterm(), NodeID(0));
 
   for (size_t i = 0; i < Size(); i++) {
     NodeID node_id(i);
@@ -91,7 +89,7 @@ void Tree::CalcParents(Context& ctx) {
     Rule rule = GetRule(node_id, ctx);
     std::vector<NTermID> nonterms = rule.Nonterms();
     for (auto it = nonterms.rbegin(); it != nonterms.rend(); ++it) {
-      stack.push_back(std::pair<NTermID, NodeID>(*it, node_id));
+      stack.emplace_back(*it, node_id);
     }
   }
 }
@@ -245,9 +243,9 @@ void Tree::GenerateFromRule(RuleID ruleid, size_t max_len, Context& ctx) {
 
     /* PlainRule or ScriptRule */
     Truncate();
-    _rules.push_back(RuleIDOrCustom(ruleid));
-    _sizes.push_back(0);
-    _paren.push_back(NodeID(0));
+    _rules.emplace_back(ruleid);
+    _sizes.emplace_back(0);
+    _paren.emplace_back(0);
     ctx.GetRule(ruleid).Generate(*this, ctx, max_len);
     
     _sizes[0] = _rules.size(); // TODO: Check if this is always 1
@@ -276,7 +274,7 @@ std::optional<std::vector<RecursionInfo>> Tree::CalcRecursions(Context& ctx) {
     NTermID nterm = ctx.GetNT(rule);
     if (done_nterms.find(nterm) == done_nterms.end()) {
       try {
-        ret.push_back(RecursionInfo(*this, nterm, ctx));
+        ret.emplace_back(*this, nterm, ctx);
       } catch (const char*) {
         // pass
       }
@@ -527,23 +525,19 @@ void Unparser::NextPlain(PlainRule r) {
   for (auto it = r.children.rbegin(); it != r.children.rend(); it++) {
     RuleChild rule_child = *it;
 
-    UnparseStep op;
     if (std::holds_alternative<Term>(rule_child.value())) {
       // Push as terminal
-      op = UnparseStep(std::get<Term>(rule_child.value()));
+      _stack.emplace_back(std::get<Term>(rule_child.value()));
 
     } else if (std::holds_alternative<NTerm>(rule_child.value())) {
       // Push as tonterminal
-      op = UnparseStep(std::get<NTerm>(rule_child.value()));
+      _stack.emplace_back(std::get<NTerm>(rule_child.value()));
 
     } else {
       throw exceptions::unreachable(
         "Unexpected RuleChild type", __FILE__, __LINE__
       );
     }
-
-    _stack.push_back(op);
-
   }
 }
 

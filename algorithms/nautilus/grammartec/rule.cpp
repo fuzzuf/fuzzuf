@@ -48,7 +48,7 @@ Rule::Rule(Context& ctx, const std::string& nonterm, const std::string& format) 
   // Filter only NTerm items from children
   for (RuleChild child: children) {
     if (std::holds_alternative<NTerm>(child.value())) {
-      nonterms.push_back(std::get<NTerm>(child.value()));
+      nonterms.emplace_back(std::get<NTerm>(child.value()));
     }
   }
 
@@ -117,10 +117,10 @@ std::vector<RuleChild> Rule::Tokenize(const std::string& format, Context& ctx) {
 
     if (m[1].matched) {
       // NT: "{A:a}"
-      r.push_back(RuleChild(m.str(), ctx));
+      r.emplace_back(m.str(), ctx);
     } else if (m[2].matched) {
       // "abc\{def\}ghi" --> "abc{def}ghi"
-      r.push_back(RuleChild(Rule::Unescape(m.str())));
+      r.emplace_back(Rule::Unescape(m.str()));
     } else {
       throw exceptions::unreachable(
         "Unexpected capturing group", __FILE__, __LINE__
@@ -197,9 +197,9 @@ size_t Rule::Generate(Tree& tree, Context& ctx, size_t len) {
     assert (tree.paren().size() == tree.sizes().size());
 
     size_t offset = tree.Size();
-    tree.rules().push_back(rule_or_custom);
-    tree.sizes().push_back(0);
-    tree.paren().push_back(NodeID(0));
+    tree.rules().emplace_back(rule_or_custom);
+    tree.sizes().emplace_back(0);
+    tree.paren().emplace_back(0);
 
     size_t consumed_len = ctx.GetRule(rid).Generate(
       tree, ctx, cur_child_max_len - 1
