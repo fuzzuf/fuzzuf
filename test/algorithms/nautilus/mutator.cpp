@@ -19,6 +19,7 @@
 #define BOOST_TEST_DYN_LINK
 
 #include <boost/test/unit_test.hpp>
+#include <unordered_set>
 #include "fuzzuf/algorithms/nautilus/grammartec/chunkstore.hpp"
 #include "fuzzuf/algorithms/nautilus/grammartec/context.hpp"
 #include "fuzzuf/algorithms/nautilus/grammartec/mutator.hpp"
@@ -199,5 +200,40 @@ BOOST_AUTO_TEST_CASE(NautilusGrammartecMutatorDeterministicSplice) {
       };
 
     mutator.MutSplice(tree, ctx,cks, tester);
+  }
+}
+
+BOOST_AUTO_TEST_CASE(NautilusGrammartecMutatorDetRulesValues) {
+  Context ctx;
+  RuleID r1 = ctx.AddRule("S", "s1 {A}");
+  ctx.AddRule("S", "s2 {A}");
+  RuleID r2 = ctx.AddRule("A", "a1 {B}");
+  ctx.AddRule("A", "a2 {B}");
+  RuleID r3 = ctx.AddRule("B", "b1");
+  ctx.AddRule("B", "b2");
+  ctx.Initialize(10);
+
+  std::vector<RuleIDOrCustom> rules{
+    RuleIDOrCustom(r1), RuleIDOrCustom(r2), RuleIDOrCustom(r3)
+  };
+  for (size_t i = 0; i < 100; i++) {
+    Tree tree(rules, ctx);
+    Mutator mutator(ctx);
+    std::unordered_set<std::string> unparses;
+
+    FTesterMut tester =
+      [&unparses](TreeMutation& tree_mut, Context& ctx) {
+        unparses.insert(tree_mut.UnparseToVec(ctx));
+      };
+
+    mutator.MutRules(tree, ctx, 0, tree.Size(), tester);
+
+    BOOST_CHECK(unparses.find("s1 a1 b2") != unparses.end());
+    BOOST_CHECK(unparses.find("s1 a2 b1") != unparses.end()
+                || unparses.find("s1 a2 b2") != unparses.end());
+    BOOST_CHECK(unparses.find("s2 a1 b1") != unparses.end()
+                || unparses.find("s2 a2 b2") != unparses.end()
+                || unparses.find("s2 a1 b2") != unparses.end()
+                || unparses.find("s2 a2 b1") != unparses.end());
   }
 }
