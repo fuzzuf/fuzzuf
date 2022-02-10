@@ -20,8 +20,11 @@
 
 #include <algorithm>
 #include <boost/test/unit_test.hpp>
+#include <future>
 #include <numeric>
 #include <stdexcept>
+#include <thread>
+#include <utility>
 #include <vector>
 #include "fuzzuf/utils/random.hpp"
 
@@ -57,11 +60,8 @@ BOOST_AUTO_TEST_CASE(TestRandomAndChoose) {
   BOOST_CHECK(exception_thrown);
 }
 
-BOOST_AUTO_TEST_CASE(TestChoose) {
-  
-}
 
-BOOST_AUTO_TEST_CASE(TestWalkerDiscreteDistribution) {
+BOOST_AUTO_TEST_CASE(TestWalkerDiscreteDistributionSimple) {
   /* Get random probabilities */
   size_t len = Random<size_t>(3, 9);
   std::vector<double> base;
@@ -76,13 +76,11 @@ BOOST_AUTO_TEST_CASE(TestWalkerDiscreteDistribution) {
   }
 
   WalkerDiscreteDistribution<double> s(base);
-  std::vector<size_t> res;
-  res.resize(len);
-  std::fill(res.begin(), res.end(), 0);
+  std::vector<size_t> res(len);
 
   size_t iter = 1000000; // large enough
   for (size_t i = 0; i < iter; i++) {
-    res[s()] += 1;
+    res[s()]++;
   }
 
   std::vector<double> res_p;
@@ -91,6 +89,78 @@ BOOST_AUTO_TEST_CASE(TestWalkerDiscreteDistribution) {
   }
 
   for (size_t i = 0; i < len; i++) {
-    BOOST_CHECK(base[i] * 0.99 < res_p[i] && base[i] * 1.01 > res_p[i]);
+    BOOST_CHECK(base[i] * 0.95 < res_p[i] && base[i] * 1.05 > res_p[i]);
+  }
+}
+
+BOOST_AUTO_TEST_CASE(TestWalkerDiscreteDistributionBiased) {
+  size_t iter = 1000000;
+  bool exception_thrown;
+
+  /* 1. Test biased weights */
+  std::vector<double> w1{10000.0, 0.0, 0.0, 100.0, 100.0};
+  double sum = std::accumulate(w1.begin(), w1.end(), 0);
+  WalkerDiscreteDistribution<double> s1(w1);
+  std::vector<size_t> res1(w1.size());
+  for (size_t i = 0; i < iter; i++) {
+    res1[s1()]++;
+  }
+  for (size_t i = 0; i < w1.size(); i++) {
+    double pa = w1[i] / sum;
+    double ps = static_cast<double>(res1[i]) / static_cast<double>(iter);
+    BOOST_CHECK(pa*0.9 <= ps && ps <= pa*1.1);
+  }
+
+  /* 2. Test invalid weights */
+  // negative weight
+  std::vector<int> w2{314, -1592, 0, 1};
+  exception_thrown = false;
+  try {
+    WalkerDiscreteDistribution<int> s2(w2);
+  } catch (std::range_error&) {
+    exception_thrown = true;
+  }
+  BOOST_CHECK(exception_thrown);
+  // NaN weight
+  std::vector<float> w3{3.14, 15.92, std::nanf("")};
+  exception_thrown = false;
+  try {
+    WalkerDiscreteDistribution<float> s3(w3);
+  } catch (std::range_error&) {
+    exception_thrown = true;
+  }
+  BOOST_CHECK(exception_thrown);
+
+  /* 3. Test zero-ed weights */
+  std::vector<char> w4{0, 0, 0};
+  WalkerDiscreteDistribution<char> s4(w4);
+  std::vector<size_t> res4(w4.size());
+  for (size_t i = 0; i < iter; i++) {
+    res4[s4()]++;
+  }
+  for (size_t i = 0; i < w4.size(); i++) {
+    constexpr double pa = 1.0 / 3.0;
+    double ps = static_cast<double>(res4[i]) / static_cast<double>(iter);
+    BOOST_CHECK(pa*0.9 <= ps && ps <= pa*1.1);
+  }
+
+  /* 4. Test infinity sum */
+  std::vector<double> w5{
+    std::numeric_limits<double>::max(),
+    std::numeric_limits<double>::max()
+  };
+  exception_thrown = false;
+  try {
+    WalkerDiscreteDistribution<double> s5(w5);
+  } catch (std::range_error&) {
+    exception_thrown = true;
+  }
+  BOOST_CHECK(exception_thrown);
+
+  /* Test small number of big weights */
+  std::vector<double> w6{1.0, std::numeric_limits<double>::max()};
+  WalkerDiscreteDistribution<double> s6(w6);
+  for (size_t i = 0; i < iter; i++) {
+    BOOST_CHECK(s6() == 1);
   }
 }

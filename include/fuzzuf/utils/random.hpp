@@ -27,6 +27,7 @@
 #include <algorithm>
 #include <cassert>
 #include <limits>
+#include <numeric>
 #include <random>
 #include <stdexcept>
 #include <type_traits>
@@ -102,30 +103,50 @@ public:
 
   /**
    * @fn
-   * @brief Construct discrete distribution by C array
+   * @brief Construct discrete distribution
    * @param (probs) Array of probabilities (weights)
    * @param (size) Size of array
    */
-  WalkerDiscreteDistribution(const T* probs, size_t size) {
-    /* Calculate average */
-    _average = 0.0;
-    for (size_t i = 0; i < size; i++) {
-      _average += static_cast<double>(probs[i]);
+  WalkerDiscreteDistribution(const std::vector<T>& probs) {
+    _index.reserve(probs.size());
+    _threshold.reserve(probs.size());
+
+    /* Filter values */
+    for (const T p: probs) {
+      if (static_cast<double>(p) < 0.0
+          || std::isnan(static_cast<double>(p))) {
+        /* Invalid weights */
+        throw std::range_error("Weight must not be negative or NaN");
+      }
+
+      _threshold.push_back(static_cast<double>(p));
     }
-    _average /= static_cast<double>(size);
+
+    /* Calculate sum */
+    const double n = static_cast<double>(_threshold.size());
+    double sum = std::accumulate(_threshold.begin(), _threshold.end(), 0.0);
+    if (sum == std::numeric_limits<double>::infinity()) {
+      throw std::range_error("Sum of weights must not be inifinity");
+    }
+
+    /* Normalize weights so that average becomes 1 */
+    for (double& p: _threshold) {
+      /* This will be NaN if all weights are 0 but it works fine */
+      p = (p / sum) * n;
+    }
 
     /* Split weights into two groups */
     std::vector<size_t> small, large;
-    for (size_t i = 0; i < size; i++) {
-      if (static_cast<double>(probs[i]) < _average) {
+    size_t i = 0;
+    for (double p: _threshold) {
+      if (p < 1.0) {
         small.push_back(i);
       } else {
         large.push_back(i);
       }
 
-      /* Prepare index and threshold */
-      _index.push_back(i);
-      _threshold.push_back(static_cast<double>(probs[i]));
+      /* Prepare index */
+      _index.push_back(i++);
     }
 
     while (!small.empty() && !large.empty()) {
@@ -137,9 +158,9 @@ public:
       _index[j] = k;
 
       /* Fill remaining region by k-th weights */
-      _threshold[k] -= (_average - _threshold[j]);
+      _threshold[k] -= (1.0 - _threshold[j]);
 
-      if (_threshold[k] <= _average) {
+      if (_threshold[k] < 1.0) {
         /* If k-th weight gets smaller than average, put it into small group */
         small.push_back(k);
         large.pop_back();
@@ -149,21 +170,13 @@ public:
 
   /**
    * @fn
-   * @brief Construct discrete distribution by C++ vector
-   * @param (probs) Vector of probabilities (weights)
-   */
-  WalkerDiscreteDistribution(const std::vector<T>& probs)
-    : WalkerDiscreteDistribution(probs.data(), probs.size()) {}
-
-  /**
-   * @fn
    * @brief 
    * @return Array index chosen by weighted random
    */
   size_t operator() () const {
     size_t i = Random<size_t>(0, _index.size() - 1);
 
-    if (_threshold[i] > Random<double>(0.0, _average)) {
+    if (_threshold[i] > Random<double>(0.0, 1.0)) {
       return i;
     } else {
       return _index[i];
@@ -171,7 +184,6 @@ public:
   }
 
 private:
-  double _average;
   std::vector<size_t> _index;
   std::vector<double> _threshold;
 };

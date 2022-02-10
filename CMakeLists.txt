@@ -297,7 +297,7 @@ set(
   algorithms/libfuzzer/trace.cpp
   algorithms/libfuzzer/utils.cpp
   algorithms/libfuzzer/config.cpp
-  algorithms/nautilus/fuzzer/nautilus_fuzzer.cpp
+  algorithms/nautilus/fuzzer/fuzzer.cpp
   algorithms/nautilus/grammartec/chunkstore.cpp
   algorithms/nautilus/grammartec/context.cpp
   algorithms/nautilus/grammartec/mutator.cpp
@@ -385,6 +385,7 @@ set(
   cli/fuzzers/aflfast/register_aflfast_fuzzer.cpp
   cli/fuzzers/die/register_die_fuzzer.cpp
   cli/fuzzers/libfuzzer/register_libfuzzer.cpp
+  #cli/fuzzers/nautilus/register_nautilus_fuzzer.cpp
   cli/fuzzers/nezha/register_nezha_fuzzer.cpp
   cli/fuzzers/vuzzer/register_vuzzer.cpp
   cli/parse_global_options_for_fuzzer.cpp
