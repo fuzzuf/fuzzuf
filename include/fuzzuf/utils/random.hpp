@@ -25,6 +25,7 @@
 #define FUZZUF_INCLUDE_UTILS_RANDOM_HPP
 
 #include <algorithm>
+#include <array>
 #include <limits>
 #include <numeric>
 #include <random>
@@ -93,32 +94,35 @@ T& Choose(std::vector<T>& v) {
 }
 
 /* Walker's Alias Method */
-template <class T>
+template <class T = size_t>
 class WalkerDiscreteDistribution {
 public:
   WalkerDiscreteDistribution() {};
 
   /**
    * @fn
-   * @brief Construct discrete distribution
-   * @param (probs) Array of probabilities (weights)
-   * @param (size) Size of array
+   * @brief Construct discrete distribution from iterator
+   * @param (s) Begin iterator
+   * @param (e) End iterator
    */
-  WalkerDiscreteDistribution(const std::vector<T>& probs) {
-    if (probs.size() == 0)
+  template <class InputIterator>
+  WalkerDiscreteDistribution(const InputIterator s, const InputIterator e) {
+    size_t size = std::distance(s, e);
+    if (size == 0)
       throw std::out_of_range("Array must not be empty");
 
     /* Check and cast weight */
-    _threshold.reserve(probs.size());
-    for (const T p: probs) {
-      if (static_cast<double>(p) < 0.0 || std::isnan(static_cast<double>(p)))
+    _threshold.reserve(size);
+    for (auto it = s; it != e; ++it) {
+      double p = static_cast<double>(*it);
+      if (p < 0.0 || std::isnan(p))
         throw std::range_error("Weight must not be negative or NaN");
 
-      _threshold.push_back(static_cast<double>(p));
+      _threshold.push_back(p);
     }
 
     /* Calculate sum of weights */
-    const double n = static_cast<double>(_threshold.size());
+    const double n = static_cast<double>(size);
     double sum = std::accumulate(_threshold.begin(), _threshold.end(), 0.0);
 
     if (sum == std::numeric_limits<double>::infinity())
@@ -132,7 +136,7 @@ public:
     }
 
     /* Prepare index */
-    _index.resize(_threshold.size());
+    _index.resize(size);
     std::iota(_index.begin(), _index.end(), 0);
 
     /* Split weights into two groups */
@@ -164,6 +168,14 @@ public:
       }
     }
   }
+
+  /**
+   * @fn
+   * @brief Construct discrete distribution from vector
+   * @param (probs) Array of probabilities (weights)
+   */
+  WalkerDiscreteDistribution(const std::vector<T>& probs)
+    : WalkerDiscreteDistribution(probs.cbegin(), probs.cend()) {}
 
   /**
    * @fn

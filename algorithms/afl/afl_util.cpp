@@ -18,10 +18,11 @@
 #include "fuzzuf/algorithms/afl/afl_util.hpp"
 
 #include <random>
-#include "fuzzuf/utils/common.hpp"
+#include "fuzzuf/algorithms/afl/afl_macro.hpp"
 #include "fuzzuf/feedback/put_exit_reason_type.hpp"
 #include "fuzzuf/mutator/havoc_case.hpp"
-#include "fuzzuf/algorithms/afl/afl_macro.hpp"
+#include "fuzzuf/utils/common.hpp"
+#include "fuzzuf/utils/random.hpp"
 
 // A temporary criteria for deciding whether to put new utils here or make them class member functions:
 //     - AFL-specific utility functions that may be useful to implement AFL-derived algorithms should be added here
@@ -256,11 +257,6 @@ u32 HavocCaseDistrib(
     const std::vector<dictionary::AFLDictData>& extras, 
     const std::vector<dictionary::AFLDictData>& a_extras
 ) {
-    
-    // FIXME: replace this engine with our pRNG later to avoid being flooded with pRNGs.
-    static std::random_device seed_gen;
-    static std::mt19937 engine(seed_gen());
-
     // Static part: the following part doesn't run after a fuzzing campaign starts.
 
     constexpr std::array<double, NUM_CASE> weight_set[2][2] = {
@@ -268,20 +264,23 @@ u32 HavocCaseDistrib(
         { GetCaseWeights(true,  false), GetCaseWeights(true,  true) }
     };
 
-    // FIXME: actually, libstdc++'s discrete_distribution doesn't use Walker's alias method...
-    // We should implement it by ourselves...
-    static std::discrete_distribution<u32> dists[2][2] = {
-        { std::discrete_distribution<u32>(weight_set[0][0].begin(), weight_set[0][0].end()),
-          std::discrete_distribution<u32>(weight_set[0][1].begin(), weight_set[0][1].end()) },
-        { std::discrete_distribution<u32>(weight_set[1][0].begin(), weight_set[1][0].end()),
-          std::discrete_distribution<u32>(weight_set[1][1].begin(), weight_set[1][1].end()) },
+    using fuzzuf::utils::random::WalkerDiscreteDistribution;
+    WalkerDiscreteDistribution<u32> dists[2][2] = {
+      { WalkerDiscreteDistribution<u32>(weight_set[0][0].cbegin(),
+                                        weight_set[0][0].cend()),
+        WalkerDiscreteDistribution<u32>(weight_set[0][1].cbegin(),
+                                        weight_set[0][1].cend()) },
+      { WalkerDiscreteDistribution<u32>(weight_set[1][0].cbegin(),
+                                        weight_set[1][0].cend()),
+        WalkerDiscreteDistribution<u32>(weight_set[1][1].cbegin(),
+                                        weight_set[1][1].cend()) }
     };
 
     // Dynamic part: the following part runs during a fuzzing campaign
 
     bool has_extras  = !extras.empty();
     bool has_aextras = !a_extras.empty();
-    return dists[has_extras][has_aextras](engine);
+    return dists[has_extras][has_aextras]();
 }
 
 } // namespace fuzzuf::algorithm::afl::util
