@@ -26,17 +26,20 @@
 #include "fuzzuf/algorithms/afl/afl_state.hpp"
 #include "fuzzuf/executor/native_linux_executor.hpp"
 #include <boost/program_options.hpp>
+#include <cstdlib>
 
 namespace po = boost::program_options;
 
 struct AFLFuzzerOptions {
     bool forksrv;                           // Optional
     std::string dict_file;                  // Optional
+    bool frida_mode;                        // Optional
 
     // Default values
     AFLFuzzerOptions() : 
         forksrv(true),
-        dict_file("")
+        dict_file(""),
+        frida_mode(false)
         {};
 };
 
@@ -76,6 +79,9 @@ std::unique_ptr<TFuzzer> BuildAFLFuzzerFromArgs(
         ("pargs", 
             po::value<std::vector<std::string>>(&pargs), 
             "Specify PUT and args for PUT.")
+        ("frida",
+            po::value<bool>(&afl_options.frida_mode)->default_value(afl_options.frida_mode),
+            "Enable/disable frida mode. Default to false.")
     ;
 
     po::variables_map vm;
@@ -90,6 +96,23 @@ std::unique_ptr<TFuzzer> BuildAFLFuzzerFromArgs(
 
     if (global_options.help) {
         fuzzuf::cli::fuzzer::afl::usage(fuzzer_args.global_options_description);
+    }
+
+    u32 extra_mem = 0;
+    if (afl_options.frida_mode) {
+        DEBUG("Frida mode enabled");
+        setenv("__AFL_DEFER_FORKSRV", "1", 1);
+        // FIXME: Use CMake to set FRIDA_ROOT
+        if (getenv("FRIDA_PATH")) {
+            char *tmp = realpath(getenv("FRIDA_PATH"), nullptr);
+            setenv("LD_PRELOAD", tmp, 1);
+            struct stat statbuf;
+            stat(tmp, &statbuf);
+            extra_mem += statbuf.st_size;
+            free(tmp);
+        } else {
+            setenv("LD_PRELOAD", "/aflpp/afl-frida-trace.so", 1);
+        }
     }
 
     PutArgs put(pargs);
@@ -120,7 +143,7 @@ std::unique_ptr<TFuzzer> BuildAFLFuzzerFromArgs(
                         global_options.in_dir,
                         global_options.out_dir,
                         global_options.exec_timelimit_ms.value_or(GetExecTimeout<AFLTag>()),
-                        global_options.exec_memlimit.value_or(GetMemLimit<AFLTag>()),
+                        global_options.exec_memlimit.value_or(GetMemLimit<AFLTag>()) + extra_mem,
                         afl_options.forksrv,
                         /* dumb_mode */ false,  // FIXME: add dumb_mode
                         NativeLinuxExecutor::CPUID_BIND_WHICHEVER
