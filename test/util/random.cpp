@@ -73,16 +73,18 @@ BOOST_AUTO_TEST_CASE(TestWalkerDiscreteDistributionSimple) {
 
   size_t iter = 1000000; // large enough
   for (size_t i = 0; i < iter; i++) {
-    res[s()]++;
+    size_t index = s();
+    BOOST_CHECK(index < len);
+    res[index]++;
   }
 
-  std::vector<double> res_p;
-  for (size_t f: res) {
-    res_p.push_back(static_cast<double>(f) / static_cast<double>(iter));
-  }
-
+  constexpr double Z = 1.96; // alpha=0.05, Z_{0.025}
   for (size_t i = 0; i < len; i++) {
-    BOOST_CHECK(base[i] * 0.95 < res_p[i] && base[i] * 1.05 > res_p[i]);
+    const double p = base[i] / 1.0;  // w_i / sum(w)
+    const double E = iter * p;       // expectation
+    const double V = iter * (1 - p); // variance
+    const double z = (res[i] - E) / std::sqrt(V);
+    BOOST_CHECK(std::abs(z) < Z);
   }
 }
 
@@ -95,12 +97,17 @@ BOOST_AUTO_TEST_CASE(TestWalkerDiscreteDistributionBiased) {
   WalkerDiscreteDistribution<double> s1(w1);
   std::vector<size_t> res1(w1.size());
   for (size_t i = 0; i < iter; i++) {
-    res1[s1()]++;
+    size_t index = s1();
+    BOOST_CHECK(index < w1.size());
+    res1[index]++;
   }
+  constexpr double Z = 1.96;
   for (size_t i = 0; i < w1.size(); i++) {
-    double pa = w1[i] / sum;
-    double ps = static_cast<double>(res1[i]) / static_cast<double>(iter);
-    BOOST_CHECK(pa*0.9 <= ps && ps <= pa*1.1);
+    const double p = w1[i] / sum;
+    const double E = iter * p;
+    const double V = iter * (1 - p);
+    const double z = (res1[i] - E) / std::sqrt(V);
+    BOOST_CHECK(std::abs(z) < Z);
   }
 
   /* 2. Test invalid weights */
