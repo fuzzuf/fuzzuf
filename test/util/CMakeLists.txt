@@ -594,34 +594,3 @@ if( ENABLE_CLANG_TIDY )
   )
 endif()
 add_test( NAME "util.call_with_nth" COMMAND test-util-call_with_nth )
-
-add_executable( test-util-random random.cpp )
-target_link_libraries(
-  test-util-random
-  test-common
-  fuzzuf
-  ${FUZZUF_LIBRARIES}
-  Boost::unit_test_framework
-)
-target_include_directories(
-  test-util-random
-  PRIVATE
-  ${FUZZUF_INCLUDE_DIRS}
-  ${CMAKE_SOURCE_DIR}/test/common
-)
-set_target_properties(
-  test-util-random
-  PROPERTIES COMPILE_FLAGS "${ADDITIONAL_COMPILE_FLAGS_STR}"
-)
-set_target_properties(
-  test-util-random
-  PROPERTIES LINK_FLAGS "${ADDITIONAL_LINK_FLAGS_STR}"
-)
-if( ENABLE_CLANG_TIDY )
-  set_target_properties(
-    test-util-random
-    PROPERTIES
-    CXX_CLANG_TIDY "${CLANG_TIDY};${CLANG_TIDY_CONFIG_FOR_TEST}"
-  )
-endif()
-add_test( NAME "util.random" COMMAND test-util-random )

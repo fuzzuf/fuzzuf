@@ -78,7 +78,9 @@ T Random(T lower, T upper) {
  */
 template <class T>
 T Choose(const T* arr, size_t size) {
-  if (size == 0) throw std::out_of_range("Array must not be empty");
+  if (size == 0)
+    throw std::out_of_range("Array must not be empty");
+
   return arr[Random<size_t>(0, size - 1)];
 }
 
@@ -90,10 +92,11 @@ T Choose(const T* arr, size_t size) {
  */
 template <class T>
 T& Choose(std::vector<T>& v) {
-  if (v.size() == 0) throw std::out_of_range("Array must not be empty");
+  if (v.size() == 0)
+    throw std::out_of_range("Array must not be empty");
+
   return v[Random<size_t>(0, v.size() - 1)];
 }
-
 
 /* Walker's Alias Method */
 template <class T>
@@ -108,45 +111,45 @@ public:
    * @param (size) Size of array
    */
   WalkerDiscreteDistribution(const std::vector<T>& probs) {
-    _index.reserve(probs.size());
-    _threshold.reserve(probs.size());
+    if (probs.size() == 0)
+      throw std::out_of_range("Array must not be empty");
 
-    /* Filter values */
+    /* Check and cast weight */
+    _threshold.reserve(probs.size());
     for (const T p: probs) {
-      if (static_cast<double>(p) < 0.0
-          || std::isnan(static_cast<double>(p))) {
-        /* Invalid weights */
+      if (static_cast<double>(p) < 0.0 || std::isnan(static_cast<double>(p)))
         throw std::range_error("Weight must not be negative or NaN");
-      }
 
       _threshold.push_back(static_cast<double>(p));
     }
 
-    /* Calculate sum */
+    /* Calculate sum of weights */
     const double n = static_cast<double>(_threshold.size());
     double sum = std::accumulate(_threshold.begin(), _threshold.end(), 0.0);
-    if (sum == std::numeric_limits<double>::infinity()) {
+
+    if (sum == std::numeric_limits<double>::infinity())
       throw std::range_error("Sum of weights must not be inifinity");
-    }
+    else if (sum <= 0.0)
+      throw std::range_error("Sum of weights must be positive");
 
     /* Normalize weights so that average becomes 1 */
     for (double& p: _threshold) {
-      /* This will be NaN if all weights are 0 but it works fine */
       p = (p / sum) * n;
     }
+
+    /* Prepare index */
+    _index.resize(_threshold.size());
+    std::iota(_index.begin(), _index.end(), 0);
 
     /* Split weights into two groups */
     std::vector<size_t> small, large;
     size_t i = 0;
     for (double p: _threshold) {
       if (p < 1.0) {
-        small.push_back(i);
+        small.push_back(i++);
       } else {
-        large.push_back(i);
+        large.push_back(i++);
       }
-
-      /* Prepare index */
-      _index.push_back(i++);
     }
 
     while (!small.empty() && !large.empty()) {

@@ -298,6 +298,9 @@ set(
   algorithms/libfuzzer/utils.cpp
   algorithms/libfuzzer/config.cpp
   algorithms/nautilus/fuzzer/fuzzer.cpp
+  algorithms/nautilus/fuzzer/mutation_hierarflow_routines.cpp
+  algorithms/nautilus/fuzzer/other_hierarflow_routines.cpp
+  algorithms/nautilus/fuzzer/update_hierarflow_routines.cpp
   algorithms/nautilus/grammartec/chunkstore.cpp
   algorithms/nautilus/grammartec/context.cpp
   algorithms/nautilus/grammartec/mutator.cpp
