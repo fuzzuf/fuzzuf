@@ -98,16 +98,6 @@ T& Choose(std::vector<T>& v) {
 template <class T>
 class WalkerDiscreteDistribution {
 public:
-  struct AliasEntry {
-    AliasEntry() = delete;
-    AliasEntry(size_t val, size_t alias, double prob_of_val)
-      : val(val), alias(alias), prob_of_val(prob_of_val) {}
-
-    size_t val;
-    size_t alias;
-    double prob_of_val;
-  };
-
   WalkerDiscreteDistribution() {};
 
   /**
@@ -117,47 +107,44 @@ public:
    * @param (size) Size of array
    */
   WalkerDiscreteDistribution(const T* probs, size_t size) {
-    assert (probs != NULL && size != 0);
-
-    double n = static_cast<double>(size);
-    double inv_n = 1.0 / n;
-
-    double s = 0.0;
+    /* Calculate average */
+    _average = 0.0;
     for (size_t i = 0; i < size; i++) {
-      s += static_cast<double>(probs[i]);
+      _average += static_cast<double>(probs[i]);
     }
+    _average /= static_cast<double>(size);
 
-    /* Get index-weight pairs */
-    std::vector<std::pair<size_t, double>> tmp;
+    /* Split weights into two groups */
+    std::vector<size_t> small, large;
     for (size_t i = 0; i < size; i++) {
-      tmp.emplace_back(std::make_pair(i, static_cast<double>(probs[i]) / s));
+      if (static_cast<double>(probs[i]) < _average) {
+        small.push_back(i);
+      } else {
+        large.push_back(i);
+      }
+
+      /* Prepare index and threshold */
+      _index.push_back(i);
+      _threshold.push_back(static_cast<double>(probs[i]));
     }
 
-    while (tmp.size() > 1) {
-      /* Descending sort */
-      std::sort(tmp.begin(), tmp.end(),
-                [](auto a, auto b) {
-                  return a.second > b.second;
-                });
+    while (!small.empty() && !large.empty()) {
+      size_t j = small.back();
+      small.pop_back();
+      size_t k = large.back();
 
-      /* Take one from small group */
-      auto [min_i, min_p] = tmp.back();
-      tmp.pop_back();
+      /* j-th entry has j-th and k-th weights */
+      _index[j] = k;
 
-      /* Take one from big group */
-      auto& [max_i, max_p] = tmp[0];
-      _entries.emplace_back(min_i, max_i, min_p * n);
+      /* Fill remaining region by k-th weights */
+      _threshold[k] -= (_average - _threshold[j]);
 
-      max_p -= inv_n - min_p;
+      if (_threshold[k] <= _average) {
+        /* If k-th weight gets smaller than average, put it into small group */
+        small.push_back(k);
+        large.pop_back();
+      }
     }
-
-    auto [last_i, last_p] = tmp.back();
-    tmp.pop_back();
-
-    /* Last value should always be exactly 1 but we consider precision */
-    assert (0.999 < last_p * n && last_p * n < 1.001);
-
-    _entries.emplace_back(last_i, std::numeric_limits<size_t>::max(), 1.0);
   }
 
   /**
@@ -174,19 +161,19 @@ public:
    * @return Array index chosen by weighted random
    */
   size_t operator() () const {
-    size_t index = Random<size_t>(0, _entries.size()-1);
-    double coin = Random<double>(0.0, 1.0);
-    const AliasEntry& entry = _entries[index];
+    size_t i = Random<size_t>(0, _index.size() - 1);
 
-    if (coin > entry.prob_of_val) {
-      return entry.alias;
+    if (_threshold[i] > Random<double>(0.0, _average)) {
+      return i;
+    } else {
+      return _index[i];
     }
-
-    return entry.val;
   }
 
 private:
-  std::vector<AliasEntry> _entries;
+  double _average;
+  std::vector<size_t> _index;
+  std::vector<double> _threshold;
 };
 
 } // namespace fuzzuf::utils::random
