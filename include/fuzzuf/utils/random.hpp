@@ -167,7 +167,7 @@ public:
 
   /**
    * @fn
-   * @brief 
+   * @brief Randomly choose an index
    * @return Array index chosen by weighted random
    */
   size_t operator() () const {
