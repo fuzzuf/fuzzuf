@@ -5,24 +5,7 @@
 ここでは、ファザーコレクションとしてのfuzzufを、どのように使えばよいかを段階的に説明します。
 ファザー構築フレームワークとしてのfuzzufの使い方は、別のドキュメントを参照してください。
 
-## ビルド要件
-
-* [gcc](https://gcc.gnu.org/) バージョン7以上
-  * バージョン8以上を推奨
-  * 静的解析にはバージョン10以上が必要
-* [CMake](https://cmake.org/) バージョン3.10以上
-* [Boost C++ library](https://www.boost.org/) バージョン1.53.0以上
-* [CPython](https://www.python.org/) バージョン3.0以上
-  * (optional) VUzzerの利用にはバージョン3.7以上が必要
-* [pybind11](https://pybind11.readthedocs.io/en/stable/) バージョン2.2以上
-* [Nlohmann JSON](https://json.nlohmann.me/) バージョン2.1.1以上
-* [Crypto\+\+](https://www.cryptopp.com/)
-* (optional) [Doxgen](https://www.doxygen.nl/index.html)
-* (optional) [Graphviz](https://graphviz.org/)
-* (optional) [Mscgen](https://www.mcternan.me.uk/mscgen/)
-* (optional) [Dia Diagram Editor](https://sourceforge.net/projects/dia-installer/)
-* (optional) [Intel Pin](https://software.intel.com/content/www/us/en/develop/articles/pin-a-dynamic-binary-instrumentation-tool.html) [3.7](https://software.intel.com/sites/landingpage/pintool/downloads/pin-3.7-97619-g0d0c92f4f-gcc-linux.tar.gz)
-### ビルド方法
+## ビルド方法
 
 推奨環境: Ubuntu 20.04（あるいは18.04）
 
@@ -53,7 +36,9 @@ $ cmake ../ -DCMAKE_BUILD_TYPE=Release # 古い形式のコマンドなのは、
 $ make -j$(nproc)
 ```
 
-### ファザーの使い方
+詳しいビルド方法については[building.md](/docs/building.md)を参照してください。
+
+## ファザーの使い方
 
 このセクションでは、[docs/resources/exifutil](/docs/resources/exifutil)ディレクトリ以下に配置された、JPEGファイルからexif情報をパースするプログラム`exifutil`に対して、ファジングを行います。
 ファジングを行うためには、プログラムのコンパイル時に計装を呼ばれる作業が必要です。このために、追加でaptから`afl++-clang`または`afl-clang`パッケージをインストールする必要があります。
@@ -92,7 +77,7 @@ $ ./fuzzuf afl --in_dir=/tmp/input \
 具体的にはPUTをクラッシュさせる入力が発見され、それ以前に保存されたものと重複しないと判断されると、その入力は`--out_dir`オプションで示されたディレクトリ以下の、`crashes`ディレクトリに保存され、上記UIの右上にある`unique crashes`の数値が1増加します。  
 ファジングを終了するには、`Ctrl-C`で`fuzzuf`プロセスに対して`SIGINT`を送ります。`--out_dir`ディレクトリ以下の、クラッシュやハングを引き起こした入力を確認し、その原因を分析しましょう。
 
-### 使用するファザーの変更
+## 使用するファザーの変更
 
 fuzzufで利用できるファザーは、AFLだけではありません。次は、AFLFastを使って、同じテスト用バイナリをファジングします。AFLFastがどのようなファザーかについては、[AFLFastのドキュメント](/docs/algorithms/aflfast/algorithm_ja.md)を参照してください。
 使用するファザーを変更するには、fuzzufのコマンドライン引数（およびそれに伴うオプション）を変えるだけです。先ほどのコマンドにおけるファザーの指定を、`afl`から`aflfast`に変えて実行してみましょう。

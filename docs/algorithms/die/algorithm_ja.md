@@ -25,7 +25,7 @@ DIEを実行するには以下のツールが必要です。各自でインス�
 - Python 3 (3.6以降を推奨)
 
 ### 自動セットアップ
-fuzzufはDIEを利用するためのスクリプトを提供します。上述の「要件」を満たし、fuzzufを [ビルドした](/TUTORIAL.md#building-fuzzuf) 後、次のコマンドを実行するとセットアップが自動で実行されます。
+fuzzufはDIEを利用するためのスクリプトを提供します。上述の「要件」を満たし、fuzzufを [ビルドした](/docs/building.md) 後、次のコマンドを実行するとセットアップが自動で実行されます。
 
 ```bash
 cmake --build build --target die
