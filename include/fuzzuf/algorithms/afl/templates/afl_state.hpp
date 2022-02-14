@@ -97,14 +97,14 @@ InplaceMemoryFeedback AFLStateTemplate<Testcase>::RunExecutorWithClassifyCounts(
 
     if constexpr (sizeof(size_t) == 8) {
         inp_feed.ModifyMemoryWithFunc(
-            [](u8* trace_bits, u32 map_size) {
-                afl::util::ClassifyCounts<u64>((u64*)trace_bits, map_size);
+            [](u8* trace_bits, u32 /* map_size */) {
+                afl::util::ClassifyCounts<u64>((u64*)trace_bits, option::GetMapSize<Tag>());
             }
         );
     } else {
         inp_feed.ModifyMemoryWithFunc(
-            [](u8* trace_bits, u32 map_size) {
-                afl::util::ClassifyCounts<u32>((u32*)trace_bits, map_size);
+            [](u8* trace_bits, u32 /* map_size */) {
+                afl::util::ClassifyCounts<u32>((u32*)trace_bits, option::GetMapSize<Tag>());
             }
         );
     }
@@ -147,9 +147,9 @@ PUTExitReasonType AFLStateTemplate<Testcase>::CalibrateCaseWithFeedDestroyed(
     u8 new_bits = 0;
     if (testcase.exec_cksum) {
         inp_feed.ShowMemoryToFunc(
-            [this, &first_trace, &hnb](const u8* trace_bits, u32 map_size) {
-                std::memcpy(first_trace.data(), trace_bits, map_size);
-                hnb = HasNewBits(trace_bits, &virgin_bits[0], map_size);
+            [this, &first_trace, &hnb](const u8* trace_bits, u32 /* map_size */) {
+                std::memcpy(first_trace.data(), trace_bits, option::GetMapSize<Tag>());
+                hnb = HasNewBits(trace_bits, &virgin_bits[0], option::GetMapSize<Tag>());
             }
         );
 
@@ -184,8 +184,8 @@ PUTExitReasonType AFLStateTemplate<Testcase>::CalibrateCaseWithFeedDestroyed(
 
         if (testcase.exec_cksum != cksum) {
             inp_feed.ShowMemoryToFunc(
-                [this, &hnb](const u8* trace_bits, u32 map_size) {
-                    hnb = HasNewBits(trace_bits, &virgin_bits[0], map_size);
+                [this, &hnb](const u8* trace_bits, u32 /* map_size */) {
+                    hnb = HasNewBits(trace_bits, &virgin_bits[0], option::GetMapSize<Tag>());
                 }
             );
 
@@ -193,8 +193,8 @@ PUTExitReasonType AFLStateTemplate<Testcase>::CalibrateCaseWithFeedDestroyed(
 
             if (testcase.exec_cksum) {
                 inp_feed.ShowMemoryToFunc(
-                    [this, &first_trace](const u8* trace_bits, u32 map_size) {
-                        for (u32 i=0; i < map_size; i++) {
+                    [this, &first_trace](const u8* trace_bits, u32 /* map_size */) {
+                        for (u32 i=0; i < option::GetMapSize<Tag>(); i++) {
                             if (!var_bytes[i] && first_trace[i] != trace_bits[i]) {
                                 var_bytes[i] = 1;
                                 stage_max = option::GetCalCyclesLong(*this);
@@ -207,8 +207,8 @@ PUTExitReasonType AFLStateTemplate<Testcase>::CalibrateCaseWithFeedDestroyed(
             } else {
                 testcase.exec_cksum = cksum;
                 inp_feed.ShowMemoryToFunc(
-                    [&first_trace](const u8* trace_bits, u32 map_size) {
-                        std::memcpy(first_trace.data(), trace_bits, map_size);
+                    [&first_trace](const u8* trace_bits, u32 /* map_size */) {
+                        std::memcpy(first_trace.data(), trace_bits, option::GetMapSize<Tag>());
                     }
                 );
             }
@@ -349,8 +349,8 @@ void AFLStateTemplate<Testcase>::UpdateBitmapScore(
     const InplaceMemoryFeedback &inp_feed
 ) {
     inp_feed.ShowMemoryToFunc(
-        [this, &testcase](const u8* trace_bits, u32 map_size) {
-            UpdateBitmapScoreWithRawTrace(testcase, trace_bits, map_size);
+        [this, &testcase](const u8* trace_bits, u32 /* map_size */) {
+            UpdateBitmapScoreWithRawTrace(testcase, trace_bits, option::GetMapSize<Tag>());
         }
     );
 }
@@ -373,8 +373,8 @@ bool AFLStateTemplate<Testcase>::SaveIfInteresting(
         u8 hnb;
 
         inp_feed.ShowMemoryToFunc(
-            [this, &hnb](const u8* trace_bits, u32 map_size) {
-                hnb = HasNewBits(trace_bits, &virgin_bits[0], map_size);
+            [this, &hnb](const u8* trace_bits, u32 /* map_size */) {
+                hnb = HasNewBits(trace_bits, &virgin_bits[0], option::GetMapSize<Tag>());
             }
         );
 
@@ -440,22 +440,22 @@ bool AFLStateTemplate<Testcase>::SaveIfInteresting(
         if (!setting->dumb_mode) {
             if constexpr (sizeof(size_t) == 8) {
                 inp_feed.ModifyMemoryWithFunc(
-                    [](u8* trace_bits, u32 map_size) {
-                        afl::util::SimplifyTrace<u64>((u64*)trace_bits, map_size);
+                    [](u8* trace_bits, u32 /* map_size */) {
+                        afl::util::SimplifyTrace<u64>((u64*)trace_bits, option::GetMapSize<Tag>());
                     }
                 );
             } else {
                 inp_feed.ModifyMemoryWithFunc(
-                    [](u8* trace_bits, u32 map_size) {
-                        afl::util::SimplifyTrace<u32>((u32*)trace_bits, map_size);
+                    [](u8* trace_bits, u32 /* map_size */) {
+                        afl::util::SimplifyTrace<u32>((u32*)trace_bits, option::GetMapSize<Tag>());
                     }
                 );
             }
 
             u8 res;
             inp_feed.ShowMemoryToFunc(
-                [this, &res](const u8* trace_bits, u32 map_size) {
-                    res = HasNewBits(trace_bits, &virgin_tmout[0], map_size);
+                [this, &res](const u8* trace_bits, u32 /* map_size */) {
+                    res = HasNewBits(trace_bits, &virgin_tmout[0], option::GetMapSize<Tag>());
                 }
             );
 
@@ -525,22 +525,22 @@ keep_as_crash:
         if (!setting->dumb_mode) {
             if constexpr (sizeof(size_t) == 8) {
                 inp_feed.ModifyMemoryWithFunc(
-                    [](u8* trace_bits, u32 map_size) {
-                        afl::util::SimplifyTrace<u64>((u64*)trace_bits, map_size);
+                    [](u8* trace_bits, u32 /* map_size */) {
+                        afl::util::SimplifyTrace<u64>((u64*)trace_bits, option::GetMapSize<Tag>());
                     }
                 );
             } else {
                 inp_feed.ModifyMemoryWithFunc(
-                    [](u8* trace_bits, u32 map_size) {
-                        afl::util::SimplifyTrace<u32>((u32*)trace_bits, map_size);
+                    [](u8* trace_bits, u32 /* map_size */) {
+                        afl::util::SimplifyTrace<u32>((u32*)trace_bits, option::GetMapSize<Tag>());
                     }
                 );
             }
 
             u8 res;
             inp_feed.ShowMemoryToFunc(
-                [this, &res](const u8* trace_bits, u32 map_size) {
-                    res = HasNewBits(trace_bits, &virgin_crash[0], map_size);
+                [this, &res](const u8* trace_bits, u32 /* map_size */) {
+                    res = HasNewBits(trace_bits, &virgin_crash[0], option::GetMapSize<Tag>());
                 }
             );
 
@@ -1204,9 +1204,9 @@ static void CheckMapCoverage(const InplaceMemoryFeedback &inp_feed) {
     if (inp_feed.CountNonZeroBytes() < 100) return ;
 
     inp_feed.ShowMemoryToFunc(
-        [](const u8 *trace_bits, u32 map_size) {
+        [](const u8 *trace_bits, u32 /* map_size */) {
             u32 start = 1 << (option::GetMapSizePow2<Tag>() - 1);
-            for (u32 i = start; i < map_size; i++) {
+            for (u32 i = start; i < option::GetMapSize<Tag>(); i++) {
                 if (trace_bits[i]) return;
             }
 
