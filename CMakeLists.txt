@@ -288,6 +288,11 @@ set(
   algorithms/die/die_fuzzer.cpp
   algorithms/die/die_hierarflow_routines.cpp
   algorithms/die/die_state.cpp
+  algorithms/ijon/ijon_fuzzer.cpp
+  algorithms/ijon/ijon_havoc.cpp
+  algorithms/ijon/ijon_hierarflow_routines.cpp
+  algorithms/ijon/ijon_state.cpp
+  algorithms/ijon/ijon_testcase.cpp
   algorithms/libfuzzer/config.cpp
   algorithms/libfuzzer/dictionary.cpp
   algorithms/libfuzzer/fuzzer.cpp
