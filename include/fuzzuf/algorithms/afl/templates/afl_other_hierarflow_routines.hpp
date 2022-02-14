@@ -75,7 +75,7 @@ SelectSeedTemplate<State>::SelectSeedTemplate(State &state)
 
 template<class State>
 NullableRef<HierarFlowCallee<void(void)>> SelectSeedTemplate<State>::operator()(void) {
-    if (state.current_entry >= state.case_queue.size()) {
+    if (state.queue_cycle == 0 || state.current_entry >= state.case_queue.size()) {
         state.queue_cycle++;
         state.current_entry = state.seek_to; // seek_to is used in resume mode
         state.seek_to = 0;
@@ -102,10 +102,7 @@ NullableRef<HierarFlowCallee<void(void)>> SelectSeedTemplate<State>::operator()(
             sync_fuzzers(use_argv);
 #endif
 
-        // FIXME: here assert is used
-        // this assert ensures that the container "case_queue" has the key "state.current_entry" (since case_queue is a vector)
-        assert(state.current_entry < state.case_queue.size());
-
+        DEBUG_ASSERT(state.current_entry < state.case_queue.size());
     }
 
     // get the testcase indexed by state.current_entry and start mutations
