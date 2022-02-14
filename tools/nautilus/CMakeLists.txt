@@ -1,0 +1,21 @@
+add_executable( generator generator.cpp )
+target_link_libraries(
+  generator
+  fuzzuf
+  ${FUZZUF_LIBRARIES}
+  Boost::system
+  Boost::program_options
+)
+target_include_directories(
+  generator
+  PRIVATE
+  ${FUZZUF_INCLUDE_DIRS}
+)
+set_target_properties(
+  generator
+  PROPERTIES COMPILE_FLAGS "${ADDITIONAL_COMPILE_FLAGS_STR}"
+)
+set_target_properties(
+  generator
+  PROPERTIES LINK_FLAGS "${ADDITIONAL_COMPILE_FLAGS_STR}"
+)
