@@ -34,7 +34,7 @@ template<class State>
 class AFLFuzzerTemplate : public Fuzzer {
 public:
     explicit AFLFuzzerTemplate(std::unique_ptr<State>&& state);
-    ~AFLFuzzerTemplate();
+    virtual ~AFLFuzzerTemplate();
 
     virtual void BuildFuzzFlow(void);
     virtual void OneLoop(void);
