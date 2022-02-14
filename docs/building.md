@@ -180,5 +180,5 @@ cmake --build build --target fuzzuf_doc
 
 ## Learn More
 
-[TUTORIAL.md](/docs/TUTORIAL.md) describes how to instrument PUTs and fuzz with AFL and AFLFast using a program with intentional bugs.
+[tutorial.md](/docs/tutorial.md) describes how to instrument PUTs and fuzz with AFL and AFLFast using a program with intentional bugs.
 For more information about each algorithm, please refer to the documentation in [docs/algorithms](/docs/algorithms).
