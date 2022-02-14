@@ -33,7 +33,7 @@
 #include "fuzzuf/algorithms/nautilus/grammartec/tree.hpp"
 
 
-namespace fuzzuf::algorithms::nautilus::grammartec {
+namespace fuzzuf::algorithm::nautilus::grammartec {
 
 using FTester = std::function<bool(
   TreeMutation&, std::unordered_set<size_t>&, Context&
@@ -83,4 +83,4 @@ private:
   Tree _scratchpad;
 };
 
-} // namespace fuzzuf::algorithms::nautilus::grammartec
+} // namespace fuzzuf::algorithm::nautilus::grammartec

@@ -32,7 +32,7 @@
 #include "fuzzuf/utils/random.hpp"
 
 
-namespace fuzzuf::algorithms::nautilus::grammartec {
+namespace fuzzuf::algorithm::nautilus::grammartec {
 
 using fuzzuf::utils::random::WalkerDiscreteDistribution;
 
@@ -59,4 +59,4 @@ private:
   std::vector<NodeID> _node_by_offset;
 };
 
-} // namespace fuzzuf::algorithms::nautilus::grammartec
+} // namespace fuzzuf::algorithm::nautilus::grammartec

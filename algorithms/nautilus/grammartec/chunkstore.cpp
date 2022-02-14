@@ -25,7 +25,7 @@
 #include "fuzzuf/utils/random.hpp"
 
 
-namespace fuzzuf::algorithms::nautilus::grammartec {
+namespace fuzzuf::algorithm::nautilus::grammartec {
 
 /**
  * @fn
@@ -107,4 +107,4 @@ std::optional<std::pair<Tree, NodeID>> ChunkStore::GetAlternativeTo(
   return std::pair<Tree, NodeID>(_trees.at(selected.first), selected.second);
 }
 
-} // namespace fuzzuf::algorithms::nautilus::grammartec
+} // namespace fuzzuf::algorithm::nautilus::grammartec

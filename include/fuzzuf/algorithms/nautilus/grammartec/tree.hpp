@@ -33,7 +33,7 @@
 #include "fuzzuf/algorithms/nautilus/grammartec/rule.hpp"
 
 
-namespace fuzzuf::algorithms::nautilus::grammartec {
+namespace fuzzuf::algorithm::nautilus::grammartec {
 
 class RecursionInfo;
 class Tree;
@@ -158,4 +158,4 @@ private:
   Context& _ctx;
 };
 
-} // namespace fuzzuf::algorithms::nautilus::grammartec
+} // namespace fuzzuf::algorithm::nautilus::grammartec

@@ -33,7 +33,7 @@
 #include "fuzzuf/utils/random.hpp"
 
 
-namespace fuzzuf::algorithms::nautilus::grammartec {
+namespace fuzzuf::algorithm::nautilus::grammartec {
 
 /**
  * @fn
@@ -435,4 +435,4 @@ Tree Context::GenerateTreeFromRule(const RuleID& r, size_t len) {
   return tree;
 }
 
-} // namespace fuzzuf::algorithms::nautilus::grammartec
+} // namespace fuzzuf::algorithm::nautilus::grammartec

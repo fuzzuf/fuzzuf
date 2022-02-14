@@ -29,7 +29,7 @@
 #include "fuzzuf/algorithms/nautilus/grammartec/newtypes.hpp"
 
 
-namespace fuzzuf::algorithms::nautilus::grammartec {
+namespace fuzzuf::algorithm::nautilus::grammartec {
 
 struct RuleIDOrCustom;
 class Rule;
@@ -82,4 +82,4 @@ private:
   size_t _max_len;
 };
 
-} // namespace fuzzuf::algorithms::nautilus::grammartec
+} // namespace fuzzuf::algorithm::nautilus::grammartec

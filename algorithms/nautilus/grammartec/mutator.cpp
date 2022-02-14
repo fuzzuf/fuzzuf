@@ -24,7 +24,7 @@
 #include "fuzzuf/utils/random.hpp"
 
 
-namespace fuzzuf::algorithms::nautilus::grammartec {
+namespace fuzzuf::algorithm::nautilus::grammartec {
 
 /**
  * @fn
@@ -303,4 +303,4 @@ std::optional<Tree> Mutator::TestAndConvert(
   return std::nullopt;
 }
 
-} // namespace fuzzuf::algorithms::nautilus::grammartec
+} // namespace fuzzuf::algorithm::nautilus::grammartec

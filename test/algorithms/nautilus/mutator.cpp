@@ -29,7 +29,7 @@
 #include "fuzzuf/algorithms/nautilus/grammartec/tree.hpp"
 
 
-using namespace fuzzuf::algorithms::nautilus::grammartec;
+using namespace fuzzuf::algorithm::nautilus::grammartec;
 
 BOOST_AUTO_TEST_CASE(NautilusGrammartecMutatorMutRandomRecursion) {
   RuleID r1(0);

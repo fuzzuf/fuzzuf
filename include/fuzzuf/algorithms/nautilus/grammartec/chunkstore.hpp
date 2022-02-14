@@ -33,7 +33,7 @@
 #include "fuzzuf/algorithms/nautilus/grammartec/tree.hpp"
 
 
-namespace fuzzuf::algorithms::nautilus::grammartec {
+namespace fuzzuf::algorithm::nautilus::grammartec {
 
 using Chunk = std::pair<size_t, NodeID>;
 
@@ -60,4 +60,4 @@ private:
   size_t _number_of_chunks;
 };
 
-} // namespace fuzzuf::algorithms::nautilus::grammartec
+} // namespace fuzzuf::algorithm::nautilus::grammartec

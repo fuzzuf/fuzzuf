@@ -30,7 +30,7 @@
 #include "fuzzuf/utils/random.hpp"
 
 
-namespace fuzzuf::algorithms::nautilus::grammartec {
+namespace fuzzuf::algorithm::nautilus::grammartec {
 
 using fuzzuf::utils::random::WalkerDiscreteDistribution;
 
@@ -146,4 +146,4 @@ size_t RecursionInfo::GetNumberOfRecursions() const {
   return _node_by_offset.size();
 }
 
-} // namespace fuzzuf::algorithms::nautilus::grammartec
+} // namespace fuzzuf::algorithm::nautilus::grammartec

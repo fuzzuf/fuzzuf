@@ -26,7 +26,7 @@
 #include "fuzzuf/utils/filesystem.hpp"
 
 
-using namespace fuzzuf::algorithms::nautilus::grammartec;
+using namespace fuzzuf::algorithm::nautilus::grammartec;
 
 BOOST_AUTO_TEST_CASE(NautilusGrammartecChunkstore) {
   Context ctx;

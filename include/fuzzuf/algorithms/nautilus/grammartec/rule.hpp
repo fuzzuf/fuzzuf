@@ -29,7 +29,7 @@
 #include "fuzzuf/algorithms/nautilus/grammartec/newtypes.hpp"
 
 
-namespace fuzzuf::algorithms::nautilus::grammartec {
+namespace fuzzuf::algorithm::nautilus::grammartec {
 
 class Tree;
 class Context;
@@ -119,4 +119,4 @@ private:
 
 std::string ShowBytes(const std::string& bs);
 
-} // namespace fuzzuf::algorithms::nautilus::grammartec
+} // namespace fuzzuf::algorithm::nautilus::grammartec

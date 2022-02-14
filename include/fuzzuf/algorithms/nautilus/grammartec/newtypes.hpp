@@ -25,7 +25,7 @@
 #include <boost/range/irange.hpp>
 
 
-namespace fuzzuf::algorithms::nautilus::grammartec {
+namespace fuzzuf::algorithm::nautilus::grammartec {
 
 class IDBase {
 public:
@@ -68,12 +68,12 @@ struct NTermID : IDBase {
   using IDBase::IDBase;
 };
 
-} // namespace fuzzuf::algorithms::nautilus::grammartec
+} // namespace fuzzuf::algorithm::nautilus::grammartec
 
 
 namespace std {
 
-using namespace fuzzuf::algorithms::nautilus::grammartec;
+using namespace fuzzuf::algorithm::nautilus::grammartec;
 
 /* Define hash function for use in unordered_map */
 template<>

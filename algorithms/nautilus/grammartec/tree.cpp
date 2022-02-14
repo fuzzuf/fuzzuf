@@ -26,7 +26,7 @@
 #include "fuzzuf/exceptions.hpp"
 
 
-namespace fuzzuf::algorithms::nautilus::grammartec {
+namespace fuzzuf::algorithm::nautilus::grammartec {
 
 /**
  * @fn
@@ -569,4 +569,4 @@ NodeID Unparser::Unparse() {
   return NodeID(_i);
 }
 
-} // namespace fuzzuf::algorithms::nautilus::grammartec;
+} // namespace fuzzuf::algorithm::nautilus::grammartec;

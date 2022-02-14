@@ -32,7 +32,7 @@
 #include "fuzzuf/utils/common.hpp"
 
 
-namespace fuzzuf::algorithms::nautilus::grammartec {
+namespace fuzzuf::algorithm::nautilus::grammartec {
 
 /**
  * @fn
@@ -339,4 +339,4 @@ std::string ShowBytes(const std::string& bs) {
   return ss.str();
 }
 
-} // namespace fuzzuf::algorithms::nautilus::grammartec
+} // namespace fuzzuf::algorithm::nautilus::grammartec

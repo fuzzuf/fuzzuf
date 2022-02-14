@@ -23,7 +23,7 @@
 #include "fuzzuf/algorithms/nautilus/grammartec/newtypes.hpp"
 
 
-using namespace fuzzuf::algorithms::nautilus::grammartec;
+using namespace fuzzuf::algorithm::nautilus::grammartec;
 
 BOOST_AUTO_TEST_CASE(NautilusGrammartecNewtypesRuleID) {
   RuleID r1 = 1337;

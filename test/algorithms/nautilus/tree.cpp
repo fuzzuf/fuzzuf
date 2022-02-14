@@ -26,7 +26,7 @@
 #include "fuzzuf/algorithms/nautilus/grammartec/tree.hpp"
 
 
-using namespace fuzzuf::algorithms::nautilus::grammartec;
+using namespace fuzzuf::algorithm::nautilus::grammartec;
 
 size_t CalcSubTreeSizesAndParentsRecTest(
   Tree& tree, const NodeID& n, Context& ctx
