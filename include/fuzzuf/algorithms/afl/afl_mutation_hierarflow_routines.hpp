@@ -475,8 +475,11 @@ public:
     HavocBaseTemplate(State &state);
     virtual ~HavocBaseTemplate() {}
 
+    template<typename CaseDistrib, typename CustomCases>
     bool DoHavoc(
         AFLMutatorTemplate<State>& mutator,
+        CaseDistrib case_distrib,
+        CustomCases custom_cases,
         const std::string &stage_name,
         const std::string &stage_short,
         u32 perf_score,

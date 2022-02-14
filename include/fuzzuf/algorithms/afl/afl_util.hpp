@@ -19,6 +19,7 @@
 
 #include <string>
 #include "fuzzuf/utils/common.hpp"
+#include "fuzzuf/mutator/havoc_case.hpp"
 #include "fuzzuf/algorithms/afl/afl_option.hpp"
 #include "fuzzuf/algorithms/afl/afl_dict_data.hpp"
 #include "fuzzuf/algorithms/afl/count_classes.hpp"
@@ -50,7 +51,9 @@ void ClassifyCounts(UInt *mem, u32 map_size);
 template<class UInt>
 void SimplifyTrace(UInt *mem, u32 map_size);
 
-u32 HavocCaseDistrib(
+constexpr std::array<double, NUM_CASE> AFLGetCaseWeights(bool has_extras, bool has_aextras);
+
+u32 AFLHavocCaseDistrib(
     const std::vector<dictionary::AFLDictData>& extras,
     const std::vector<dictionary::AFLDictData>& a_extras
 );
@@ -195,6 +198,71 @@ void SimplifyTrace(UInt *mem, u32 map_size) {
 
         mem++;
     }
+}
+
+/**
+ * @fn AFLGetCaseWeights
+ * Returns the weights that represent the probabilities of each case being selected in Havoc.
+ * @note Ridiculously, we need a constexpr function just in order to initialize static arrays 
+ * with enum constants(i.e. to use a kind of designated initialization)
+ */ 
+constexpr std::array<double, NUM_CASE> AFLGetCaseWeights(
+    // we provide 4 types of probability weights, depending on
+    //  1. whether AFL has any extras and,
+    //  2. whether AFL has auto extras
+    bool has_extras,
+    bool has_a_extras
+) {
+    std::array<double, NUM_CASE> weights {};
+
+    // We use constexpr + assignment, instead of designated initialization of C lang
+    // This allows us to easily assign and check the weight of each case in havoc.
+
+    weights[FLIP1] = 2.0;
+    weights[XOR]   = 2.0;
+
+    weights[DELETE_BYTES] = 4.0; // case 11 ... 12
+
+    weights[CLONE_BYTES]     = 1.5; // UR(4) != 0 in case 13
+    weights[INSERT_SAME_BYTE] = 0.5; // UR(4) == 0 in case 13
+
+    // The following two cases are the same as the above two cases
+    weights[OVERWRITE_WITH_CHUNK]    = 1.5;
+    weights[OVERWRITE_WITH_SAME_BYTE] = 0.5;
+
+    weights[INT8]     = 2.0;
+    weights[INT16_LE] = 1.0; // UR(2) == 1 in case 2
+    weights[INT16_BE] = 1.0; // UR(2) == 0 in case 2
+    weights[INT32_LE] = 1.0; // UR(2) == 1 in case 3
+    weights[INT32_BE] = 1.0; // UR(2) == 0 in case 3
+
+    // SUB and ADD are the same as INT
+    weights[SUB8]     = 2.0;
+    weights[SUB16_LE] = 1.0;
+    weights[SUB16_BE] = 1.0;
+    weights[SUB32_LE] = 1.0;
+    weights[SUB32_BE] = 1.0;
+
+    weights[ADD8]     = 2.0;
+    weights[ADD16_LE] = 1.0;
+    weights[ADD16_BE] = 1.0;
+    weights[ADD32_LE] = 1.0;
+    weights[ADD32_BE] = 1.0;
+
+    if (has_extras && has_a_extras) {
+        weights[INSERT_EXTRA]          = 1.0;
+        weights[OVERWRITE_WITH_EXTRA]  = 1.0;
+        weights[INSERT_AEXTRA]         = 1.0;
+        weights[OVERWRITE_WITH_AEXTRA] = 1.0;
+    } else if (has_extras) {
+        weights[INSERT_EXTRA]          = 2.0;
+        weights[OVERWRITE_WITH_EXTRA]  = 2.0;
+    } else if (has_a_extras) {
+        weights[INSERT_AEXTRA]         = 2.0;
+        weights[OVERWRITE_WITH_AEXTRA] = 2.0;
+    }
+
+    return weights;
 }
 
 } // namespace fuzzuf::algorithm::afl::util
