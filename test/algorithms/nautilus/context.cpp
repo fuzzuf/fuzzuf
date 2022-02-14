@@ -92,7 +92,7 @@ BOOST_AUTO_TEST_CASE(NautilusGrammartecGenerateLen) {
     RuleIDOrCustom(r0), RuleIDOrCustom(r1), RuleIDOrCustom(r4),
     RuleIDOrCustom(r4), RuleIDOrCustom(r4)
   };
-  Tree tree(rules, ctx);
+  Tree tree(std::move(rules), ctx);
   std::string data;
   tree.UnparseTo(ctx, data);
   BOOST_CHECK_EQUAL(data, "((1*1)+1)");
@@ -102,7 +102,7 @@ BOOST_AUTO_TEST_CASE(NautilusGrammartecGenerateLen) {
     RuleIDOrCustom(r3), RuleIDOrCustom(r4), RuleIDOrCustom(r4),
     RuleIDOrCustom(r4), RuleIDOrCustom(r4), RuleIDOrCustom(r4)
   };
-  tree = Tree(rules, ctx);
+  tree = Tree(std::move(rules), ctx);
   data = "";
   tree.UnparseTo(ctx, data);
   BOOST_CHECK_EQUAL(data, "((((1/1)-1)*1)+1)");

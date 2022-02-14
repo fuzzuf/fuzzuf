@@ -23,6 +23,7 @@
 #pragma once
 
 #include <optional>
+#include <memory>
 #include <sstream>
 #include <string>
 #include <utility>
@@ -62,10 +63,16 @@ public:
 
 class Tree: public TreeLike {
 public:
-  Tree(std::vector<RuleIDOrCustom> rules, Context& ctx);
-  Tree(std::vector<RuleIDOrCustom> rules,
-       std::vector<size_t> sizes,
-       std::vector<NodeID> paren)
+  Tree(std::vector<RuleIDOrCustom>&& rules, Context& ctx);
+  Tree(std::vector<RuleIDOrCustom>&& rules,
+       std::vector<size_t>&& sizes,
+       std::vector<NodeID>&& paren)
+    : _rules(std::move(rules)),
+      _sizes(std::move(sizes)),
+      _paren(std::move(paren)) {};
+  Tree(const std::vector<RuleIDOrCustom>& rules, // constructor with copy
+       const std::vector<size_t>& sizes,
+       const std::vector<NodeID>& paren)
     : _rules(rules), _sizes(sizes), _paren(paren) {};
   std::vector<RuleIDOrCustom>& rules() { return _rules; }
   std::vector<size_t>& sizes() { return _sizes; }
@@ -100,10 +107,12 @@ private:
 
 class TreeMutation: public TreeLike {
 public:
-  TreeMutation(std::vector<RuleIDOrCustom> prefix,
-               std::vector<RuleIDOrCustom> repl,
-               std::vector<RuleIDOrCustom> postfix)
-    : _prefix(prefix), _repl(repl), _postfix(postfix) {}
+  TreeMutation(std::vector<RuleIDOrCustom>&& prefix,
+               std::vector<RuleIDOrCustom>&& repl,
+               std::vector<RuleIDOrCustom>&& postfix)
+    : _prefix(std::move(prefix)),
+      _repl(std::move(repl)),
+      _postfix(std::move(postfix)) {}
   const std::vector<RuleIDOrCustom>& prefix() const { return _prefix; }
   const std::vector<RuleIDOrCustom>& repl() const { return _repl; }
   const std::vector<RuleIDOrCustom>& postfix() const { return _postfix; }

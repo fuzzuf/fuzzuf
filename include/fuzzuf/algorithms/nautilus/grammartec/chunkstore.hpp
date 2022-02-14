@@ -23,6 +23,7 @@
 #pragma once
 
 #include <optional>
+#include <memory>
 #include <string>
 #include <unordered_map>
 #include <unordered_set>
@@ -39,8 +40,8 @@ using Chunk = std::pair<size_t, NodeID>;
 
 class ChunkStore {
 public:
-  ChunkStore(const std::string& work_dir)
-    : _work_dir(work_dir), _number_of_chunks(0) {}
+  ChunkStore(const std::string&& work_dir)
+    : _work_dir(std::move(work_dir)), _number_of_chunks(0) {}
   std::unordered_map<NTermID, std::vector<Chunk>>& nts_to_chunks() {
     return _nts_to_chunks;
   }

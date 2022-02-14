@@ -71,6 +71,12 @@ public:
   Queue(std::string work_dir) : _current_id(0), _work_dir(work_dir) {}
   const std::vector<QueueItem>& inputs() const { return _inputs; }
 
+  void Add(Tree&& tree,
+           std::vector<uint8_t>&& all_bits,
+           PUTExitReasonType exit_reason,
+           Context& ctx,
+           uint32_t execution_time);
+
 private:
   std::vector<QueueItem> _inputs;
   std::vector<QueueItem> _processed;

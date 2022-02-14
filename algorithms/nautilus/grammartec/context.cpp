@@ -23,6 +23,7 @@
 #include <algorithm>
 #include <iostream>
 #include <limits>
+#include <memory>
 #include <optional>
 #include <vector>
 #include "fuzzuf/algorithms/nautilus/grammartec/context.hpp"

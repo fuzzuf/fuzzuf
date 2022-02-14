@@ -49,7 +49,7 @@ BOOST_AUTO_TEST_CASE(NautilusGrammartecMutatorMutRandomRecursion) {
     RuleIDOrCustom(r1), RuleIDOrCustom(r2), RuleIDOrCustom(r3),
     RuleIDOrCustom(r4), RuleIDOrCustom(r5),
   };
-  Tree tree(rules, ctx);
+  Tree tree(std::move(rules), ctx);
 
   Mutator mutator(ctx);
   FTesterMut tester =
@@ -85,11 +85,12 @@ BOOST_AUTO_TEST_CASE(NautilusGrammartecMutatorMinimizeTree) {
   ctx.AddRule("B", "b3{B}");
   ctx.Initialize(10);
 
-  std::vector<RuleIDOrCustom> rules{
-    RuleIDOrCustom(r1), RuleIDOrCustom(r2), RuleIDOrCustom(r3)
-  };
+
   for (size_t i = 0; i < 100; i++) {
-    Tree tree(rules, ctx);
+    std::vector<RuleIDOrCustom> rules{
+      RuleIDOrCustom(r1), RuleIDOrCustom(r2), RuleIDOrCustom(r3)
+    };
+    Tree tree(std::move(rules), ctx);
     Mutator mutator(ctx);
     FTester tester =
       [](TreeMutation& tree_mut,
@@ -125,11 +126,11 @@ BOOST_AUTO_TEST_CASE(NautilusGrammartecMutatorMinimizeRec) {
   ctx.AddRule("B", "b3{B}");
   ctx.Initialize(10);
 
-  std::vector<RuleIDOrCustom> rules{
-    RuleIDOrCustom(r1), RuleIDOrCustom(r2), RuleIDOrCustom(r3)
-  };
   for (size_t i = 0; i < 100; i++) {
-    Tree tree(rules, ctx);
+    std::vector<RuleIDOrCustom> rules{
+      RuleIDOrCustom(r1), RuleIDOrCustom(r2), RuleIDOrCustom(r3)
+    };
+    Tree tree(std::move(rules), ctx);
     Mutator mutator(ctx);
     FTester tester =
       [](TreeMutation& tree_mut,
@@ -213,11 +214,11 @@ BOOST_AUTO_TEST_CASE(NautilusGrammartecMutatorDetRulesValues) {
   ctx.AddRule("B", "b2");
   ctx.Initialize(10);
 
-  std::vector<RuleIDOrCustom> rules{
-    RuleIDOrCustom(r1), RuleIDOrCustom(r2), RuleIDOrCustom(r3)
-  };
   for (size_t i = 0; i < 100; i++) {
-    Tree tree(rules, ctx);
+    std::vector<RuleIDOrCustom> rules{
+      RuleIDOrCustom(r1), RuleIDOrCustom(r2), RuleIDOrCustom(r3)
+    };
+    Tree tree(std::move(rules), ctx);
     Mutator mutator(ctx);
     std::unordered_set<std::string> unparses;
 

@@ -34,8 +34,8 @@ namespace fuzzuf::algorithm::nautilus::grammartec {
  * @param (rules) Vector of rules
  * @param (ctx) Context
  */
-Tree::Tree(std::vector<RuleIDOrCustom> rules, Context& ctx)
-  : _rules(rules) {
+Tree::Tree(std::vector<RuleIDOrCustom>&& rules, Context& ctx)
+  : _rules(std::move(rules)) {
   /* resize: Not only allocate buffer but also change size */
   _sizes.resize(_rules.size(), 0);
   _paren.resize(_rules.size(), NodeID(0));
@@ -168,9 +168,9 @@ TreeMutation Tree::MutateReplaceFromTree(
   size_t old_size = SubTreeSize(n);
   size_t new_size = other.SubTreeSize(other_node);
   return TreeMutation(
-    Slice(NodeID(0), n),                            // prefix
-    other.Slice(other_node, other_node + new_size), // repl
-    Slice(n + old_size, NodeID(_rules.size()))      // postfix
+    std::move(Slice(NodeID(0), n)),                            // prefix
+    std::move(other.Slice(other_node, other_node + new_size)), // repl
+    std::move(Slice(n + old_size, NodeID(_rules.size())))      // postfix
   );
 }
 
@@ -362,7 +362,7 @@ Tree TreeMutation::ToTree(Context& ctx) const {
   vec.insert(vec.end(), _prefix.begin(), _prefix.end());
   vec.insert(vec.end(), _repl.begin(), _repl.end());
   vec.insert(vec.end(), _postfix.begin(), _postfix.end());
-  return Tree(vec, ctx);
+  return Tree(std::move(vec), ctx);
 }
 
 /**
