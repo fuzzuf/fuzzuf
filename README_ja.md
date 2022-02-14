@@ -4,7 +4,7 @@
 
 **fuzzuf**（**fuzz**ing **u**nification **f**ramework）は、DSLによるファジングループ（fuzzing loop）の柔軟な設定と拡張性を兼ね備えた、ファジングツール（ファザー）記述のためのフレームワークです。
 
-fuzzufのビルド方法とチュートリアルは、[TUTORIAL_ja.md](/TUTORIAL_ja.md)を参照してください。
+fuzzufのビルド方法とチュートリアルは、[build.md](/docs/building.md)と[TUTORIAL_ja.md](/docs/TUTORIAL_ja.md)を参照してください。
 
 
 ## fuzzufの目的 (Why use fuzzuf?)
