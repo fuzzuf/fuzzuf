@@ -41,6 +41,7 @@ using DetState = std::pair<size_t, size_t>;
 using RandomState = std::monostate;
 
 struct QueueItem {
+  QueueItem() = delete;
   QueueItem(size_t id,
             Tree&& tree,
             std::unordered_set<size_t>&& fresh_bits,
@@ -70,12 +71,16 @@ class Queue {
 public:
   Queue(std::string work_dir) : _current_id(0), _work_dir(work_dir) {}
   const std::vector<QueueItem>& inputs() const { return _inputs; }
+  size_t size() const { return _inputs.size(); }
 
   void Add(Tree&& tree,
            std::vector<uint8_t>&& all_bits,
            PUTExitReasonType exit_reason,
            Context& ctx,
            uint32_t execution_time);
+  std::optional<QueueItem> Pop();
+  void Finished(QueueItem&& item);
+  void NewRound();
 
 private:
   std::vector<QueueItem> _inputs;
