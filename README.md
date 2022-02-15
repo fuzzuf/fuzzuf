@@ -6,7 +6,7 @@
 
 **fuzzuf** (**fuzz**ing **u**nification **f**ramework) is a fuzzing framework with its own DSL to describe a fuzzing loop by constructing building blocks of fuzzing primitives.
 
-For build instructions and a tutorial, please follow [the TUTORIAL.md](/TUTORIAL.md).
+For build instructions and a tutorial, please follow [building.md](/docs/building.md) and [tutorial.md](/docs/tutorial.md).
 
 ## Why use fuzzuf?
 
