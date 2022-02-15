@@ -25,6 +25,7 @@
 #include <nlohmann/json.hpp>
 #include "fuzzuf/algorithms/nautilus/grammartec/context.hpp"
 #include "fuzzuf/algorithms/nautilus/grammartec/rule.hpp"
+#include "fuzzuf/algorithms/nautilus/grammartec/tree.hpp"
 #include "fuzzuf/exceptions.hpp"
 #include "fuzzuf/utils/common.hpp"
 #include "fuzzuf/utils/filesystem.hpp"
@@ -67,7 +68,7 @@ int main(int argc, char **argv) {
     if (vm.count("help") != 0U) {
       /* Show help message*/
       std::cout << desc << std::endl;
-      return 0;
+      std::exit(0);
     }
 
     po::notify(vm);
@@ -75,7 +76,7 @@ int main(int argc, char **argv) {
   } catch (std::exception& e) {
     /* Error on parsing arguments */
     std::cerr << "[-] Error: " << e.what() << std::endl;
-    return 1;
+    std::exit(1);
   }
 
   Context ctx;
@@ -87,20 +88,50 @@ int main(int argc, char **argv) {
     if (!fs::exists(grammar_path) || fs::is_directory(grammar_path)) {
       std::cerr << "[-] Grammar file does not exist or not a file." << std::endl
                 << "    Path: " << grammar_path << std::endl;
-      return 1;
+      std::exit(1);
     }
 
     /* Load JSON grammar */
     std::ifstream ifs(grammar_path);
     try {
-      json j = json::parse(ifs);
-      // TODO
+      json rules = json::parse(ifs);
+
+      if (rules.type() != json::value_t::array) {
+        std::cerr << "[-] Invalid rules (Rules must be array)" << std::endl;
+        std::exit(1);
+      } else if (rules.size() == 0) {
+        std::cerr << "[-] Rule file doesn't include any rules" << std::endl;
+        std::exit(1);
+      } else if (rules[0].type() != json::value_t::array
+                 || rules[0].size() != 2
+                 || rules[0].get<json>()[0].type() != json::value_t::string) {
+        std::cerr << "[-] Invalid rule (Each rule must be a pair of string)" << std::endl;
+        std::cerr << "    Rule: " << rules[0].get<json>() << std::endl;
+        std::exit(1);
+      }
+
+      /* Add rules */
+      std::string root = "{" + rules[0].get<json>()[0].get<std::string>() + "}";
+      ctx.AddRule("START", root);
+
+      for (auto& rule: rules) {
+        if (rule.type() != json::value_t::array
+            || rule.size() != 2
+            || rule[0].type() != json::value_t::string
+            || rule[1].type() != json::value_t::string) {
+          std::cerr << "[-] Invalid rule (Each rule must be a pair of string)" << std::endl;
+          std::cerr << "    Rule: " << rule << std::endl;
+          std::exit(1);
+        }
+
+        ctx.AddRule(rule[0].get<std::string>(), rule[1].get<std::string>());
+      }
 
     } catch (json::exception& e) {
       /* JSON parse error */
       std::cerr << "[-] Cannot parse grammar file" << std::endl
                 << e.what() << std::endl;
-      return 1;
+      std::exit(1);
     }
 
   } else if (grammar_path.extension() == ".py") {
@@ -116,4 +147,39 @@ int main(int argc, char **argv) {
   }
 
   ctx.Initialize(tree_depth);
+
+  /* Create corpus directory */
+  if (store && !fs::exists("corpus")) {
+    fs::create_directory("corpus");
+  }
+
+  /* Generate tree */
+  for (size_t i = 0; i < number_of_trees; i++) {
+    NTermID nonterm(ctx.NTID("START"));
+    size_t len = ctx.GetRandomLenForNT(nonterm);
+    Tree generated_tree = ctx.GenerateTreeFromNT(nonterm, len);
+
+    if (verbose) {
+      std::cout << "Generating tree " << i+1
+                << " from " << number_of_trees << std::endl;
+    }
+
+    std::string buffer;
+    generated_tree.UnparseTo(ctx, buffer);
+
+    if (store) {
+      /* Write to file */
+      int fd = Util::OpenFile(
+        Util::StrPrintf("corpus/%ld", i+1),
+        O_WRONLY | O_CREAT | O_TRUNC,
+        S_IWUSR | S_IRUSR // 0600
+      );
+      Util::WriteFile(fd, buffer.data(), buffer.size());
+      Util::CloseFile(fd);
+
+    } else {
+      /* Write to stdout */
+      std::cout << buffer << std::endl;
+    }
+  }
 }
