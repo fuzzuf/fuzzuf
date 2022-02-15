@@ -22,7 +22,13 @@
  */
 #pragma once
 
+#include <deque>
 #include <memory>
+#include <string>
+#include <unordered_map>
+#include <unordered_set>
+#include <vector>
+#include "fuzzuf/algorithms/nautilus/fuzzer/queue.hpp"
 #include "fuzzuf/algorithms/nautilus/fuzzer/setting.hpp"
 #include "fuzzuf/algorithms/nautilus/grammartec/chunkstore.hpp"
 #include "fuzzuf/algorithms/nautilus/grammartec/context.hpp"
@@ -30,9 +36,14 @@
 #include "fuzzuf/algorithms/nautilus/grammartec/tree.hpp"
 #include "fuzzuf/executor/native_linux_executor.hpp"
 
+
 namespace fuzzuf::algorithm::nautilus::fuzzer {
 
 using namespace fuzzuf::algorithm::nautilus::grammartec;
+
+enum ExecutionReason {
+  Havoc, HavocRec, Min, MinRec, Splice, Det, Gen
+};
 
 /* Shared global state */
 struct NautilusState {
@@ -41,9 +52,56 @@ struct NautilusState {
     std::shared_ptr<NativeLinuxExecutor> executor
   );
 
+  void RunOnWithDedup(const TreeLike& tree,
+                      ExecutionReason exec_reason,
+                      Context &ctx);
+  void RunOnWithoutDedup(const TreeLike& tree,
+                         ExecutionReason exec_reason,
+                         Context &ctx);
+  void RunOn(std::string& code,
+             const TreeLike& tree,
+             ExecutionReason exec_reason,
+             Context &ctx);
+  u64 ExecRaw(const std::string& code);
+  void CheckForDeterministicBehavior(const std::vector<uint8_t>& old_bitmap,
+                                     std::vector<size_t>& new_bits,
+                                     const std::string& code);
+
+  /* Local state */
   std::shared_ptr<const NautilusSetting> setting;
+  std::shared_ptr<NativeLinuxExecutor> executor;
   Context ctx;
   //ChunkStore cks;
+
+  /* Global shared state */
+  Queue queue;
+  std::unordered_map<bool, std::vector<uint8_t>> bitmaps; // is_crash-->bitmap
+  uint64_t execution_count;
+  uint64_t average_executions_per_sec;
+  uint64_t bits_found_by_havoc;
+  uint64_t bits_found_by_havoc_rec;
+  uint64_t bits_found_by_min;
+  uint64_t bits_found_by_min_rec;
+  uint64_t bits_found_by_splice;
+  uint64_t bits_found_by_det;
+  uint64_t bits_found_by_gen;
+  uint64_t asan_found_by_havoc;
+  uint64_t asan_found_by_havoc_rec;
+  uint64_t asan_found_by_min;
+  uint64_t asan_found_by_min_rec;
+  uint64_t asan_found_by_splice;
+  uint64_t asan_found_by_det;
+  uint64_t asan_found_by_gen;
+  std::string last_found_asan;
+  std::string last_found_sig;
+  std::string last_timeout;
+  std::string state_saved;
+  uint64_t total_found_asan;
+  uint64_t total_found_sig;
+
+  /* Fuzzer */
+  std::unordered_set<std::string> last_tried_inputs;
+  std::deque<std::string> last_inputs_ring_buffer;
 };
 
 } // namespace fuzzuf::algorithm::nautilus::fuzzer

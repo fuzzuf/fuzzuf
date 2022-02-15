@@ -20,6 +20,8 @@
  * @brief Corpus queue of Nautilus.
  * @author Ricerca Security <fuzzuf-dev@ricsec.co.jp>
  */
+#pragma once
+
 #include <memory>
 #include <optional>
 #include <string>
@@ -45,9 +47,9 @@ struct QueueItem {
   QueueItem(size_t id,
             Tree&& tree,
             std::unordered_set<size_t>&& fresh_bits,
-            std::vector<uint8_t>&& all_bits,
+            const std::vector<uint8_t>&& all_bits,
             PUTExitReasonType exit_reason,
-            uint32_t execution_time)
+            uint64_t execution_time)
     : id(id),
       tree(std::move(tree)),
       fresh_bits(std::move(fresh_bits)),
@@ -64,7 +66,7 @@ struct QueueItem {
   PUTExitReasonType exit_reason;
   std::variant<InitState, DetState, RandomState> state;
   std::optional<std::vector<RecursionInfo>> recursions;
-  uint32_t execution_time;
+  uint64_t execution_time;
 };
 
 class Queue {
@@ -74,11 +76,12 @@ public:
   size_t size() const { return _inputs.size(); }
 
   void Add(Tree&& tree,
-           std::vector<uint8_t>&& all_bits,
+           const std::vector<uint8_t>&& all_bits,
            PUTExitReasonType exit_reason,
            Context& ctx,
-           uint32_t execution_time);
-  std::optional<QueueItem> Pop();
+           uint64_t execution_time);
+  QueueItem Pop();
+  bool IsEmpty() const;
   void Finished(QueueItem&& item);
   void NewRound();
 

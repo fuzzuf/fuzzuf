@@ -24,16 +24,13 @@
 
 #include <memory>
 #include "fuzzuf/algorithms/nautilus/fuzzer/state.hpp"
+#include "fuzzuf/algorithms/nautilus/fuzzer/queue.hpp"
 #include "fuzzuf/hierarflow/hierarflow_intermediates.hpp"
 #include "fuzzuf/hierarflow/hierarflow_node.hpp"
 #include "fuzzuf/hierarflow/hierarflow_routine.hpp"
 
 
 namespace fuzzuf::algorithm::nautilus::fuzzer::routine::other {
-
-// TODO: create it
-struct QueueItem {
-};
 
 /* fuzz_loop */
 struct FuzzLoop : HierarFlowRoutine<void(void), void(void)> {

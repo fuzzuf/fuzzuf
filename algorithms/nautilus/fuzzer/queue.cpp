@@ -28,10 +28,10 @@ namespace fuzzuf::algorithm::nautilus::fuzzer {
 
 
 void Queue::Add(Tree&& tree,
-                std::vector<uint8_t>&& all_bits,
+                const std::vector<uint8_t>&& all_bits,
                 PUTExitReasonType exit_reason,
                 Context& ctx,
-                uint32_t execution_time) {
+                uint64_t execution_time) {
   /* Check if all bits are zero */
   bool all_zero = true;
   for (size_t i = 0; i < all_bits.size(); i++) {
@@ -86,11 +86,10 @@ void Queue::Add(Tree&& tree,
 /**
  * @fn
  * @brief Pop an item from queue
- * @return Queue item if exists, otherwise std::nullopt
+ * @return Top item of queue
  */
-std::optional<QueueItem> Queue::Pop() {
-  if (_inputs.size() == 0)
-    return std::nullopt;
+QueueItem Queue::Pop() {
+  assert (!IsEmpty());
 
   QueueItem item = _inputs.back();
   _inputs.pop_back();
@@ -116,6 +115,15 @@ std::optional<QueueItem> Queue::Pop() {
   }
 
   return item;
+}
+
+/**
+ * @fn
+ * @brief Check if queue is empty
+ * @return True if queue is empty, otherwise false
+ */
+bool Queue::IsEmpty() const {
+  return _inputs.size() == 0;
 }
 
 /**

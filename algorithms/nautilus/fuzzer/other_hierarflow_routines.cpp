@@ -21,6 +21,7 @@
  * @author Ricerca Security <fuzzuf-dev@ricsec.co.jp>
  */
 #include "fuzzuf/algorithms/nautilus/fuzzer/other_hierarflow_routines.hpp"
+#include "fuzzuf/algorithms/nautilus/fuzzer/state.hpp"
 
 
 namespace fuzzuf::algorithm::nautilus::fuzzer::routine::other {
@@ -31,7 +32,7 @@ namespace fuzzuf::algorithm::nautilus::fuzzer::routine::other {
  */
 NullableRef<HierarFlowCallee<void(void)>> FuzzLoop::operator()(void) {
   puts("[DEBUG] FuzzLoop");
-  CallSuccessors();
+  CallSuccessors(); // select_input
   return GoToDefaultNext();
 }
 
@@ -41,12 +42,19 @@ NullableRef<HierarFlowCallee<void(void)>> FuzzLoop::operator()(void) {
  */
 RSelectInput SelectInput::operator()(void) {
   puts("[DEBUG] SelectInput");
-  /** イメージ
-      inp = state.queue.pop();
-      CallSuccessir(inp);
-      return GoToDefaultNext();
-   */
-  return GoToDefaultNext();
+  std::optional<std::reference_wrapper<QueueItem>> ref_inp;
+
+  // TODO: Lock state when multi-threaded
+  if (state.queue.IsEmpty()) {
+    ref_inp = std::nullopt;
+  } else {
+    // NOTE: No move/copy constructor is called in this way
+    QueueItem inp = state.queue.Pop();
+    ref_inp = inp;
+  }
+
+  CallSuccessors(ref_inp); // process_input_or
+  return GoToDefaultNext(); // update_state
 }
 
 /**
@@ -55,8 +63,9 @@ RSelectInput SelectInput::operator()(void) {
  */
 RUpdateState UpdateState::operator()(void) {
   puts("[DEBUG] UpdateState");
-  /** イメージ
-   */
+
+  // TODO: Lock state when multi-threaded
+
   return GoToDefaultNext();
 }
 
@@ -75,7 +84,7 @@ RProcessInput ProcessInput::operator()(
 
     /* Corpus exists. Mutate input. */
     CallSuccessors(inp.value()); // initialize_or
-    return GoToParent(); // select_input
+    return GoToParent(); // back to select_input
 
   } else {
 
@@ -94,8 +103,18 @@ RGenerateInput GenerateInput::operator()(
   std::optional<std::reference_wrapper<QueueItem>>
 ) {
   puts("[DEBUG] GenerateInput");
-  
-  return GoToDefaultNext();
+
+  for (size_t i = 0; i < state.setting->number_of_generate_inputs; i++) {
+    /* Generate random seed and run it */
+    const NTermID& nonterm = state.ctx.NTID("START");
+    size_t len = state.ctx.GetRandomLenForNT(nonterm);
+    Tree tree = state.ctx.GenerateTreeFromNT(nonterm, len);
+
+    /* Run input without duplication */
+    state.RunOnWithDedup(tree, ExecutionReason::Gen, state.ctx);
+  }
+
+  return GoToDefaultNext(); // back to select_input
 }
 
 } // namespace fuzzuf::algorithm::nautilus::fuzzer::routine::other

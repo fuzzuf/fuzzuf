@@ -23,6 +23,8 @@
 #include <fstream>
 #include <memory>
 #include <nlohmann/json.hpp>
+#include <string>
+#include <vector>
 #include "fuzzuf/algorithms/nautilus/fuzzer/fuzzer.hpp"
 #include "fuzzuf/algorithms/nautilus/fuzzer/mutation_hierarflow_routines.hpp"
 #include "fuzzuf/algorithms/nautilus/fuzzer/other_hierarflow_routines.hpp"
@@ -44,15 +46,21 @@ using json = nlohmann::json;
  */
 NautilusFuzzer::NautilusFuzzer(std::unique_ptr<NautilusState>&& state_ref)
   : state(std::move(state_ref)) {
-
+  /* Check files and load grammar */
   CheckPathExistence();
-
   LoadGrammar();
 
-  // TODO: generate rules using grammar
+  /* Craete output directories */
+  std::vector<std::string> folders{"signaled", "queue", "timeout", "chunks"};
+  for (auto f: folders) {
+    fs::create_directory(
+      Util::StrPrintf("%s/%s",
+                      state->setting->path_to_workdir.c_str(), f.c_str()
+      )
+    );
+  }
 
-  // TODO: create output folder
-
+  /* Construct fuzzing loop */
   BuildFuzzFlow();
 }
 
@@ -188,10 +196,17 @@ void NautilusFuzzer::BuildFuzzFlow() {
 
   fuzz_loop = CreateNode<FuzzLoop>(*state);
 
+  /* Main flow */
   auto select_input     = CreateNode<SelectInput>(*state);
   auto process_input_or = CreateNode<ProcessInput>(*state);
   auto generate_input   = CreateNode<GenerateInput>(*state);
   auto update_state     = CreateNode<UpdateState>(*state);
+
+  /* Mutation flow */
+  
+
+  /* Execution flow */
+  
 
   fuzz_loop << (
     select_input << (
