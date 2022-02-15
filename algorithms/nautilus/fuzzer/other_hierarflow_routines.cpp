@@ -30,6 +30,7 @@ namespace fuzzuf::algorithm::nautilus::fuzzer::routine::other {
  * @brief HierarFlow routine for FuzzLoop (fuzz_loop)
  */
 NullableRef<HierarFlowCallee<void(void)>> FuzzLoop::operator()(void) {
+  puts("[DEBUG] FuzzLoop");
   CallSuccessors();
   return GoToDefaultNext();
 }
@@ -39,6 +40,7 @@ NullableRef<HierarFlowCallee<void(void)>> FuzzLoop::operator()(void) {
  * @brief HierarFlow routine for SelectInput (select_input)
  */
 RSelectInput SelectInput::operator()(void) {
+  puts("[DEBUG] SelectInput");
   /** イメージ
       inp = state.queue.pop();
       CallSuccessir(inp);
@@ -49,14 +51,50 @@ RSelectInput SelectInput::operator()(void) {
 
 /**
  * @fn
- * @brief HierarFlow routine for ProcessInput (process_input_or)
+ * @brief HierarFlow routine for UpdateState (update_state)
  */
-RProcessInput ProcessInput::operator()(QueueItem& inp) {
-  inp = inp;
+RUpdateState UpdateState::operator()(void) {
+  puts("[DEBUG] UpdateState");
   /** イメージ
-      if (input) return CallSuccessor(input.state);
-      else return GoToDefaultNext();
    */
+  return GoToDefaultNext();
+}
+
+
+/**
+ * @fn
+ * @brief HierarFlow routine for ProcessInput (process_input_or)
+ * @param (inp) Queue item to process
+ */
+RProcessInput ProcessInput::operator()(
+  std::optional<std::reference_wrapper<QueueItem>> inp
+) {
+  puts("[DEBUG] ProcessInput");
+
+  if (inp) {
+
+    /* Corpus exists. Mutate input. */
+    CallSuccessors(inp.value()); // initialize_or
+    return GoToParent(); // select_input
+
+  } else {
+
+    /* Queue is empty. Generate new input. */
+    return GoToDefaultNext(); // generate_input
+
+  }
+}
+
+/**
+ * @fn
+ * @brief HierarFlow routine for GenerateInput (generate_input)
+ * @param (inp) Empty item. Not used.
+ */
+RGenerateInput GenerateInput::operator()(
+  std::optional<std::reference_wrapper<QueueItem>>
+) {
+  puts("[DEBUG] GenerateInput");
+  
   return GoToDefaultNext();
 }
 

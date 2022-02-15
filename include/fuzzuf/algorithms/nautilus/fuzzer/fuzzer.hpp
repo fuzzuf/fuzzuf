@@ -36,6 +36,8 @@ public:
   virtual ~NautilusFuzzer();
 
   void BuildFuzzFlow();
+  void CheckPathExistence();
+  void LoadGrammar();
 
   virtual void OneLoop(void);
   virtual void ReceiveStopSignal(void);

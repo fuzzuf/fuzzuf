@@ -301,6 +301,7 @@ set(
   algorithms/nautilus/fuzzer/mutation_hierarflow_routines.cpp
   algorithms/nautilus/fuzzer/other_hierarflow_routines.cpp
   algorithms/nautilus/fuzzer/queue.cpp
+  algorithms/nautilus/fuzzer/state.cpp
   algorithms/nautilus/fuzzer/update_hierarflow_routines.cpp
   algorithms/nautilus/grammartec/chunkstore.cpp
   algorithms/nautilus/grammartec/context.cpp
@@ -389,7 +390,7 @@ set(
   cli/fuzzers/aflfast/register_aflfast_fuzzer.cpp
   cli/fuzzers/die/register_die_fuzzer.cpp
   cli/fuzzers/libfuzzer/register_libfuzzer.cpp
-  #cli/fuzzers/nautilus/register_nautilus_fuzzer.cpp
+  cli/fuzzers/nautilus/register_nautilus_fuzzer.cpp
   cli/fuzzers/nezha/register_nezha_fuzzer.cpp
   cli/fuzzers/vuzzer/register_vuzzer.cpp
   cli/parse_global_options_for_fuzzer.cpp

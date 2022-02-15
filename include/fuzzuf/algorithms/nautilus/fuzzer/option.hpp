@@ -26,4 +26,12 @@ namespace fuzzuf::algorithm::nautilus::fuzzer::option {
 
 struct NautilusTag {};
 
+/* Default configuration */
+constexpr uint8_t  GetDefaultNumOfThreads() { return 1; }
+constexpr size_t   GetDefaultThreadSize() { return 4194304; }
+constexpr uint16_t GetDefaultNumOfGenInputs() { return 100; }
+constexpr size_t   GetDefaultNumOfDetMuts() { return 1; }
+constexpr size_t   GetDefaultMaxTreeSize() { return 1000; }
+constexpr size_t   GetDefaultBitmapSize() { return 1 << 16; }
+
 } // namespace fuzzuf::algorithm::nautilus::fuzzer::option

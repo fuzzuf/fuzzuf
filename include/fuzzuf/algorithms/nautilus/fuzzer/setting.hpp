@@ -32,20 +32,53 @@
 namespace fuzzuf::algorithm::nautilus::fuzzer {
 
 struct NautilusSetting {
-  const std::vector<std::string>& argv;
-  u32  exec_timelimit_ms;
+  NautilusSetting(
+    std::vector<std::string>& args,
+    std::string& path_to_grammar,
+    std::string& path_to_workdir,
+    u32 exec_timeout_ms,
+    u64 exec_memlimit,
+    bool forksrv,
+    int cpuid_to_bind,
+
+    u8  number_of_threads,
+    u64 thread_size,
+    u16 number_of_generate_inputs,
+    u64 number_of_deterministic_mutations,
+    u64 max_tree_size,
+    u64 bitmap_size
+  ) :
+    args (args),
+    path_to_grammar (path_to_grammar),
+    path_to_workdir (path_to_workdir),
+    exec_timeout_ms (exec_timeout_ms),
+    exec_memlimit (exec_memlimit),
+    forksrv (forksrv),
+    cpuid_to_bind (cpuid_to_bind),
+
+    number_of_threads (number_of_threads),
+    thread_size (thread_size),
+    number_of_generate_inputs (number_of_generate_inputs),
+    number_of_deterministic_mutations (number_of_deterministic_mutations),
+    max_tree_size (max_tree_size),
+    bitmap_size (bitmap_size)
+  {}
+
+  const std::vector<std::string>& args;
+  const fs::path path_to_grammar;
+  const fs::path path_to_workdir;
+  u32  exec_timeout_ms;
   u64  exec_memlimit;
+
   bool forksrv;
-  u32  afl_shm_size;
-  u32  bb_shm_size;
   int  cpuid_to_bind;
+
+  u8   number_of_threads;
+  u64  thread_size;
   u16  number_of_generate_inputs;
   u64  number_of_deterministic_mutations;
   u64  max_tree_size;
   u64  bitmap_size;
-  const fs::path path_to_grammar;
-  const fs::path path_to_workdir;
-  bool hide_output;
 };
 
 } // namespace fuzzuf::algorithm::nautilus::fuzzer

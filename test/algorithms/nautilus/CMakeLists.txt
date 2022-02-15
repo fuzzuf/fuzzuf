@@ -1,3 +1,32 @@
+file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/calc_grammar.json
+  DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
+
+add_executable( test-nautilus-loop loop.cpp )
+target_link_libraries(
+  test-nautilus-loop
+  test-common
+  fuzzuf
+  ${FUZZUF_LIBRARIES}
+  Boost::unit_test_framework
+)
+target_include_directories(
+  test-nautilus-loop
+  PRIVATE
+  ${FUZZUF_INCLUDE_DIRS}
+  ${CMAKE_SOURCE_DIR}/test/common
+)
+set_target_properties(
+  test-nautilus-loop
+  PROPERTIES COMPILE_FLAGS "${ADDITIONAL_COMPILE_FLAGS_STR}"
+)
+set_target_properties(
+  test-nautilus-loop
+  PROPERTIES LINK_FLAGS "${ADDITIONAL_COMPILE_FLAGS_STR}"
+)
+if( ENABLE_HEAVY_TEST )
+add_test( NAME "nautilus.loop" COMMAND test-nautilus-loop )
+endif()
+
 add_executable( test-nautilus-newtypes newtypes.cpp )
 target_link_libraries(
   test-nautilus-newtypes

@@ -22,11 +22,28 @@
  */
 #pragma once
 
+#include <memory>
+#include "fuzzuf/algorithms/nautilus/fuzzer/setting.hpp"
+#include "fuzzuf/algorithms/nautilus/grammartec/chunkstore.hpp"
+#include "fuzzuf/algorithms/nautilus/grammartec/context.hpp"
+#include "fuzzuf/algorithms/nautilus/grammartec/mutator.hpp"
+#include "fuzzuf/algorithms/nautilus/grammartec/tree.hpp"
+#include "fuzzuf/executor/native_linux_executor.hpp"
 
 namespace fuzzuf::algorithm::nautilus::fuzzer {
 
+using namespace fuzzuf::algorithm::nautilus::grammartec;
+
+/* Shared global state */
 struct NautilusState {
-  
+  explicit NautilusState(
+    std::shared_ptr<const NautilusSetting> setting,
+    std::shared_ptr<NativeLinuxExecutor> executor
+  );
+
+  std::shared_ptr<const NautilusSetting> setting;
+  Context ctx;
+  //ChunkStore cks;
 };
 
-} // namespace fuzzuf::algorithm::nautilus
+} // namespace fuzzuf::algorithm::nautilus::fuzzer
