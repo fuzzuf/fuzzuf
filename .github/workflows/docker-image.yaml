@@ -37,14 +37,14 @@ jobs:
         with:
           file: Dockerfile
           push: true
-          tags: fuzzuf/dev:latest
+          tags: ${{ env.REGISTRY }}/${{ github.repository }}/dev:latest
 
       - name: Build only
         if: ${{ github.event_name == 'pull_request' }}
         uses: docker/build-push-action@v2
         with:
           file: Dockerfile
-          tags: fuzzuf/dev:latest
+          tags: ${{ env.REGISTRY }}/${{ github.repository }}/dev:latest
 
       - name: Image digest
         run: echo ${{ steps.docker_build.outputs.digest }}
