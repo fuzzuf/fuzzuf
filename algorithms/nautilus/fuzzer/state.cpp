@@ -38,6 +38,8 @@ NautilusState::NautilusState(
     std::shared_ptr<NativeLinuxExecutor> executor
 ) : setting (setting),
     executor (executor),
+    cks (setting->path_to_workdir),
+    mutator (ctx),
     queue (setting->path_to_workdir),
     execution_count (0),
     average_executions_per_sec (0),
@@ -76,14 +78,15 @@ NautilusState::NautilusState(
  * @param (exec_reason) Execution reason
  * @param (ctx) Context
  */
-void NautilusState::RunOnWithDedup(const TreeLike& tree,
+bool NautilusState::RunOnWithDedup(const TreeLike& tree,
                                    ExecutionReason exec_reason,
                                    Context &ctx) {
   std::string code = tree.UnparseToVec(ctx);
 
   /* Check if input is known */
   if (last_tried_inputs.find(code) != last_tried_inputs.end()) {
-    return;
+    return false;
+
   } else {
     last_tried_inputs.insert(code);
 
@@ -96,6 +99,7 @@ void NautilusState::RunOnWithDedup(const TreeLike& tree,
   }
 
   RunOn(code, tree, exec_reason, ctx);
+  return true;
 }
 
 /**
@@ -139,6 +143,7 @@ void NautilusState::RunOn(std::string& code,
 
   /* Get new bits */
   std::vector<size_t> new_bits;
+  // TODO: Use lock when multi-threaded
   std::vector<uint8_t>& shared_bitmap = bitmaps[is_crash];
 
   for (size_t i = 0; i < old_bitmap.size(); i++) {
@@ -159,6 +164,7 @@ void NautilusState::RunOn(std::string& code,
 
       if (new_bits.size()) {
         Tree tree = tree_like.ToTree(ctx);
+        // TODO: Use lock when multi-threaded
         queue.Add(std::move(tree),
                   std::move(old_bitmap),
                   exit_status.exit_reason,
@@ -209,6 +215,7 @@ void NautilusState::RunOn(std::string& code,
       /* Update last timeout */
       std::ostringstream oss;
       oss << std::put_time(tm, "[%Y-%m-%d] %H:%M:%Sx");
+      // TODO: Use lock when multi-threaded
       last_timeout = oss.str();
 
       /* Stringify tree */
@@ -247,7 +254,9 @@ void NautilusState::RunOn(std::string& code,
       /* Update last sig */
       std::ostringstream oss;
       oss << std::put_time(tm, "[%Y-%m-%d] %H:%M:%Sx");
+      // TODO: Use lock when multi-threaded
       total_found_sig++;
+      // TODO: Use lock when multi-threaded
       last_found_sig = oss.str();
 
       /* Stringify tree */
@@ -349,6 +358,111 @@ void NautilusState::CheckForDeterministicBehavior(
       }
     );
   }
+}
+
+bool NautilusState::HasBits(const TreeLike& tree,
+                            std::unordered_set<size_t>& bits,
+                            ExecutionReason exec_reason,
+                            Context& ctx) {
+  RunOnWithoutDedup(tree, exec_reason, ctx);
+
+  InplaceMemoryFeedback new_feedback = executor->GetAFLFeedback();
+
+  bool found_all = true;
+  new_feedback.ShowMemoryToFunc(
+    [&bits, &found_all](const u8* run_bitmap, u32 len) {
+      for (size_t bit: bits) {
+        // TODO: remove this assert
+        assert (bit < len);
+
+        if (run_bitmap[bit] == 0) {
+          // TODO: handle edge counts properly
+          found_all = false;
+        }
+      }
+    }
+  );
+
+  return found_all;
+}
+
+bool NautilusState::Minimize(QueueItem& input,
+                             size_t start_index,
+                             size_t end_index) {
+  FTester tester_min
+    = [this](TreeMutation& t,
+             std::unordered_set<size_t>& fresh_bits,
+             Context& ctx) -> bool {
+        return this->HasBits(t, fresh_bits, ExecutionReason::Min, ctx);
+      };
+  FTester tester_minrec
+    = [this](TreeMutation& t,
+             std::unordered_set<size_t>& fresh_bits,
+             Context& ctx) -> bool {
+        return this->HasBits(t, fresh_bits, ExecutionReason::MinRec, ctx);
+      };
+
+  bool min_simple = mutator.MinimizeTree(input.tree,
+                                         input.fresh_bits,
+                                         ctx,
+                                         start_index,
+                                         end_index,
+                                         tester_min);
+  bool min_rec = mutator.MinimizeRec(input.tree,
+                                     input.fresh_bits,
+                                     ctx,
+                                     start_index,
+                                     end_index,
+                                     tester_minrec);
+
+  if (min_simple && min_rec) {
+    // TODO: Wait lock when threaded
+    cks.AddTree(input.tree, ctx);
+
+    input.recursions = input.tree.CalcRecursions(ctx);
+
+    /* Stringify tree */
+    std::string buffer;
+    input.tree.UnparseTo(ctx, buffer);
+
+    /* Save tree to file */
+    std::string filepath = Util::StrPrintf(
+      "%s/queue/id:%09ld,er:%d.min",
+      setting->path_to_workdir.c_str(), input.id, input.exit_reason
+    );
+    int fd = Util::OpenFile(filepath,
+                            O_WRONLY | O_CREAT | O_TRUNC,
+                            S_IWUSR | S_IRUSR); // 0600
+    if (fd == -1) {
+      throw exceptions::unable_to_create_file(
+        Util::StrPrintf("Cannot save tree: %s", filepath.c_str()),
+        __FILE__, __LINE__
+      );
+    }
+    Util::WriteFile(fd, buffer.data(), buffer.size());
+    Util::CloseFile(fd);
+
+    return true;
+  }
+
+  return false;
+}
+
+bool NautilusState::DeterministicTreeMutation(QueueItem& input,
+                                              size_t start_index,
+                                              size_t end_index) {
+  FTesterMut tester
+    = [this](TreeMutation& t, Context& ctx) -> bool {
+        return this->RunOnWithDedup(t, ExecutionReason::Det, ctx);
+      };
+
+  bool done = mutator.MutRules(input.tree,
+                               ctx,
+                               start_index,
+                               end_index,
+                               tester);
+
+  return done;
 }
 
 } // namespace fuzzuf::algorithm::nautilus::fuzzer

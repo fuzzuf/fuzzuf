@@ -111,7 +111,11 @@ static void NautilusLoop() {
   /* Create fuzzer instance */
   auto fuzzer = NautilusFuzzer(std::move(state));
 
-  for (int i = 0; i < 1; i++) {
+  /* We run at least 2 loops to check both GenerateInput and ProcessInput
+     0: Test SelectInput, GenerateInput, UpdateState
+     1: Test ProcessInput, InitializeState
+   */
+  for (int i = 0; i < 100; i++) {
     std::cout << "the " << i << "-th iteration starts" << std::endl;
     fuzzer.OneLoop();
   }

@@ -20,7 +20,10 @@
  * @brief Definition of unclassified HierarFlow routines of Nautilus.
  * @author Ricerca Security <fuzzuf-dev@ricsec.co.jp>
  */
+#include <memory>
+#include <variant>
 #include "fuzzuf/algorithms/nautilus/fuzzer/other_hierarflow_routines.hpp"
+#include "fuzzuf/algorithms/nautilus/fuzzer/queue.hpp"
 #include "fuzzuf/algorithms/nautilus/fuzzer/state.hpp"
 
 
@@ -42,18 +45,16 @@ NullableRef<HierarFlowCallee<void(void)>> FuzzLoop::operator()(void) {
  */
 RSelectInput SelectInput::operator()(void) {
   puts("[DEBUG] SelectInput");
-  std::optional<std::reference_wrapper<QueueItem>> ref_inp;
+  std::optional<QueueItem> inp;
 
-  // TODO: Lock state when multi-threaded
   if (state.queue.IsEmpty()) {
-    ref_inp = std::nullopt;
+    inp = std::nullopt;
   } else {
-    // NOTE: No move/copy constructor is called in this way
-    QueueItem inp = state.queue.Pop();
-    ref_inp = inp;
+    // TODO: Use lock when multi-threaded
+    inp = state.queue.Pop();
   }
 
-  CallSuccessors(ref_inp); // process_input_or
+  CallSuccessors(inp); // process_input_or
   return GoToDefaultNext(); // update_state
 }
 
@@ -75,9 +76,7 @@ RUpdateState UpdateState::operator()(void) {
  * @brief HierarFlow routine for ProcessInput (process_input_or)
  * @param (inp) Queue item to process
  */
-RProcessInput ProcessInput::operator()(
-  std::optional<std::reference_wrapper<QueueItem>> inp
-) {
+RProcessInput ProcessInput::operator()(std::optional<QueueItem> inp) {
   puts("[DEBUG] ProcessInput");
 
   if (inp) {
@@ -99,9 +98,7 @@ RProcessInput ProcessInput::operator()(
  * @brief HierarFlow routine for GenerateInput (generate_input)
  * @param (inp) Empty item. Not used.
  */
-RGenerateInput GenerateInput::operator()(
-  std::optional<std::reference_wrapper<QueueItem>>
-) {
+RGenerateInput GenerateInput::operator()(std::optional<QueueItem>) {
   puts("[DEBUG] GenerateInput");
 
   for (size_t i = 0; i < state.setting->number_of_generate_inputs; i++) {
@@ -115,6 +112,78 @@ RGenerateInput GenerateInput::operator()(
   }
 
   return GoToDefaultNext(); // back to select_input
+}
+
+/**
+ * @fn
+ * @brief HierarFlow routine for InitializeState (initialize_state_or)
+ */
+RInitializeState InitializeState::operator()(QueueItem& inp) {
+  puts("[DEBUG] InitializeState");
+
+  if (!std::holds_alternative<InitState>(inp.state)) {
+    return GoToDefaultNext(); // apply_det_muts_or
+  }
+
+  size_t start_index = std::get<InitState>(inp.state);
+  size_t end_index = start_index + 200;
+
+  if (state.Minimize(inp, start_index, end_index)) {
+    inp.state = DetState(0, 0);
+  } else {
+    inp.state = InitState(end_index);
+  }
+
+  return GoToParent(); // process_input_or
+}
+
+/**
+ * @fn
+ * @brief HierarFlow routine for ApplyDetMuts (apply_det_muts_or)
+ */
+RApplyDetMuts ApplyDetMuts::operator()(QueueItem& inp) {
+  puts("[DEBUG] ApplyDetMuts");
+
+  if (!std::holds_alternative<DetState>(inp.state)) {
+    return GoToDefaultNext(); // apply_rand_muts
+  }
+
+  auto [cycle, start_index] = std::get<DetState>(inp.state);
+  size_t end_index = start_index + 1;
+
+  if (state.DeterministicTreeMutation(inp, start_index, end_index)) {
+    if (cycle == state.setting->number_of_deterministic_mutations) {
+      inp.state = RandomState();
+    } else {
+      // TODO: Update current cycle for status?
+      inp.state = DetState(cycle + 1, 0);
+    }
+  } else {
+    inp.state = DetState(cycle, end_index);
+  }
+
+  // TODO: splice/havoc/havoc_rec
+
+  return GoToParent(); // process_input_or
+}
+
+/**
+ * @fn
+ * @brief HierarFlow routine for ApplyRandMuts (apply_rand_muts_or)
+ */
+RApplyRandMuts ApplyRandMuts::operator()(QueueItem& inp) {
+  puts("[DEBUG] ApplyRandMuts");
+
+  if (!std::holds_alternative<RandomState>(inp.state)) {
+    throw exceptions::wrong_hierarflow_usage(
+      "ApplyRandMuts must be called after InitializeState and ApplyDetMuts",
+      __FILE__, __LINE__
+    );
+  }
+
+  // TODO: splice/havoc/havoc_rec
+
+  return GoToParent(); // process_input_or
 }
 
 } // namespace fuzzuf::algorithm::nautilus::fuzzer::routine::other

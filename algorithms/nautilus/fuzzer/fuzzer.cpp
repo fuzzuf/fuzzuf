@@ -62,17 +62,6 @@ NautilusFuzzer::NautilusFuzzer(std::unique_ptr<NautilusState>&& state_ref)
 
   /* Construct fuzzing loop */
   BuildFuzzFlow();
-
-  /*
-  // DEBUG
-  const u8* buffer = "";
-  //const u8* buffer = "114514+1!BUG";
-  executor->Run(buffer, strlen(buffer));
-  ExitStatusFeedback exit_status = executor->GetExitStatusFeedback();
-  PersistentMemoryFeedback feedback
-    = executor->GetAFLFeedback().ConvertToPersistent();
-
-  */  
 }
 
 /**
@@ -213,8 +202,12 @@ void NautilusFuzzer::BuildFuzzFlow() {
   auto generate_input   = CreateNode<GenerateInput>(*state);
   auto update_state     = CreateNode<UpdateState>(*state);
 
+  /* Processing flow */
+  auto initialize_state_or = CreateNode<InitializeState>(*state);
+  auto apply_det_muts_or   = CreateNode<ApplyDetMuts>(*state);
+  auto apply_rand_muts     = CreateNode<ApplyRandMuts>(*state);
+
   /* Mutation flow */
-  
 
   /* Execution flow */
   
@@ -222,9 +215,15 @@ void NautilusFuzzer::BuildFuzzFlow() {
   fuzz_loop << (
     select_input << (
       process_input_or
-      || generate_input
+      || generate_input // TODO: maybe execute.HardLink() here
     )
     || update_state
+  );
+
+  process_input_or << (
+    initialize_state_or
+    || apply_det_muts_or
+    || apply_rand_muts
   );
 
 #if 0

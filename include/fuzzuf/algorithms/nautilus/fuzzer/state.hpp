@@ -52,7 +52,7 @@ struct NautilusState {
     std::shared_ptr<NativeLinuxExecutor> executor
   );
 
-  void RunOnWithDedup(const TreeLike& tree,
+  bool RunOnWithDedup(const TreeLike& tree,
                       ExecutionReason exec_reason,
                       Context &ctx);
   void RunOnWithoutDedup(const TreeLike& tree,
@@ -67,11 +67,22 @@ struct NautilusState {
                                      std::vector<size_t>& new_bits,
                                      const std::string& code);
 
+  bool HasBits(const TreeLike& tree,
+               std::unordered_set<size_t>& bits,
+               ExecutionReason exec_reason,
+               Context& ctx);
+
+  bool Minimize(QueueItem& input, size_t start_index, size_t end_index);
+  bool DeterministicTreeMutation(QueueItem& input,
+                                 size_t start_index,
+                                 size_t end_index);
+
   /* Local state */
   std::shared_ptr<const NautilusSetting> setting;
   std::shared_ptr<NativeLinuxExecutor> executor;
   Context ctx;
-  //ChunkStore cks;
+  ChunkStore cks;
+  Mutator mutator;
 
   /* Global shared state */
   Queue queue;

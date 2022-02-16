@@ -106,11 +106,10 @@ QueueItem Queue::Pop() {
 
   size_t id = item.id;
 
-  for (auto it = _bit_to_inputs.begin();
-       it != _bit_to_inputs.end();
-       ++it) {
+  std::vector<size_t> to_remove;
+
+  for (auto it = _bit_to_inputs.begin(); it != _bit_to_inputs.end(); ++it) {
     auto& [k, v] = *it;
-    _bit_to_inputs.erase(it);
 
     /* Retain elements in v */
     for (auto vit = v.rbegin(); vit != v.rend(); ++vit) {
@@ -119,9 +118,14 @@ QueueItem Queue::Pop() {
       }
     }
 
-    if (!v.empty()) {
-      _bit_to_inputs[k] = v;
+    if (v.empty()) {
+      to_remove.push_back(k);
     }
+  }
+
+  // TODO: O(NlogN)?
+  for (size_t k: to_remove) {
+    _bit_to_inputs.erase(k);
   }
 
   return item;
