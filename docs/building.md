@@ -11,6 +11,13 @@ Install Docker and run:
 
 This command will download the container image and build all the features and documentation in the container.
 
+`build` can specify debug/release build and runlevel with flags. The default is `--debug` and `--runlevel Debug`.
+To build with release without debug output:
+
+```bash
+./scripts/dev_cli.sh build --release --runlevel Release
+```
+
 To run unit tests:
 
 ```bash
