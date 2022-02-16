@@ -72,6 +72,7 @@ struct NautilusState {
                ExecutionReason exec_reason,
                Context& ctx);
 
+  // TODO: put them into HierarFlow
   bool Minimize(QueueItem& input, size_t start_index, size_t end_index);
   bool DeterministicTreeMutation(QueueItem& input,
                                  size_t start_index,

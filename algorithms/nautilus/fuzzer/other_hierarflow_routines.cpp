@@ -83,6 +83,10 @@ RProcessInput ProcessInput::operator()(std::optional<QueueItem> inp) {
 
     /* Corpus exists. Mutate input. */
     CallSuccessors(inp.value()); // initialize_or
+
+    /* Mark as finished */
+    state.queue.Finished(std::move(inp.value()));
+
     return GoToParent(); // back to select_input
 
   } else {
@@ -110,6 +114,8 @@ RGenerateInput GenerateInput::operator()(std::optional<QueueItem>) {
     /* Run input without duplication */
     state.RunOnWithDedup(tree, ExecutionReason::Gen, state.ctx);
   }
+
+  state.queue.NewRound();
 
   return GoToDefaultNext(); // back to select_input
 }
