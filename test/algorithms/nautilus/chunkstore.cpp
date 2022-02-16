@@ -37,7 +37,7 @@ BOOST_AUTO_TEST_CASE(NautilusGrammartecChunkstore) {
 
   size_t random_size = ctx.GetRandomLenForRuleID(r1);
   Tree tree = ctx.GenerateTreeFromRule(r1, random_size);
-  fs::create_directories("/tmp/nautilus/outputs/chunks");
+  fs::create_directories("/tmp/nautilus/chunks");
 
   ChunkStore cks("/tmp/nautilus");
   cks.AddTree(tree, ctx);

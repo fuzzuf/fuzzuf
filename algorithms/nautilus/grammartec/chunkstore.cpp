@@ -21,6 +21,7 @@
  * @author Ricerca Security <fuzzuf-dev@ricsec.co.jp>
  */
 #include "fuzzuf/algorithms/nautilus/grammartec/chunkstore.hpp"
+#include "fuzzuf/exceptions.hpp"
 #include "fuzzuf/utils/common.hpp"
 #include "fuzzuf/utils/random.hpp"
 
@@ -59,12 +60,19 @@ void ChunkStore::AddTree(Tree& tree, Context& ctx) {
       }
 
       /* Save tree to file */
-      int fd = Util::OpenFile(
-        Util::StrPrintf("%s/outputs/chunks/chunk_%09ld",
-                        _work_dir.c_str(), _number_of_chunks++),
-        O_WRONLY | O_CREAT | O_TRUNC,
-        S_IWUSR | S_IRUSR // 0600
+      std::string filepath = Util::StrPrintf(
+        "%s/chunks/chunk_%09ld",
+        _work_dir.c_str(), _number_of_chunks++
       );
+      int fd = Util::OpenFile(filepath,
+                              O_WRONLY | O_CREAT | O_TRUNC,
+                              S_IWUSR | S_IRUSR); // 0600
+      if (fd == -1) {
+        throw exceptions::unable_to_create_file(
+          Util::StrPrintf("Cannot save tree: %s", filepath.c_str()),
+          __FILE__, __LINE__
+        );
+      }
       Util::WriteFile(fd, buffer.data(), buffer.size());
       Util::CloseFile(fd);
 

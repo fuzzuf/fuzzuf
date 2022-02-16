@@ -21,6 +21,7 @@
  * @author Ricerca Security <fuzzuf-dev@ricsec.co.jp>
  */
 #include "fuzzuf/algorithms/nautilus/fuzzer/queue.hpp"
+#include "fuzzuf/exceptions.hpp"
 #include "fuzzuf/utils/common.hpp"
 
 
@@ -55,15 +56,24 @@ void Queue::Add(Tree&& tree,
     }
   }
 
-  /* Create file for entry */
-  int fd = Util::OpenFile(
-    Util::StrPrintf("%s/outputs/queue/id:%09ld,er:%d",
-                    _work_dir.c_str(), _current_id, exit_reason),
-    O_WRONLY | O_CREAT | O_TRUNC,
-    S_IWUSR | S_IRUSR // 0600
-  );
+  /* Stringify tree */
   std::string buffer;
   tree.UnparseTo(ctx, buffer);
+
+  /* Create file for entry */
+  std::string filepath = Util::StrPrintf(
+    "%s/queue/id:%09ld,er:%d",
+    _work_dir.c_str(), _current_id, exit_reason
+  );
+  int fd = Util::OpenFile(filepath,
+                          O_WRONLY | O_CREAT | O_TRUNC,
+                          S_IWUSR | S_IRUSR); // 0600
+  if (fd == -1) {
+    throw exceptions::unable_to_create_file(
+      Util::StrPrintf("Cannot save tree: %s", filepath.c_str()),
+      __FILE__, __LINE__
+    );
+  }
   Util::WriteFile(fd, buffer.data(), buffer.size());
   Util::CloseFile(fd);
 

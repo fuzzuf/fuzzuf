@@ -62,6 +62,17 @@ NautilusFuzzer::NautilusFuzzer(std::unique_ptr<NautilusState>&& state_ref)
 
   /* Construct fuzzing loop */
   BuildFuzzFlow();
+
+  /*
+  // DEBUG
+  const u8* buffer = "";
+  //const u8* buffer = "114514+1!BUG";
+  executor->Run(buffer, strlen(buffer));
+  ExitStatusFeedback exit_status = executor->GetExitStatusFeedback();
+  PersistentMemoryFeedback feedback
+    = executor->GetAFLFeedback().ConvertToPersistent();
+
+  */  
 }
 
 /**

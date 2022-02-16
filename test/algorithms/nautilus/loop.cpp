@@ -54,9 +54,9 @@ static void NautilusLoop() {
   BOOST_SCOPE_EXIT_END;
 
   // Create input file
-  fs::path put_dir = fs::path("../../put_binaries/calc");
+  fs::path put_dir = fs::path("../../put_binaries/nautilus");
   std::string output_dir = root_dir / "output";
-  std::vector<std::string> args{"../../put_binaries/calc/calc", "@@"};
+  std::vector<std::string> args{"../../put_binaries/nautilus/calc", "@@"};
   std::string path_to_grammar{"./calc_grammar.json"};
 
   std::cout << "    PUT: " << fs::absolute(put_dir) << std::endl;

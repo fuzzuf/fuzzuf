@@ -21,6 +21,9 @@
  * @author Ricerca Security <fuzzuf-dev@ricsec.co.jp>
  */
 #include <chrono>
+#include <ctime>
+#include <iomanip>
+#include <sstream>
 #include "fuzzuf/algorithms/nautilus/fuzzer/state.hpp"
 #include "fuzzuf/feedback/inplace_memory_feedback.hpp"
 #include "fuzzuf/feedback/persistent_memory_feedback.hpp"
@@ -29,6 +32,7 @@
 
 namespace fuzzuf::algorithm::nautilus::fuzzer {
 
+// MEMO: "this->" is used for members of Fuzzer in original Nautilus
 NautilusState::NautilusState(
     std::shared_ptr<const NautilusSetting> setting,
     std::shared_ptr<NativeLinuxExecutor> executor
@@ -133,9 +137,6 @@ void NautilusState::RunOn(std::string& code,
 
   bool is_crash = exit_status.exit_reason == PUTExitReasonType::FAULT_CRASH;
 
-  // TODO: remove this
-  assert (old_bitmap.size() == bitmaps[is_crash].size());
-
   /* Get new bits */
   std::vector<size_t> new_bits;
   std::vector<uint8_t>& shared_bitmap = bitmaps[is_crash];
@@ -168,7 +169,116 @@ void NautilusState::RunOn(std::string& code,
 
   }
 
-  // TODO: run_on
+  switch (exit_status.exit_reason) {
+    case PUTExitReasonType::FAULT_NONE: { /* Normal exit */
+      // TODO: Support ASAN (status=223) after executor is improved
+      if (new_bits.size() == 0) break;
+
+      /* Update bit count based on execution reason */
+      switch (exec_reason) {
+        case ExecutionReason::Havoc:
+          this->bits_found_by_havoc++;
+          break;
+        case ExecutionReason::HavocRec:
+          this->bits_found_by_havoc_rec++;
+          break;
+        case ExecutionReason::Min:
+          this->bits_found_by_min++;
+          break;
+        case ExecutionReason::MinRec:
+          this->bits_found_by_min_rec++;
+          break;
+        case ExecutionReason::Splice:
+          this->bits_found_by_splice++;
+          break;
+        case ExecutionReason::Det:
+          this->bits_found_by_det++;
+          break;
+        case ExecutionReason::Gen:
+          this->bits_found_by_gen++;
+          break;
+      }
+      break;
+    }
+
+    case PUTExitReasonType::FAULT_TMOUT: { /* Timeout */
+      /* Get current datetime */
+      time_t t = std::time(nullptr);
+      struct tm* tm = std::localtime(&t);
+
+      /* Update last timeout */
+      std::ostringstream oss;
+      oss << std::put_time(tm, "[%Y-%m-%d] %H:%M:%Sx");
+      last_timeout = oss.str();
+
+      /* Stringify tree */
+      std::string buffer;
+      tree_like.UnparseTo(ctx, buffer);
+
+      /* Save tree to file */
+      std::string filepath = Util::StrPrintf(
+        "%s/timeout/%09ld",
+        setting->path_to_workdir.c_str(), execution_count
+      );
+      int fd = Util::OpenFile(filepath,
+                              O_WRONLY | O_CREAT | O_TRUNC,
+                              S_IWUSR | S_IRUSR); // 0600
+      if (fd == -1) {
+        /* Print testcase because we don't want to lose it */
+        std::cout << buffer << std::endl;
+        throw exceptions::unable_to_create_file(
+          Util::StrPrintf("Cannot save timeout: %s", filepath.c_str()),
+          __FILE__, __LINE__
+        );
+      }
+      Util::WriteFile(fd, buffer.data(), buffer.size());
+      Util::CloseFile(fd);
+
+      break;
+    }
+
+    case PUTExitReasonType::FAULT_CRASH: { /* Signal */
+      if (new_bits.size() == 0) break;
+
+      /* Get current datetime */
+      time_t t = std::time(nullptr);
+      struct tm* tm = std::localtime(&t);
+
+      /* Update last sig */
+      std::ostringstream oss;
+      oss << std::put_time(tm, "[%Y-%m-%d] %H:%M:%Sx");
+      total_found_sig++;
+      last_found_sig = oss.str();
+
+      /* Stringify tree */
+      std::string buffer;
+      tree_like.UnparseTo(ctx, buffer);
+
+      /* Save tree to file */
+      std::string filepath = Util::StrPrintf(
+        "%s/signaled/%d_%09ld",
+        setting->path_to_workdir.c_str(), exit_status.signal, execution_count
+      );
+      int fd = Util::OpenFile(filepath,
+                              O_WRONLY | O_CREAT | O_TRUNC,
+                              S_IWUSR | S_IRUSR); // 0600
+      if (fd == -1) {
+        /* Print testcase because we don't want to lose it */
+        std::cout << buffer << std::endl;
+        throw exceptions::unable_to_create_file(
+          Util::StrPrintf("Cannot save crash: %s", filepath.c_str()),
+          __FILE__, __LINE__
+        );
+      }
+      Util::WriteFile(fd, buffer.data(), buffer.size());
+      Util::CloseFile(fd);
+
+      break;
+    }
+
+    default: // pass
+      break;
+  }
   // exit_reason
   exec_reason = exec_reason;
 }
@@ -181,6 +291,8 @@ void NautilusState::RunOn(std::string& code,
  */
 u64 NautilusState::ExecRaw(const std::string& code) {
   using namespace std::chrono;
+
+  execution_count++;
 
   system_clock::time_point start, end;
   const u8* data = reinterpret_cast<const u8*>(code.data());
@@ -200,7 +312,7 @@ u64 NautilusState::ExecRaw(const std::string& code) {
 
   /* Calculate average execution */
   u64 execution_time = duration_cast<nanoseconds>(end - start).count();
-  average_executions_per_sec = average_executions_per_sec * 0.9         \
+  this->average_executions_per_sec = this->average_executions_per_sec * 0.9 \
     + ((1.0 / static_cast<double>(execution_time)) * 1000000000.0) * 0.1;
 
   return execution_time;
