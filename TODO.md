@@ -28,7 +28,6 @@ For example, the followings can be considered:
   - DebugRng: the (non-)random number generator that can be used for tests and debugs. For example, DebugRng({1, 2, 3}) will repeatedly returns 1, 2, 3, 1, 2, ... instead of random numbers. Without this RNG, writing tests may be frustrating sometimes.
     - However, we are not sure in what way this should be provided because it's ridiculous to be forced to define something with `template<class Rng>` just for switching DebugRng and ActualRng in tests and the others.
   - DebugDistribution: returns the specified sequence of numbers similarly to DebugRng.
-  - WalkerDiscreteDistribution: an optimized substitute for `std::discrete_distribution`. `std::discrete_distribution` usually takes `O(log n)`, whereas sampling from a discrete distribution takes `O(1)` if it is implemented with Walker's alias method. 
 
 The following pseudo code shows the currently considered design:
 
