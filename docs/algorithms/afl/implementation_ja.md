@@ -45,7 +45,14 @@ fuzzufにおいてAFLは `include/fuzzuf/algorithms/afl` および `algorithms/a
     );
 ```
 
-これらのノードの内、`bit_flip1`, `bit_flip_other`などのノードのルーチンは、`include/fuzzuf/algorithms/afl/afl_mutation_hierarflow_routines.hpp` で宣言されています。`normal_update`, `construct_auto_dict`などのノードのルーチンは、`include/fuzzuf/algorithms/afl/afl_update_hierarflow_routines.hpp` で宣言されています。それらのノード以外のルーチンは、 `include/fuzzuf/algorithms/afl/afl_other_hierarflow_routines.hpp` で宣言されています。
+各ノードのルーチンは次のコードで実装されています:
+
+- ミューテーションを行うノードのルーチン(例: `bit_flip1`や`bit_flip_other`):
+  - `include/fuzzuf/algorithms/afl/afl_mutation_hierarflow_routines.hpp`
+- 更新を行うノードのルーチン (例: `normal_update`や`construct_auto_dict`):
+  - `include/fuzzuf/algorithms/afl/afl_update_hierarflow_routines.hpp`
+- その他のノードのルーチン:
+  - `include/fuzzuf/algorithms/afl/afl_other_hierarflow_routines.hpp`
 
 ## 整合性とパフォーマンスのテスト
 
