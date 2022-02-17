@@ -158,7 +158,6 @@ void NautilusFuzzer::CheckPathExistence() {
       );
     }
   }
-
 }
 
 /**

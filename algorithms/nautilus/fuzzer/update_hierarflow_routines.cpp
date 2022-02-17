@@ -113,6 +113,7 @@ RUpdateState UpdateState::operator()(void) {
       << " overall results "
       << bSTG bH2 bH2 bRT "\n";
 
+  // TODO: Let's use bold red font for crashes/hangs
   auto run_time = current_time - state.start_time;
   oss << bV bSTOP "     run time : " cRST
       << std::right << std::setfill('0')
