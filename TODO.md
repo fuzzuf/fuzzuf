@@ -136,6 +136,10 @@ It's too bad `Mutator` has some raw pointers as its members, such as `u8 *Mutato
 
 They are just unimplemented.
 
+### Implement SIGUSR1 Handling on AFL
+
+This feature is just unimplemented.
+
 ### Remove careless templates from AFL
 
 In the implmentation of AFL, we use a lot of `template` to allow users to define the derived classes of `AFLTestcase` and `AFLState`. But this is just cutting corners. Let us explain what we've done with an example. Let's say, we want to define a function that takes a reference of some struct as an argument. The struct has a member named "x". The function would look like the following:
