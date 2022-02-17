@@ -66,6 +66,79 @@ NautilusFuzzer::NautilusFuzzer(std::unique_ptr<NautilusState>&& state_ref)
 
 /**
  * @fn
+ * @brief Build HierarFlow of Nautilus
+ */
+void NautilusFuzzer::BuildFuzzFlow() {
+  using fuzzuf::hierarflow::CreateNode;
+  using namespace fuzzuf::algorithm::nautilus::fuzzer::routine::other;
+  using namespace fuzzuf::algorithm::nautilus::fuzzer::routine::mutation;
+  using namespace fuzzuf::algorithm::nautilus::fuzzer::routine::update;
+
+  fuzz_loop = CreateNode<FuzzLoop>(*state);
+
+  /* Main flow */
+  auto select_input     = CreateNode<SelectInput>(*state);
+  auto process_input_or = CreateNode<ProcessInput>(*state);
+  auto generate_input   = CreateNode<GenerateInput>(*state);
+  auto update_state     = CreateNode<UpdateState>(*state);
+
+  /* Processing flow */
+  auto initialize_state_or = CreateNode<InitializeState>(*state);
+  auto apply_det_muts_or   = CreateNode<ApplyDetMuts>(*state);
+  auto apply_rand_muts     = CreateNode<ApplyRandMuts>(*state);
+
+  /* Mutation flow */
+  auto splice    = CreateNode<MutSplice>(*state);
+  auto havoc     = CreateNode<MutHavoc>(*state);
+  auto havoc_rec = CreateNode<MutHavocRec>(*state);
+
+  /* Execution flow */
+  
+
+  fuzz_loop << (
+    select_input << (
+      process_input_or
+      || generate_input // TODO: maybe execute.HardLink() here
+    )
+    || update_state
+  );
+
+  process_input_or << (
+    initialize_state_or
+    || apply_det_muts_or << (
+      splice.HardLink()
+      || havoc.HardLink()
+      || havoc_rec.HardLink()
+    )
+    || apply_rand_muts << (
+      splice.HardLink()
+      || havoc.HardLink()
+      || havoc_rec.HardLink()
+    )
+  );
+
+#if 0
+  process_input << (
+    initialize_or << (
+      
+    )
+    || apply_det_muts_or << (
+      det_tree_mut
+      || splice
+      || havoc
+      || havoc_recursion
+    )
+    || applit_rand_muts << (
+         splice
+      || havoc
+      || havoc_recursion
+    )
+  );
+#endif
+}
+
+/**
+ * @fn
  * @brief Check if files specified in config exist
  */
 void NautilusFuzzer::CheckPathExistence() {
@@ -182,68 +255,6 @@ void NautilusFuzzer::LoadGrammar() {
 
   /* Initialize context */
   state->ctx.Initialize(setting->max_tree_size);
-}
-
-/**
- * @fn
- * @brief Build HierarFlow of Nautilus
- */
-void NautilusFuzzer::BuildFuzzFlow() {
-  using fuzzuf::hierarflow::CreateNode;
-  using namespace fuzzuf::algorithm::nautilus::fuzzer::routine::other;
-  using namespace fuzzuf::algorithm::nautilus::fuzzer::routine::mutation;
-  using namespace fuzzuf::algorithm::nautilus::fuzzer::routine::update;
-
-  fuzz_loop = CreateNode<FuzzLoop>(*state);
-
-  /* Main flow */
-  auto select_input     = CreateNode<SelectInput>(*state);
-  auto process_input_or = CreateNode<ProcessInput>(*state);
-  auto generate_input   = CreateNode<GenerateInput>(*state);
-  auto update_state     = CreateNode<UpdateState>(*state);
-
-  /* Processing flow */
-  auto initialize_state_or = CreateNode<InitializeState>(*state);
-  auto apply_det_muts_or   = CreateNode<ApplyDetMuts>(*state);
-  auto apply_rand_muts     = CreateNode<ApplyRandMuts>(*state);
-
-  /* Mutation flow */
-
-  /* Execution flow */
-  
-
-  fuzz_loop << (
-    select_input << (
-      process_input_or
-      || generate_input // TODO: maybe execute.HardLink() here
-    )
-    || update_state
-  );
-
-  process_input_or << (
-    initialize_state_or
-    || apply_det_muts_or
-    || apply_rand_muts
-  );
-
-#if 0
-  process_input << (
-    initialize_or << (
-      
-    )
-    || apply_det_muts_or << (
-      det_tree_mut
-      || splice
-      || havoc
-      || havoc_recursion
-    )
-    || applit_rand_muts << (
-         splice
-      || havoc
-      || havoc_recursion
-    )
-  );
-#endif
 }
 
 /**

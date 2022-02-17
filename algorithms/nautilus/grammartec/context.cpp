@@ -297,6 +297,15 @@ void Context::CalcMinLen() {
 
 /**
  * @fn
+ * @brief Check if the number of rules for a nonterminal is more than 1
+ * @return True if nonterminal has multiple possibilities, otherwise false
+ */
+bool Context::CheckIfNTermHasMultiplePossibilities(const NTermID& nt) const {
+  return GetRulesForNT(nt).size() > 1;
+}
+
+/**
+ * @fn
  * @brief Get random length
  * @param (number_of_children) Number of children rules
  * @param (total_remaining_len) Remaining length

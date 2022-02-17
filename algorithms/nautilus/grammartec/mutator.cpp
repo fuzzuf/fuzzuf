@@ -168,6 +168,26 @@ void Mutator::MutSplice(Tree& tree,
 
 /**
  * @fn
+ * @brief Mutate tree randomly
+ * @param (tree) Tree
+ * @param (ctx) Context
+ * @param (tester) Tester function
+ */
+void Mutator::MutRandom(Tree& tree, Context& ctx, FTesterMut& tester) {
+  NodeID n(utils::random::Random<size_t>(0, tree.Size() - 1));
+  NTermID nterm = tree.GetRule(n, ctx).Nonterm();
+
+  if (ctx.CheckIfNTermHasMultiplePossibilities(nterm)) {
+    size_t len = ctx.GetRandomLenForNT(nterm);
+    _scratchpad.GenerateFromNT(nterm, len, ctx);
+
+    TreeMutation repl = tree.MutateReplaceFromTree(n, _scratchpad, NodeID(0));
+    tester(repl, ctx);
+  }
+}
+
+/**
+ * @fn
  * @brief Mutate tree randomly with recursion
  * @param (tree) Tree
  * @param (recursion) Vector of recursion info

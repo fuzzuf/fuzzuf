@@ -95,9 +95,14 @@ void ChunkStore::AddTree(Tree& tree, Context& ctx) {
 std::optional<std::pair<Tree, NodeID>> ChunkStore::GetAlternativeTo(
   const RuleID& r, Context& ctx
 ) const {
-  const std::vector<Chunk>& chunks = _nts_to_chunks.at(
-    ctx.GetNT(RuleIDOrCustom(r))
-  );
+  NTermID nt = ctx.GetNT(RuleIDOrCustom(r));
+
+  if (_nts_to_chunks.find(nt) == _nts_to_chunks.end()) {
+    // TODO: is this correct?
+    return std::nullopt;
+  }
+
+  const std::vector<Chunk>& chunks = _nts_to_chunks.at(nt);
 
   std::vector<Chunk> relevant;
   for (const Chunk& chunk: chunks) {

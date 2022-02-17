@@ -63,6 +63,7 @@ public:
                  Context &ctx,
                  ChunkStore& cks,
                  FTesterMut& tester);
+  void MutRandom(Tree& tree, Context& ctx, FTesterMut& tester);
   void MutRandomRecursion(Tree& tree,
                           std::vector<RecursionInfo>& recursions,
                           Context& ctx,

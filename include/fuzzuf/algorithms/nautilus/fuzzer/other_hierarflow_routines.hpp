@@ -49,6 +49,7 @@ using ISelectInput = void(void);
 using RSelectInput = NullableRef<HierarFlowCallee<ISelectInput>>;
 // SelectInput <--> ProcessInput/GenerateInput
 using OSelectInput = void(std::optional<QueueItem>);
+
 // FuzzLoop <--> UpdateState
 using IUpdateState = void(void);
 using RUpdateState = NullableRef<HierarFlowCallee<IUpdateState>>;
@@ -82,6 +83,7 @@ using IProcessInput = OSelectInput;
 using RProcessInput = NullableRef<HierarFlowCallee<IProcessInput>>;
 // ProcessInput <--> Initialize/ApplyDetMuts/ApplyRandMuts
 using OProcessInput = void(QueueItem&);
+
 // SelectInput <--> GenerateInput
 using IGenerateInput = OSelectInput;
 using RGenerateInput = NullableRef<HierarFlowCallee<IGenerateInput>>;
@@ -101,52 +103,6 @@ private:
 struct GenerateInput : HierarFlowRoutine<IGenerateInput, OGenerateInput> {
   GenerateInput(NautilusState& state) : state(state) {}
   RGenerateInput operator()(std::optional<QueueItem>);
-
-private:
-  NautilusState& state;
-};
-
-/**
- * Types for InitializeState/ApplyDetMuts/ApplyRandMuts under ProcessInput
- */
-// ProcessInput <--> InitializeState
-using IInitializeState = OProcessInput;
-using RInitializeState = NullableRef<HierarFlowCallee<IInitializeState>>;
-// InitializeState <--> N/A
-using OInitializeState = void(void);
-// ProcessInput <--> ApplyDetMuts
-using IApplyDetMuts = OProcessInput;
-using RApplyDetMuts = NullableRef<HierarFlowCallee<IApplyDetMuts>>;
-// ApplyDetMuts <--> MutSplice/MutHavoc/MutHavocRecursion
-using OApplyDetMuts = void(QueueItem&);
-// ProcessInput <--> ApplyRandMuts
-using IApplyRandMuts = OProcessInput;
-using RApplyRandMuts = NullableRef<HierarFlowCallee<IApplyRandMuts>>;
-// ApplyRandMuts <--> MutSplice/MutHavoc/MutHavocRecursion
-using OApplyRandMuts = void(QueueItem&);
-
-/* initialize_state_or */
-struct InitializeState : HierarFlowRoutine<IInitializeState, OInitializeState> {
-  InitializeState(NautilusState& state) : state(state) {}
-  RInitializeState operator()(QueueItem&);
-
-private:
-  NautilusState& state;
-};
-
-/* apply_det_muts_or */
-struct ApplyDetMuts : HierarFlowRoutine<IApplyDetMuts, OApplyDetMuts> {
-  ApplyDetMuts(NautilusState& state) : state(state) {}
-  RApplyDetMuts operator()(QueueItem&);
-
-private:
-  NautilusState& state;
-};
-
-/* apply_rand_muts */
-struct ApplyRandMuts : HierarFlowRoutine<IApplyRandMuts, OApplyRandMuts> {
-  ApplyRandMuts(NautilusState& state) : state(state) {}
-  RApplyRandMuts operator()(QueueItem&);
 
 private:
   NautilusState& state;

@@ -57,6 +57,7 @@ public:
   void CalcRuleOrder();
   void CalcMinLen();
 
+  bool CheckIfNTermHasMultiplePossibilities(const NTermID& nt) const;
   size_t GetRandomLen(
     size_t number_of_children, size_t total_remaining_len
   ) const;
