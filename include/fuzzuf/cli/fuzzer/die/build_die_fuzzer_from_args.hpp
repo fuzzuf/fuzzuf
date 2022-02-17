@@ -61,7 +61,7 @@ struct DIEOptions {
   /* Default values */
   DIEOptions() : die_dir   ("tools/die/DIE"),
                  d8_flags  (""),
-                 typer_path("tools/die/die_typer.py"),
+                 typer_path("tools/die/typer.py"),
                  mut_cnt   (100) {};
 };
 
@@ -95,7 +95,7 @@ std::unique_ptr<TFuzzer> BuildDIEFuzzerFromArgs(FuzzerArgs &fuzzer_args,
     ("d8_flags", po::value<std::string>(&die_options.d8_flags),
      "Set command line options passed to d8 on instrumentation.")
     ("typer"   , po::value<std::string>(&die_options.typer_path),
-     "Set path to python script to collect type information.\nDefault: tools/die/die_typer.py")
+     "Set path to python script to collect type information.\nDefault: tools/die/typer.py")
     ("mut_cnt" , po::value<int>(&die_options.mut_cnt),
      "Set number of scripts to generate per mutation.\nDefault: 100")
     //

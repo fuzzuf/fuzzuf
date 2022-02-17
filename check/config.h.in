@@ -31,5 +31,7 @@
 #define FUZZUF_QEMU_EXECUTABLE "${QEMU_EXECUTABLE}"
 // NOTE: FUZZUF_CS_PROXY_EXECUTABLE is for testing purpose only. Do not use in the Fuzzuf core implementation.
 #define FUZZUF_CS_PROXY_EXECUTABLE "${CS_PROXY_EXECUTABLE}"
+// NOTE: FUZZUF_PT_PROXY_EXECUTABLE is for testing purpose only. Do not use in the Fuzzuf core implementation.
+#define FUZZUF_PT_PROXY_EXECUTABLE "${PT_PROXY_EXECUTABLE}"
 #define FUZZUF_FUZZTOYS_DIR "${FUZZTOYS_DIR}"
 #cmakedefine FLC_FOUND

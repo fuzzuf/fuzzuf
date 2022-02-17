@@ -1,0 +1,50 @@
+name: Docker Image Update
+
+on:
+  release:
+    types: [published]
+  pull_request:
+    paths:
+      - Dockerfile
+      - scripts/dev_cli.sh
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
+
+jobs:
+  build:
+    runs-on: ubuntu-20.04 # stick to Ubuntu 20.04
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Log in to the Container registry
+        if: ${{ github.event_name == 'release' }}
+        uses: docker/login-action@v1
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push
+        if: ${{ github.event_name == 'release' }}
+        uses: docker/build-push-action@v2
+        with:
+          file: Dockerfile
+          push: true
+          tags: ${{ env.REGISTRY }}/${{ github.repository }}/dev:latest
+
+      - name: Build only
+        if: ${{ github.event_name == 'pull_request' }}
+        uses: docker/build-push-action@v2
+        with:
+          file: Dockerfile
+          tags: ${{ env.REGISTRY }}/${{ github.repository }}/dev:latest
+
+      - name: Image digest
+        run: echo ${{ steps.docker_build.outputs.digest }}
