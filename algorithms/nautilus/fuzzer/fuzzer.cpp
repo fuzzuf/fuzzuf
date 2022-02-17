@@ -32,6 +32,8 @@
 #include "fuzzuf/hierarflow/hierarflow_intermediates.hpp"
 #include "fuzzuf/hierarflow/hierarflow_node.hpp"
 #include "fuzzuf/hierarflow/hierarflow_routine.hpp"
+#include "fuzzuf/logger/logger.hpp"
+#include "fuzzuf/utils/common.hpp"
 #include "fuzzuf/utils/filesystem.hpp"
 
 
@@ -50,18 +52,11 @@ NautilusFuzzer::NautilusFuzzer(std::unique_ptr<NautilusState>&& state_ref)
   CheckPathExistence();
   LoadGrammar();
 
-  /* Craete output directories */
-  std::vector<std::string> folders{"signaled", "queue", "timeout", "chunks"};
-  for (auto f: folders) {
-    fs::create_directory(
-      Util::StrPrintf("%s/%s",
-                      state->setting->path_to_workdir.c_str(), f.c_str()
-      )
-    );
-  }
-
   /* Construct fuzzing loop */
   BuildFuzzFlow();
+
+  /* Clear screen */
+  MSG(TERM_CLEAR);
 }
 
 /**
@@ -92,9 +87,6 @@ void NautilusFuzzer::BuildFuzzFlow() {
   auto havoc     = CreateNode<MutHavoc>(*state);
   auto havoc_rec = CreateNode<MutHavocRec>(*state);
 
-  /* Execution flow */
-  
-
   fuzz_loop << (
     select_input << (
       process_input_or
@@ -116,25 +108,6 @@ void NautilusFuzzer::BuildFuzzFlow() {
       || havoc_rec.HardLink()
     )
   );
-
-#if 0
-  process_input << (
-    initialize_or << (
-      
-    )
-    || apply_det_muts_or << (
-      det_tree_mut
-      || splice
-      || havoc
-      || havoc_recursion
-    )
-    || applit_rand_muts << (
-         splice
-      || havoc
-      || havoc_recursion
-    )
-  );
-#endif
 }
 
 /**
@@ -173,6 +146,19 @@ void NautilusFuzzer::CheckPathExistence() {
       __FILE__, __LINE__
     );
   }
+
+  /* Check output directories */
+  std::vector<std::string> folders{"signaled", "queue", "timeout", "chunks"};
+  for (auto f: folders) {
+    fs::path dir = setting->path_to_workdir / f;
+    if (!fs::exists(dir) || !fs::is_directory(dir)) {
+      throw exceptions::execution_failure(
+        Util::StrPrintf("Output directory does not exist: %s", dir.c_str()),
+        __FILE__, __LINE__
+      );
+    }
+  }
+
 }
 
 /**

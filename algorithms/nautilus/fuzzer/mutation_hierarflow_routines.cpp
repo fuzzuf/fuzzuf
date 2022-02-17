@@ -31,8 +31,6 @@ namespace fuzzuf::algorithm::nautilus::fuzzer::routine::mutation {
  * @brief HierarFlow routine for InitializeState (initialize_state_or)
  */
 RInitializeState InitializeState::operator()(QueueItem& inp) {
-  puts("[DEBUG] InitializeState");
-
   if (!std::holds_alternative<InitState>(inp.state)) {
     return GoToDefaultNext(); // apply_det_muts_or
   }
@@ -54,8 +52,6 @@ RInitializeState InitializeState::operator()(QueueItem& inp) {
  * @brief HierarFlow routine for ApplyDetMuts (apply_det_muts_or)
  */
 RApplyDetMuts ApplyDetMuts::operator()(QueueItem& inp) {
-  puts("[DEBUG] ApplyDetMuts");
-
   if (!std::holds_alternative<DetState>(inp.state)) {
     return GoToDefaultNext(); // apply_rand_muts
   }
@@ -86,8 +82,6 @@ RApplyDetMuts ApplyDetMuts::operator()(QueueItem& inp) {
  * @brief HierarFlow routine for ApplyRandMuts (apply_rand_muts_or)
  */
 RApplyRandMuts ApplyRandMuts::operator()(QueueItem& inp) {
-  puts("[DEBUG] ApplyRandMuts");
-
   if (!std::holds_alternative<RandomState>(inp.state)) {
     throw exceptions::wrong_hierarflow_usage(
       "ApplyRandMuts must be called after InitializeState and ApplyDetMuts",
@@ -106,8 +100,6 @@ RApplyRandMuts ApplyRandMuts::operator()(QueueItem& inp) {
  * @brief HierarFlow routine for Splice (splice)
  */
 RMutSplice MutSplice::operator()(QueueItem& inp) {
-  puts("[DEBUG] MutSplice");
-
   FTesterMut tester
     = [this](TreeMutation& t, Context& ctx) -> bool {
         return this->state.RunOnWithDedup(t, ExecutionReason::Splice, ctx);
@@ -126,8 +118,6 @@ RMutSplice MutSplice::operator()(QueueItem& inp) {
  * @brief HierarFlow routine for Havoc (havoc)
  */
 RMutHavoc MutHavoc::operator()(QueueItem& inp) {
-  puts("[DEBUG] MutHavoc");
-
   FTesterMut tester
     = [this](TreeMutation& t, Context& ctx) {
         this->state.RunOnWithDedup(t, ExecutionReason::Havoc, ctx);
@@ -145,8 +135,6 @@ RMutHavoc MutHavoc::operator()(QueueItem& inp) {
  * @brief HierarFlow routine for HavocRec (havoc_rec)
  */
 RMutHavocRec MutHavocRec::operator()(QueueItem& inp) {
-  puts("[DEBUG] MutHavocRec");
-
   if (inp.recursions) {
     /* If input has recursions */
 

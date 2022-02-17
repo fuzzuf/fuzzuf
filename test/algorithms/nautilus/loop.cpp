@@ -22,6 +22,7 @@
  */
 #define BOOST_TEST_MODULE nautilus.loop
 #define BOOST_TEST_DYN_LINK
+
 #include <boost/scope_exit.hpp>
 #include <boost/test/unit_test.hpp>
 #include <iostream>
@@ -33,7 +34,7 @@
 #include "fuzzuf/executor/native_linux_executor.hpp"
 #include "fuzzuf/utils/common.hpp"
 #include "fuzzuf/utils/filesystem.hpp"
-#include "fuzzuf/utils/workspace.hpp"
+
 
 static void NautilusLoop() {
   MoveToProgramLocation();
@@ -85,7 +86,14 @@ static void NautilusLoop() {
     )
   );
 
-  SetupDirs(setting->path_to_workdir.string());
+  /* Craete output directories */
+  std::vector<std::string> folders{"signaled", "queue", "timeout", "chunks"};
+  for (auto f: folders) {
+    fs::create_directories(
+      Util::StrPrintf("%s/%s", setting->path_to_workdir.c_str(), f.c_str()
+      )
+    );
+  }
 
   using fuzzuf::algorithm::afl::option::GetDefaultOutfile;
   using fuzzuf::algorithm::afl::option::GetMapSize;

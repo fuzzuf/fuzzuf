@@ -34,8 +34,10 @@ namespace fuzzuf::algorithm::nautilus::fuzzer::routine::other {
  * @brief HierarFlow routine for FuzzLoop (fuzz_loop)
  */
 NullableRef<HierarFlowCallee<void(void)>> FuzzLoop::operator()(void) {
-  puts("[DEBUG] FuzzLoop");
   CallSuccessors(); // select_input
+
+  state.cycles_done++;
+
   return GoToDefaultNext();
 }
 
@@ -44,7 +46,6 @@ NullableRef<HierarFlowCallee<void(void)>> FuzzLoop::operator()(void) {
  * @brief HierarFlow routine for SelectInput (select_input)
  */
 RSelectInput SelectInput::operator()(void) {
-  puts("[DEBUG] SelectInput");
   std::optional<QueueItem> inp;
 
   if (state.queue.IsEmpty()) {
@@ -60,25 +61,10 @@ RSelectInput SelectInput::operator()(void) {
 
 /**
  * @fn
- * @brief HierarFlow routine for UpdateState (update_state)
- */
-RUpdateState UpdateState::operator()(void) {
-  puts("[DEBUG] UpdateState");
-
-  // TODO: Lock state when multi-threaded
-
-  return GoToDefaultNext();
-}
-
-
-/**
- * @fn
  * @brief HierarFlow routine for ProcessInput (process_input_or)
  * @param (inp) Queue item to process
  */
 RProcessInput ProcessInput::operator()(std::optional<QueueItem> inp) {
-  puts("[DEBUG] ProcessInput");
-
   if (inp) {
 
     /* Corpus exists. Mutate input. */
@@ -103,8 +89,6 @@ RProcessInput ProcessInput::operator()(std::optional<QueueItem> inp) {
  * @param (inp) Empty item. Not used.
  */
 RGenerateInput GenerateInput::operator()(std::optional<QueueItem>) {
-  puts("[DEBUG] GenerateInput");
-
   for (size_t i = 0; i < state.setting->number_of_generate_inputs; i++) {
     /* Generate random seed and run it */
     const NTermID& nonterm = state.ctx.NTID("START");

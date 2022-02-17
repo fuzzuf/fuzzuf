@@ -20,7 +20,6 @@
  * @brief Global state used during hieraflow loop
  * @author Ricerca Security <fuzzuf-dev@ricsec.co.jp>
  */
-#include <chrono>
 #include <ctime>
 #include <iomanip>
 #include <sstream>
@@ -62,7 +61,10 @@ NautilusState::NautilusState(
     last_timeout ("No timeout yet."),
     state_saved ("State not saved yet."),
     total_found_asan (0),
-    total_found_sig (0)
+    total_found_sig (0),
+    total_found_hang (0),
+    start_time (std::chrono::system_clock::now()),
+    cycles_done (0)
 {
   bitmaps[false] = std::vector<uint8_t>(setting->bitmap_size, 0);
   bitmaps[true]  = std::vector<uint8_t>(setting->bitmap_size, 0);
@@ -209,14 +211,15 @@ void NautilusState::RunOn(std::string& code,
 
     case PUTExitReasonType::FAULT_TMOUT: { /* Timeout */
       /* Get current datetime */
-      time_t t = std::time(nullptr);
-      struct tm* tm = std::localtime(&t);
+      const std::time_t t = std::time(nullptr);
+      const std::tm* tm = std::localtime(&t);
 
       /* Update last timeout */
       std::ostringstream oss;
-      oss << std::put_time(tm, "[%Y-%m-%d] %H:%M:%Sx");
+      oss << std::put_time(tm, "[%Y-%m-%d] %H:%M:%S");
       // TODO: Use lock when multi-threaded
       last_timeout = oss.str();
+      total_found_hang++;
 
       /* Stringify tree */
       std::string buffer;
@@ -248,12 +251,12 @@ void NautilusState::RunOn(std::string& code,
       if (new_bits.size() == 0) break;
 
       /* Get current datetime */
-      time_t t = std::time(nullptr);
-      struct tm* tm = std::localtime(&t);
+      const std::time_t t = std::time(nullptr);
+      const std::tm* tm = std::localtime(&t);
 
       /* Update last sig */
       std::ostringstream oss;
-      oss << std::put_time(tm, "[%Y-%m-%d] %H:%M:%Sx");
+      oss << std::put_time(tm, "[%Y-%m-%d] %H:%M:%S");
       // TODO: Use lock when multi-threaded
       total_found_sig++;
       // TODO: Use lock when multi-threaded

@@ -31,4 +31,22 @@
 
 namespace fuzzuf::algorithm::nautilus::fuzzer::routine::update {
 
+/**
+ * Types for UpdateState under FuzzLoop
+ */
+// FuzzLoop <--> UpdateState
+using IUpdateState = void(void);
+using RUpdateState = NullableRef<HierarFlowCallee<IUpdateState>>;
+// UpdateState <--> N/A
+using OUpdateState = void(void);
+
+/* update_state */
+struct UpdateState : HierarFlowRoutine<IUpdateState, OUpdateState> {
+  UpdateState(NautilusState& state) : state(state) {}
+  RUpdateState operator()(void);
+
+private:
+  NautilusState& state;
+};
+
 } // namespace fuzzuf::algorithm::nautilus::fuzzer::routine::update

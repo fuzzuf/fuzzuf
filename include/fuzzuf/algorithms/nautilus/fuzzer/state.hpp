@@ -22,6 +22,7 @@
  */
 #pragma once
 
+#include <chrono>
 #include <deque>
 #include <memory>
 #include <string>
@@ -78,9 +79,10 @@ struct NautilusState {
                                  size_t start_index,
                                  size_t end_index);
 
-  /* Local state */
   std::shared_ptr<const NautilusSetting> setting;
   std::shared_ptr<NativeLinuxExecutor> executor;
+
+  /* Local state */
   Context ctx;
   ChunkStore cks;
   Mutator mutator;
@@ -110,6 +112,11 @@ struct NautilusState {
   std::string state_saved;
   uint64_t total_found_asan;
   uint64_t total_found_sig;
+  uint64_t total_found_hang;
+  // Added
+  std::chrono::system_clock::time_point start_time;
+  std::chrono::system_clock::time_point last_time;
+  uint32_t cycles_done;
 
   /* Fuzzer */
   std::unordered_set<std::string> last_tried_inputs;

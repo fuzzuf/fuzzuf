@@ -62,8 +62,17 @@ struct NautilusSetting {
     number_of_deterministic_mutations (number_of_deterministic_mutations),
     max_tree_size (max_tree_size),
     bitmap_size (bitmap_size)
-  {}
+  {
+    fs::path target(args.at(0));
+    banner_filename = target.filename();
 
+    if (banner_filename.size() > 24) {
+      banner_filename.resize(24);
+      banner_filename += "...";
+    }
+  }
+
+  std::string banner_filename;
   const std::vector<std::string>& args;
   const fs::path path_to_grammar;
   const fs::path path_to_workdir;

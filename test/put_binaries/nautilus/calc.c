@@ -111,6 +111,6 @@ int main(int argc, char *argv[]) {
     read_file(argv[1], expr_s);  
     printf("Read %s\n", expr_s);
     int res = express();
-    if (res % 314 == 0) crash();
+    if (res != 0 && res % 314 == 0) crash();
     printf("Ans: %d\n", res);
 }

@@ -42,19 +42,13 @@ private:
 };
 
 /**
- * Types for SelectInput/UpdateState under FuzzLoop
+ * Types for SelectInput under FuzzLoop
  */
 // FuzzLoop <--> SelectInput
 using ISelectInput = void(void);
 using RSelectInput = NullableRef<HierarFlowCallee<ISelectInput>>;
 // SelectInput <--> ProcessInput/GenerateInput
 using OSelectInput = void(std::optional<QueueItem>);
-
-// FuzzLoop <--> UpdateState
-using IUpdateState = void(void);
-using RUpdateState = NullableRef<HierarFlowCallee<IUpdateState>>;
-// UpdateState <--> N/A
-using OUpdateState = void(void);
 
 /* select_input */
 struct SelectInput : HierarFlowRoutine<ISelectInput, OSelectInput> {
@@ -64,16 +58,6 @@ struct SelectInput : HierarFlowRoutine<ISelectInput, OSelectInput> {
 private:
   NautilusState& state;
 };
-
-/* update_state */
-struct UpdateState : HierarFlowRoutine<IUpdateState, OUpdateState> {
-  UpdateState(NautilusState& state) : state(state) {}
-  RUpdateState operator()(void);
-
-private:
-  NautilusState& state;
-};
-
 
 /**
  * Types for ProcessInput/GenerateInput under SelectInput
