@@ -9,7 +9,7 @@ BUILD_TARGET="afl-frida-trace.so"
 if [ -f "$CMAKE_BINARY_DIR/$BUILD_TARGET" ]; then
     echo "$BUILD_TARGET already exists."
 else
-    if [ ! -d "$AFLPP_DIR" ]; then
+    if [ ! -d "$AFLPP_DIR/frida_mode" ]; then
         echo "[!] Cloning a submodule first..."
         git submodule init
         git submodule update
