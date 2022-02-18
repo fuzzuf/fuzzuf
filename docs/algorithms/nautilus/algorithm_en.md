@@ -121,6 +121,31 @@ Also, be careful that no error will happen if you forget to write brace for a no
 ["EXPRESSION", "{EXPRESSION}+{EXPRESSION"]
 ```
 
+### 2-3. Fuzzing
+Let's fuzz a calculator using the grammar we have written so far.
+At `test/put_binaries/nautilus/calc` exists a calculator instrumented by afl-gcc. This calculator prints the result of arithmetic calculation but it causes a crash when the result becomes a multiple of 314 which is non-zero.
+```c
+int res = express();
+if (res != 0 && res % 314 == 0) crash();
+```
+You have to instrument the target binary by AFL in Nautilus mode.
 
+The Nautilus mode of fuzzuf provides the following options:
 
+- `--out_dir`, `-o`: Path to folder to save the fuzzing result [**Required**]
+- `--exec_timelimit_ms`: Time limit of an execution (ms) [Default: 1000]
+- `--exec_memlimit`: Memory limit of the target binary (MB) [Default: 25]
+- `--grammar`: Path to grammar file [**Required**]
+- `--bitmap-size`: Bitmap size [Default: 1<<16]
+- `--generate-num`: The number of test cases generated in one fuzz loop [Default: 100]
+- `--detmut-num`: Number of cycles to execute deterministic mutations [Default: 1]
+- `--max-tree-size`: Maximum size of generated tree [Default: 1000]
+- `--no-forksrv`: Disable fork server mode (Not recommended)
 
+You can fuzz the calculator like this, for example:
+```
+$ fuzzuf nautilus --out_dir output \
+                  --grammar ./calc_grammar.json \
+                  -- ./test/put_binaries/nautilus/calc @@
+```
+It is working successfully if a screen showing the status of fuzzing in real time appears.

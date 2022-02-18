@@ -1,0 +1,217 @@
+/*
+ * fuzzuf
+ * Copyright (C) 2022 Ricerca Security
+ * 
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see http://www.gnu.org/licenses/.
+ */
+/**
+ * @file build_nautilus_fuzzer_from_args.hpp
+ * @brief Register CLI option for Nautilus
+ * @author Ricerca Security <fuzzuf-dev@ricsec.co.jp>
+ */
+#ifndef FUZZUF_INCLUDE_CLI_FUZZER_NAUTILUS_BUILD_NAUTILUS_FUZZER_FROM_ARGS_HPP
+#define FUZZUF_INCLUDE_CLI_FUZZER_NAUTILUS_BUILD_NAUTILUS_FUZZER_FROM_ARGS_HPP
+
+#include <iostream>
+#include "fuzzuf/algorithms/afl/afl_option.hpp"
+#include "fuzzuf/algorithms/nautilus/fuzzer/option.hpp"
+#include "fuzzuf/algorithms/nautilus/fuzzer/setting.hpp"
+#include "fuzzuf/cli/put_args.hpp"
+#include "fuzzuf/exceptions.hpp"
+#include "fuzzuf/executor/native_linux_executor.hpp"
+#include "fuzzuf/utils/filesystem.hpp"
+#include "fuzzuf/utils/optparser.hpp"
+
+
+namespace fuzzuf::cli::fuzzer::nautilus {
+
+// Fuzzer specific help
+// TODO: Provide better help message
+static void usage(po::options_description &desc) {
+    std::cout << "Help:" << std::endl;
+    std::cout << desc << std::endl;
+    exit(1);
+}
+
+}
+
+using fuzzuf::algorithm::nautilus::fuzzer::NautilusFuzzer;
+
+/**
+ * @fn
+ * @brief Build Nautilus fuzzer instance from CLI arguments
+ * @param (fuzzer_args) Arguments passed to Nautilus
+ * @param (global_options) Global options
+ */
+template <class TFuzzer, class TNautilusFuzzer>
+std::unique_ptr<TFuzzer> BuildNautilusFuzzerFromArgs(
+  FuzzerArgs &fuzzer_args,
+  GlobalFuzzerOptions &global_options
+) {
+  po::positional_options_description pargs_desc;
+  pargs_desc.add("fuzzer", 1);
+  pargs_desc.add("pargs", -1);
+
+  /* Options */
+  bool no_forksrv;
+  std::string path_to_grammar;
+  u64 bitmap_size, number_of_deterministic_mutations, max_tree_size;
+  u16 number_of_generate_inputs;
+
+  /* Set up additional options for Nautilus */
+  using namespace fuzzuf::algorithm::nautilus::fuzzer::option;
+
+  po::options_description fuzzer_desc("Nautilus options");
+  std::vector<std::string> pargs;
+  fuzzer_desc.add_options()
+    /* Path to grammar file */
+    ("grammar", 
+     po::value<std::string>(&path_to_grammar)
+       ->value_name("GRAMMAR")
+       ->required(),
+     "Path to grammar file (.json)")
+
+    /* Bitmap size */
+    ("bitmap-size",
+     po::value<u64>(&bitmap_size)
+       ->value_name("SIZE")
+       ->default_value(GetDefaultBitmapSize()),
+     "Bitmap size")
+
+    /* Number of generate inputs */
+    ("generate-num",
+     po::value<u16>(&number_of_generate_inputs)
+       ->value_name("NUM")
+       ->default_value(GetDefaultNumOfGenInputs()),
+     "Number of inputs to be generated for each generation phase")
+
+    /* Number of deterministic mutations */
+    ("detmut-num",
+     po::value<u64>(&number_of_deterministic_mutations)
+       ->value_name("NUM")
+       ->default_value(GetDefaultNumOfDetMuts()),
+     "Number of deterministic mutations")
+
+    /* Maximum size of tree */
+    ("max-tree-size",
+     po::value<u64>(&max_tree_size)
+       ->value_name("NUM")
+       ->default_value(GetDefaultMaxTreeSize()),
+     "Maximum size of tree (The larger this size is, the longer the input will be.)")
+
+    /* Disable fork server mode */
+    ("no-forksrv",
+     po::bool_switch(&no_forksrv)->default_value(false),
+     "Disable fork-server mode (not recommended)")
+
+    //
+    ("pargs", po::value<std::vector<std::string>>(&pargs),
+     "Specify PUT and args for PUT.")
+    ;
+
+  po::variables_map vm;
+  po::store(
+    po::command_line_parser(fuzzer_args.argc, fuzzer_args.argv)
+      .options(fuzzer_args.global_options_description.add(fuzzer_desc))
+      .positional(pargs_desc)
+      .run(),
+    vm
+  );
+
+  if (global_options.help) {
+    fuzzuf::cli::fuzzer::nautilus::usage(
+      fuzzer_args.global_options_description
+    );
+  }
+
+  po::notify(vm);
+
+  PutArgs put(pargs);
+  try {
+    put.Check();
+  } catch (const exceptions::cli_error &e) {
+    std::cerr << "[!] " << e.what() << std::endl;
+    std::cerr << "\tat " << e.file << ":" << e.line << std::endl;
+    fuzzuf::cli::fuzzer::nautilus::usage(fuzzer_args.global_options_description);
+  }
+
+  DEBUG("[*] PUT: put = [");
+  for (auto v : put.Args()) {
+    DEBUG("\t\"%s\",", v.c_str());
+  }
+  DEBUG("    ]");
+
+  using fuzzuf::algorithm::nautilus::fuzzer::NautilusSetting;
+  using fuzzuf::algorithm::afl::option::GetExecTimeout;
+  using fuzzuf::algorithm::afl::option::GetMemLimit;
+
+  /* Create setting for Nautilus */
+  std::shared_ptr<const NautilusSetting> setting(
+    new NautilusSetting(
+      put.Args(),
+      path_to_grammar, // TODO: check if empty
+      global_options.out_dir,
+      global_options.exec_timelimit_ms.value_or(GetExecTimeout<NautilusTag>()),
+      global_options.exec_memlimit.value_or(GetMemLimit<NautilusTag>()),
+      !no_forksrv,
+      NativeLinuxExecutor::CPUID_BIND_WHICHEVER,
+
+      // TODO: Change here if threading is supported
+      GetDefaultNumOfThreads(),
+      GetDefaultThreadSize(),
+      number_of_generate_inputs,
+      number_of_deterministic_mutations,
+      max_tree_size,
+      bitmap_size
+    )
+  );
+
+  /* Craete output directories */
+  std::vector<std::string> folders{"signaled", "queue", "timeout", "chunks"};
+  for (auto f: folders) {
+    fs::create_directories(
+      Util::StrPrintf("%s/%s", setting->path_to_workdir.c_str(), f.c_str()
+      )
+    );
+  }
+
+  using fuzzuf::algorithm::afl::option::GetDefaultOutfile;
+  using fuzzuf::algorithm::afl::option::GetMapSize;
+
+  /* Create NativeLinuxExecutor */
+  auto executor = std::make_shared<NativeLinuxExecutor>(
+    put.Args(),
+    setting->exec_timeout_ms,
+    setting->exec_memlimit,
+    setting->forksrv,
+    setting->path_to_workdir / GetDefaultOutfile<NautilusTag>(),
+    setting->bitmap_size, // afl_shm_size used as bitmap_size
+    0,                    // bb_shm_size is not used
+    setting->cpuid_to_bind
+  );
+
+  using fuzzuf::algorithm::nautilus::fuzzer::NautilusState;
+  using fuzzuf::algorithm::nautilus::grammartec::ChunkStore;
+
+  /* Create state for Nautilus */
+  auto state = std::make_unique<NautilusState>(setting, executor);
+
+  return std::unique_ptr<TFuzzer>(
+    dynamic_cast<TFuzzer *>(
+      new TNautilusFuzzer(std::move(state))
+    )
+  );
+}
+
+#endif

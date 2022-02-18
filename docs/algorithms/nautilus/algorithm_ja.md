@@ -139,26 +139,30 @@ fuzzufのNautilusモードは次のオプションが提供されています。
 - `--generate-num`: ファジングループの一回で生成されるテストケースの数【デフォルト: 100】
 - `--detmut-num`: 決定的ミューテーションを実行するサイクル数【デフォルト: 1】
 - `--max-tree-size`: 生成される木の最大サイズ【デフォルト: 1000】
+- `--no-forksrv`: Fork Serverモードを無効化する（非推奨）
 
 例えば次のようにして電卓プログラムをファジングできます。
 ```
 $ fuzzuf nautilus --out_dir output \
                   --grammar ./calc_grammar.json \
-                  -- ./test/put_binaries/nautilus/calc
+                  -- ./test/put_binaries/nautilus/calc @@
 ```
+Fuzzingの結果をリアルタイムで反映させた画面が表示されれば成功です。
 
 ## 3. アルゴリズム概要
+TBA
 
 ### 3-1. 文法の解釈
-
+TBA
 
 ## 4. オリジナル実装との差分
+TBA
 
 ### 4-1. ScriptRuleとRegexpRule
-
+TBA
 
 ### 4-2. ASAN
-
+TBA
 
 ## 5. 参考文献
 
