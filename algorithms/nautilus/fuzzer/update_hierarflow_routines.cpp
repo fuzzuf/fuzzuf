@@ -77,11 +77,11 @@ RUpdateState UpdateState::operator()(void) {
   ).count();
 
   /* Get current time */
-  const std::time_t t = system_clock::to_time_t(system_clock::now());
+  const std::time_t t = system_clock::to_time_t(state.start_time);
   const std::tm* tm = std::localtime(&t);
   std::ostringstream tmoss;
   tmoss << std::put_time(tm, "[%Y-%m-%d] %H:%M:%S");
-  std::string str_current_time = tmoss.str();
+  std::string str_start_time = tmoss.str();
 
   /* If not enough time has passed since last UI update, bail out.*/
   if (elapsed < 1000 / GetUiTargetHz()) {
@@ -115,17 +115,21 @@ RUpdateState UpdateState::operator()(void) {
 
   // TODO: Let's use bold red font for crashes/hangs
   auto run_time = current_time - state.start_time;
+  auto d = duration_cast<day_t>(run_time);
+  auto h = duration_cast<hours>(run_time -= d);
+  auto m = duration_cast<minutes>(run_time -= h);
+  auto s = duration_cast<seconds>(run_time -= m);
   oss << bV bSTOP "     run time : " cRST
       << std::right << std::setfill('0')
-      << std::setw(4) << duration_cast<day_t>(run_time).count() << " days, "
-      << std::setw(2) << duration_cast<hours>(run_time).count() << " hrs, "
-      << std::setw(2) << duration_cast<minutes>(run_time).count() << " min, "
-      << std::setw(2) << duration_cast<seconds>(run_time).count() << " sec  "
+      << std::setw(4) << d.count() << " days, "
+      << std::setw(2) << h.count() << " hrs, "
+      << std::setw(2) << m.count() << " min, "
+      << std::setw(2) << s.count() << " sec  "
       << bSTG bV bSTOP " cycles done : " cRST
       << std::left << std::setfill(' ') << std::setw(5) << state.cycles_done
       << "  " bSTG bV "\n";
-  oss << bV bSTOP " current time : " cRST
-      << std::setw(35) << str_current_time
+  oss << bV bSTOP "   start time : " cRST
+      << std::setw(35) << str_start_time
       << bSTG bV bSTOP " total paths : " cRST
       << std::setw(5) << 0 // FIXME: wow
       << "  " bSTG bV "\n";
@@ -173,7 +177,7 @@ RUpdateState UpdateState::operator()(void) {
   oss << bSTG bLB bH30 bH20 bH20 bH2 bH2 bRB bSTOP "\n";
   oss << cRST;
 
-  MSG("%s", oss.str().c_str());
+  MSG("%s\n", oss.str().c_str());
 
   return GoToDefaultNext();
 }
