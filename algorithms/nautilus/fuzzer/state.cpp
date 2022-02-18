@@ -37,9 +37,9 @@ NautilusState::NautilusState(
     std::shared_ptr<NativeLinuxExecutor> executor
 ) : setting (setting),
     executor (executor),
-    cks (setting->path_to_workdir),
+    cks (setting->path_to_workdir.string()),
     mutator (ctx),
-    queue (setting->path_to_workdir),
+    queue (setting->path_to_workdir.string()),
     execution_count (0),
     average_executions_per_sec (0),
     bits_found_by_havoc (0),
