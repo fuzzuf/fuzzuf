@@ -65,7 +65,7 @@ struct NautilusSetting {
     bitmap_size (bitmap_size)
   {
     fs::path target(args.at(0));
-    banner_filename = target.filename();
+    banner_filename = target.filename().string();
 
     if (banner_filename.size() > 24) {
       banner_filename.resize(24);

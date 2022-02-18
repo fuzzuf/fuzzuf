@@ -169,7 +169,7 @@ void NautilusFuzzer::LoadGrammar() {
 
   if (setting->path_to_grammar.extension() == ".json") {
     /* Load JSON grammar */
-    std::ifstream ifs(setting->path_to_grammar);
+    std::ifstream ifs(setting->path_to_grammar.string());
 
     try {
       json rules = json::parse(ifs);
@@ -218,7 +218,7 @@ void NautilusFuzzer::LoadGrammar() {
         );
       }
 
-    } catch (json::exception& e) {
+    } catch (std::exception& e) {
       /* JSON parse error */
       throw exceptions::invalid_file(
         Util::StrPrintf("Cannot parse grammar file\n%s", e.what()),
