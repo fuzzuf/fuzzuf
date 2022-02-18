@@ -121,9 +121,31 @@ terminate called after throwing an instance of 'exceptions::fuzzuf_runtime_error
 ```
 
 ### 2-3. ファジング
-例として
+これまで使ってきた文法を使って電卓プログラムをファジングしてみましょう。
+`test/put_binaries/nautilus/calc`にafl-gccで計装された電卓プログラムがあります。この電卓は算術演算を計算して結果を出力してくれますが、計算結果が0でない314の倍数になったときにクラッシュを発生してしまいます。
+```c
+int res = express();
+if (res != 0 && res % 314 == 0) crash();
+```
+Nautilusモードでは、検査対象をあらかじめAFLで計装しておく必要があります。
 
+fuzzufのNautilusモードは次のオプションが提供されています。
 
+- `--out_dir`, `-o`: ファジング結果を出力するフォルダパス【必須】
+- `--exec_timelimit_ms`: 検査対象の1回あたりの実行時間の上限（ミリ秒）【デフォルト: 1000】
+- `--exec_memlimit`: メモリ使用量の上限（MB）【デフォルト: 25】
+- `--grammar`: 文法ファイルのパス【必須】
+- `--bitmap-size`: ビットマップサイズ【デフォルト: 1<<16】
+- `--generate-num`: ファジングループの一回で生成されるテストケースの数【デフォルト: 100】
+- `--detmut-num`: 決定的ミューテーションを実行するサイクル数【デフォルト: 1】
+- `--max-tree-size`: 生成される木の最大サイズ【デフォルト: 1000】
+
+例えば次のようにして電卓プログラムをファジングできます。
+```
+$ fuzzuf nautilus --out_dir output \
+                  --grammar ./calc_grammar.json \
+                  -- ./test/put_binaries/nautilus/calc
+```
 
 ## 3. アルゴリズム概要
 

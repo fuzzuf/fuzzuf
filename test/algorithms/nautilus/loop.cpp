@@ -36,7 +36,7 @@
 #include "fuzzuf/utils/filesystem.hpp"
 
 
-static void NautilusLoop() {
+static void NautilusLoop(bool forksrv, size_t iter) {
   MoveToProgramLocation();
 
   /* Create root directory */
@@ -74,7 +74,7 @@ static void NautilusLoop() {
       output_dir,
       fuzzuf::algorithm::afl::option::GetExecTimeout<NautilusTag>(),
       fuzzuf::algorithm::afl::option::GetMemLimit<NautilusTag>(),
-      false, // forksrv
+      forksrv,
       NativeLinuxExecutor::CPUID_BIND_WHICHEVER,
 
       GetDefaultNumOfThreads(),
@@ -123,14 +123,20 @@ static void NautilusLoop() {
      0: Test SelectInput, GenerateInput, UpdateState
      1: Test ProcessInput, InitializeState
    */
-  for (int i = 0; i < 100; i++) {
+  for (size_t i = 0; i < iter; i++) {
     std::cout << "the " << i << "-th iteration starts" << std::endl;
     fuzzer.OneLoop();
   }
 }
 
+BOOST_AUTO_TEST_CASE(NautilusLoopNonFork) {
+  std::cout << "[*] NautilusLoopNonFork started\n";
+  NautilusLoop(false, 2);
+  std::cout << "[*] NautilusLoopNonFork ended\n";
+}
+
 BOOST_AUTO_TEST_CASE(NautilusLoopFork) {
-  std::cout << "[*] NautilusLoop started\n";
-  NautilusLoop();
-  std::cout << "[*] NautilusLoop ended\n";
+  std::cout << "[*] NautilusLoopFork started\n";
+  NautilusLoop(true, 20);
+  std::cout << "[*] NautilusLoopFork ended\n";
 }
