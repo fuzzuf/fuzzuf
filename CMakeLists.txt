@@ -86,6 +86,7 @@ find_package( Pin )
 find_package( QEMU )
 find_package( CoreSightTrace )
 find_package( PTProxy )
+find_package( FridaTrace )
 # fuzz_toysはリチェルカセキュリティが内部で使用しているテスト用バイナリ群である
 # Nezhaは類似した2つのPUTを必要としており、fuzz_toysにはその条件を満たす物が含まれている
 find_package( FuzzToys )

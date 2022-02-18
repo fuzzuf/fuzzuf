@@ -31,10 +31,12 @@ namespace po = boost::program_options;
 
 struct AFLFastFuzzerOptions {
     bool forksrv;                           // Optional
+    bool frida_mode;                        // Optional
 
     // Default values
     AFLFastFuzzerOptions() : 
-        forksrv(true)
+        forksrv(true),
+        frida_mode(false)
         {};
 };
 
@@ -73,6 +75,9 @@ std::unique_ptr<TFuzzer> BuildAFLFastFuzzerFromArgs(
         ("pargs", 
             po::value<std::vector<std::string>>(&pargs), 
             "Specify PUT and args for PUT.")
+        ("frida",
+            po::value<bool>(&aflfast_options.frida_mode)->default_value(aflfast_options.frida_mode),
+            "Enable/disable frida mode. Default to false.")
     ;
 
     po::variables_map vm;
@@ -87,6 +92,18 @@ std::unique_ptr<TFuzzer> BuildAFLFastFuzzerFromArgs(
 
     if (global_options.help) {
         fuzzuf::cli::fuzzer::aflfast::usage(fuzzer_args.global_options_description);
+    }
+
+    u32 extra_mem = 0;
+    if (aflfast_options.frida_mode) {
+        setenv("__AFL_DEFER_FORKSRV", "1", 1);
+        fs::path fuzzuf_bin(fuzzer_args.argv[0]);
+        fs::path frida_bin = fuzzuf_bin.parent_path() / "afl-frida-trace.so";
+        setenv("LD_PRELOAD", frida_bin.c_str(), 1);
+
+        struct stat statbuf;
+        stat(frida_bin.c_str(), &statbuf);
+        extra_mem += statbuf.st_size;
     }
 
     PutArgs put(pargs);
@@ -118,7 +135,7 @@ std::unique_ptr<TFuzzer> BuildAFLFastFuzzerFromArgs(
                         global_options.in_dir,
                         global_options.out_dir,
                         global_options.exec_timelimit_ms.value_or(GetExecTimeout<AFLFastTag>()),
-                        global_options.exec_memlimit.value_or(GetMemLimit<AFLFastTag>()),
+                        global_options.exec_memlimit.value_or(GetMemLimit<AFLFastTag>()) + extra_mem,
                         aflfast_options.forksrv,
                         /* dumb_mode */ false,  // FIXME: add dumb_mode
                         NativeLinuxExecutor::CPUID_BIND_WHICHEVER,

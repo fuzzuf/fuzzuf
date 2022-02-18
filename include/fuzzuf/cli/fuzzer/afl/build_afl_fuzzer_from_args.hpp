@@ -26,7 +26,6 @@
 #include "fuzzuf/algorithms/afl/afl_state.hpp"
 #include "fuzzuf/executor/native_linux_executor.hpp"
 #include <boost/program_options.hpp>
-#include <cstdlib>
 
 namespace po = boost::program_options;
 
@@ -100,19 +99,14 @@ std::unique_ptr<TFuzzer> BuildAFLFuzzerFromArgs(
 
     u32 extra_mem = 0;
     if (afl_options.frida_mode) {
-        DEBUG("Frida mode enabled");
         setenv("__AFL_DEFER_FORKSRV", "1", 1);
-        // FIXME: Use CMake to set FRIDA_ROOT
-        if (getenv("FRIDA_PATH")) {
-            char *tmp = realpath(getenv("FRIDA_PATH"), nullptr);
-            setenv("LD_PRELOAD", tmp, 1);
-            struct stat statbuf;
-            stat(tmp, &statbuf);
-            extra_mem += statbuf.st_size;
-            free(tmp);
-        } else {
-            setenv("LD_PRELOAD", "/aflpp/afl-frida-trace.so", 1);
-        }
+        fs::path fuzzuf_bin(fuzzer_args.argv[0]);
+        fs::path frida_bin = fuzzuf_bin.parent_path() / "afl-frida-trace.so";
+        setenv("LD_PRELOAD", frida_bin.c_str(), 1);
+
+        struct stat statbuf;
+        stat(frida_bin.c_str(), &statbuf);
+        extra_mem += statbuf.st_size;
     }
 
     PutArgs put(pargs);
