@@ -33,6 +33,7 @@
 #include "fuzzuf/algorithms/nautilus/grammartec/context.hpp"
 #include "fuzzuf/algorithms/nautilus/grammartec/newtypes.hpp"
 #include "fuzzuf/algorithms/nautilus/grammartec/tree.hpp"
+#include "fuzzuf/utils/filesystem.hpp"
 
 
 namespace fuzzuf::algorithm::nautilus::grammartec {
@@ -41,8 +42,8 @@ using Chunk = std::pair<size_t, NodeID>;
 
 class ChunkStore {
 public:
-  ChunkStore(const std::string&& work_dir)
-    : _work_dir(std::move(work_dir)), _number_of_chunks(0) {}
+  ChunkStore(const std::string& work_dir)
+    : _work_dir(work_dir), _number_of_chunks(0) {}
   std::unordered_map<NTermID, std::vector<Chunk>>& nts_to_chunks() {
     return _nts_to_chunks;
   }
