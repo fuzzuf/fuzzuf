@@ -92,7 +92,7 @@ int main(int argc, char **argv) {
     }
 
     /* Load JSON grammar */
-    std::ifstream ifs(grammar_path);
+    std::ifstream ifs(grammar_path.string());
     try {
       json rules = json::parse(ifs);
 
@@ -127,7 +127,7 @@ int main(int argc, char **argv) {
         ctx.AddRule(rule[0].get<std::string>(), rule[1].get<std::string>());
       }
 
-    } catch (json::exception& e) {
+    } catch (std::exception& e) {
       /* JSON parse error */
       std::cerr << "[-] Cannot parse grammar file" << std::endl
                 << e.what() << std::endl;
