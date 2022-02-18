@@ -56,7 +56,7 @@ static void NautilusLoop(bool forksrv, size_t iter) {
 
   // Create input file
   fs::path put_dir = fs::path("../../put_binaries/nautilus");
-  std::string output_dir = root_dir / "output";
+  std::string output_dir = (root_dir / "output").string();
   std::vector<std::string> args{"../../put_binaries/nautilus/calc", "@@"};
   std::string path_to_grammar{"./calc_grammar.json"};
 
