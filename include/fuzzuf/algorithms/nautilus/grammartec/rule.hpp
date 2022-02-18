@@ -17,7 +17,7 @@
  */
 /**
  * @file rule.hpp
- * @brief Rule for context-free grammar
+ * @brief Grammar rules and parser/unparser
  * @author Ricerca Security <fuzzuf-dev@ricsec.co.jp>
  */
 #pragma once
@@ -37,6 +37,7 @@ class Context;
 using Term = std::string;
 using NTerm = NTermID;
 
+/* RuleChild: A terminal or nonterminal symbol */
 class RuleChild {
 public:
   RuleChild(const std::string& lit);
@@ -54,6 +55,7 @@ private:
 };
 
 
+/* RuleIDOrCustom: Store a general or custom rule */
 using Custom = std::pair<RuleID, std::string>;
 
 class RuleIDOrCustom {
@@ -94,6 +96,7 @@ struct PlainRule {
 };
 
 
+/* Rule: A rule and its parser */
 class Rule {
 public:
   Rule(Context& ctx, const std::string& nonterm, const std::string& format);
@@ -113,7 +116,7 @@ public:
   );
 
 private:
-  // NOTE: ScriptRule and RegExpRule not implemented
+  // TODO: Implement ScriptRule and RegExpRule
   std::variant<PlainRule> _rule;
 };
 

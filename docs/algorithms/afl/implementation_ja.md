@@ -45,7 +45,14 @@ fuzzufにおいてAFLは `include/fuzzuf/algorithms/afl` および `algorithms/a
     );
 ```
 
-これらのノードの内、`bit_flip1`, `bit_flip_other`などのノードのルーチンは、`include/fuzzuf/algorithms/afl/afl_mutation_hierarflow_routines.hpp` で宣言されています。`normal_update`, `construct_auto_dict`などのノードのルーチンは、`include/fuzzuf/algorithms/afl/afl_update_hierarflow_routines.hpp` で宣言されています。それらのノード以外のルーチンは、 `include/fuzzuf/algorithms/afl/afl_other_hierarflow_routines.hpp` で宣言されています。
+各ノードのルーチンは次のコードで実装されています:
+
+- ミューテーションを行うノードのルーチン(例: `bit_flip1`や`bit_flip_other`):
+  - `include/fuzzuf/algorithms/afl/afl_mutation_hierarflow_routines.hpp`
+- 更新を行うノードのルーチン (例: `normal_update`や`construct_auto_dict`):
+  - `include/fuzzuf/algorithms/afl/afl_update_hierarflow_routines.hpp`
+- その他のノードのルーチン:
+  - `include/fuzzuf/algorithms/afl/afl_other_hierarflow_routines.hpp`
 
 ## 整合性とパフォーマンスのテスト
 
@@ -58,16 +65,6 @@ fuzzufのAFL実装は、過去に、オリジナルのAFLと動作が同一に�
 現在の実装は、上述のテストを行った時点での実装から大きく変化しました。中でも特筆すべき変更は、AFL派生アルゴリズムを念頭に置き、ミューテーションhavocをカスタマイズ可能な設計にしたことです。その結果として、現在のfuzzuf上のAFLは、オリジナルAFLと全く同じ実行結果を得ることはできなくなっています。
 
 しかしながら、ミューテーションの内容自体には一切差分がなく、havoc内部で各種類のミューテーションが選択される確率は元のAFLと変わらないはずであるため、統計上の性質は一切変わっていないと考えられます。
-
-## 未実装部分
-
-現時点では、オリジナルのAFLにある以下の機能が実装されておらず、今後実装される予定です:
-
-  - persistent mode
-  - resume mode
-  - QEMU mode
-  - 並列ファジング
-  - SIGUSR1のハンドル
 
 ## AFL派生アルゴリズムの定義
 

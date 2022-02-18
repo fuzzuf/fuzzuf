@@ -17,8 +17,12 @@
  */
 /**
  * @file rule.hpp
- * @brief Rule for context-free grammar
+ * @brief Grammar rules and parser/unparser
  * @author Ricerca Security <fuzzuf-dev@ricsec.co.jp>
+ *
+ * @details This file defines Rule class.
+ *          Rule parses terminal and nonterminal symbols written in text.
+ *          It can also unparse a rule into text.
  */
 #include <iomanip>
 #include <iterator>
@@ -36,10 +40,19 @@ namespace fuzzuf::algorithm::nautilus::grammartec {
 
 /**
  * @fn
+ * Constructor of Rule class.
+ * This constructor takes a plain-text rule.
  * @brief Construct Rule from format
  * @param (ctx) Context
- * @param (nonterm) Nonterminal symbol
- * @param (format) Format string
+ * @param (nonterm) String representation of nonterminal symbol
+ * @param (format) Format string (expression) of the rule for @p nonterm
+ *
+ * @details Nonterminal symbol must follow `{ABC:xyz}` format
+ *          where `ABC` indicates the nonterminal and `:xyz` is
+ *          an optional comment.
+ *          The format string is what the nonterminal should be
+ *          replaced with.
+ *          You can use any nonterminal symbols in this format.
  */
 Rule::Rule(Context& ctx, const std::string& nonterm, const std::string& format) {
   std::vector<RuleChild> children = Rule::Tokenize(format, ctx);
@@ -57,6 +70,7 @@ Rule::Rule(Context& ctx, const std::string& nonterm, const std::string& format) 
 
 /**
  * @fn
+ * Describe this rule into a human-readable string.
  * @brief Describe this rule
  * @param (ctx) Context
  * @return Human-readable string of this rule
@@ -67,6 +81,7 @@ std::string Rule::DebugShow(Context& ctx) const {
 
 /**
  * @fn
+ * Remove every backslash before `{` and `}`
  * @brief Unescape "\{" and "\}" in a string
  * @param (bytes) String to unescape
  * @return Unescaped string
@@ -101,7 +116,8 @@ std::string Rule::Unescape(const std::string& bytes) {
 
 /**
  * @fn
- * @brief Tokenize from format string
+ * Parse an expression of a rule and return a list of RuleChild.
+ * @brief Tokenize format string
  * @param (format) String to tokenize
  * @param (ctx) Context
  * @return Children rules
@@ -134,8 +150,9 @@ std::vector<RuleChild> Rule::Tokenize(const std::string& format, Context& ctx) {
 
 /**
  * @fn
- * @brief Get matching nonterms
- * @return Vector of NTermID of this rule
+ * Return nonterminals for the expression of this rule.
+ * @brief Get nonterms
+ * @return Vector of NTermID
  */
 const std::vector<NTermID>& Rule::Nonterms() const {
   if (std::holds_alternative<PlainRule>(_rule)) {
@@ -150,8 +167,9 @@ const std::vector<NTermID>& Rule::Nonterms() const {
 
 /**
  * @fn
- * @brief Get number of nonterms
- * @return Number of nonterms
+ * Return the number of nonterminals in the expression of this rule.
+ * @brief Get number of nonterminals
+ * @return Number of nonterminals
  */
 size_t Rule::NumberOfNonterms() const {
   return Nonterms().size();
@@ -159,17 +177,30 @@ size_t Rule::NumberOfNonterms() const {
 
 /**
  * @fn
- * @brief Get matching nonterm
+ * Return nonterminal ID of the symbol of this rule
+ * @brief Get nonterminal
  * @return NTermID of this rule
  */
 const NTermID& Rule::Nonterm() const {
   return std::visit([](auto& r) -> const NTermID& { return r.nonterm; }, _rule);
 }
 
+/**
+ * @fn
+ * Generate a random tree from this rule.
+ * @brief Generate a tree for this rule
+ * @param (tree) A reference to a tree to store the generated tree
+ * @param (ctx) Context
+ * @param (len) Maximum length of the tree to generate
+ * @return Total size of the generated tree
+ */
 size_t Rule::Generate(Tree& tree, Context& ctx, size_t len) const {
+  /* Calculate required length */
   size_t minimal_needed_len = 0;
   for (NTermID nt: Nonterms())
     minimal_needed_len += ctx.GetMinLenForNT(nt);
+
+  // TODO: maybe remove this assert?
   assert (minimal_needed_len <= len);
 
   size_t remaining_len = len - minimal_needed_len;
@@ -177,6 +208,7 @@ size_t Rule::Generate(Tree& tree, Context& ctx, size_t len) const {
   size_t total_size = 1;
   NodeID paren(tree.Size() - 1);
 
+  /* Iterate over nonterminals */
   std::vector<NTermID> nonterms = Nonterms();
   for (size_t i = 0; i < nonterms.size(); i++) {
     size_t cur_child_max_len;
@@ -220,8 +252,12 @@ size_t Rule::Generate(Tree& tree, Context& ctx, size_t len) const {
 
 /**
  * @fn
+ * Constructor of RuleChild from a terminal.
  * @brief Construct RuleChild from literal
  * @param (lit) Literal string
+ *
+ * @details This constructor takes a terminal symbol (literal).
+ *          The type of this RuleChild becomes Term.
  */
 RuleChild::RuleChild(const std::string& lit) {
   _rule_child = lit;
@@ -229,9 +265,13 @@ RuleChild::RuleChild(const std::string& lit) {
 
 /**
  * @fn
+ * Constructor of RuleChild from a nonterminal.
  * @brief Construct RuleChild from nonterminal
- * @param (nt) Nonterminal symbol
+ * @param (nt) Nonterminal symbol string
  * @param (ctx) Context
+ *
+ * @details This constructor takes a nonterminal symbol.
+ *          The type of this RuleChild becomes NTerm.
  */
 RuleChild::RuleChild(const std::string& nt, Context& ctx) {
   std::string nonterm = SplitNTDescription(nt);
@@ -240,6 +280,7 @@ RuleChild::RuleChild(const std::string& nt, Context& ctx) {
 
 /**
  * @fn
+ * Describe this RuleChild instance into a human-readable string.
  * @brief Describe RuleChild as string
  * @param (ctx) Context
  * @return Human-readable string
@@ -254,9 +295,14 @@ std::string RuleChild::DebugShow(Context& ctx) const {
 
 /**
  * @fn
+ * Parse the string representation of a nonterminal.
  * @brief Split nonterminal description
  * @param (nonterm) Nonterminal symbol
- * @return Extracted symbol
+ * @return Extracted nonterminal symbol
+ *
+ * @details This method parses the nonterminal string.
+ *          For example, `{ABC:xyz}` is parsed into `ABC` and `xyz`.
+ *          This method returns only the nonterminal symbol, `ABC`.
  */
 std::string RuleChild::SplitNTDescription(const std::string& nonterm) const {
   std::smatch m;
@@ -278,7 +324,8 @@ std::string RuleChild::SplitNTDescription(const std::string& nonterm) const {
 
 /**
  * @fn
- * @brief Get RuleID of RuleIDOrCustom
+ * Return RuleID of this RuleIDOrCustom.
+ * @brief Get RuleID
  * @return RuleID
  */
 const RuleID& RuleIDOrCustom::ID() const {
@@ -291,8 +338,10 @@ const RuleID& RuleIDOrCustom::ID() const {
 
 /**
  * @fn
- * @brief Get data of RuleIDOrCustom
- * @return Data (exception thrown if rule is not Custom)
+ * Return data of this RuleIDOrCustom if it's a custom rule.
+ * @brief Get data
+ * @throw exceptions::fuzzuf_runtime_error The rule is not a custom rule.
+ * @return Data of this RuleIDOrCustom
  */
 const std::string& RuleIDOrCustom::Data() const {
   if (std::holds_alternative<RuleID>(_rule_id_or_custom)) {
@@ -304,6 +353,12 @@ const std::string& RuleIDOrCustom::Data() const {
   }
 }
 
+/**
+ * @fn
+ * Describe this PlainRule into a human-readable string.
+ * @brief Describe this PlainRule
+ * @return Human-readable string
+ */
 std::string PlainRule::DebugShow(Context& ctx) const {
   std::string res;
   for (size_t i = 0; i < children.size(); i++) {
@@ -313,6 +368,17 @@ std::string PlainRule::DebugShow(Context& ctx) const {
   return ctx.NTIDToString(nonterm) + " => " + res;
 }
 
+/**
+ * @fn
+ * Escape some special and unprintable characters.
+ * @brief Escape string
+ * @return Escaped string
+ *
+ * @details This function escapes newlines (`\t`, `\r`, `\n`),
+ *          backslash, quotes (`'`, `"`) by appending a backslash
+ *          in front. It also escapes other unprintable characters
+ *          into a hex representation like `\x9f`.
+ */
 std::string ShowBytes(const std::string& bs) {
   std::stringstream ss;
   for (size_t i = 0; i < bs.size(); i++) {

@@ -111,7 +111,7 @@ u32 VUzzerMutator::GetCutPos(u32 limit) {
  * @sa GetCutPos
  */
 void VUzzerMutator::EliminateRandom() {
-    u32 cut_size = std::max(1, fuzzuf::utils::random::RandInt(1, std::max(1U, (len / denominator))));
+    u32 cut_size = std::max(1U, fuzzuf::utils::random::Random<u32>(1U, std::max(1U, (len / denominator))));
     u32 cut_pos = GetCutPos(len - cut_size);
     DEBUG("EliminateRandom [%u, %u]", cut_pos, cut_pos + cut_size -1);
     Mutator::Delete(cut_pos, cut_size);
@@ -121,8 +121,8 @@ void VUzzerMutator::EliminateRandom() {
  * @brief Delete [pos: pos+size) range of input buffer. pos is chosen randomly.
  */
 void VUzzerMutator::EliminateRandomEnd() {
-    u32 cut_size = std::max(1, fuzzuf::utils::random::RandInt(1, std::max(1U, (len / denominator))));
-    u32 cut_pos = fuzzuf::utils::random::RandInt(len/2, len - cut_size);
+    u32 cut_size = std::max(1U, fuzzuf::utils::random::Random<u32>(1U, std::max(1U, (len / denominator))));
+    u32 cut_pos = fuzzuf::utils::random::Random<u32>(len/2, len - cut_size);
     DEBUG("EliminateRandomEnd [%u, %u]", cut_pos, cut_pos + cut_size -1);
     Mutator::Delete(cut_pos, cut_size);
 }
@@ -143,7 +143,7 @@ void VUzzerMutator::DoubleEliminate() {
  * @sa GetCutPos
  */
 void VUzzerMutator::AddRandom() {
-    u32 add_size = std::max(1, fuzzuf::utils::random::RandInt(1, std::max(1U, (len / denominator))));
+    u32 add_size = std::max(1U, fuzzuf::utils::random::Random<u32>(1U, std::max(1U, (len / denominator))));
     u32 add_pos = GetCutPos(len - add_size);
     auto rand_bytes = vuzzer::util::GenerateRandomBytesFromDict(add_size, state.all_dicts);
     DEBUG("AddRandom [%u, %u]", add_pos, add_pos + add_size - 1);
@@ -156,7 +156,7 @@ void VUzzerMutator::AddRandom() {
  * @sa GetCutPos
  */
 void VUzzerMutator::ChangeRandom() {
-    u32 change_size = std::max(1, fuzzuf::utils::random::RandInt(1, std::max(1U, (len / denominator))));
+    u32 change_size = std::max(1U, fuzzuf::utils::random::Random<u32>(1U, std::max(1U, (len / denominator))));
     u32 change_pos = GetCutPos(len - change_size);
     auto rand_bytes = vuzzer::util::GenerateRandomBytesFromDict(change_size, state.all_dicts);
     DEBUG("ChangeRandom [%u, %u]", change_pos, change_pos + change_size - 1);
@@ -214,7 +214,7 @@ void VUzzerMutator::ChangeBytes() {
  * @sa GetCutPos
  */
 void VUzzerMutator::ChangeRandomFull() {
-    u32 change_size = std::max(1, fuzzuf::utils::random::RandInt(1, std::max(1U, (len / denominator))));
+    u32 change_size = std::max(1U, fuzzuf::utils::random::Random<u32>(1U, std::max(1U, (len / denominator))));
     u32 change_pos = GetCutPos(len - change_size);
 
     if (state.full_bytes_dict.size() > 1) {
@@ -250,11 +250,11 @@ void VUzzerMutator::ChangeRandomFull() {
  * @brief Change each bytes at random offsets to random bytes.
  */
 void VUzzerMutator::SingleChangeRandom() {
-    int change_cnt = fuzzuf::utils::random::RandInt(1, 100);
+    int change_cnt = fuzzuf::utils::random::Random<int>(1, 100);
     DEBUG("SingleChangeRandom %u", change_cnt);
     for (int i = 0; i < change_cnt; i++) {
-        u32 change_pos = fuzzuf::utils::random::RandInt(0, len - 1);
-        outbuf[change_pos] = fuzzuf::utils::random::RandInt(1, 255);
+        u32 change_pos = fuzzuf::utils::random::Random<u32>(0, len - 1);
+        outbuf[change_pos] = fuzzuf::utils::random::Random<u8>(1, 255);
     }
 }
 
@@ -262,10 +262,10 @@ void VUzzerMutator::SingleChangeRandom() {
  * @brief Decrease each bytes at random offsets.
  */
 void VUzzerMutator::LowerSingleRandom() {
-    int change_cnt = fuzzuf::utils::random::RandInt(1, 100);
+    int change_cnt = fuzzuf::utils::random::Random<int>(1, 100);
     DEBUG("LowerSingleRandom %u", change_cnt);
     for (int i = 0; i < change_cnt; i++) {
-        u32 change_pos = fuzzuf::utils::random::RandInt(0, len - 1);
+        u32 change_pos = fuzzuf::utils::random::Random<u32>(0, len - 1);
         outbuf[change_pos] = std::max(0, outbuf[change_pos] - 1);
     }
 }
@@ -274,10 +274,10 @@ void VUzzerMutator::LowerSingleRandom() {
  * @brief Increase each bytes at random offsets.
  */
 void VUzzerMutator::RaiseSingleRandom() {
-    int change_cnt = fuzzuf::utils::random::RandInt(1, 100);
+    int change_cnt = fuzzuf::utils::random::Random<int>(1, 100);
     DEBUG("RaiseSingleRandom %u", change_cnt);
     for (int i = 0; i < change_cnt; i++) {
-        u32 change_pos = fuzzuf::utils::random::RandInt(0, len - 1);        
+        u32 change_pos = fuzzuf::utils::random::Random<u32>(0, len - 1);        
         outbuf[change_pos] = std::min(255, outbuf[change_pos] + 1);
     }
 }
@@ -286,7 +286,7 @@ void VUzzerMutator::RaiseSingleRandom() {
  * @brief Replace a '\0' byte with a specified byte
  */
 void VUzzerMutator::EliminateNull() {
-    int start_pos = fuzzuf::utils::random::RandInt(0, len);    
+    int start_pos = fuzzuf::utils::random::Random<int>(0, len);    
     int cut_pos = std::distance(outbuf, std::find(outbuf + start_pos, outbuf + len, '\0'));
     DEBUG("EliminateNull %d (found \\0 at %d)", start_pos, cut_pos);
     u8 replacement[] = {'A'}; //TODO: Specify it by argument
@@ -299,7 +299,7 @@ void VUzzerMutator::EliminateNull() {
  * @brief Replace "\0\0" bytes with specified two bytes
  */
 void VUzzerMutator::EliminateDoubleNull() {
-    int start_pos = fuzzuf::utils::random::RandInt(0, len - 1);
+    int start_pos = fuzzuf::utils::random::Random<int>(0, len - 1);
     u8 pattern[] = {'\0', '\0'};
     u8 replacement[] = "AA"; //TODO: Specify it by argument
     auto itr = outbuf + start_pos;
@@ -325,7 +325,7 @@ void VUzzerMutator::EliminateDoubleNull() {
  */
 void VUzzerMutator::TotallyRandom() {
     DEBUG("TotallyRandom");
-    auto rand_bytes = vuzzer::util::GenerateRandomBytesFromDict(fuzzuf::utils::random::RandInt(100, 1000), state.all_dicts);
+    auto rand_bytes = vuzzer::util::GenerateRandomBytesFromDict(fuzzuf::utils::random::Random<u32>(100, 1000), state.all_dicts);
     auto rand_bytes_ptr = rand_bytes.release(); // XXX: We should not use raw ptr instead of unique_ptr.
 
     delete[] outbuf;    

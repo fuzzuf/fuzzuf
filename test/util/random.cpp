@@ -20,7 +20,6 @@
 
 #include <algorithm>
 #include <boost/test/unit_test.hpp>
-#include <cmath>
 #include <future>
 #include <numeric>
 #include <stdexcept>
@@ -28,6 +27,8 @@
 #include <utility>
 #include <vector>
 #include "fuzzuf/utils/random.hpp"
+
+#define Z_SCORE(N, M, P) ((M - N*P) / std::sqrt(N*P*(1-P)))
 
 
 using namespace fuzzuf::utils::random;
@@ -56,11 +57,14 @@ BOOST_AUTO_TEST_CASE(TestRandomAndChoose) {
 
 
 BOOST_AUTO_TEST_CASE(TestWalkerDiscreteDistributionSimple) {
+  constexpr double Z = 3.32; // alpha=0.001, Z_{0.0005} (0.1% error)
+  constexpr size_t iter = 500000; // large enough tests
+
   /* Get random probabilities */
   size_t len = Random<size_t>(3, 9);
   std::vector<double> base;
   for (size_t i = 0; i < len; i++) {
-    base.push_back(Random<double>(0.0, 1.0));
+    base.push_back(Random<double>(0.0, 1000.0));
   }
 
   /* Normalize */
@@ -72,43 +76,57 @@ BOOST_AUTO_TEST_CASE(TestWalkerDiscreteDistributionSimple) {
   WalkerDiscreteDistribution<double> s(base);
   std::vector<size_t> res(len);
 
-  size_t iter = 1000000; // large enough
   for (size_t i = 0; i < iter; i++) {
     size_t index = s();
     BOOST_CHECK(index < len);
     res[index]++;
   }
 
-  res[1] += 10000;
-  constexpr double Z = 1.96; // alpha=0.05, Z_{0.025}
+  /* Run statistical test for each result */
   for (size_t i = 0; i < len; i++) {
-    const double p = base[i] / 1.0;  // w_i / sum(w)
-    const double E = iter * p;       // expectation
-    const double V = iter * (1 - p); // variance
-    const double z = (res[i] - E) / std::sqrt(V);
-    printf("%lf < %lf\n", z, Z);
-    BOOST_CHECK(z < Z);
+    const double z = Z_SCORE(iter, res[i], base[i] / 1.0);
+    if (std::isnan(z)) {
+      /* sqrt(V) ~ 0.0 case */
+      BOOST_CHECK(res[i] == 0);
+    } else {
+      BOOST_CHECK(std::abs(z) < Z);
+    }
   }
+
+  /* Test statistical test */
+  res[0] += iter / (len * 10);
+  BOOST_CHECK(std::abs(Z_SCORE(iter, res[0], base[0] / 1.0)) >= Z);
 }
 
 BOOST_AUTO_TEST_CASE(TestWalkerDiscreteDistributionBiased) {
-  size_t iter = 1000000;
+  constexpr double Z = 3.32; // alpha=0.001, Z_{0.0005} (0.1% error)
+  constexpr size_t iter = 100000; // smaller than simple test
 
   /* 1. Test biased weights */
-  std::vector<double> w1{10000.0, 0.0, 0.0, 100.0, 100.0};
-  double sum = std::accumulate(w1.begin(), w1.end(), 0);
+  std::vector<double> w1{1000.0, 0.0, 0.0, 100.0, 100.0};
+  double sum1 = std::accumulate(w1.begin(), w1.end(), 0);
   WalkerDiscreteDistribution<double> s1(w1);
   std::vector<size_t> res1(w1.size());
   for (size_t i = 0; i < iter; i++) {
     size_t index = s1();
-    BOOST_CHECK(index < len);
+    BOOST_CHECK(index < w1.size());
     res1[index]++;
   }
+
+  /* Run statistical test for each result */
   for (size_t i = 0; i < w1.size(); i++) {
-    double pa = w1[i] / sum;
-    double ps = static_cast<double>(res1[i]) / static_cast<double>(iter);
-    BOOST_CHECK(pa*0.9 <= ps && ps <= pa*1.1);
+    const double z = Z_SCORE(iter, res1[i], w1[i] / sum1);
+    if (std::isnan(z)) {
+      /* sqrt(V) ~ 0.0 case */
+      BOOST_CHECK(res1[i] == 0);
+    } else {
+      BOOST_CHECK(std::abs(z) < Z);
+    }
   }
+
+  /* Test statistical test */
+  res1[3] += iter / (w1.size() * 10);
+  BOOST_CHECK(std::abs(Z_SCORE(iter, res1[3], w1[3] / sum1)) >= Z);
 
   /* 2. Test invalid weights */
   // empty weight
@@ -141,4 +159,23 @@ BOOST_AUTO_TEST_CASE(TestWalkerDiscreteDistributionBiased) {
   for (size_t i = 0; i < iter; i++) {
     BOOST_CHECK_EQUAL(s7(), 1);
   }
+
+  /* Test array */
+  std::array<float, 3> w8{0.000001, 0.000002, 0.000003};
+  float sum8 = std::accumulate(w8.begin(), w8.end(), 0.0);
+  WalkerDiscreteDistribution<float> s8(w8.cbegin(), w8.cend());
+  std::vector<size_t> res8(w8.size());
+  for (size_t i = 0; i < iter; i++) {
+    size_t index = s8();
+    BOOST_CHECK(index < w8.size());
+    res8[index]++;
+  }
+  for (size_t i = 0; i < w8.size(); i++) {
+    const double p = w8[i] / sum8;
+    const double E = iter * p;
+    const double V = iter * (1 - p);
+    const double z = (res8[i] - E) / std::sqrt(V);
+    BOOST_CHECK(std::abs(z) < Z);
+  }
+  
 }

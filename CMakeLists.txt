@@ -355,7 +355,6 @@ set(
   utils/is_executable.cpp
   utils/load_inputs.cpp
   utils/map_file.cpp
-  utils/random.cpp
   utils/sha1.cpp
   utils/to_hex.cpp
   utils/to_string.cpp
