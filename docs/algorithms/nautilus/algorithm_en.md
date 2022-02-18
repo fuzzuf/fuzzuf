@@ -149,3 +149,9 @@ $ fuzzuf nautilus --out_dir output \
                   -- ./test/put_binaries/nautilus/calc @@
 ```
 It is working successfully if a screen showing the status of fuzzing in real time appears.
+
+If your usage or grammar file is wrong, an error will show up.
+
+- `Grammar does not exist!`: Grammar file specified by `--grammar` does not exist.
+- `Unknown grammar type ('.json' expected)`: The extension of grammar file is not ".json"
+- `Cannot parse grammar file`: The content of grammar file is wrong. (Check your grammar file as explained in section 2-2.)

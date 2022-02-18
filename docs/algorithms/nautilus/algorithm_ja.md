@@ -143,11 +143,17 @@ fuzzufのNautilusモードは次のオプションが提供されています。
 
 例えば次のようにして電卓プログラムをファジングできます。
 ```
-$ fuzzuf nautilus --out_dir output \
-                  --grammar ./calc_grammar.json \
+$ fuzzuf nautilus --out_dir=output \
+                  --grammar=./calc_grammar.json \
                   -- ./test/put_binaries/nautilus/calc @@
 ```
 Fuzzingの結果をリアルタイムで反映させた画面が表示されれば成功です。
+
+オプションや文法ファイルを間違えると次のようなエラーが表示されます。
+
+- `Grammar does not exist!`: `--grammar`で指定された文法ファイルが存在しない。
+- `Unknown grammar type ('.json' expected)`: 文法ファイルの拡張子が".json"でない。
+- `Cannot parse grammar file`: 文法ファイルの内容が誤っている。（2-2節のジェネレータを利用して文法ファイルを確認してください。）
 
 ## 3. アルゴリズム概要
 TBA
