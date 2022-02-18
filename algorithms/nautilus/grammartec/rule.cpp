@@ -201,7 +201,7 @@ size_t Rule::Generate(Tree& tree, Context& ctx, size_t len) const {
   for (NTermID nt: Nonterms())
     minimal_needed_len += ctx.GetMinLenForNT(nt);
 
-  // TODO: maybe remove this assert?
+  // NOTE: assertion
   assert (minimal_needed_len <= len);
 
   size_t remaining_len = len - minimal_needed_len;

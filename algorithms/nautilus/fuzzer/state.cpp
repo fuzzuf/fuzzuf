@@ -68,9 +68,6 @@ NautilusState::NautilusState(
 {
   bitmaps[false] = std::vector<uint8_t>(setting->bitmap_size, 0);
   bitmaps[true]  = std::vector<uint8_t>(setting->bitmap_size, 0);
-
-  // TODO: fix here
-  executor = executor;
 }
 
 /**
@@ -344,13 +341,14 @@ void NautilusState::CheckForDeterministicBehavior(
     InplaceMemoryFeedback new_feedback = executor->GetAFLFeedback();
 
     new_feedback.ShowMemoryToFunc(
-      [&old_bitmap, &new_bits](const u8* run_bitmap, u32 len) {
-        // TODO: remove this unnecessary loop
+      [&old_bitmap, &new_bits](const u8* run_bitmap, u32) {
+        /* This loop looks unnecessary
         for (size_t j = 0; j < len; j++) {
           if (run_bitmap[j] != old_bitmap.at(j)) {
             std::cout << "[-] Found fucky bit " << j << std::endl;
           }
         }
+        */
 
         /* Retain bits */
         for (ssize_t j = new_bits.size() - 1; j >= 0; j--) {

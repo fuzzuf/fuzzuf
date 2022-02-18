@@ -126,28 +126,61 @@ RUpdateState UpdateState::operator()(void) {
       << std::setw(2) << m.count() << " min, "
       << std::setw(2) << s.count() << " sec  "
       << bSTG bV bSTOP " cycles done : " cRST
-      << std::left << std::setfill(' ') << std::setw(5) << state.cycles_done
-      << "  " bSTG bV "\n";
+      << std::left << std::setfill(' ') << std::setw(5);
+  if (state.cycles_done < 1000) {
+    oss << state.cycles_done << " ";
+  } else {
+    /* If more than one thousand, use kilo as unit */
+    oss << std::setprecision(2)
+        << static_cast<double>(state.cycles_done) / 1000.0 << "k";
+  }
+  oss << " " bSTG bV "\n";
   oss << bV bSTOP "   start time : " cRST
       << std::setw(35) << str_start_time
-      << bSTG bV bSTOP " total paths : " cRST
-      << std::setw(5) << 0 // FIXME: wow
-      << "  " bSTG bV "\n";
+      << bSTG bV bSTOP " total execs : " cRST
+      << std::setw(5);
+  if (state.execution_count < 1000) {
+    oss << state.execution_count << " ";
+  } else {
+    /* If more than one thousand, use kilo as unit */
+    oss << std::setprecision(2)
+        << static_cast<double>(state.execution_count) / 1000.0 << "k";
+  }
+  oss << " " bSTG bV "\n";
   oss << bV bSTOP "     last sig : " cRST
       << std::setw(35) << state.last_found_sig
-      << bSTG bV bSTOP "        sigs : " cRST
+      << bSTG bV bSTOP "        sigs : "
+      << (state.total_found_sig ? cLRD : cRST)
       << std::setw(5) << state.total_found_sig
       << "  " bSTG bV "\n";
   oss << bV bSTOP "    last asan : " cRST
       << std::left << std::setw(35) << state.last_found_asan
-      << bSTG bV bSTOP "       asans : " cRST
+      << bSTG bV bSTOP "       asans : "
+      << (state.total_found_asan ? cLRD : cRST)
       << std::setw(5) << state.total_found_asan
       << "  " bSTG bV "\n";
   oss << bV bSTOP "    last hang : " cRST
       << std::left << std::setw(35) << state.last_timeout
-      << bSTG bV bSTOP "       hangs : " cRST
+      << bSTG bV bSTOP "       hangs : "
+      << (state.total_found_hang ? cLRD : cRST)
       << std::setw(5) << state.total_found_hang
       << "  " bSTG bV "\n";
+  oss << bV bSTOP "   exec speed : " cRST
+      << std::left << std::setw(8)
+      << state.average_executions_per_sec << "exec/sec  ";
+  if (state.average_executions_per_sec < 100) {
+    /* Check execution speed */
+    if (state.average_executions_per_sec < 20) {
+      oss << cLRD << "(zzzz...)" << cRST
+          << std::string(8, ' ');
+    } else {
+      oss << cLRD << "(slow!)" << cRST
+          << std::string(10, ' ');
+    }
+  } else {
+    oss << std::string(17, ' ');
+  }
+  oss << bSTG bV bSTOP << std::string(22, ' ') << bSTG bV "\n";
 
   /* Strategy yields */
   oss << bVR bH bSTOP cCYA " bits found "

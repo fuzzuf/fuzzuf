@@ -53,7 +53,8 @@ bool Mutator::MinimizeTree(Tree& tree,
       if (std::optional<Tree> t = Mutator::TestAndConvert(
             tree, n, _scratchpad, NodeID(0), ctx, bits, tester
           )) {
-        tree = t.value(); // TODO: Check this
+        // TODO: this is probably correct
+        tree = t.value();
       }
     }
 
@@ -90,7 +91,8 @@ bool Mutator::MinimizeRec(Tree& tree,
       if (auto t = Mutator::TestAndConvert(
             tree, parent.value(), tree, n, ctx, bits, tester
           )) {
-        tree = t.value(); // TODO: Check this
+        // TODO: this is probably correct
+        tree = t.value();
         i = static_cast<size_t>(parent.value());
       }
     }
@@ -210,7 +212,7 @@ void Mutator::MutRandomRecursion(Tree& tree,
   size_t recursion_len_post = recursion_len_total - recursion_len_pre;
   size_t num_of_recursions = max_len_of_recursions / recursion_len_total;
 
-  // TODO: remove this assertion
+  // NOTE: assertion
   assert ((ssize_t)recursion_len_pre >= 0);
   assert ((ssize_t)recursion_len_total >= 0);
   assert ((ssize_t)recursion_len_post >= 0);

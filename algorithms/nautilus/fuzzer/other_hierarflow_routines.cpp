@@ -55,6 +55,7 @@ RSelectInput SelectInput::operator()(void) {
     inp = state.queue.Pop();
   }
 
+  // TODO: any good way to avoid inp from being copied?
   CallSuccessors(inp); // process_input_or
   return GoToDefaultNext(); // update_state
 }
