@@ -20,8 +20,8 @@
  * @brief Tree for context-free grammar
  * @author Ricerca Security <fuzzuf-dev@ricsec.co.jp>
  */
-#ifndef FUZZUF_INCLUDE_ALGORITHMS_NAUTILUS_GRAMMARTEC_RULE_HPP
-#define FUZZUF_INCLUDE_ALGORITHMS_NAUTILUS_GRAMMARTEC_RULE_HPP
+#ifndef FUZZUF_INCLUDE_ALGORITHMS_NAUTILUS_GRAMMARTEC_TREE_HPP
+#define FUZZUF_INCLUDE_ALGORITHMS_NAUTILUS_GRAMMARTEC_TREE_HPP
 
 #include <optional>
 #include <memory>
