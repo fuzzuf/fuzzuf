@@ -315,7 +315,7 @@ std::string RuleChild::SplitNTDescription(const std::string& nonterm) const {
     throw exceptions::fuzzuf_runtime_error(
       Util::StrPrintf("Could not interpret Nonterminal %s. "
                       "Nonterminal Descriptions need to match "
-                      "start with a capital letter and con only "
+                      "start with a capital letter and can only "
                       "contain [a-zA-Z_-0-9]", nonterm.c_str()),
       __FILE__, __LINE__
     );
