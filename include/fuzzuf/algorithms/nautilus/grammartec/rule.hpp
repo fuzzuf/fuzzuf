@@ -20,7 +20,8 @@
  * @brief Grammar rules and parser/unparser
  * @author Ricerca Security <fuzzuf-dev@ricsec.co.jp>
  */
-#pragma once
+#ifndef FUZZUF_INCLUDE_ALGORITHMS_NAUTILUS_GRAMMARTEC_RULE_HPP
+#define FUZZUF_INCLUDE_ALGORITHMS_NAUTILUS_GRAMMARTEC_RULE_HPP
 
 #include <string>
 #include <utility>
@@ -123,3 +124,5 @@ private:
 std::string ShowBytes(const std::string& bs);
 
 } // namespace fuzzuf::algorithm::nautilus::grammartec
+
+#endif

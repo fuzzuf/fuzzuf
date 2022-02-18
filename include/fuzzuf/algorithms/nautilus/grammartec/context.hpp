@@ -17,10 +17,11 @@
  */
 /**
  * @file context.hpp
- * @brief Class for context-free grammar
+ * @brief Context class for context-free grammar
  * @author Ricerca Security <fuzzuf-dev@ricsec.co.jp>
  */
-#pragma once
+#ifndef FUZZUF_INCLUDE_ALGORITHMS_NAUTILUS_GRAMMARTEC_CONTEXT_HPP
+#define FUZZUF_INCLUDE_ALGORITHMS_NAUTILUS_GRAMMARTEC_CONTEXT_HPP
 
 #include <optional>
 #include <string>
@@ -84,3 +85,5 @@ private:
 };
 
 } // namespace fuzzuf::algorithm::nautilus::grammartec
+
+#endif

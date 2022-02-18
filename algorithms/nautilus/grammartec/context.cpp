@@ -17,8 +17,14 @@
  */
 /**
  * @file context.cpp
- * @brief Class for context-free grammar
+ * @brief Context class for context-free grammar
  * @author Ricerca Security <fuzzuf-dev@ricsec.co.jp>
+ *
+ * @details This function defines Context class.
+ *          Context keeps every grammar rules and can translate
+ *          nonterminal IDs, rule IDs and so on mutually.
+ *          It also has an interface to generate a random tree
+ *          by nonterminal ID or Rule ID.
  */
 #include <algorithm>
 #include <iostream>
@@ -38,8 +44,13 @@ namespace fuzzuf::algorithm::nautilus::grammartec {
 
 /**
  * @fn
+ * Prepare this context to be used.
  * @brief Initialize this context
- * @param (max_len) [TODO]
+ * @param (max_len) Maximum length of the tree to be generated.
+ * 
+ * @details This method calculates the minimum required length of tree
+ *          and the number of options.
+ *          It must be called after you add every rule by AddRule method.
  */
 void Context::Initialize(size_t max_len) {
   CalcMinLen();
@@ -49,9 +60,11 @@ void Context::Initialize(size_t max_len) {
 
 /**
  * @fn
- * @brief Get rule by RuleID
+ * Get a Rule instance referenced by RuleID.
+ * @brief Get rule
  * @param (r) RuleID
- * @return Rule referenced by RuleID
+ * @throw std::out_of_range Rule ID is invalid
+ * @return Rule referenced by @p r
  */
 const Rule& Context::GetRule(const RuleID& r) const {
   return _rules.at(static_cast<size_t>(r));
@@ -59,9 +72,11 @@ const Rule& Context::GetRule(const RuleID& r) const {
 
 /**
  * @fn
- * @brief Get nonterminal ID by RuleIDOrCustom
+ * Get a NTermID referenced by RuleIDOrCustom.
+ * @brief Get nonterminal
  * @param (r) RuleIDOrCustom
- * @return Nonterminal ID
+ * @throw std::out_of_range Rule ID is invalid
+ * @return ID of the nonterminal referenced by @p r
  */
 const NTermID& Context::GetNT(const RuleIDOrCustom& r) const {
   return GetRule(r.ID()).Nonterm();
@@ -69,9 +84,11 @@ const NTermID& Context::GetNT(const RuleIDOrCustom& r) const {
 
 /**
  * @fn
- * @brief Get number of children by RuleIDOrCustom
+ * Get the number of children of a rule referenced by RuleIDOrCustom.
+ * @brief Get the number of rule children
  * @param (r) RuleIDOrCustom
- * @return Number of children
+ * @throw std::out_of_range Rule ID is invalid
+ * @return The number of children of the rule referenced by @p r
  */
 size_t Context::GetNumChildren(const RuleIDOrCustom& r) const {
   return GetRule(r.ID()).NumberOfNonterms();
@@ -79,9 +96,11 @@ size_t Context::GetNumChildren(const RuleIDOrCustom& r) const {
 
 /**
  * @fn
- * @brief Describe NTermID as string
- * @param (nt) NTermID
- * @return String describing NTermID
+ * Return the string representation of a nonterminal.
+ * @brief Describe a nonterminal as a string
+ * @param (nt) Nonterminal ID
+ * @throw std::out_of_range Nonterminal ID is invalid
+ * @return String corresponding to @p nt
  */
 const std::string& Context::NTIDToString(const NTermID& nt) const {
   return _nt_ids_to_name.at(nt);
@@ -89,9 +108,11 @@ const std::string& Context::NTIDToString(const NTermID& nt) const {
 
 /**
  * @fn
+ * Get minimum length of a nonterminal ID
  * @brief Get minimum length for nonterminal
- * @param (nt) Nonterminal symbol
- * @return Minimum length
+ * @param (nt) Nonterminal ID
+ * throw std::out_of_range Nonterminal ID is invalid
+ * @return Minimum length for @p nt
  */
 size_t Context::GetMinLenForNT(const NTermID& nt) const {
   return _nts_to_min_size.at(nt);
@@ -99,9 +120,16 @@ size_t Context::GetMinLenForNT(const NTermID& nt) const {
 
 /**
  * @fn
- * @brief Register new NTID
- * @param (nt) Nonterminal symbol
- * @return Registered NTermID
+ * Register a new nonterminal symbol and get its ID
+ * @brief Register a new nonterminal symbol
+ * @param (nt) String of a nonterminal symbol
+ * @return Nonterminal ID of @p nt
+ *
+ * @details This method looks up a nonterminal symbol.
+ *          If there exists one, the corresponding nonterminal ID
+ *          is returned.
+ *          Otherwise this method registers the new nonterminal symbol
+ *          and returns a new ID.
  */
 NTermID Context::AquireNTID(const std::string& nt) {
   NTermID next_id(_nt_ids_to_name.size()); // New NTermID
@@ -118,9 +146,11 @@ NTermID Context::AquireNTID(const std::string& nt) {
 
 /**
  * @fn
+ * Return nonterminal ID referenced by a nonterminal symbol
  * @brief Lookup NTermID by nonterminal symbol
- * @param (nt) Nonterminal symbol
- * @return NTermID of nt (An exception thrown if nt not found)
+ * @param (nt) String of a nonterminal symbol
+ * @throw std::out_of_range Nonterminal symbol does not exist
+ * @return Nonterminal referenced by @p nt
  */
 const NTermID& Context::NTID(const std::string& nt) const {
   return _names_to_nt_id.at(nt);
@@ -128,18 +158,19 @@ const NTermID& Context::NTID(const std::string& nt) const {
 
 /**
  * @fn
- * @brief Add a new rule to this context
+ * Add a new plain rule to this context.
+ * @brief Add a new rule
  * @param (nt) Nonterminal symbol
- * @param (format) Format string
- * @return Registered RuleID
+ * @param (format) Format string (expression)
+ * @return Registered rule ID
  */
 RuleID Context::AddRule(const std::string& nt, const std::string& format) {
   RuleID rid(_rules.size()); // New rule ID
   const NTermID& ntid = AquireNTID(nt);
 
+  /* Register this rule */
   _rules.emplace_back(*this, nt, format);
 
-  // Register this rule
   if (_nts_to_rules.find(ntid) == _nts_to_rules.end())
     _nts_to_rules[ntid] = {};
   _nts_to_rules[ntid].emplace_back(rid);
@@ -149,9 +180,10 @@ RuleID Context::AddRule(const std::string& nt, const std::string& format) {
 
 /**
  * @fn
- * @brief Calculate number of options for a rule
+ * Calculate the number of options for a rule.
+ * @brief Calculate number of options
  * @param (r) RuleID
- * @return Number of options
+ * @return Number of options for @p r
  */
 size_t Context::CalcNumOptionsForRule(const RuleID& r) const {
   size_t res = 1;
@@ -160,6 +192,7 @@ size_t Context::CalcNumOptionsForRule(const RuleID& r) const {
     size_t v = _nts_to_num_options.find(nt_id) == _nts_to_num_options.end()
       ? 1
       : _nts_to_num_options.at(nt_id);
+
     if (__builtin_mul_overflow(res, v, &res)) {
       /* Saturate instead of overflow */
       res = std::numeric_limits<size_t>::max();
@@ -205,7 +238,8 @@ void Context::CalcNumOptions() {
 
 /**
  * @fn
- * @brief Calculate minimum length for a rule
+ * Calculate the minimum length for a rule
+ * @brief Calculate minimum length
  * @param (r) RuleID
  * @return Minimum length (nullopt on failure)
  */
@@ -215,6 +249,7 @@ std::optional<size_t> Context::CalcMinLenForRule(const RuleID& r) const {
   for (const NTermID& nt_id: GetRule(r).Nonterms()) {
     if (_nts_to_min_size.find(nt_id) == _nts_to_min_size.end()) {
       return std::nullopt;
+
     } else {
       res += _nts_to_min_size.at(nt_id);
     }
@@ -225,7 +260,7 @@ std::optional<size_t> Context::CalcMinLenForRule(const RuleID& r) const {
 
 /**
  * @fn
- * @brief Sort rules referenced by NTermID
+ * @brief Sort rules
  */
 void Context::CalcRuleOrder() {
   for (auto& elem: _nts_to_rules) {
@@ -240,6 +275,7 @@ void Context::CalcRuleOrder() {
 /**
  * @fn
  * @brief Calculate minimum length
+ * @throw exceptions::fuzzuf_runtime_error Grammar is invalid
  */
 void Context::CalcMinLen() {
   bool something_changed;
@@ -297,7 +333,9 @@ void Context::CalcMinLen() {
 
 /**
  * @fn
- * @brief Check if the number of rules for a nonterminal is more than 1
+ * Check if the number of rules for a nonterminal ID is more than 1.
+ * @brief Check if a nonterminal has multiple rules
+ * @throw std::out_of_range Nonterminal ID is invalid
  * @return True if nonterminal has multiple possibilities, otherwise false
  */
 bool Context::CheckIfNTermHasMultiplePossibilities(const NTermID& nt) const {
@@ -306,7 +344,8 @@ bool Context::CheckIfNTermHasMultiplePossibilities(const NTermID& nt) const {
 
 /**
  * @fn
- * @brief Get random length
+ * Get a random length by the number of rule children and maximum length.
+ * @brief Get a random length
  * @param (number_of_children) Number of children rules
  * @param (total_remaining_len) Remaining length
  * @return Random length
@@ -329,6 +368,7 @@ size_t Context::GetRandomLen(size_t number_of_children,
 
 /**
  * @fn
+ * Get a list of applicable rules for a given constraints.
  * @brief Get list of applicable rules
  * @param (max_len) Maximum length for rule
  * @param (nt) Nonterminal symbol ID
@@ -354,9 +394,11 @@ std::vector<RuleID> Context::GetApplicableRules(
 
 /**
  * @fn
- * @brief Get random rule for a nonterminal symbol
+ * Get a random rule for a nonterminal ID and maximum length.
+ * @brief Get a random rule for a nonterminal ID
  * @param (nt) Nonterminal symbol ID
  * @param (max_len) Maximum length for rule
+ * @throw exceptions::fuzzuf_runtime_error No rule is applicable
  * @return Selected rule ID
  */
 RuleID Context::GetRandomRuleForNT(const NTermID& nt, size_t max_len) const {
@@ -414,8 +456,10 @@ size_t Context::GetRandomLenForNT(const NTermID&) const {
 
 /**
  * @fn
- * @brief Get rules by nonterminal ID
+ * Get the list of rules referenced by a nonterminal ID.
+ * @brief Get rules for a nonterminal ID
  * @param (nt) Nonterminal symbol ID
+ * @throw std::out_of_range Nonterminal ID is invalid
  * @return Vector of rule IDs
  */
 const std::vector<RuleID>& Context::GetRulesForNT(const NTermID& nt) const {
@@ -424,9 +468,10 @@ const std::vector<RuleID>& Context::GetRulesForNT(const NTermID& nt) const {
 
 /**
  * @fn
- * @brief Generate a random tree from nonterminal
+ * Generate a random tree by a nonterminal ID and maximum length.
+ * @brief Generate a random tree by nonterminal
  * @param (nt) Nonterminal symbol ID
- * @param (max_len) Maximum length
+ * @param (max_len) Maximum length of the tree to be generated
  * @return Generated tree
  */
 Tree Context::GenerateTreeFromNT(const NTermID& nt, size_t max_len) {
@@ -435,9 +480,11 @@ Tree Context::GenerateTreeFromNT(const NTermID& nt, size_t max_len) {
 
 /**
  * @fn
+ * Generate a random tree by a rule and length.
  * @brief Generate a tree from rule
  * @param (r) Rule ID
- * @param (len) Length
+ * @param (len) Length of the tree to be generated
+ * @return Generated tree
  */
 Tree Context::GenerateTreeFromRule(const RuleID& r, size_t len) {
   Tree tree({}, *this);

@@ -120,6 +120,7 @@ std::string Rule::Unescape(const std::string& bytes) {
  * @brief Tokenize format string
  * @param (format) String to tokenize
  * @param (ctx) Context
+ * @throw exceptions::unreachable @p format is an invalid expression
  * @return Children rules
  */
 std::vector<RuleChild> Rule::Tokenize(const std::string& format, Context& ctx) {
@@ -298,6 +299,7 @@ std::string RuleChild::DebugShow(Context& ctx) const {
  * Parse the string representation of a nonterminal.
  * @brief Split nonterminal description
  * @param (nonterm) Nonterminal symbol
+ * @throw exceptions::fuzzuf_runtime_error @p nonterm is an invalid symbol
  * @return Extracted nonterminal symbol
  *
  * @details This method parses the nonterminal string.
@@ -310,7 +312,7 @@ std::string RuleChild::SplitNTDescription(const std::string& nonterm) const {
 
   // Splits {A:a} or {A} into A and maybe a
   if (!std::regex_match(nonterm, m, SPLITTER)) {
-    throw exceptions::execution_failure(
+    throw exceptions::fuzzuf_runtime_error(
       Util::StrPrintf("Could not interpret Nonterminal %s. "
                       "Nonterminal Descriptions need to match "
                       "start with a capital letter and con only "
