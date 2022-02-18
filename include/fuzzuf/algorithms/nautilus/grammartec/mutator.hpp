@@ -16,11 +16,12 @@
  * along with this program.  If not, see http://www.gnu.org/licenses/.
  */
 /**
- * @file tree.hpp
- * @brief Tree for context-free grammar
+ * @file mutator.hpp
+ * @brief Tree mutator of Nautilus grammar
  * @author Ricerca Security <fuzzuf-dev@ricsec.co.jp>
  */
-#pragma once
+#ifndef FUZZUF_INCLUDE_ALGORITHMS_NAUTILUS_GRAMMARTEC_MUTATOR_HPP
+#define FUZZUF_INCLUDE_ALGORITHMS_NAUTILUS_GRAMMARTEC_MUTATOR_HPP
 
 #include <functional>
 #include <optional>
@@ -85,3 +86,5 @@ private:
 };
 
 } // namespace fuzzuf::algorithm::nautilus::grammartec
+
+#endif

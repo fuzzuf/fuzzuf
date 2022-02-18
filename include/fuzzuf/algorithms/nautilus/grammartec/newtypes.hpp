@@ -20,7 +20,8 @@
  * @brief Definitions of some simple types
  * @author Ricerca Security <fuzzuf-dev@ricsec.co.jp>
  */
-#pragma once
+#ifndef FUZZUF_INCLUDE_ALGORITHMS_NAUTILUS_GRAMMARTEC_NEWTYPES_HPP
+#define FUZZUF_INCLUDE_ALGORITHMS_NAUTILUS_GRAMMARTEC_NEWTYPES_HPP
 
 #include <boost/range/irange.hpp>
 
@@ -98,3 +99,5 @@ struct hash<NTermID> {
 };
 
 } // namespace std
+
+#endif

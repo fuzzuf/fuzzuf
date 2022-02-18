@@ -20,7 +20,8 @@
  * @brief Definition of unclassified HierarFlow routines of Nautilus.
  * @author Ricerca Security <fuzzuf-dev@ricsec.co.jp>
  */
-#pragma once
+#ifndef FUZZUF_INCLUDE_ALGORITHMS_NAUTILUS_FUZZER_OTHER_HIERARFLOW_ROUTINES_HPP
+#define FUZZUF_INCLUDE_ALGORITHMS_NAUTILUS_FUZZER_OTHER_HIERARFLOW_ROUTINES_HPP
 
 #include <memory>
 #include "fuzzuf/algorithms/nautilus/fuzzer/state.hpp"
@@ -93,3 +94,5 @@ private:
 };
 
 } // namespace fuzzuf::algorithm::nautilus::fuzzer::routine::other
+
+#endif

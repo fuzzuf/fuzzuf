@@ -20,7 +20,8 @@
  * @brief Recursion of tree
  * @author Ricerca Security <fuzzuf-dev@ricsec.co.jp>
  */
-#pragma once
+#ifndef FUZZUF_INCLUDE_ALGORITHMS_NAUTILUS_GRAMMARTEC_RECURSION_INFO_HPP
+#define FUZZUF_INCLUDE_ALGORITHMS_NAUTILUS_GRAMMARTEC_RECURSION_INFO_HPP
 
 #include <optional>
 #include <tuple>
@@ -60,3 +61,5 @@ private:
 };
 
 } // namespace fuzzuf::algorithm::nautilus::grammartec
+
+#endif

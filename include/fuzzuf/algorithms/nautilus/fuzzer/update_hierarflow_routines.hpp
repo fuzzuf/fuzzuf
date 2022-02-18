@@ -20,7 +20,8 @@
  * @brief Definition of HierarFlow routines of Nautilus state update.
  * @author Ricerca Security <fuzzuf-dev@ricsec.co.jp>
  */
-#pragma once
+#ifndef FUZZUF_INCLUDE_ALGORITHMS_NAUTILUS_FUZZER_UPDATE_HIERARFLOW_ROUTINES_HPP
+#define FUZZUF_INCLUDE_ALGORITHMS_NAUTILUS_FUZZER_UPDATE_HIERARFLOW_ROUTINES_HPP
 
 #include <memory>
 #include "fuzzuf/algorithms/nautilus/fuzzer/state.hpp"
@@ -50,3 +51,5 @@ private:
 };
 
 } // namespace fuzzuf::algorithm::nautilus::fuzzer::routine::update
+
+#endif

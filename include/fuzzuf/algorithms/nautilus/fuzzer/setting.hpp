@@ -20,7 +20,8 @@
  * @brief Setting of nautilus
  * @author Ricerca Security <fuzzuf-dev@ricsec.co.jp>
  */
-#pragma once
+#ifndef FUZZUF_INCLUDE_ALGORITHMS_NAUTILUS_FUZZER_SETTING_HPP
+#define FUZZUF_INCLUDE_ALGORITHMS_NAUTILUS_FUZZER_SETTING_HPP
 
 #include <optional>
 #include <string>
@@ -91,3 +92,6 @@ struct NautilusSetting {
 };
 
 } // namespace fuzzuf::algorithm::nautilus::fuzzer
+
+#endif
+

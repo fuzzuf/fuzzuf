@@ -20,7 +20,8 @@
  * @brief Global state used for Nautilus during hieraflow loop
  * @author Ricerca Security <fuzzuf-dev@ricsec.co.jp>
  */
-#pragma once
+#ifndef FUZZUF_INCLUDE_ALGORITHMS_NAUTILUS_FUZZER_STATE_HPP
+#define FUZZUF_INCLUDE_ALGORITHMS_NAUTILUS_FUZZER_STATE_HPP
 
 #include <chrono>
 #include <deque>
@@ -124,3 +125,5 @@ struct NautilusState {
 };
 
 } // namespace fuzzuf::algorithm::nautilus::fuzzer
+
+#endif

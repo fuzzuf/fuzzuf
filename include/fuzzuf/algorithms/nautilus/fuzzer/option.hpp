@@ -20,7 +20,8 @@
  * @brief Option of nautilus
  * @author Ricerca Security <fuzzuf-dev@ricsec.co.jp>
  */
-#pragma once
+#ifndef FUZZUF_INCLUDE_ALGORITHMS_NAUTILUS_FUZZER_OPTIONS_HPP
+#define FUZZUF_INCLUDE_ALGORITHMS_NAUTILUS_FUZZER_OPTION_HPP
 
 namespace fuzzuf::algorithm::nautilus::fuzzer::option {
 
@@ -35,3 +36,5 @@ constexpr size_t   GetDefaultMaxTreeSize() { return 1000; }
 constexpr size_t   GetDefaultBitmapSize() { return 1 << 16; }
 
 } // namespace fuzzuf::algorithm::nautilus::fuzzer::option
+
+#endif

@@ -20,7 +20,8 @@
  * @brief Corpus queue of Nautilus.
  * @author Ricerca Security <fuzzuf-dev@ricsec.co.jp>
  */
-#pragma once
+#ifndef FUZZUF_INCLUDE_ALGORITHMS_NAUTILUS_FUZZER_QUEUE_HPP
+#define FUZZUF_INCLUDE_ALGORITHMS_NAUTILUS_FUZZER_QUEUE_HPP
 
 #include <memory>
 #include <optional>
@@ -94,3 +95,5 @@ private:
 };
 
 } // namespace fuzzuf::algorithm::nautilus::fuzzer
+
+#endif

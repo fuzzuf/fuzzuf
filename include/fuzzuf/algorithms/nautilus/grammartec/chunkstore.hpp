@@ -20,7 +20,8 @@
  * @brief Disk storage to store tree
  * @author Ricerca Security <fuzzuf-dev@ricsec.co.jp>
  */
-#pragma once
+#ifndef FUZZUF_INCLUDE_ALGORITHMS_NAUTILUS_GRAMMARTEC_CHUNKSTORE_HPP
+#define FUZZUF_INCLUDE_ALGORITHMS_NAUTILUS_GRAMMARTEC_CHUNKSTORE_HPP
 
 #include <optional>
 #include <memory>
@@ -62,3 +63,5 @@ private:
 };
 
 } // namespace fuzzuf::algorithm::nautilus::grammartec
+
+#endif

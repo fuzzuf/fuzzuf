@@ -20,7 +20,8 @@
  * @brief Fuzzing loop of Nautilus
  * @author Ricerca Security <fuzzuf-dev@ricsec.co.jp>
  */
-#pragma once
+#ifndef FUZZUF_INCLUDE_ALGORITHMS_NAUTILUS_FUZZER_FUZZER_HPP
+#define FUZZUF_INCLUDE_ALGORITHMS_NAUTILUS_FUZZER_FUZZER_HPP
 
 #include <memory>
 #include "fuzzuf/algorithms/nautilus/fuzzer/state.hpp"
@@ -49,3 +50,5 @@ private:
 };
 
 } // namespace fuzzuf::algorithm::nautilus
+
+#endif
