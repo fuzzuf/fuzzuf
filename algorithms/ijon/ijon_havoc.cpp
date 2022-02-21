@@ -54,6 +54,10 @@ static constexpr std::array<double, IJON_NUM_CASE> IJONGetCaseWeights(bool has_e
 
     // IJON replaces some of the cases in havoc with its custom cases.
     // So we need to change the weights of these cases in the probability distributions accordingly.
+    // See the followings:
+    // https://github.com/RUB-SysSec/ijon/blob/4cb8ae04d/afl-fuzz.c#L6332
+    // https://github.com/RUB-SysSec/ijon/blob/4cb8ae04d/afl-fuzz.c#L6471
+
     ret[IJON_DELETE_BYTES] = ret[DELETE_BYTES];
     ret[DELETE_BYTES]  = 0.0;
 

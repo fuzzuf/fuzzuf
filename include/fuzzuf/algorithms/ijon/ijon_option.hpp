@@ -70,6 +70,7 @@ constexpr u32 GetSpliceCycles<ijon::IJONTestcase>(AFLStateTemplate<ijon::IJONTes
 // IJON uses `stage_max = SPLICE_HAVOC * perf_score / havoc_div / 200` in the splice stage
 // instead of `SPLICE_HAVOC * perf_score / havoc_div / 100` for some reason.
 // Therefore, we deal with this by dividing SPLICE_HAVOC(=32) by 2.
+// See https://github.com/RUB-SysSec/ijon/blob/4cb8ae04d/afl-fuzz.c#L6125
 template<>
 constexpr u32 GetSpliceHavoc<ijon::IJONTestcase>(AFLStateTemplate<ijon::IJONTestcase>&) { 
     return 16;

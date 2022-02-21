@@ -12,6 +12,11 @@
 
 namespace fuzzuf::algorithm::ijon {
 
+/**
+ * Corresponding code of original IJON implementation:
+ * https://github.com/RUB-SysSec/ijon/blob/4cb8ae04d/afl-fuzz.c#L8039
+ * https://github.com/RUB-SysSec/ijon/blob/4cb8ae04d/afl-fuzz.c#L8090
+ */
 IJONFuzzer::IJONFuzzer(std::unique_ptr<IJONState>&& moved_state) 
     : AFLFuzzerTemplate<IJONState>(std::move(moved_state)) 
 {
@@ -195,6 +200,10 @@ void IJONFuzzer::BuildFuzzFlow() {
     }
 }
 
+/**
+ * Corresponding code of original IJON implementation:
+ * https://github.com/RUB-SysSec/ijon/blob/4cb8ae04d/afl-ijon-min.c#L31-L36
+ */
 bool IJONFuzzer::IjonShouldSchedule(void) {
     if (state->nonempty_inputs.size() == 0) return false;
     using fuzzuf::algorithm::afl::util::UR;

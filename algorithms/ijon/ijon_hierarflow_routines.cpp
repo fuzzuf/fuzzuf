@@ -11,6 +11,10 @@ namespace other {
 
 SelectSeed::SelectSeed(struct IJONState& state) : state(state) {}
 
+/**
+ * Corresponding code of original IJON implementation:
+ * https://github.com/RUB-SysSec/ijon/blob/4cb8ae04d/afl-fuzz.c#L4977-L5002
+ */
 NullableRef<HierarFlowCallee<void(void)>> SelectSeed::operator()(void) {
     StdoutLogger::Println("scheduled max input!!!!");
 
@@ -34,6 +38,10 @@ NullableRef<HierarFlowCallee<void(void)>> SelectSeed::operator()(void) {
 
 PrintAflIsSelected::PrintAflIsSelected() {}
 
+/**
+ * Corresponding code of original IJON implementation:
+ * https://github.com/RUB-SysSec/ijon/blob/4cb8ae04d/afl-fuzz.c#L5035
+ */
 IJONMidCalleeRef PrintAflIsSelected::operator()(std::shared_ptr<IJONTestcase>) {
     StdoutLogger::Println("scheduled normal input!!!!");
     return GoToDefaultNext();
@@ -48,6 +56,10 @@ using IJONMutCaleeRef = afl::routine::mutation::AFLMutCalleeRef<IJONState>;
 
 MaxHavoc::MaxHavoc(IJONState &state) : HavocBase(state) {}
 
+/**
+ * Corresponding code of original IJON implementation:
+ * https://github.com/RUB-SysSec/ijon/blob/4cb8ae04d/afl-fuzz.c#L6128-L6555
+ */
 IJONMutCalleeRef MaxHavoc::operator()(IJONMutator& mutator) {
     if (DoHavoc(
               mutator,
@@ -91,6 +103,10 @@ static void StoreMaxInput(IJONState &state, u32 idx, const u8 *data, u32 len) {
     state.num_updates++;
 }
 
+/**
+ * Corresponding code of original IJON implementation:
+ * https://github.com/RUB-SysSec/ijon/blob/4cb8ae04d/afl-ijon-min.c#L68-L83
+ */
 IJONUpdCalleeRef UpdateMax::operator()(
     const u8 *buf,
     u32 len,

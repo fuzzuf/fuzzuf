@@ -48,7 +48,9 @@ struct IJONState : public afl::AFLStateTemplate<IJONTestcase> {
     // Instead of 
     //    ijon_input_info* infos[MAXMAP_SIZE];
     //    size_t num_entries;
-    // define these two vectors:
+    // define the following vectors.
+    // Corresponding code of original IJON implementation:
+    // https://github.com/RUB-SysSec/ijon/blob/4cb8ae04db6f38b8ea60f519a8d046b01437d355/afl-ijon-min.h#L16-L17
     std::vector<std::shared_ptr<OnDiskExecInput>> all_inputs;
     std::vector<std::shared_ptr<OnDiskExecInput>> nonempty_inputs;
 

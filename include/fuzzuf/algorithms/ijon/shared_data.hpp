@@ -27,6 +27,9 @@ namespace fuzzuf::algorithm::ijon {
  * @struct SharedData
  * IJON has some extra fields in shared memory in addition to the array of edge coverage.
  * This struct represents its memory layout.
+ *
+ * Corresponding code of original IJON implementation:
+ * https://github.com/RUB-SysSec/ijon/blob/4cb8ae04db6f38b8ea60f519a8d046b01437d355/afl-ijon-min.h#L7-L11
  */
 struct SharedData {
     u8  afl_area[afl::option::GetMapSize<option::IJONTag>()];
