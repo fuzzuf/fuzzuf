@@ -1,0 +1,54 @@
+# fuzzufでのNezhaの実装
+
+ここではfuzzufでのNezhaの実装について解説する。
+
+## 実装方針
+
+Nezhaの[オリジナルの実装](https://github.com/nezha-dt/nezha/tree/master/Fuzzer)は汎用的に任意のソフトウェアに適用できるものというよりはproof of conceptと言った方が良い作りになっている。
+
+Nezhaは複数のターゲットの「実行結果の違い」を見てsolutionsに追加する要素を決定するが、オリジナルの実装では実行結果は単一の32bit整数で表せる事になっている。
+
+例えば、Nezhaのオリジナルの実装のサンプルでは、複数のTLSの実装を使ってX.509証明書のチェックを行うターゲットが用いられている。ターゲットの出力は証明書は正しかった(0)、正しくなかった(1)、パースできなかった(0xFFFFFFF0)、その他の理由で失敗した(0xFFFFFFFF)の4種類のみで、常にこの4つのうちどれかが返り値として返るようにハーネスが書かれている。このようなハーネスになっているためオリジナルのNezhaの実装はターゲットの終了ステータスだけを見て「実行結果を見た」ことにしている。
+
+これをfuzzufに素直に実装すると次の2つの問題が生じる:
+
+* fuzzufはターゲットの終了ステータスを潰して実行結果を独自のenumの値で返しているため、executorからは実行できたかできなかったか、くらいの情報しか取れない
+* Nezhaの手法はハーネス側に実行結果を整数にエンコードするためのコードを持つ事を前提としているが、fuzzufはターゲットに手を加えない事を前提としているため、そのようなコードを挟むことができない
+
+結果としてオリジナルのNezhaをできるだけ忠実にfuzzufに移植しようとすると実行結果の違いを取るというよりは、クラッシュするかしないかだけを取る、という論文で説明されている手法からは離れた物が出来上がる。
+
+そこでfuzzufではオリジナルの実装に近い終了ステータスに基づくバージョンと、論文の説明の近い結果を得るための標準出力のハッシュを比較するバージョンの2種類をHierarFlowの組み替えで実現できることを示す。
+
+## 標準的なNezhaの組み方
+
+オリジナルのNezhaの`Fuzzer::Loop()`に相当するファザーは[include/fuzzuf/algorithms/nezha/create.hpp](/include/fuzzuf/algorithms/nezha/create.hpp)の`createRunone()`として実装されている。標準的なNezhaとして使う場合にはこの関数を利用することでfuzzufでのNezha実装が利用できる。
+
+## NezhaがlibFuzzerから分岐した位置について
+
+GitHubのNezhaのリポジトリではlibFuzzerのコードの追加および新しいバージョンへの追従とNezhaの実装が混ざって1つのcommitになっているため、NezhaがLLVMのどの時点からforkしたのかは明らかではない。
+
+ただし、様々な時点のlibFuzzerのソースとNezhaのソースでdiffをとって差分の量を比較した結果、現在のNezhaのmasterはLLVM 4.xブランチがLLVMのmasterから分かれた後、LLVM 5.0.0-rc1が作られるより前のmasterのどこかからforkしたとすると最も差分が小さくなる。付録として[docs/algorithms/nezha/nezha-5.0.0-rc1.diff](/docs/algorithms/nezha/nezha-5.0.0-rc1.diff)にNezhaのmasterとLLVM 5.0.0-rc1時点のlibFuzzerのdiffを添付しておく。
+
+## Nezhaを構成するHierarFlowノード
+
+HierarFlowでNezhaを表現するために以下のようなNezha固有のノードを実装している。それぞれのノードについての詳細はソースコードのコメントやDoxygenで生成されたドキュメントを参照してもらいたい。
+
+* [CollectFeatures](/include/fuzzuf/algorithms/nezha/hierarflow/collect_features.hpp)
+* [AddToSolution](/include/fuzzuf/algorithms/nezha/hierarflow/add_to_solution.hpp)
+* [GatherOutput](/include/fuzzuf/algorithms/nezha/hierarflow/gather.hpp)
+
+## 未実装部分
+
+いくつかのNezhaの機能はfuzzufでは実装されていない:
+
+### blackbox fuzzing
+
+Nezhaの論文では実行結果をカバレッジの代わりに使ってcorpusに要素を追加することでblackbox fuzzingにも出来ることが述べられているが、カバレッジ以外の物からlibFuzzerのfeatureを計算する方法は自明ではない。オリジナルのNezhaの実装を見る限りblackbox fuzzingのための実装は見当たらないため、blackbox fuzzing版は公開されているコードに含まれていないのではないか、と見ている。
+このためfuzzufではNezhaのblackbox fuzzing版を実装していない。
+
+### δ-diversityについて
+
+Nezhaの論文ではカバレッジのタプルからδ-diversityを求めて実行結果をcorpusに追加するかどうかを決定することが述べられているが、実際にはNezhaに実装されたコードの中にこのような計算を行っている箇所はない。
+
+実際に行われているのは各ターゲットを実行するたびにlibFuzzerの本来の手順に従ってその実行結果をcorpusに追加するというもので、個々のターゲットのedgeのindexが重複しないようにオフセットされている限り、これは論文で説明されているようなδ-diversityを求めて実行結果をcorpusに追加するのと等価な振る舞いをする。つまりδ-diversityは実装されたのではなく、libFuzzerを雑に改造したらそのような振る舞いをしたものに対して後付けで説明をつけたものなのではないかと思われる。
+fuzzufのNezhaはfuzzufのlibFuzzer互換のためのノードを流用して組まれているため、オリジナルの実装と同じくδ-diversityを計算する処理は陽には現れない。
