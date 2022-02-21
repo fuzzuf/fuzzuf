@@ -9,6 +9,14 @@ Some common fuzzers, such as AFL, mutate test cases by units of bytes or bits. T
 To address this problem, researchers have developed grammar-based fuzzers which can generate grammatically-correct test cases. In particular, they focus on developing fuzzers for JavaScript engine as JavaScript, a language widely used by Web browsers, is a good attack surface.
 However, Nautilus is a generic grammar-based fuzzer which interprets a grammar defined by the user and can generate test cases according to it.
 
+Nautilus has the following features.
+
+- Requires the source code of an application and the user-defined grammar
+- Works without input corpus
+- Takes advantage of coverage feedback
+
+The user can define the grammar, which enables to fuzz a specific function of the application, e.g., by removing uninteresting parts of the grammar.
+
 ## 2. Usage on CLI
 You have to build fuzzuf before using Nautilus mode. Please refer to [this document](../../building.md) for how to build fuzzuf.
 
@@ -68,7 +76,7 @@ If a part of an expression is enclose by terminal characters `{` and `}`, you mu
 ]
 ```
 
-### 2-2. 文法ファイルのテスト
+### 2-2. Testing Grammar Files
 You may want to check if your grammar is correct when it gets complicated.
 `tools/antuilus/generator` is the program to generate some random test cases according to the grammar you define. If you give it the grammar we defined previously, a random string will be generated like the following if the grammar is correct.
 ```
@@ -155,3 +163,54 @@ If your usage or grammar file is wrong, an error will show up.
 - `Grammar does not exist!`: Grammar file specified by `--grammar` does not exist.
 - `Unknown grammar type ('.json' expected)`: The extension of grammar file is not ".json"
 - `Cannot parse grammar file`: The content of grammar file is wrong. (Check your grammar file as explained in section 2-2.)
+
+## 3. Algorithm
+Generally, grammar based fuzzers generates AST (abstract syntax tree) according to a specific grammar and mutates a part of the AST to create testcases. Nautilus internally only uses the tree representation and mutates the tree.
+In this section, we explain the design of how Nautilus generates and mutates the testcases.
+
+### 3-1. Generation
+Since a non-terminal may have multiple rules, we need an algorithm to decide which rule to pick up. Nautilus uses uniform generation algorithm.
+Let's consider the following grammar:
+```
+<PROG> := <STMT>
+<PROG> := <STMT>; <PROG>
+<STMT> := return 1
+<STMT> := <VAR> = <EXPR>
+<VAR>  := a
+<EXPR> := <NUMBER>
+<EXPR> := <EXPR> + <EXPR>
+<NUMBER> := 1
+<NUMBER> := 2
+```
+For example, `<STMT>` has 2 rules: `return 1` or `<VAR> = <EXPR>`. If we choose a rule for each non-terminal by naive randomness, `return 1` is chosen with 50% probability. On the other hand, if we choose `<VAR> = <EXPR>`, `<EXPR>` has another 2 rules: `<NUMBER>` and `<EXPR> + <EXPR>`. The probability that one of them is chosen is 25% from `<STMT>`.
+The deeper part of the tree is selected with less probability with a naive randomness like this, which results in generating similar testcases. Naitlus, on the other hand, uses an algorithm by McKenzie[^2] so that it can select every rule in the grammar with the same probability.
+
+### 3-2. Minimization
+Nautilus attempts to create a smaller testcase that triggers the same new coverage after it found an interesting input. Minimized inputs can make the execution time shorter and the number of set of potential mutations smaller. Nautilus uses two approaches to minimize the testcase that found new paths.
+
+#### 3-2-a. Subtree Minimization
+**Subtree Minimization** is a process to make the subtree of AST as short as possible.
+We generate the smallest possible subtree for each non-terminal. Then, we replace the subtree of each node sequentially and check if we get the same coverage as that of the original tree. If we get the same coverage, the replace tree is taken and otherwise the change is discarded.
+
+#### 3-2-b. Recursive Minimization
+**Recursive Minimization** is a process executed after the subtree minimization.
+This minimization replaces the nested part of AST. In the following figure, the statement `a = 1 + 2` is, for example, replaced into `a = 1`.
+```
+   PROG                  PROG
+    |                     |
+   STMT                  STMT
+  / |  \                / |  \
+VAR = EXPR            VAR = EXPR
+ |    / | \     ---->  |     |
+ a EXPR + EXPR         a    NUM
+    |      |                 |
+   NUM    NUM                1
+    |      |
+    1      2
+```
+
+
+----
+
+[^1]: Aschermann, Cornelius et al. “NAUTILUS: Fishing for Deep Bugs with Grammars.” Proceedings 2019 Network and Distributed System Security Symposium (2019): n. pag.
+[^2]: Bruce McKenzie. Generating strings at random from a context free grammar. 1997.
