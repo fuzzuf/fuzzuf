@@ -99,11 +99,18 @@ std::unique_ptr<TFuzzer> BuildAFLFastFuzzerFromArgs(
         setenv("__AFL_DEFER_FORKSRV", "1", 1);
         fs::path fuzzuf_bin(fuzzer_args.argv[0]);
         fs::path frida_bin = fuzzuf_bin.parent_path() / "afl-frida-trace.so";
-        setenv("LD_PRELOAD", frida_bin.c_str(), 1);
 
         struct stat statbuf;
-        stat(frida_bin.c_str(), &statbuf);
+        if ((stat(frida_bin.c_str(), &statbuf)) == -1) {
+            std::cerr << cLRD <<
+                "[-] File afl-frida-trace.so not found\n" <<
+                "    Build one first with cmake where -DENABLE_FRIDA_TRACE=1" <<
+                cRST << std::endl;
+        }
+        // Need to add the size of the library
         extra_mem += statbuf.st_size;
+
+        setenv("LD_PRELOAD", frida_bin.c_str(), 1);
     }
 
     PutArgs put(pargs);
