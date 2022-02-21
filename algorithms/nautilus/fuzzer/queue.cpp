@@ -123,7 +123,7 @@ QueueItem Queue::Pop() {
     }
   }
 
-  // TODO: O(N)? any way to safely remove elements while iterating hashmap?
+  // TODO: O(N)? any other way to remove elements while iterating a hashmap?
   for (size_t k: to_remove) {
     _bit_to_inputs.erase(k);
   }

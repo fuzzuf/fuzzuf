@@ -220,6 +220,7 @@ After the minimization phase, Nautilus mutates the AST. Nautilus uses multiple m
 
 #### 3-3-c. Random Recursive Mutation
 **Random Recursive Mutation** randomly selects a recursive subtree and repeats it 2 to the nth power times (1≦n≦15). This mutation can create trees with higher degrees of nexting.
+The paper mentions 1≦n≦15 but the original Nautilus implementation uses 1≦n≦10 as the limit, so the fuzzuf also implements it with the latter bound.
 
 #### 3-3-d. Splicing Mutation
 **Splicing Mutation** replaces a subtree of the testcase with a subtree taken from another testcase that found different paths. That is, splicing mutation combined two testcases.

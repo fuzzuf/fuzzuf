@@ -19,6 +19,10 @@
  * @file tree.cpp
  * @brief Tree for context-free grammar
  * @author Ricerca Security <fuzzuf-dev@ricsec.co.jp>
+ *
+ * @details This file defines the tree and its operations.
+ *          There are two types of trees: Tree and TreeMutation,
+ *          and both inherits theTreeLike class.
  */
 #include <unordered_set>
 #include "fuzzuf/algorithms/nautilus/grammartec/recursion_info.hpp"
@@ -30,7 +34,8 @@ namespace fuzzuf::algorithm::nautilus::grammartec {
 
 /**
  * @fn
- * @brief Construct tree from rule vector
+ * Construct a tree from a vector of rules.
+ * @brief Construct a Tree instance
  * @param (rules) Vector of rules
  * @param (ctx) Context
  */
@@ -46,7 +51,8 @@ Tree::Tree(std::vector<RuleIDOrCustom>&& rules, Context& ctx)
 
 /**
  * @fn
- * @brief Calculate subtree sizes and parents
+ * Calculate the sizes for each subtree and parent.
+ * @brief Calculate size information
  * @param (ctx) Context
  */
 void Tree::CalcSubTreeSizesAndParents(Context& ctx) {
@@ -56,6 +62,7 @@ void Tree::CalcSubTreeSizesAndParents(Context& ctx) {
 
 /**
  * @fn
+ * Calculate parent information.
  * @brief Calculate parents
  * @param (ctx) Context
  */
@@ -94,6 +101,7 @@ void Tree::CalcParents(Context& ctx) {
 
 /**
  * @fn
+ * Calculate size information.
  * @brief Calculate sizes
  */
 void Tree::CalcSizes() {
@@ -106,7 +114,7 @@ void Tree::CalcSizes() {
 
 /**
  * @fn
- * @brief Get slice of rules by Node IDs
+ * @brief Get the slice of rules by node IDs.
  * @param (from) Start node ID of slice
  * @param (to) End node ID of slice
  * @return Vector of RuleIDOrCustom derived from slice
@@ -122,22 +130,26 @@ std::vector<RuleIDOrCustom> Tree::Slice(
 
 /**
  * @fn
+ * Get parent node ID by the child node ID.
  * @brief Get parent node ID of a node
  * @param (n) Node ID to get parent of
- * @return Parent node ID if exists, otherwise nothing (meaning the node is root)
+ * @return Parent node ID (std::nullopt if the node is root)
  */
 std::optional<NodeID> Tree::GetParent(const NodeID& n) const {
   if (static_cast<size_t>(n) != 0) {
     return _paren.at(static_cast<size_t>(n));
+  } else {
+    /* Return none if root node */
+    return std::nullopt;
   }
-  /* None if root node */
-  return std::nullopt;
 }
 
 /**
  * @fn
- * @brief Get rule ID by node ID
+ * Get the rule ID of a node.
+ * @brief Get rule ID
  * @param (n) Node ID
+ * @throw std::out_of_range Node ID is invalid
  * @return Rule ID
  */
 const RuleID& Tree::GetRuleID(const NodeID& n) const {
@@ -146,8 +158,10 @@ const RuleID& Tree::GetRuleID(const NodeID& n) const {
 
 /**
  * @fn
+ * Get the subtree size of a node.
  * @brief Get subtree size by node ID
  * @param (n) Node ID
+ * @throw std::out_of_range Node ID is invalid
  * @return Subtree size
  */
 size_t Tree::SubTreeSize(const NodeID& n) const {
@@ -156,10 +170,11 @@ size_t Tree::SubTreeSize(const NodeID& n) const {
 
 /**
  * @fn
- * @brief Construct TreeMutation by this tree and new tree
- * @param (n) Node ID
- * @param (other)
- * @param (other_node)
+ * Construct TreeMutation by this tree and a new tree
+ * @brief Create a TreeMutation instance
+ * @param (n) Node ID to replace
+ * @param (other) Tree to mutate
+ * @param (other_node) Node ID to replace with
  * @return TreeMutation instance
  */
 TreeMutation Tree::MutateReplaceFromTree(
@@ -176,6 +191,7 @@ TreeMutation Tree::MutateReplaceFromTree(
 
 /**
  * @fn
+ * Get the number of rules that exists in the tree.
  * @brief Get the number of current rules
  * @return Number of rules
  */
@@ -185,6 +201,7 @@ size_t Tree::Size() const {
 
 /**
  * @fn
+ * Create a deep copy of the tree.
  * @brief Copy this tree
  * @return New tree copied from current tree
  */
@@ -194,9 +211,11 @@ Tree Tree::ToTree(Context&) const { // Context is unused in Tree impl
 
 /**
  * @fn
+ * Get the rule of a node.
  * @brief Get rule by node ID
  * @param (n) Node ID
  * @param (ctx) Context
+ * @throw std::out_of_range Node ID is invalid
  * @return Rule corresponding to node ID
  */
 const Rule& Tree::GetRule(const NodeID& n, Context& ctx) const {
@@ -205,8 +224,10 @@ const Rule& Tree::GetRule(const NodeID& n, Context& ctx) const {
 
 /**
  * @fn
+ * Get the custom rule data of a node.
  * @brief Get custom rule data by node ID
  * @param (n) Node ID
+ * @throw std::out_of_range Node ID is invalid
  * @return Data of rule (throws exception if rule is not Custom)
  */
 const std::string& Tree::GetCustomRuleData(const NodeID& n) const {
@@ -215,8 +236,10 @@ const std::string& Tree::GetCustomRuleData(const NodeID& n) const {
 
 /**
  * @fn
+ * Get the RuleIROrCustom instance of a node.
  * @brief Get rule ID or custom by node ID
  * @param (n) Node ID
+ * @throw std::out_of_range Node ID is invalid
  * @return RuleIDOrCustom corresponding to node ID
  */
 const RuleIDOrCustom& Tree::GetRuleOrCustom(const NodeID& n) const {
@@ -225,6 +248,7 @@ const RuleIDOrCustom& Tree::GetRuleOrCustom(const NodeID& n) const {
 
 /**
  * @fn
+ * Clear every rule, size, and parent information.
  * @brief Remove every rule
  */
 void Tree::Truncate() {
@@ -235,6 +259,7 @@ void Tree::Truncate() {
 
 /**
  * @fn
+ * Generate a random tree from a nonterminal symbol.
  * @brief Generate tree from nonterminal
  * @param (start) Nonterminal symbol ID
  * @param (len) Maximum length for getting random rule for `start`
@@ -247,6 +272,7 @@ void Tree::GenerateFromNT(const NTermID& start, size_t len, Context& ctx) {
 
 /**
  * @fn
+ * Generate a random tree from a specific rule of a nonterminal.
  * @brief Generate tree from rule
  * @param (ruleid) Rule ID
  * @param (max_len) Maximum length
@@ -276,6 +302,7 @@ void Tree::GenerateFromRule(const RuleID& ruleid, size_t max_len, Context& ctx) 
 
 /**
  * @fn
+ * Calculate the recursions of this tree.
  * @brief Calculate recursions
  * @param (ctx) Context
  * @return Vector of recursion info if successful (std::optional)
@@ -307,8 +334,10 @@ std::optional<std::vector<RecursionInfo>> Tree::CalcRecursions(Context& ctx) {
 
 /**
  * @fn
+ * Get the rule at a specific node.
  * @brief Get rule at specific node ID
  * @param (n) Node ID
+ * @throw exceptions::fuzzuf_runtime_error Node ID is invalid
  * @return RuleIDOrCustom
  */
 const RuleIDOrCustom& TreeMutation::GetAt(const NodeID& n) const {
@@ -335,8 +364,10 @@ const RuleIDOrCustom& TreeMutation::GetAt(const NodeID& n) const {
 
 /**
  * @fn
+ * Get the rule ID of a node.
  * @brief Get rule ID by node ID
  * @param (n) Node ID
+ * @throw exceptions::fuzzuf_runtime_error Node ID is invalid
  * @return Rule ID
  */
 const RuleID& TreeMutation::GetRuleID(const NodeID& n) const {
@@ -345,7 +376,8 @@ const RuleID& TreeMutation::GetRuleID(const NodeID& n) const {
 
 /**
  * @fn
- * @brief Get the number of current rules
+ * Calculate size of this TreeMutation instance.
+ * @brief Get the size of this tree
  * @return Number of rules
  */
 size_t TreeMutation::Size() const {
@@ -354,6 +386,7 @@ size_t TreeMutation::Size() const {
 
 /**
  * @fn
+ * Create a deep copy of this TreeMutation instance.
  * @brief Create a new tree from TreeMutation
  * @return New tree copied from current tree
  */
@@ -367,9 +400,11 @@ Tree TreeMutation::ToTree(Context& ctx) const {
 
 /**
  * @fn
+ * Get the rule of a node.
  * @brief Get rule by node ID
  * @param (n) Node ID
  * @param (ctx) Context
+ * @throw std::out_of_range Node ID is invalid
  * @return Rule corresponding to node ID
  */
 const Rule& TreeMutation::GetRule(const NodeID& n, Context& ctx) const {
@@ -378,8 +413,10 @@ const Rule& TreeMutation::GetRule(const NodeID& n, Context& ctx) const {
 
 /**
  * @fn
+ * Get the RuleIDOrCustom of a node.
  * @brief Get rule ID or custom by node ID
  * @param (n) Node ID
+ * @throw std::out_of_range Node ID is invalid
  * @return RuleIDOrCustom corresponding to node ID
  */
 const RuleIDOrCustom& TreeMutation::GetRuleOrCustom(const NodeID& n) const {
@@ -388,8 +425,10 @@ const RuleIDOrCustom& TreeMutation::GetRuleOrCustom(const NodeID& n) const {
 
 /**
  * @fn
+ * Get the custom rule data of a node.
  * @brief Get custom rule data by node ID
  * @param (n) Node ID
+ * @throw std::out_of_range Node ID is invalid
  * @return Data of rule (throws exception if rule is not Custom)
  */
 const std::string& TreeMutation::GetCustomRuleData(const NodeID& n) const {
@@ -398,9 +437,11 @@ const std::string& TreeMutation::GetCustomRuleData(const NodeID& n) const {
 
 /**
  * @fn
+ * Get the nonterminal ID of a node.
  * @brief Get nonterminal ID by NodeID
  * @param (n) NodeID
  * @param (ctx) Context
+ * @throw std::out_of_range Node ID is invalid
  * @return Nonterminal symbol ID
  */
 const NTermID& TreeLike::GetNontermID(const NodeID& n, Context& ctx) const {
@@ -409,10 +450,11 @@ const NTermID& TreeLike::GetNontermID(const NodeID& n, Context& ctx) const {
 
 /**
  * @fn
- * @brief Unparse tree into grammar string
+ * Unparse the tree into a testcase string.
+ * @brief Unparse the tree into a string
  * @param (id) Node ID
  * @param (ctx) Context
- * @param (data) Reference to string to store result
+ * @param (data) Reference to string to store the result
  */
 void TreeLike::Unparse(const NodeID& id, Context& ctx, std::string& data) const {
   Unparser(id, data, *this, ctx).Unparse();

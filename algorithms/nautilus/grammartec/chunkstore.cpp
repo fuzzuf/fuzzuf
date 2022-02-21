@@ -17,8 +17,11 @@
  */
 /**
  * @file chunkstore.cpp
- * @brief Disk storage to store tree
+ * @brief Disk storage to save (sub)trees
  * @author Ricerca Security <fuzzuf-dev@ricsec.co.jp>
+ *
+ * @details This file implements the storage to store subtrees.
+ *          These trees are used by the mutation engine.
  */
 #include "fuzzuf/algorithms/nautilus/grammartec/chunkstore.hpp"
 #include "fuzzuf/exceptions.hpp"
@@ -30,7 +33,8 @@ namespace fuzzuf::algorithm::nautilus::grammartec {
 
 /**
  * @fn
- * @brief Save tree to storage if it's never seen
+ * Save a tree to the storage if it's never seen before.
+ * @brief Add a tree to this storage
  * @param (tree) Tree to save
  * @param (ctx) Context
  */
@@ -87,10 +91,15 @@ void ChunkStore::AddTree(Tree& tree, Context& ctx) {
 
 /**
  * @fn
- * @brief Randomly choose a pair of tree and node by rule
+ * Randomly choose a pair of a tree and a node that derives from a rule.
+ * @brief Choose a subtree that can alter a specific rule.
  * @param (r) Rule ID
  * @param (ctx) Context
  * @return A pair of tree and node if any, otherwise nothing
+ *
+ * @details This method tries to find a subtree that share the same
+ *          nonterminal as that if the given rule.
+ *          This function is used by the random recursive mutation.
  */
 std::optional<std::pair<Tree, NodeID>> ChunkStore::GetAlternativeTo(
   const RuleID& r, Context& ctx

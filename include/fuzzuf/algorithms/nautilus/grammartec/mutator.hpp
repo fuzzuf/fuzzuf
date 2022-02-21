@@ -17,7 +17,7 @@
  */
 /**
  * @file mutator.hpp
- * @brief Tree mutator of Nautilus grammar
+ * @brief Tree mutation engine
  * @author Ricerca Security <fuzzuf-dev@ricsec.co.jp>
  */
 #ifndef FUZZUF_INCLUDE_ALGORITHMS_NAUTILUS_GRAMMARTEC_MUTATOR_HPP

@@ -60,7 +60,7 @@ void Context::Initialize(size_t max_len) {
 
 /**
  * @fn
- * Get a Rule instance referenced by RuleID.
+ * Get the Rule instance referenced by RuleID.
  * @brief Get rule
  * @param (r) RuleID
  * @throw std::out_of_range Rule ID is invalid
@@ -72,7 +72,7 @@ const Rule& Context::GetRule(const RuleID& r) const {
 
 /**
  * @fn
- * Get a NTermID referenced by RuleIDOrCustom.
+ * Get the NTermID referenced by RuleIDOrCustom.
  * @brief Get nonterminal
  * @param (r) RuleIDOrCustom
  * @throw std::out_of_range Rule ID is invalid
@@ -108,7 +108,7 @@ const std::string& Context::NTIDToString(const NTermID& nt) const {
 
 /**
  * @fn
- * Get minimum length of a nonterminal ID
+ * Get the minimum length of a nonterminal ID
  * @brief Get minimum length for nonterminal
  * @param (nt) Nonterminal ID
  * throw std::out_of_range Nonterminal ID is invalid

@@ -17,7 +17,7 @@
  */
 /**
  * @file chunkstore.hpp
- * @brief Disk storage to store tree
+ * @brief Disk storage to save (sub)trees
  * @author Ricerca Security <fuzzuf-dev@ricsec.co.jp>
  */
 #ifndef FUZZUF_INCLUDE_ALGORITHMS_NAUTILUS_GRAMMARTEC_CHUNKSTORE_HPP
