@@ -185,6 +185,16 @@ cmake -B build -DENABLE_DOXYGEN=1
 cmake --build build --target fuzzuf_doc
 ```
 
+## Note on Building on newer CPUs
+
+Ubuntu 20.04 uses an older version of the compiler (gcc 9) by default. Therefore, as reported in [issue #21](https://github.com/fuzzuf/fuzzuf/issues/21), release builds on newer CPUs such as TigerLake may fail due to lack of native support for the architecture. This problem is a possible issue for both containerized build and manual build. You need to install a new compiler and specify it at build time as a workaround.
+
+For example, if you installed gcc 10, run:
+
+```bash
+cmake -B build -DCMAKE_BUILD_TYPE=Release -D CMAKE_C_COMPILER=gcc-10 -D CMAKE_CXX_COMPILER=g++-10
+```
+
 ## Learn More
 
 [tutorial.md](/docs/tutorial.md) describes how to instrument PUTs and fuzz with AFL and AFLFast using a program with intentional bugs.
