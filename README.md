@@ -78,10 +78,10 @@ On fuzzuf, AFL is available as a fuzzer (C\+\+) template as well. This means tha
 fuzzuf comes with the following fuzzers implemented by default. To see the overview and how to them from CLI, please follow the links provided below.  
 Note, when using fuzzuf from CLI, you have to separate global options (options available for all fuzzers) and local options (fuzzer specific options) with `--`. 
 
-|Fuzzer|Type|Description|CLI Usage|Algorithm Overview|
-|---|---|---|---|---
-|AFL|Greybox|A re-implementation of general purpose fuzzer, representing a CGF. Also available as a template for its derivatives.|[How to use fuzzuf's AFL CLI](/docs/algorithms/afl/algorithm_en.md#how-to-use-fuzzufs-afl-cli)|[Algorithm Overview](/docs/algorithms/afl/algorithm_en.md#algorithm-overview)
-|AFLFast|Greybox|An implementation of AFLFast, utilizing an AFL template.<br/>The algorithm tries to increase its performance by manipulating the power schedule.|[CLI Usage](/docs/algorithms/aflfast/algorithm_en.md#cli-usage)|[Algorithm Overview](/docs/algorithms/aflfast/algorithm_en.md#algorithm-overview)
+|Fuzzer|Type|Description|CLI Usage|Algorithm Overview|Frida mode
+|---|---|---|---|---|---
+|AFL|Greybox|A re-implementation of general purpose fuzzer, representing a CGF. Also available as a template for its derivatives.|[How to use fuzzuf's AFL CLI](/docs/algorithms/afl/algorithm_en.md#how-to-use-fuzzufs-afl-cli)|[Algorithm Overview](/docs/algorithms/afl/algorithm_en.md#algorithm-overview)|:white_check_mark:
+|AFLFast|Greybox|An implementation of AFLFast, utilizing an AFL template.<br/>The algorithm tries to increase its performance by manipulating the power schedule.|[CLI Usage](/docs/algorithms/aflfast/algorithm_en.md#cli-usage)|[Algorithm Overview](/docs/algorithms/aflfast/algorithm_en.md#algorithm-overview)|:white_check_mark:
 |VUzzer|Greybox|A mutation-based fuzzer guess data structures by analyzing the PUT control flow and the data flow.|Read [Prerequisite](/docs/algorithms/vuzzer/algorithm_en.md#prerequisite) first, then [Usage on CLI](docs/algorithms/vuzzer/algorithm_en.md#usage-on-cli)|[Algorithm Overview](/docs/algorithms/vuzzer/algorithm_en.md#algorithm-overview)
 |libFuzzer|Greybox|CGF included in the LLVM project's compiler-rt libraries.|[How to use libFuzzer on fuzzuf](/docs/algorithms/libfuzzer/manual.md#how-to-use-libfuzzer-on-fuzzuf)|[What is libFuzzer?](/docs/algorithms/libfuzzer/algorithm_en.md#what-is-libfuzzer)
 |Nezha|Greybox|A fuzzer originates from libFuzzer that tries to find defects in the program by executing programs having different implementations with the same input and compares its execution results (differential fuzzing).|[How to use Nezha on fuzzuf](/docs/algorithms/nezha/manual.md#how-to-use-nezha-on-fuzzuf)|TBD
