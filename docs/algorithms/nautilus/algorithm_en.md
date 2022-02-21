@@ -225,6 +225,19 @@ After the minimization phase, Nautilus mutates the AST. Nautilus uses multiple m
 **Splicing Mutation** replaces a subtree of the testcase with a subtree taken from another testcase that found different paths. That is, splicing mutation combined two testcases.
 
 
+## 4. Difference From the Original Implementation
+In this section, we explain some differences of the implementation between the Nautilus mode of fuzzuf and the original Nautilus.
+
+### 4-1. ScriptRule and RegexpRule
+The original Nautilus implementation makes it possible to use Python and RegExp in addition to JSON in order to write a grammar. Since those features are not necessary to define a grammar and require some external dependencies, we decided not to support those features in the first release of Nautilus mode.
+
+### 4-2. ASAN
+The application does not send a signal on the vulnerability detection when it is compiled with address sanitizers. Nautilus also checks the feedback of the sanitizers to catch the vulnerabilities detected by ASAN.
+However, the current Nautilus mode of fuzzuf does not support ASAN-instrumented program. This is because we're currently working on the revision of the Executors and so on. We will likely support sanitizers in the future releases.
+
+### 4-3. AFL Mutations
+In addition to the mutation methods mentioned in this documentation, the original paper explains a mutation method named **AFL Mutations**. However, this mutation method is not implemented even in the original Nautilus. Therefore, the current Nautilus mode of fuzzuf also does not support this feature.
+
 ----
 
 [^1]: Aschermann, Cornelius et al. “NAUTILUS: Fishing for Deep Bugs with Grammars.” Proceedings 2019 Network and Distributed System Security Symposium (2019): n. pag.
