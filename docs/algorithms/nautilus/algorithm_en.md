@@ -229,7 +229,7 @@ After the minimization phase, Nautilus mutates the AST. Nautilus uses multiple m
 In this section, we explain some differences of the implementation between the Nautilus mode of fuzzuf and the original Nautilus.
 
 ### 4-1. ScriptRule and RegexpRule
-The original Nautilus implementation makes it possible to use Python and RegExp in addition to JSON in order to write a grammar. Since those features are not necessary to define a grammar and require some external dependencies, we decided not to support those features in the first release of Nautilus mode.
+The original Nautilus implementation makes it possible to use Python and regular expressions in addition to JSON in order to write a grammar. Since those features are not necessarily required to define a grammar but require some external dependencies, we decided not to support those features in the first release of Nautilus mode.
 
 ### 4-2. ASAN
 The application does not send a signal on the vulnerability detection when it is compiled with address sanitizers. Nautilus also checks the feedback of the sanitizers to catch the vulnerabilities detected by ASAN.

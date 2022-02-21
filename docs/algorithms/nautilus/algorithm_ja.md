@@ -223,18 +223,11 @@ VAR = EXPR            VAR = EXPR
 #### 3-3-d. スプライスミューテーション
 スプライスミューテーション(**Splicing Mutation**)では、テストケースの部分木を、異なるパスを発見した別のテストケースの部分木で置き換えます。つまり、2つのテストケースを組み合わせるミューテーションになります。
 
-
 ## 4. オリジナル実装との差分
-## 4. Difference From the Original Implementation
-In this section, we explain some differences of the implementation between the Nautilus mode of fuzzuf and the original Nautilus.
-
-### 4-1. ScriptRule and RegexpRule
-The original Nautilus implementation makes it possible to use Python and RegExp in addition to JSON in order to write a grammar. Since those features are not necessary to define a grammar and require some external dependencies, we decided not to support those features in the first release of Nautilus mode.
-
+この節では、fuzzufのNautilusモードと、オリジナルのNautilusの実装における違いについて説明します。
 
 ### 4-1. ScriptRuleとRegexpRule
-
-
+オリジナルのNautilusの実装では、単純なJSONだけでなく、Pythonと正規表現を使って文法を定義できます。これらの機能は文法を定義するのに必ずしも必要ではなく、一方で外部依存を増やしてしまうため、Nautilusモードの最初のリリースではサポートしていません。
 
 ### 4-2. ASAN
 アドレスサニタイザ(ASAN)を付けてコンパイルされたアプリケーションは脆弱性を検知した際にシグナルを発生しません。Nautilusはサニタイザからのフィードバックも確認しており、ASANによる脆弱性検知も補足できます。
