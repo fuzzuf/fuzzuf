@@ -28,6 +28,8 @@ CTR_FUZZUF_ROOT_DIR="$CTR_SRC_ROOT_DIR/fuzzuf"
 CTR_FUZZUF_BUILD_DIR="$CTR_FUZZUF_ROOT_DIR/build"
 BUILD_TYPE="Debug"
 RUNLEVEL="Debug"
+DIE="1"
+DOXYGEN="1"
 
 PIN_BASE="pin-3.7-97619-g0d0c92f4f-gcc-linux"
 PIN_NAME="$PIN_BASE.tar.gz"
@@ -151,6 +153,8 @@ cmd_build-container() {
 cmd_build() {
   build_type="$BUILD_TYPE"
   runlevel="$RUNLEVEL"
+  die="$DIE"
+  doxygen="$DOXYGEN"
   while [ $# -gt 0 ]; do
     case "$1" in
             "-h"|"--help")  { cmd_help; exit 1; } ;;
@@ -162,6 +166,8 @@ cmd_build() {
                 die "Invalid runlevel: $1. Valid options are \"Debug\" and \"Release\"."
                 runlevel="$1"
                 ;;
+            "--no-die")     { die="0"; } ;;
+            "--no-doxygen") { doxygen="0"; } ;;
             *)
               die "Unknown build argument: $1. Please use --help for help."
               ;;
@@ -182,9 +188,17 @@ cmd_build() {
       -DCMAKE_BUILD_TYPE=$build_type \
       -DDEFAULT_RUNLEVEL=$runlevel \
       -DPIN_ROOT=$PIN_ROOT \
-      -DENABLE_DOXYGEN=1 \
-    && cmake --build $CTR_FUZZUF_BUILD_DIR -j$(nproc) \
-    && cmake --build $CTR_FUZZUF_BUILD_DIR --target die"
+      -DENABLE_DOXYGEN=$doxygen \
+    && cmake --build $CTR_FUZZUF_BUILD_DIR -j$(nproc)"
+
+  if [[ "$die" = "1" ]]; then
+    $DOCKER_RUNTIME run \
+      --workdir "$CTR_FUZZUF_ROOT_DIR" \
+      --rm \
+      --volume "$FUZZUF_ROOT_DIR:$CTR_FUZZUF_ROOT_DIR" \
+      "$CTR_IMAGE" \
+      cmake --build $CTR_FUZZUF_BUILD_DIR --target die
+  fi
 
   fix_dir_perms $?
 }
@@ -243,11 +257,13 @@ cmd_help() {
     echo ""
     echo "Available commands:"
     echo ""
-    echo "    build [--debug|--release] [--runlevel Debug|Release]"
+    echo "    build [--debug|--release] [--runlevel Debug|Release] [--no-die] [--no-doxygen]"
     echo "        Build the fuzzuf binaries."
     echo "        --debug               Build the debug binaries. This is the default."
     echo "        --release             Build the release binaries."
     echo "        --runlevel            Select default runlevel. Default is Debug."
+    echo "        --no-die              Do not install DIE dependencies."
+    echo "        --no-doxygen          Do not generate the Doxygen documents."
     echo ""
     echo "    tests"
     echo "        Run the fuzzuf tests."
