@@ -450,8 +450,8 @@ const NTermID& TreeLike::GetNontermID(const NodeID& n, Context& ctx) const {
 
 /**
  * @fn
- * Unparse the tree into a testcase string.
- * @brief Unparse the tree into a string
+ * Unparse (sub)tree derived from a node into a testcase.
+ * @brief Unparse a subtree into string
  * @param (id) Node ID
  * @param (ctx) Context
  * @param (data) Reference to string to store the result
@@ -462,7 +462,8 @@ void TreeLike::Unparse(const NodeID& id, Context& ctx, std::string& data) const 
 
 /**
  * @fn
- * @brief Convert tree into grammar string
+ * Unparse the whole tree into a testcase.
+ * @brief Unparse this tree into string
  * @param (ctx) Context
  * @param (data) Reference to string to store result
  */
@@ -483,6 +484,7 @@ std::string TreeLike::UnparseToVec(Context& ctx) const {
 
 /**
  * @fn
+ * Construct an Unparser instance.
  * @brief Construct Unparser
  * @param (nid) Node ID
  * @param (w) Data

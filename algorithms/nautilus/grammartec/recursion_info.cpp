@@ -16,9 +16,16 @@
  * along with this program.  If not, see http://www.gnu.org/licenses/.
  */
 /**
- * @file tree.cpp
- * @brief Tree for context-free grammar
+ * @file recursion_info.cpp
+ * @brief Recursion of tree
  * @author Ricerca Security <fuzzuf-dev@ricsec.co.jp>
+ *
+ * @details This file defines the RecursionInfo class.
+ *          RecursionInfo holds the discrete distribution
+ *          sampler to pick a node randomly.
+ *          It also calculates the parents of each node
+ *          and check if the parents share the same non-terminal
+ *          (recursion) as that of children.
  */
 #include <algorithm>
 #include <iostream>
@@ -41,6 +48,7 @@ using fuzzuf::utils::random::WalkerDiscreteDistribution;
  * @param (n) Nonterminal ID
  * @param (ctx) Context
  * @note This constructor may throw an exception of `const char*`
+ *       Always catch the exception to see if there's a recursion.
  */
 RecursionInfo::RecursionInfo(Tree& t, const NTermID& n, Context& ctx) {
   std::unordered_map<NodeID, NodeID> recursive_parents;
@@ -48,6 +56,7 @@ RecursionInfo::RecursionInfo(Tree& t, const NTermID& n, Context& ctx) {
   std::vector<size_t> depth_by_offset;
 
   std::optional<Parent> r = RecursionInfo::FindParents(t, n, ctx);
+  /* TODO: any other good way to return optional value in constructor? */
   if (!r)
     throw "Cannot find parents";
 
