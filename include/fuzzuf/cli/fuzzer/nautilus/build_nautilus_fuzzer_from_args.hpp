@@ -64,7 +64,7 @@ std::unique_ptr<TFuzzer> BuildNautilusFuzzerFromArgs(
   pargs_desc.add("pargs", -1);
 
   /* Options */
-  bool no_forksrv;
+  bool forksrv;
   std::string path_to_grammar;
   u64 bitmap_size, number_of_deterministic_mutations, max_tree_size;
   u16 number_of_generate_inputs;
@@ -110,10 +110,10 @@ std::unique_ptr<TFuzzer> BuildNautilusFuzzerFromArgs(
        ->default_value(GetDefaultMaxTreeSize()),
      "Maximum size of tree (The larger this size is, the longer the input will be.)")
 
-    /* Disable fork server mode */
-    ("no-forksrv",
-     po::bool_switch(&no_forksrv)->default_value(false),
-     "Disable fork-server mode (not recommended)")
+    /* Fork server mode */
+    ("forksrv", 
+     po::value<bool>(&forksrv)->default_value(true),
+     "Enable/disable fork server mode. Default to true. (not recommended to disable)")
 
     //
     ("pargs", po::value<std::vector<std::string>>(&pargs),
@@ -164,7 +164,7 @@ std::unique_ptr<TFuzzer> BuildNautilusFuzzerFromArgs(
       global_options.out_dir,
       global_options.exec_timelimit_ms.value_or(GetExecTimeout<NautilusTag>()),
       global_options.exec_memlimit.value_or(GetMemLimit<NautilusTag>()),
-      !no_forksrv,
+      forksrv,
       NativeLinuxExecutor::CPUID_BIND_WHICHEVER,
 
       // TODO: Change here if threading is supported
