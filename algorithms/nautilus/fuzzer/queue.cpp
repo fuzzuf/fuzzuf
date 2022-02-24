@@ -99,7 +99,7 @@ void Queue::Add(Tree&& tree,
  * @return Top item of queue
  */
 QueueItem Queue::Pop() {
-  assert (!IsEmpty());
+  DEBUG_ASSERT (!IsEmpty());
 
   QueueItem item = _inputs.back();
   _inputs.pop_back();

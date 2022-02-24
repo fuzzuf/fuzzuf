@@ -22,6 +22,7 @@
  */
 #include "fuzzuf/algorithms/nautilus/fuzzer/mutation_hierarflow_routines.hpp"
 #include "fuzzuf/algorithms/nautilus/fuzzer/state.hpp"
+#include "fuzzuf/utils/common.hpp"
 
 
 namespace fuzzuf::algorithm::nautilus::fuzzer::routine::mutation {
@@ -31,7 +32,7 @@ namespace fuzzuf::algorithm::nautilus::fuzzer::routine::mutation {
  * @brief HierarFlow routine for InitializeState (initialize_state)
  */
 RInitializeState InitializeState::operator()(QueueItem& inp) {
-  //assert (std::holds_alternative<InitState>(inp.state));
+  DEBUG_ASSERT (std::holds_alternative<InitState>(inp.state));
 
   /* Minimize testcase */
   size_t start_index = std::get<InitState>(inp.state);
@@ -51,7 +52,7 @@ RInitializeState InitializeState::operator()(QueueItem& inp) {
  * @brief HierarFlow routine for ApplyDetMuts (apply_det_muts)
  */
 RApplyDetMuts ApplyDetMuts::operator()(QueueItem& inp) {
-  // assert (std::holds_alternative<DetState>(inp.state));
+  DEBUG_ASSERT (std::holds_alternative<DetState>(inp.state));
 
   /* Rules, Splice, Havoc, and HavocRecursion */
   CallSuccessors(inp); // mut_rules
@@ -64,7 +65,7 @@ RApplyDetMuts ApplyDetMuts::operator()(QueueItem& inp) {
  * @brief HierarFlow routine for ApplyRandMuts (apply_rand_muts)
  */
 RApplyRandMuts ApplyRandMuts::operator()(QueueItem& inp) {
-  // assert (std::holds_alternative<RandomState>(inp.state));
+  DEBUG_ASSERT (std::holds_alternative<RandomState>(inp.state));
 
   /* Splice, Havoc, and HavocRecursion */
   CallSuccessors(inp); // splice

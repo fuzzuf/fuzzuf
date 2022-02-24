@@ -27,6 +27,7 @@
 #include "fuzzuf/feedback/inplace_memory_feedback.hpp"
 #include "fuzzuf/feedback/persistent_memory_feedback.hpp"
 #include "fuzzuf/feedback/put_exit_reason_type.hpp"
+#include "fuzzuf/utils/common.hpp"
 
 
 namespace fuzzuf::algorithm::nautilus::fuzzer {
@@ -373,8 +374,8 @@ bool NautilusState::HasBits(const TreeLike& tree,
   new_feedback.ShowMemoryToFunc(
     [&bits, &found_all](const u8* run_bitmap, u32 len) {
       for (size_t bit: bits) {
-        // TODO: remove this assert
-        assert (bit < len);
+        DEBUG_ASSERT (bit < len);
+        UNUSED (len);
 
         if (run_bitmap[bit] == 0) {
           // TODO: handle edge counts properly

@@ -104,6 +104,8 @@ typedef int64_t s64;
   } while (0)
 #endif
 
+#define UNUSED(UNUSED_VAR) (void)sizeof(UNUSED_VAR)
+
 // Instead of T*, we should use T& and this in usual cases because T* is
 // ambiguous in the point that we can't see whether the pointer refers to array
 // or an element also raw pointers are relatively dangerous

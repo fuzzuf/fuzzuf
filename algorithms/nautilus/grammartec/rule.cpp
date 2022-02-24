@@ -201,8 +201,7 @@ size_t Rule::Generate(Tree& tree, Context& ctx, size_t len) const {
   for (NTermID nt: Nonterms())
     minimal_needed_len += ctx.GetMinLenForNT(nt);
 
-  // NOTE: assertion
-  assert (minimal_needed_len <= len);
+  DEBUG_ASSERT (minimal_needed_len <= len);
 
   size_t remaining_len = len - minimal_needed_len;
 
@@ -226,8 +225,8 @@ size_t Rule::Generate(Tree& tree, Context& ctx, size_t len) const {
     // NOTE: RegExpRule should work differently here
     RuleIDOrCustom rule_or_custom = RuleIDOrCustom(rid);
 
-    assert (tree.rules().size() == tree.sizes().size());
-    assert (tree.paren().size() == tree.sizes().size());
+    DEBUG_ASSERT (tree.rules().size() == tree.sizes().size());
+    DEBUG_ASSERT (tree.paren().size() == tree.sizes().size());
 
     size_t offset = tree.Size();
     tree.rules().emplace_back(rule_or_custom);
@@ -240,8 +239,8 @@ size_t Rule::Generate(Tree& tree, Context& ctx, size_t len) const {
     tree.sizes()[offset] = consumed_len;
     tree.paren()[offset] = paren;
 
-    assert (consumed_len <= cur_child_max_len);
-    assert (consumed_len >= ctx.GetMinLenForNT(nonterms[i]));
+    DEBUG_ASSERT (consumed_len <= cur_child_max_len);
+    DEBUG_ASSERT (consumed_len >= ctx.GetMinLenForNT(nonterms[i]));
 
     remaining_len += ctx.GetMinLenForNT(nonterms[i]);
     remaining_len -= consumed_len;

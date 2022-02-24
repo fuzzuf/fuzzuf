@@ -28,6 +28,7 @@
 #include "fuzzuf/algorithms/nautilus/grammartec/recursion_info.hpp"
 #include "fuzzuf/algorithms/nautilus/grammartec/tree.hpp"
 #include "fuzzuf/exceptions.hpp"
+#include "fuzzuf/utils/common.hpp"
 
 
 namespace fuzzuf::algorithm::nautilus::grammartec {
@@ -559,7 +560,8 @@ void Unparser::NextRule(const NTermID& nt)
 {
   NodeID nid(_i);
   const Rule& rule = _tree.GetRule(nid, _ctx);
-  assert (nt == rule.Nonterm());
+  DEBUG_ASSERT (nt == rule.Nonterm());
+  UNUSED (nt);
 
   _i++;
 

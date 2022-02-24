@@ -27,6 +27,7 @@
  *          and splicing mutation.
  */
 #include "fuzzuf/algorithms/nautilus/grammartec/mutator.hpp"
+#include "fuzzuf/utils/common.hpp"
 #include "fuzzuf/utils/random.hpp"
 
 
@@ -256,10 +257,9 @@ void Mutator::MutRandomRecursion(Tree& tree,
   size_t recursion_len_post = recursion_len_total - recursion_len_pre;
   size_t num_of_recursions = max_len_of_recursions / recursion_len_total;
 
-  // NOTE: assertion
-  assert ((ssize_t)recursion_len_pre >= 0);
-  assert ((ssize_t)recursion_len_total >= 0);
-  assert ((ssize_t)recursion_len_post >= 0);
+  DEBUG_ASSERT ((ssize_t)recursion_len_pre >= 0);
+  DEBUG_ASSERT ((ssize_t)recursion_len_total >= 0);
+  DEBUG_ASSERT ((ssize_t)recursion_len_post >= 0);
 
   /* Insert pre recursion */
   size_t postfix = tree.SubTreeSize(rec1);
