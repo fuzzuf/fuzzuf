@@ -72,22 +72,31 @@ void NautilusFuzzer::BuildFuzzFlow() {
 
   fuzz_loop = CreateNode<FuzzLoop>(*state);
 
-  /* Main flow */
-  auto select_input_and_switch = CreateIrregularNode<SelectInput>(*state);
-  auto process_next_input      = CreateIrregularNode<ProcessInput>(*state);
-  auto generate_input          = CreateNode<GenerateInput>(*state);
-  auto update_state            = CreateNode<UpdateState>(*state);
+  /* Mutation flow */
+  auto mut_rules = CreateNode<MutRules>(*state);
+  auto splice    = CreateNode<MutSplice>(*state);
+  auto havoc     = CreateNode<MutHavoc>(*state);
+  auto havoc_rec = CreateNode<MutHavocRec>(*state);
 
   /* Processing flow */
   auto initialize_state = CreateNode<InitializeState>(*state);
   auto apply_det_muts   = CreateNode<ApplyDetMuts>(*state);
   auto apply_rand_muts  = CreateNode<ApplyRandMuts>(*state);
 
-  /* Mutation flow */
-  auto mut_rules = CreateNode<MutRules>(*state);
-  auto splice    = CreateNode<MutSplice>(*state);
-  auto havoc     = CreateNode<MutHavoc>(*state);
-  auto havoc_rec = CreateNode<MutHavocRec>(*state);
+  /* Main flow */
+  auto process_next_input      = CreateIrregularNode<ProcessInput>(
+    *state,
+    initialize_state.GetCalleeIndexRef(),
+    apply_det_muts.GetCalleeIndexRef(),
+    apply_rand_muts.GetCalleeIndexRef()
+  );
+  auto generate_input          = CreateNode<GenerateInput>(*state);
+  auto select_input_and_switch = CreateIrregularNode<SelectInput>(
+    *state,
+    process_next_input.GetCalleeIndexRef(),
+    generate_input.GetCalleeIndexRef()
+  );
+  auto update_state            = CreateNode<UpdateState>(*state);
 
   fuzz_loop << (
     select_input_and_switch <= (

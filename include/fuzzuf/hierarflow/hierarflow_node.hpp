@@ -79,6 +79,10 @@ public:
         impl = std::move(src.impl);
     }
 
+    const CalleeIndex& GetCalleeIndexRef() const {
+        return impl->GetCalleeIndexRef();;
+    };
+
     HierarFlowNode<I, O, IS_REGULAR>& operator=(const HierarFlowNode<I, O, IS_REGULAR>& src) {
         impl = src.impl;
         return *this;

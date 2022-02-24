@@ -24,6 +24,7 @@
 #define FUZZUF_INCLUDE_ALGORITHMS_NAUTILUS_FUZZER_OTHER_HIERARFLOW_ROUTINES_HPP
 
 #include <memory>
+#include "fuzzuf/algorithms/nautilus/fuzzer/mutation_hierarflow_routines.hpp"
 #include "fuzzuf/algorithms/nautilus/fuzzer/state.hpp"
 #include "fuzzuf/algorithms/nautilus/fuzzer/queue.hpp"
 #include "fuzzuf/hierarflow/hierarflow_intermediates.hpp"
@@ -33,6 +34,11 @@
 
 namespace fuzzuf::algorithm::nautilus::fuzzer::routine::other {
 
+using namespace fuzzuf::algorithm::nautilus::fuzzer::routine::mutation;
+
+struct ProcessInput;
+struct GenerateInput;
+
 /* fuzz_loop */
 struct FuzzLoop : HierarFlowRoutine<void(void), void(void)> {
   FuzzLoop(NautilusState& state) : state(state) {}
@@ -41,6 +47,7 @@ struct FuzzLoop : HierarFlowRoutine<void(void), void(void)> {
 private:
   NautilusState& state;
 };
+
 
 /**
  * Types for SelectInput under FuzzLoop
@@ -53,12 +60,20 @@ using OSelectInput = void(std::unique_ptr<QueueItem>&);
 
 /* select_input_and_switch */
 struct SelectInput : HierarFlowRoutine<ISelectInput, OSelectInput> {
-  SelectInput(NautilusState& state) : state(state) {}
+  SelectInput(NautilusState& state,
+              const CalleeIndex& process_input_idx,
+              const CalleeIndex& generate_input_idx)
+    : state (state),
+      _process_input_idx (process_input_idx),
+      _generate_input_idx (generate_input_idx) {}
   RSelectInput operator()(void);
 
 private:
   NautilusState& state;
+  const CalleeIndex& _process_input_idx;
+  const CalleeIndex& _generate_input_idx;
 };
+
 
 /**
  * Types for ProcessInput/GenerateInput under SelectInput
@@ -77,11 +92,21 @@ using OGenerateInput = void(QueueItem&);
 
 /* process_next_input */
 struct ProcessInput : HierarFlowRoutine<IProcessInput, OProcessInput> {
-  ProcessInput(NautilusState& state) : state(state) {}
+  ProcessInput(NautilusState& state,
+               const CalleeIndex&  initialize_state_idx,
+               const CalleeIndex& apply_det_muts_idx,
+               const CalleeIndex& apply_rand_muts_idx)
+    : state (state),
+      _initialize_state_idx (initialize_state_idx),
+      _apply_det_muts_idx (apply_det_muts_idx),
+      _apply_rand_muts_idx (apply_rand_muts_idx) {}
   RProcessInput operator()(std::unique_ptr<QueueItem>&);
 
 private:
   NautilusState& state;
+  const CalleeIndex& _initialize_state_idx;
+  const CalleeIndex& _apply_det_muts_idx;
+  const CalleeIndex& _apply_rand_muts_idx;
 };
 
 /* generate_input */
