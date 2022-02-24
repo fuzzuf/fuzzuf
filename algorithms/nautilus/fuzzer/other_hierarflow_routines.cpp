@@ -111,7 +111,7 @@ RGenerateInput GenerateInput::operator()(std::unique_ptr<QueueItem>&) {
     size_t len = state.ctx.GetRandomLenForNT(nonterm);
     Tree tree = state.ctx.GenerateTreeFromNT(nonterm, len);
 
-    /* Run input without duplication */
+    /* Run input if it's never been seen before */
     state.RunOnWithDedup(tree, ExecutionReason::Gen, state.ctx);
   }
 
