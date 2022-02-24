@@ -56,13 +56,13 @@ RSelectInput SelectInput::operator()(void) {
   }
 
   // TODO: any good way to prevent inp from being copied?
-  CallSuccessors(inp); // process_input_or
+  CallSuccessors(inp); // process_chosen_input_or
   return GoToDefaultNext(); // update_state
 }
 
 /**
  * @fn
- * @brief HierarFlow routine for ProcessInput (process_input_or)
+ * @brief HierarFlow routine for ProcessInput (process_chosen_input_or)
  * @param (inp) Queue item to process
  */
 RProcessInput ProcessInput::operator()(std::optional<QueueItem> inp) {

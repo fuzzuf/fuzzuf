@@ -72,10 +72,10 @@ void NautilusFuzzer::BuildFuzzFlow() {
   fuzz_loop = CreateNode<FuzzLoop>(*state);
 
   /* Main flow */
-  auto select_input     = CreateNode<SelectInput>(*state);
-  auto process_input_or = CreateNode<ProcessInput>(*state);
-  auto generate_input   = CreateNode<GenerateInput>(*state);
-  auto update_state     = CreateNode<UpdateState>(*state);
+  auto select_input            = CreateNode<SelectInput>(*state);
+  auto process_chosen_input_or = CreateNode<ProcessInput>(*state);
+  auto generate_input          = CreateNode<GenerateInput>(*state);
+  auto update_state            = CreateNode<UpdateState>(*state);
 
   /* Processing flow */
   auto initialize_state_or = CreateNode<InitializeState>(*state);
@@ -89,13 +89,13 @@ void NautilusFuzzer::BuildFuzzFlow() {
 
   fuzz_loop << (
     select_input << (
-      process_input_or
+      process_chosen_input_or
       || generate_input // TODO: maybe execute.HardLink() here
     )
     || update_state
   );
 
-  process_input_or << (
+  process_chosen_input_or << (
     initialize_state_or
     || apply_det_muts_or << (
       splice.HardLink()

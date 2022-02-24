@@ -44,7 +44,7 @@ RInitializeState InitializeState::operator()(QueueItem& inp) {
     inp.state = InitState(end_index);
   }
 
-  return GoToParent(); // process_input_or
+  return GoToParent(); // process_chosen_input_or
 }
 
 /**
@@ -74,7 +74,7 @@ RApplyDetMuts ApplyDetMuts::operator()(QueueItem& inp) {
   /* Splice, Havoc, and HavocRecursion */
   CallSuccessors(inp); // splice
 
-  return GoToParent(); // process_input_or
+  return GoToParent(); // process_chosen_input_or
 }
 
 /**
@@ -92,7 +92,7 @@ RApplyRandMuts ApplyRandMuts::operator()(QueueItem& inp) {
   /* Splice, Havoc, and HavocRecursion */
   CallSuccessors(inp); // splice
 
-  return GoToParent(); // process_input_or
+  return GoToParent(); // process_chosen_input_or
 }
 
 /**
