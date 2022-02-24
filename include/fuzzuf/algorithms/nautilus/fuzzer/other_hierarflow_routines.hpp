@@ -49,9 +49,9 @@ private:
 using ISelectInput = void(void);
 using RSelectInput = NullableRef<HierarFlowCallee<ISelectInput>>;
 // SelectInput <--> ProcessInput/GenerateInput
-using OSelectInput = void(std::optional<QueueItem>);
+using OSelectInput = void(std::unique_ptr<QueueItem>&);
 
-/* select_input */
+/* select_input_and_switch */
 struct SelectInput : HierarFlowRoutine<ISelectInput, OSelectInput> {
   SelectInput(NautilusState& state) : state(state) {}
   RSelectInput operator()(void);
@@ -73,12 +73,12 @@ using OProcessInput = void(QueueItem&);
 using IGenerateInput = OSelectInput;
 using RGenerateInput = NullableRef<HierarFlowCallee<IGenerateInput>>;
 // Generate <--> ...
-using OGenerateInput = void(void);
+using OGenerateInput = void(QueueItem&);
 
-/* process_input_or */
+/* process_next_input */
 struct ProcessInput : HierarFlowRoutine<IProcessInput, OProcessInput> {
   ProcessInput(NautilusState& state) : state(state) {}
-  RProcessInput operator()(std::optional<QueueItem> inp);
+  RProcessInput operator()(std::unique_ptr<QueueItem>&);
 
 private:
   NautilusState& state;
@@ -87,7 +87,7 @@ private:
 /* generate_input */
 struct GenerateInput : HierarFlowRoutine<IGenerateInput, OGenerateInput> {
   GenerateInput(NautilusState& state) : state(state) {}
-  RGenerateInput operator()(std::optional<QueueItem>);
+  RGenerateInput operator()(std::unique_ptr<QueueItem>&);
 
 private:
   NautilusState& state;

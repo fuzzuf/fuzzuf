@@ -28,13 +28,12 @@ namespace fuzzuf::algorithm::nautilus::fuzzer::routine::mutation {
 
 /**
  * @fn
- * @brief HierarFlow routine for InitializeState (initialize_state_or)
+ * @brief HierarFlow routine for InitializeState (initialize_state)
  */
 RInitializeState InitializeState::operator()(QueueItem& inp) {
-  if (!std::holds_alternative<InitState>(inp.state)) {
-    return GoToDefaultNext(); // apply_det_muts_or
-  }
+  //assert (std::holds_alternative<InitState>(inp.state));
 
+  /* Minimize testcase */
   size_t start_index = std::get<InitState>(inp.state);
   size_t end_index = start_index + 200;
 
@@ -44,40 +43,33 @@ RInitializeState InitializeState::operator()(QueueItem& inp) {
     inp.state = InitState(end_index);
   }
 
-  return GoToParent(); // process_chosen_input_or
+  return GoToParent(); // back to process_next_input
 }
 
 /**
  * @fn
- * @brief HierarFlow routine for ApplyDetMuts (apply_det_muts_or)
+ * @brief HierarFlow routine for ApplyDetMuts (apply_det_muts)
  */
 RApplyDetMuts ApplyDetMuts::operator()(QueueItem& inp) {
-  if (!std::holds_alternative<DetState>(inp.state)) {
-    return GoToDefaultNext(); // apply_rand_muts
-  }
+  // assert (std::holds_alternative<DetState>(inp.state));
 
   /* Rules, Splice, Havoc, and HavocRecursion */
   CallSuccessors(inp); // mut_rules
 
-  return GoToParent(); // process_chosen_input_or
+  return GoToParent(); // back to process_next_input
 }
 
 /**
  * @fn
- * @brief HierarFlow routine for ApplyRandMuts (apply_rand_muts_or)
+ * @brief HierarFlow routine for ApplyRandMuts (apply_rand_muts)
  */
 RApplyRandMuts ApplyRandMuts::operator()(QueueItem& inp) {
-  if (!std::holds_alternative<RandomState>(inp.state)) {
-    throw exceptions::wrong_hierarflow_usage(
-      "ApplyRandMuts must be called after InitializeState and ApplyDetMuts",
-      __FILE__, __LINE__
-    );
-  }
+  // assert (std::holds_alternative<RandomState>(inp.state));
 
   /* Splice, Havoc, and HavocRecursion */
   CallSuccessors(inp); // splice
 
-  return GoToParent(); // process_chosen_input_or
+  return GoToParent(); // back to process_next_input
 }
 
 /**
@@ -92,9 +84,11 @@ RMutRules MutRules::operator()(QueueItem& inp) {
   if (state.DeterministicTreeMutation(inp, start_index, end_index)) {
     if (cycle == state.setting->number_of_deterministic_mutations) {
       inp.state = RandomState();
+
     } else {
       inp.state = DetState(cycle + 1, 0);
     }
+
   } else {
     inp.state = DetState(cycle, end_index);
   }

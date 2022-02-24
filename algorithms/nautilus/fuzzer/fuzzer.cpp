@@ -65,6 +65,7 @@ NautilusFuzzer::NautilusFuzzer(std::unique_ptr<NautilusState>&& state_ref)
  */
 void NautilusFuzzer::BuildFuzzFlow() {
   using fuzzuf::hierarflow::CreateNode;
+  using fuzzuf::hierarflow::CreateIrregularNode;
   using namespace fuzzuf::algorithm::nautilus::fuzzer::routine::other;
   using namespace fuzzuf::algorithm::nautilus::fuzzer::routine::mutation;
   using namespace fuzzuf::algorithm::nautilus::fuzzer::routine::update;
@@ -72,15 +73,15 @@ void NautilusFuzzer::BuildFuzzFlow() {
   fuzz_loop = CreateNode<FuzzLoop>(*state);
 
   /* Main flow */
-  auto select_input            = CreateNode<SelectInput>(*state);
-  auto process_chosen_input_or = CreateNode<ProcessInput>(*state);
+  auto select_input_and_switch = CreateIrregularNode<SelectInput>(*state);
+  auto process_next_input      = CreateIrregularNode<ProcessInput>(*state);
   auto generate_input          = CreateNode<GenerateInput>(*state);
   auto update_state            = CreateNode<UpdateState>(*state);
 
   /* Processing flow */
-  auto initialize_state_or = CreateNode<InitializeState>(*state);
-  auto apply_det_muts_or   = CreateNode<ApplyDetMuts>(*state);
-  auto apply_rand_muts     = CreateNode<ApplyRandMuts>(*state);
+  auto initialize_state = CreateNode<InitializeState>(*state);
+  auto apply_det_muts   = CreateNode<ApplyDetMuts>(*state);
+  auto apply_rand_muts  = CreateNode<ApplyRandMuts>(*state);
 
   /* Mutation flow */
   auto mut_rules = CreateNode<MutRules>(*state);
@@ -89,16 +90,16 @@ void NautilusFuzzer::BuildFuzzFlow() {
   auto havoc_rec = CreateNode<MutHavocRec>(*state);
 
   fuzz_loop << (
-    select_input << (
-      process_chosen_input_or
-      || generate_input // TODO: maybe execute.HardLink() here
+    select_input_and_switch <= (
+      process_next_input
+      || generate_input
     )
     || update_state
   );
 
-  process_chosen_input_or << (
-    initialize_state_or
-    || apply_det_muts_or << (
+  process_next_input <= (
+    initialize_state
+    || apply_det_muts << (
       mut_rules
       || splice.HardLink()
       || havoc.HardLink()

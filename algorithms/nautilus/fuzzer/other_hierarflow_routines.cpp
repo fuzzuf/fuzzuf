@@ -43,20 +43,32 @@ NullableRef<HierarFlowCallee<void(void)>> FuzzLoop::operator()(void) {
 
 /**
  * @fn
- * @brief HierarFlow routine for SelectInput (select_input)
+ * @brief HierarFlow routine for SelectInput (select_input_and_switch)
  */
 RSelectInput SelectInput::operator()(void) {
-  std::optional<QueueItem> inp;
+  std::unique_ptr<QueueItem> inp;
 
-  if (state.queue.IsEmpty()) {
-    inp = std::nullopt;
-  } else {
-    // TODO: Use lock when multi-threaded
-    inp = state.queue.Pop();
+  auto& node = this->UnwrapCurrentLinkedNodeRef();
+  auto& succ_nodes = node.succ_nodes;
+
+  if (succ_nodes.size() != 2) {
+    /* We call either process_next_input or generate_input */
+    throw exceptions::wrong_hierarflow_usage(
+      "Invalid number of children for SelectInput",
+      __FILE__, __LINE__
+    );
   }
 
-  // TODO: any good way to prevent inp from being copied?
-  CallSuccessors(inp); // process_chosen_input_or
+  if (state.queue.IsEmpty()) {
+    /* If queue is empty, generate a new testcase */
+    (*succ_nodes[1])(inp); // generate_input (inp is invalid here)
+
+  } else {
+    /* If queue is not empty, pop a testcase and mutate it by ProcessInput */
+    inp = std::make_unique<QueueItem>(state.queue.Pop());
+    (*succ_nodes[1])(inp); // process_next_input
+  }
+
   return GoToDefaultNext(); // update_state
 }
 
@@ -65,23 +77,40 @@ RSelectInput SelectInput::operator()(void) {
  * @brief HierarFlow routine for ProcessInput (process_chosen_input_or)
  * @param (inp) Queue item to process
  */
-RProcessInput ProcessInput::operator()(std::optional<QueueItem> inp) {
-  if (inp) {
+RProcessInput ProcessInput::operator()(std::unique_ptr<QueueItem>& inp) {
+  auto& node = this->UnwrapCurrentLinkedNodeRef();
+  auto& succ_nodes = node.succ_nodes;
 
-    /* Corpus exists. Mutate input. */
-    CallSuccessors(inp.value()); // initialize_or
+  if (succ_nodes.size() != 3) {
+    /* We need initialize_state, apply_det_muts, and apply_rand_muts */
+    throw exceptions::wrong_hierarflow_usage(
+      "Invalid number of children for ProcessInput",
+      __FILE__, __LINE__
+    );
+  }
 
-    /* Mark as finished */
-    state.queue.Finished(std::move(inp.value()));
+  /* Call child node according to the state */
+  if (std::holds_alternative<InitState>((*inp).state)) {
+    (*succ_nodes[0])(*inp); // initialize_state
 
-    return GoToParent(); // back to select_input
+  } else if (std::holds_alternative<DetState>((*inp).state)) {
+    (*succ_nodes[1])(*inp); // apply_det_muts
+
+  } else if (std::holds_alternative<RandomState>((*inp).state)) {
+    (*succ_nodes[2])(*inp); // apply_rand_muts
 
   } else {
-
-    /* Queue is empty. Generate new input. */
-    return GoToDefaultNext(); // generate_input
-
+    throw exceptions::wrong_hierarflow_usage(
+      "Unexpected input state encountered in ProcessInput",
+      __FILE__, __LINE__
+    );
   }
+
+  /* Mark as finished.
+     We use `std::move` because `inp` will never be used after this. */
+  state.queue.Finished(std::move(*inp));
+
+  return GoToParent(); // back to select_input_and_switch
 }
 
 /**
@@ -89,7 +118,7 @@ RProcessInput ProcessInput::operator()(std::optional<QueueItem> inp) {
  * @brief HierarFlow routine for GenerateInput (generate_input)
  * @param (inp) Empty item. Not used.
  */
-RGenerateInput GenerateInput::operator()(std::optional<QueueItem>) {
+RGenerateInput GenerateInput::operator()(std::unique_ptr<QueueItem>&) {
   for (size_t i = 0; i < state.setting->number_of_generate_inputs; i++) {
     /* Generate random seed and run it */
     const NTermID& nonterm = state.ctx.NTID("START");
@@ -102,7 +131,7 @@ RGenerateInput GenerateInput::operator()(std::optional<QueueItem>) {
 
   state.queue.NewRound();
 
-  return GoToDefaultNext(); // back to select_input
+  return GoToDefaultNext(); // back to select_input_and_switch
 }
 
 } // namespace fuzzuf::algorithm::nautilus::fuzzer::routine::other

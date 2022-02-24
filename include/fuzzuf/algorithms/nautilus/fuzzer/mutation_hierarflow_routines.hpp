@@ -55,7 +55,7 @@ using RApplyRandMuts = NullableRef<HierarFlowCallee<IApplyRandMuts>>;
 // ApplyRandMuts <--> MutSplice/MutHavoc/MutHavocRecursion
 using OApplyRandMuts = void(QueueItem&);
 
-/* initialize_state_or */
+/* initialize_state */
 struct InitializeState : HierarFlowRoutine<IInitializeState, OInitializeState> {
   InitializeState(NautilusState& state) : state(state) {}
   RInitializeState operator()(QueueItem&);
@@ -64,7 +64,7 @@ private:
   NautilusState& state;
 };
 
-/* apply_det_muts_or */
+/* apply_det_muts */
 struct ApplyDetMuts : HierarFlowRoutine<IApplyDetMuts, OApplyDetMuts> {
   ApplyDetMuts(NautilusState& state) : state(state) {}
   RApplyDetMuts operator()(QueueItem&);
