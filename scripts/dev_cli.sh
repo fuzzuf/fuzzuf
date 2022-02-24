@@ -137,6 +137,26 @@ fix_dir_perms() {
     return $1
 }
 
+# Process exported volumes argument, separate the volumes and make docker compatible
+# Sample input: --volumes /a:/a#/b:/b
+# Sample output: --volume /a:/a --volume /b:/b
+#
+process_volumes_args() {
+    if [ -z "$arg_vols" ]; then
+        return
+    fi
+    exported_volumes=""
+    arr_vols=(${arg_vols//#/ })
+    for var in "${arr_vols[@]}"; do
+        parts=(${var//:/ })
+        if [[ ! -e "${parts[0]}" ]]; then
+            echo "The volume ${parts[0]} does not exist."
+            exit 1
+        fi
+        exported_volumes="$exported_volumes --volume $var"
+    done
+}
+
 cmd_build-container() {
   ensure_build_dir
   # ensure_latest_ctr
@@ -232,8 +252,24 @@ cmd_tests() {
 }
 
 cmd_shell() {
+  while [ $# -gt 0 ]; do
+    case "$1" in
+            "-h"|"--help")  { cmd_help; exit 1; } ;;
+            "--volumes")
+              shift
+              arg_vols="$1"
+              ;;
+            "--") {
+              shift
+              break
+            } ;;
+            *) ;;
+	  esac
+	  shift
+  done
   ensure_build_dir
   ensure_latest_ctr
+  process_volumes_args
 
   say_warn "Starting a privileged shell prompt as root ..."
   say_warn "WARNING: Your $FUZZUF_ROOT_DIR folder will be bind-mounted in the container under $CTR_FUZZUF_ROOT_DIR"
@@ -242,7 +278,7 @@ cmd_shell() {
     -ti \
     --workdir "$CTR_FUZZUF_ROOT_DIR" \
     --rm \
-    --volume "$FUZZUF_ROOT_DIR:$CTR_FUZZUF_ROOT_DIR" \
+    --volume "$FUZZUF_ROOT_DIR:$CTR_FUZZUF_ROOT_DIR" $exported_volumes \
     --env USER="root" \
     --entrypoint bash \
     "$CTR_IMAGE"
@@ -276,6 +312,7 @@ cmd_help() {
     echo ""
     echo "    shell"
     echo "        Run the development container into an interactive, privileged BASH shell."
+    echo "        --volumes             Hash separated volumes to be exported. Example --volumes /mnt:/mnt#/myvol:/myvol"
     echo ""
     echo "    help"
     echo "        Display this help message."
