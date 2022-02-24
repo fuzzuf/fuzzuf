@@ -83,6 +83,7 @@ void NautilusFuzzer::BuildFuzzFlow() {
   auto apply_rand_muts     = CreateNode<ApplyRandMuts>(*state);
 
   /* Mutation flow */
+  auto mut_rules = CreateNode<MutRules>(*state);
   auto splice    = CreateNode<MutSplice>(*state);
   auto havoc     = CreateNode<MutHavoc>(*state);
   auto havoc_rec = CreateNode<MutHavocRec>(*state);
@@ -98,7 +99,8 @@ void NautilusFuzzer::BuildFuzzFlow() {
   process_chosen_input_or << (
     initialize_state_or
     || apply_det_muts_or << (
-      splice.HardLink()
+      mut_rules
+      || splice.HardLink()
       || havoc.HardLink()
       || havoc_rec.HardLink()
     )

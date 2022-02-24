@@ -85,6 +85,12 @@ private:
 /**
  * Types for Splice/Havoc/HavocRec under ApplyDetMuts/ApplyRandMuts
  */
+// ApplyDetMuts <--> MutRules
+using IMutRules = OApplyDetMuts;
+using RMutRules = NullableRef<HierarFlowCallee<IMutRules>>;
+// MutRules <--> N/A
+using OMutRules = void(void);
+
 // ApplyDetMuts/ApplyRandMuts <--> Splice
 using IMutSplice = OApplyDetMuts; // == OApplyRandMuts
 using RMutSplice = NullableRef<HierarFlowCallee<IMutSplice>>;
@@ -102,6 +108,15 @@ using IMutHavocRec = OApplyDetMuts; // == OApplyRandMuts
 using RMutHavocRec = NullableRef<HierarFlowCallee<IMutHavocRec>>;
 // Havoc <--> N/A
 using OMutHavocRec = void(void);
+
+/* rules mutation */
+struct MutRules : HierarFlowRoutine<IMutRules, OMutRules> {
+  MutRules(NautilusState& state) : state(state) {}
+  RMutRules operator()(QueueItem&);
+
+private:
+  NautilusState& state;
+};
 
 /* splice */
 struct MutSplice : HierarFlowRoutine<IMutSplice, OMutSplice> {

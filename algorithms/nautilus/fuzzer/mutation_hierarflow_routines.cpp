@@ -56,23 +56,8 @@ RApplyDetMuts ApplyDetMuts::operator()(QueueItem& inp) {
     return GoToDefaultNext(); // apply_rand_muts
   }
 
-  /* Deterministic tree mutation */
-  auto [cycle, start_index] = std::get<DetState>(inp.state);
-  size_t end_index = start_index + 1;
-
-  if (state.DeterministicTreeMutation(inp, start_index, end_index)) {
-    if (cycle == state.setting->number_of_deterministic_mutations) {
-      inp.state = RandomState();
-    } else {
-      // TODO: Update current cycle for status?
-      inp.state = DetState(cycle + 1, 0);
-    }
-  } else {
-    inp.state = DetState(cycle, end_index);
-  }
-
-  /* Splice, Havoc, and HavocRecursion */
-  CallSuccessors(inp); // splice
+  /* Rules, Splice, Havoc, and HavocRecursion */
+  CallSuccessors(inp); // mut_rules
 
   return GoToParent(); // process_chosen_input_or
 }
@@ -93,6 +78,28 @@ RApplyRandMuts ApplyRandMuts::operator()(QueueItem& inp) {
   CallSuccessors(inp); // splice
 
   return GoToParent(); // process_chosen_input_or
+}
+
+/**
+ * @fn
+ * @brief HierarFlow routine for MutRules (mut_rules)
+ */
+RMutRules MutRules::operator()(QueueItem& inp) {
+  auto [cycle, start_index] = std::get<DetState>(inp.state);
+  size_t end_index = start_index + 1;
+
+  /* Deterministic tree mutation (Rules Mutation) */
+  if (state.DeterministicTreeMutation(inp, start_index, end_index)) {
+    if (cycle == state.setting->number_of_deterministic_mutations) {
+      inp.state = RandomState();
+    } else {
+      inp.state = DetState(cycle + 1, 0);
+    }
+  } else {
+    inp.state = DetState(cycle, end_index);
+  }
+
+  return GoToDefaultNext();
 }
 
 /**
