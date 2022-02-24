@@ -337,8 +337,8 @@ bool DIEState::SaveIfInteresting(
     u8 hnb;
 
     inp_feed.ShowMemoryToFunc(
-      [this, &hnb](const u8* trace_bits, u32 map_size) {
-        hnb = HasNewBits(trace_bits, &virgin_bits[0], map_size);
+      [this, &hnb](const u8* trace_bits, u32 /* map_size */) {
+        hnb = HasNewBits(trace_bits, &virgin_bits[0], afl::option::GetMapSize<Tag>());
       }
     );
 
@@ -407,31 +407,31 @@ bool DIEState::SaveIfInteresting(
       }
 
       if (!setting->dumb_mode) {
-        if constexpr (sizeof(size_t) == 8) {
-            inp_feed.ModifyMemoryWithFunc(
-              [](u8* trace_bits, u32 map_size) {
-                afl::util::SimplifyTrace<u64>((u64*)trace_bits, map_size);
-              }
-            );
+          if constexpr (sizeof(size_t) == 8) {
+              inp_feed.ModifyMemoryWithFunc(
+                  [](u8* trace_bits, u32 /* map_size */) {
+                      afl::util::SimplifyTrace<u64>((u64*)trace_bits, afl::option::GetMapSize<Tag>());
+                  }
+                );
           } else {
-          inp_feed.ModifyMemoryWithFunc(
-            [](u8* trace_bits, u32 map_size) {
-              afl::util::SimplifyTrace<u32>((u32*)trace_bits, map_size);
-            }
-          );
-        }
-
-        u8 res;
-        inp_feed.ShowMemoryToFunc(
-          [this, &res](const u8* trace_bits, u32 map_size) {
-            res = HasNewBits(trace_bits, &virgin_tmout[0], map_size);
+              inp_feed.ModifyMemoryWithFunc(
+                  [](u8* trace_bits, u32 /* map_size */) {
+                      afl::util::SimplifyTrace<u32>((u32*)trace_bits, afl::option::GetMapSize<Tag>());
+                  }
+              );
           }
-        );
 
-        if (!res) {
-          // originally here "return keeping" is used, but this is clearer right?
-          return false;
-        }
+          u8 res;
+          inp_feed.ShowMemoryToFunc(
+              [this, &res](const u8* trace_bits, u32 /* map_size */) {
+                  res = HasNewBits(trace_bits, &virgin_tmout[0], afl::option::GetMapSize<Tag>());
+              }
+          );
+
+          if (!res) {
+              // originally here "return keeping" is used, but this is clearer right?
+              return false;
+          }
       }
 
       unique_tmouts++;
@@ -494,22 +494,22 @@ bool DIEState::SaveIfInteresting(
       if (!setting->dumb_mode) {
         if constexpr (sizeof(size_t) == 8) {
             inp_feed.ModifyMemoryWithFunc(
-              [](u8* trace_bits, u32 map_size) {
-                afl::util::SimplifyTrace<u64>((u64*)trace_bits, map_size);
+              [](u8* trace_bits, u32 /* map_size */) {
+                afl::util::SimplifyTrace<u64>((u64*)trace_bits, afl::option::GetMapSize<Tag>());
               }
             );
           } else {
           inp_feed.ModifyMemoryWithFunc(
-            [](u8* trace_bits, u32 map_size) {
-              afl::util::SimplifyTrace<u32>((u32*)trace_bits, map_size);
+            [](u8* trace_bits, u32 /* map_size */) {
+              afl::util::SimplifyTrace<u32>((u32*)trace_bits, afl::option::GetMapSize<Tag>());
             }
           );
         }
 
         u8 res;
         inp_feed.ShowMemoryToFunc(
-          [this, &res](const u8* trace_bits, u32 map_size) {
-            res = HasNewBits(trace_bits, &virgin_crash[0], map_size);
+          [this, &res](const u8* trace_bits, u32 /* map_size */) {
+            res = HasNewBits(trace_bits, &virgin_crash[0], afl::option::GetMapSize<Tag>());
           }
         );
 

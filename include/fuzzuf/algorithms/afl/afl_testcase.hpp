@@ -29,7 +29,7 @@ struct AFLTestcase {
     using Tag = option::AFLTag;
 
     explicit AFLTestcase(std::shared_ptr<OnDiskExecInput> input);
-    ~AFLTestcase();
+    virtual ~AFLTestcase();
 
     bool WasFuzzed(void);
     void MarkFuzzed(void);

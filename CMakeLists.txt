@@ -288,6 +288,11 @@ set(
   algorithms/die/die_fuzzer.cpp
   algorithms/die/die_hierarflow_routines.cpp
   algorithms/die/die_state.cpp
+  algorithms/ijon/ijon_fuzzer.cpp
+  algorithms/ijon/ijon_havoc.cpp
+  algorithms/ijon/ijon_hierarflow_routines.cpp
+  algorithms/ijon/ijon_state.cpp
+  algorithms/ijon/ijon_testcase.cpp
   algorithms/libfuzzer/config.cpp
   algorithms/libfuzzer/dictionary.cpp
   algorithms/libfuzzer/fuzzer.cpp
@@ -382,15 +387,17 @@ add_library(
 #アルファベット順に並べてください
 set(
   FUZZUF_CLI_SOURCES
+  cli/command_line_args.cpp
+  cli/create_fuzzer_instance_from_argv.cpp
+  cli/fuzzer_builder_register.cpp
   cli/fuzzers/afl/register_afl_fuzzer.cpp
   cli/fuzzers/aflfast/register_aflfast_fuzzer.cpp
   cli/fuzzers/die/register_die_fuzzer.cpp
+  cli/fuzzers/ijon/register_ijon_fuzzer.cpp
   cli/fuzzers/libfuzzer/register_libfuzzer.cpp
   cli/fuzzers/nezha/register_nezha_fuzzer.cpp
   cli/fuzzers/vuzzer/register_vuzzer.cpp
   cli/parse_global_options_for_fuzzer.cpp
-  cli/fuzzer_builder_register.cpp
-  cli/command_line_args.cpp
 )
 
 ### CLI tool

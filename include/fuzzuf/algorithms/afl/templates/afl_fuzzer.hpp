@@ -132,4 +132,10 @@ void AFLFuzzerTemplate<State>::ReceiveStopSignal(void) {
     state->ReceiveStopSignal();
 }
 
+template<class State>
+bool AFLFuzzerTemplate<State>::ShouldEnd(void) {
+    if (!state) return false;
+    return state->stop_soon != 0;
+}
+
 } // namespace fuzzuf::algorithm::afl

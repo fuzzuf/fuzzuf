@@ -15,20 +15,27 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see http://www.gnu.org/licenses/.
  */
-#pragma once
 
-#include <memory>
-#include <functional>
+#ifndef FUZZUF_INCLUDE_ALGORITHM_IJON_IJON_HAVOC_HPP
+#define FUZZUF_INCLUDE_ALGORITHM_IJON_IJON_HAVOC_HPP
 
-class Fuzzer {
-public:
-    virtual ~Fuzzer() {}
+#include "fuzzuf/algorithms/afl/afl_dict_data.hpp"
 
-    virtual void BuildFuzzFlow(void) {}
-    virtual void OneLoop(void) {}
+namespace fuzzuf::algorithm::ijon::havoc {
 
-    // do not call non aync-signal-safe functions inside because this function can be called during signal handling
-    virtual void ReceiveStopSignal(void) = 0;
+u32 IJONHavocCaseDistrib(
+    const std::vector<afl::dictionary::AFLDictData>& extras,
+    const std::vector<afl::dictionary::AFLDictData>& a_extras
+);
 
-    virtual bool ShouldEnd(void) { return false; }
-};
+void IJONCustomCases(
+    u32 case_idx,
+    u8*& outbuf,
+    u32& len,
+    const std::vector<afl::dictionary::AFLDictData>& extras,
+    const std::vector<afl::dictionary::AFLDictData>& a_extras
+);
+
+} // namespace fuzzuf::algorithm::ijon::havoc
+
+#endif

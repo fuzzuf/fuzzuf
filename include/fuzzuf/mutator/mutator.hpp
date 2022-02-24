@@ -85,27 +85,36 @@ public:
     template<typename T> u32 SubN(int pos, int val, int be);
     template<typename T> u32 InterestN(int pos, int idx, int be);
 
-    // NOTE: about CaseDistrib and CustomCases
-    // To allow users to customize Havoc, two callable objects are provided.
-    //
-    // CaseDistrib should be a callable object that receives 
-    // extras and a_extras as its arguments, 
-    // and should return a constant defined in HavocCase.
-    // This works as a probability distribution with which Havoc decides 
-    // which mutation(switch case) to be used.
-    // Note that CaseDistrib MUST NOT return OVERWRITE_WITH_EXTRA and INSERT_EXTRA
-    // if the argument "extras" is empty. If it does, Havoc can cause access violations.
-    // The same is true for OVERWRITE_WITH_AEXTRA and INSERT_AEXTRA.
-    // 
-    // CustomCases is a callable object used to execute your own cases instead of preset cases.
-    // It should receive as its arguments the references of outbuf and len, 
-    // and a number representing which case should be executed.
-    // Note that, in order to select custom cases in Havoc, 
-    // CaseDistrib should return numbers more than or equal to HavocCase::NUM_CASE.
-    // For example, if CaseDistrib returns HavocCase::NUM_CASE+1, 
-    // then CustomCases receives 1 as one of its arguments.
-
     using AFLDictData = fuzzuf::algorithm::afl::dictionary::AFLDictData;
+    /**
+     * @fn Havoc
+     * @tparam CaseDistrib the type of the probability distribution of selecting mutation operators.
+     * It should be `u32(const std::vector<AFLDictData>&, const std::vector<AFLDictData>&)` .
+     * @tparam CustomCases the type of the function that represents custom cases in havoc.
+     * It should be `void(u32, u8*&, u32&, const std::vector<AFLDictData>&, const std::vector<AFLDictData>&)`.
+     * @param stacking the number of times mutation operators are applied.
+     * @param extras the vector of extras (constant strings) that works as a dictionary.
+     * @param a_extras the vector of auto extras (automatically generated constant strings).
+     * @note About CaseDistrib and CustomCases.
+     * To allow users to customize Havoc, two callable objects are provided.
+     *
+     * CaseDistrib should be a callable object that receives 
+     * extras and a_extras as its arguments, 
+     * and should return a constant defined in HavocCase.
+     * This works as a probability distribution with which Havoc decides 
+     * which mutation(switch case) to be used.
+     * Note that CaseDistrib MUST NOT return OVERWRITE_WITH_EXTRA and INSERT_EXTRA
+     * if the argument `extras` is empty. If it does, Havoc can cause access violations.
+     * The same is true for OVERWRITE_WITH_AEXTRA and INSERT_AEXTRA.
+     * 
+     * CustomCases is a callable object used to execute your own cases instead of preset cases.
+     * It should receive as its arguments a number representing which case should be executed, 
+     * the references of outbuf and len, extras and a_extras.
+     * Note that, in order to select custom cases in Havoc, 
+     * CaseDistrib should return numbers more than or equal to HavocCase::NUM_CASE.
+     * For example, if CaseDistrib returns HavocCase::NUM_CASE+1, 
+     * then CustomCases receives HavocCase::NUM_CASE+1 as one of its arguments.
+     */
     template<typename CaseDistrib, typename CustomCases>
     void Havoc(
             u32 stacking, 
@@ -566,7 +575,6 @@ void Mutator<Tag>::Havoc(
             const AFLDictData &extra = use_auto ? a_extras[idx] : extras[idx];
 
             u32 extra_len = extra.data.size();
-
             if (len + extra_len >= GetMaxFile<Tag>()) break;
 
             u8* new_buf = new u8[len + extra_len];
@@ -582,7 +590,7 @@ void Mutator<Tag>::Havoc(
                    len - insert_at);
 
             delete[] outbuf;
-            outbuf   = new_buf;
+            outbuf = new_buf;
             len += extra_len;
 
             break;
@@ -592,7 +600,7 @@ void Mutator<Tag>::Havoc(
         // case SPLICE:
 
         default: 
-            custom_cases(r - NUM_CASE, outbuf, len);
+            custom_cases(r, outbuf, len, extras, a_extras);
             break;
 
         }

@@ -2,6 +2,7 @@ subdirs(
   afl
   aflfast
   die
+  ijon
   libfuzzer
   nezha
   vuzzer

@@ -19,6 +19,12 @@
 
 #include "fuzzuf/utils/common.hpp"
 
+namespace fuzzuf::algorithm::afl {
+
+template<class Testcase> struct AFLStateTemplate;
+
+} // namespace fuzzuf::algorithm::afl 
+
 namespace fuzzuf::algorithm::afl::option {
 
 // The following enumerators cannot be "enum class" 
@@ -64,8 +70,8 @@ enum StageIndex {
 
 struct AFLTag {};
 
-template<class State>
-constexpr const char* GetVersion(State&) { 
+template<class Testcase>
+constexpr const char* GetVersion(AFLStateTemplate<Testcase>&) { 
     return "2.57b";
 }
 
@@ -100,54 +106,54 @@ constexpr u32 GetMemLimit(void) {
     }
 }
 
-template<class State>
-constexpr u32 GetCalCycles(State&) { 
+template<class Testcase>
+constexpr u32 GetCalCycles(AFLStateTemplate<Testcase>&) { 
     return 8;
 }
 
-template<class State>
-constexpr u32 GetCalCyclesLong(State&) { 
+template<class Testcase>
+constexpr u32 GetCalCyclesLong(AFLStateTemplate<Testcase>&) { 
     return 40;
 }
 
 /* Number of subsequent timeouts before abandoning an input file: */
-template<class State>
-constexpr u32 GetTmoutLimit(State&) { 
+template<class Testcase>
+constexpr u32 GetTmoutLimit(AFLStateTemplate<Testcase>&) { 
     return 250;
 }
 
 /* Maximum number of unique hangs or crashes to record: */
-template<class State>
-constexpr u32 GetKeepUniqueHang(State&) { 
+template<class Testcase>
+constexpr u32 GetKeepUniqueHang(AFLStateTemplate<Testcase>&) { 
     return 500;
 }
 
-template<class State>
-constexpr u32 GetKeepUniqueCrash(State&) { 
+template<class Testcase>
+constexpr u32 GetKeepUniqueCrash(AFLStateTemplate<Testcase>&) { 
     return 5000;
 }
 
 /* Baseline number of random tweaks during a single 'havoc' stage: */
-template<class State>
-constexpr u32 GetHavocCycles(State&) { 
+template<class Testcase>
+constexpr u32 GetHavocCycles(AFLStateTemplate<Testcase>&) { 
     return 256;
 }
 
-template<class State>
-constexpr u32 GetHavocCyclesInit(State&) { 
+template<class Testcase>
+constexpr u32 GetHavocCyclesInit(AFLStateTemplate<Testcase>&) { 
     return 1024;
 }
 
 /* Maximum multiplier for the above (should be a power of two, beware
     of 32-bit int overflows): */
-template<class State>
-constexpr u32 GetHavocMaxMult(State&) { 
+template<class Testcase>
+constexpr u32 GetHavocMaxMult(AFLStateTemplate<Testcase>&) { 
     return 16;
 }
 
 /* Absolute minimum number of havoc cycles (after all adjustments): */
-template<class State>
-constexpr s32 GetHavocMin(State&) { 
+template<class Testcase>
+constexpr s32 GetHavocMin(AFLStateTemplate<Testcase>&) { 
     return 16;
 }
     
@@ -160,8 +166,8 @@ constexpr s32 GetHavocMin(State&) {
     In other words, the default (n = 7) produces 2, 4, 8, 16, 32, 64, or
     128 stacked tweaks: */
 
-template<class State>
-constexpr u32 GetHavocStackPow2(State&) { 
+template<class Testcase>
+constexpr u32 GetHavocStackPow2(AFLStateTemplate<Testcase>&) { 
     return 7;
 }
 
@@ -172,7 +178,7 @@ constexpr u32 GetHavocStackPow2(State&) {
 // NOTE: these functions cannot have the argument
 // because these are used in Mutator.
 // If you want to refer to State in these functions,
-// probably we need to have also GetHavocBlkSmall(State&).
+// probably we need to have also GetHavocBlkSmall(AFLStateTemplate<Testcase>&).
 
 template<class Tag>
 constexpr u32 GetHavocBlkSmall(void) { 
@@ -200,20 +206,20 @@ constexpr u32 GetHavocBlkXl(void) {
     fuzzing sessions or trying to calibrate already-added internal finds.
     The first value is a percentage, the other is in milliseconds: */
 
-template<class State>
-constexpr u32 GetCalTmoutPerc(State&) { 
+template<class Testcase>
+constexpr u32 GetCalTmoutPerc(AFLStateTemplate<Testcase>&) { 
     return 125;
 }
 
-template<class State>
-constexpr u32 GetCalTmoutAdd(State&) { 
+template<class Testcase>
+constexpr u32 GetCalTmoutAdd(AFLStateTemplate<Testcase>&) { 
     return 50;
 }
 
 /* Number of chances to calibrate a case before giving up: */
 
-template<class State>
-constexpr u32 GetCalChances(State&) { 
+template<class Testcase>
+constexpr u32 GetCalChances(AFLStateTemplate<Testcase>&) { 
     return 3;
 }
     
@@ -233,8 +239,8 @@ constexpr u32 GetMapSize(void) {
     return 1 << GetMapSizePow2<Tag>();
 }
 
-template<class State>
-constexpr u32 GetStatusUpdateFreq(State&) { 
+template<class Testcase>
+constexpr u32 GetStatusUpdateFreq(AFLStateTemplate<Testcase>&) { 
     return 1;
 }
 
@@ -247,53 +253,53 @@ constexpr const char* GetDefaultOutfile(void) {
     return ".cur_input";
 }
 
-template<class State>
-constexpr const char* GetClangEnvVar(State&) { 
+template<class Testcase>
+constexpr const char* GetClangEnvVar(AFLStateTemplate<Testcase>&) { 
     return "__AFL_CLANG_MODE";
 }
 
-template<class State>
-constexpr const char* GetAsLoopEnvVar(State&) { 
+template<class Testcase>
+constexpr const char* GetAsLoopEnvVar(AFLStateTemplate<Testcase>&) { 
     return "__AFL_AS_LOOPCHECK";
 }
 
-template<class State>
-constexpr const char* GetPersistEnvVar(State&) { 
+template<class Testcase>
+constexpr const char* GetPersistEnvVar(AFLStateTemplate<Testcase>&) { 
     return "__AFL_PERSISTENT";
 }
 
-template<class State>
-constexpr const char* GetDeferEnvVar(State&) { 
+template<class Testcase>
+constexpr const char* GetDeferEnvVar(AFLStateTemplate<Testcase>&) { 
     return "__AFL_DEFER_FORKSRV";
 }
 
 /* ...when there are new, pending favorites */
-template<class State>
-constexpr u32 GetSkipToNewProb(State&) { 
+template<class Testcase>
+constexpr u32 GetSkipToNewProb(AFLStateTemplate<Testcase>&) { 
     return 99;
 }
 
 /* ...no new favs, cur entry already fuzzed */
-template<class State>
-constexpr u32 GetSkipNfavOldProb(State&) { 
+template<class Testcase>
+constexpr u32 GetSkipNfavOldProb(AFLStateTemplate<Testcase>&) { 
     return 95;
 }
 
 /* ...no new favs, cur entry not fuzzed yet */
-template<class State>
-constexpr u32 GetSkipNfavNewProb(State&) { 
+template<class Testcase>
+constexpr u32 GetSkipNfavNewProb(AFLStateTemplate<Testcase>&) { 
     return 75;
 }
 
 /* Splicing cycle count: */
-template<class State>
-constexpr u32 GetSpliceCycles(State&) { 
+template<class Testcase>
+constexpr u32 GetSpliceCycles(AFLStateTemplate<Testcase>&) { 
     return 15;
 }
 
 /* Nominal per-splice havoc cycle length: */
-template<class State>
-constexpr u32 GetSpliceHavoc(State&) { 
+template<class Testcase>
+constexpr u32 GetSpliceHavoc(AFLStateTemplate<Testcase>&) { 
     return 32;
 }
 
@@ -318,57 +324,57 @@ constexpr u32 GetMaxFile(void) {
 }
 
 /* The same, for the test case minimizer: */
-template<class State>
-constexpr u32 GetTminMaxFile(State&) { 
+template<class Testcase>
+constexpr u32 GetTminMaxFile(AFLStateTemplate<Testcase>&) { 
     return 10 * 1024 * 1024;
 }
 
 /* Block normalization steps for afl-tmin: */
-template<class State>
-constexpr u32 GetTminSetMinSize(State&) { 
+template<class Testcase>
+constexpr u32 GetTminSetMinSize(AFLStateTemplate<Testcase>&) { 
     return 4;
 }
 
-template<class State>
-constexpr u32 GetTminSetSteps(State&) { 
+template<class Testcase>
+constexpr u32 GetTminSetSteps(AFLStateTemplate<Testcase>&) { 
     return 128;
 }
 
 /* Maximum dictionary token size (-x), in bytes: */
-template<class State>
-constexpr u32 GetMaxDictFile(State&) { 
+template<class Testcase>
+constexpr u32 GetMaxDictFile(AFLStateTemplate<Testcase>&) { 
     return 128;
 }
 
 /* Length limits for auto-detected dictionary tokens: */
-template<class State>
-constexpr u32 GetMinAutoExtra(State&) { 
+template<class Testcase>
+constexpr u32 GetMinAutoExtra(AFLStateTemplate<Testcase>&) { 
     return 3;
 }
 
-template<class State>
-constexpr u32 GetMaxAutoExtra(State&) { 
+template<class Testcase>
+constexpr u32 GetMaxAutoExtra(AFLStateTemplate<Testcase>&) { 
     return 32;
 }
 
 /* Maximum number of user-specified dictionary tokens to use in deterministic
     steps; past this point, the "extras/user" step will be still carried out,
     but with proportionally lower odds: */
-template<class State>
-constexpr u32 GetMaxDetExtras(State&) { 
+template<class Testcase>
+constexpr u32 GetMaxDetExtras(AFLStateTemplate<Testcase>&) { 
     return 200;
 }
 
 /* Maximum number of auto-extracted dictionary tokens to actually use in fuzzing
     (first value), and to keep in memory as candidates. The latter should be much
     higher than the former. */
-template<class State>
-constexpr u32 GetUseAutoExtras(State&) { 
+template<class Testcase>
+constexpr u32 GetUseAutoExtras(AFLStateTemplate<Testcase>&) { 
     return 50;
 }
 
-template<class State>
-constexpr u32 GetMaxAutoExtras(State& state) { 
+template<class Testcase>
+constexpr u32 GetMaxAutoExtras(AFLStateTemplate<Testcase>& state) { 
     return GetUseAutoExtras(state) * 10;
 }
 
@@ -379,61 +385,61 @@ constexpr u32 GetMaxAutoExtras(State& state) {
 // NOTE: this function cannot have the argument
 // because this is used in afl::util.
 
-template<class State>
+template<class Testcase>
 constexpr u32 GetEffMapScale2(void) { 
     return 3;
 }
 
 /* Minimum input file length at which the effector logic kicks in: */
-template<class State>
-constexpr u32 GetEffMinLen(State&) { 
+template<class Testcase>
+constexpr u32 GetEffMinLen(AFLStateTemplate<Testcase>&) { 
     return 128;
 }
 
 /* Maximum effector density past which everything is just fuzzed
     unconditionally (%): */
-template<class State>
-constexpr u32 GetEffMaxPerc(State&) { 
+template<class Testcase>
+constexpr u32 GetEffMaxPerc(AFLStateTemplate<Testcase>&) { 
     return 90;
 }
 
 /* UI refresh frequency (Hz): */
-template<class State>
-constexpr u32 GetUiTargetHz(State&) { 
+template<class Testcase>
+constexpr u32 GetUiTargetHz(AFLStateTemplate<Testcase>&) { 
     return 5;
 }
 
 /* Fuzzer stats file and plot update intervals (sec): */
-template<class State>
-constexpr u32 GetStatsUpdateSec(State&) { 
+template<class Testcase>
+constexpr u32 GetStatsUpdateSec(AFLStateTemplate<Testcase>&) { 
     return 60;
 }
 
-template<class State>
-constexpr u32 GetPlotUpdateSec(State&) { 
+template<class Testcase>
+constexpr u32 GetPlotUpdateSec(AFLStateTemplate<Testcase>&) { 
     return 60;
 }
 
 /* Smoothing divisor for CPU load and exec speed stats (1 - no smoothing). */
-template<class State>
-constexpr u32 GetAvgSmoothing(State&) { 
+template<class Testcase>
+constexpr u32 GetAvgSmoothing(AFLStateTemplate<Testcase>&) { 
     return 16;
 }
     
 /* Limits for the test case trimmer. The absolute minimum chunk size; and
     the starting and ending divisors for chopping up the input file: */
-template<class State>
-constexpr u32 GetTrimMinBytes(State&) { 
+template<class Testcase>
+constexpr u32 GetTrimMinBytes(AFLStateTemplate<Testcase>&) { 
     return 4;
 }
 
-template<class State>
-constexpr u32 GetTrimStartSteps(State&) { 
+template<class Testcase>
+constexpr u32 GetTrimStartSteps(AFLStateTemplate<Testcase>&) { 
     return 16;
 }
 
-template<class State>
-constexpr u32 GetTrimEndSteps(State&) { 
+template<class Testcase>
+constexpr u32 GetTrimEndSteps(AFLStateTemplate<Testcase>&) { 
     return 1024;
 }
     
