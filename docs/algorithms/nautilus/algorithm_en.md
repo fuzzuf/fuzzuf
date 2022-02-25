@@ -148,7 +148,7 @@ The Nautilus mode of fuzzuf provides the following options:
 - `--generate-num`: The number of test cases generated in one fuzz loop [Default: 100]
 - `--detmut-num`: Number of cycles to execute deterministic mutations [Default: 1]
 - `--max-tree-size`: Maximum size of generated tree [Default: 1000]
-- `--no-forksrv`: Disable fork server mode (Not recommended)
+- `--forksrv`: Enable/disable fork server mode. Default to true. (not recommended to disable)
 
 You can fuzz the calculator like this, for example:
 ```
