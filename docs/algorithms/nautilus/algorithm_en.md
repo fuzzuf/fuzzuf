@@ -71,7 +71,7 @@ You have to define the grammar in JSON array to use it in Nautilus like the foll
 ]
 ```
 Each element of the array represents the definition for a non-terminal. The element has 2 string data: the first one is the non-terminal symbol and the second one is the definition (expression) for the non-terminal. You must enclose every non-terminal symbol in the expression by braces `{ }`. **The non-terminal symbol must start with a capital letter.**
-If a part of an expression is enclose by terminal characters `{` and `}`, you must escape them as special symbols to distinguish with non-terminals. If the definition of a non-terminal includes the pattern, please write like the following, for example:
+If a part of an expression is enclosed by terminal characters `{` and `}`, you must escape them as special symbols to distinguish them from non-terminals. If the definition of a non-terminal includes the pattern, please write like the following, for example:
 ```json
 [
     ["BLOCK", "\\{ {STATEMENT} \\}"],
