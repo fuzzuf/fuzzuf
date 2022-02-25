@@ -210,7 +210,7 @@ If your usage or grammar file is wrong, an error will show up.
 - `Cannot parse grammar file`: The content of grammar file is wrong. (Check your grammar file as explained in section 2-2.)
 
 ## 3. Algorithm
-Generally, grammar based fuzzers generates AST (abstract syntax tree) according to a specific grammar and mutates a part of the AST to create testcases. Nautilus internally only uses the tree representation and mutates the tree.
+Generally, grammar-based fuzzers generate AST (abstract syntax tree) according to a specific grammar and mutate a part of the AST to create testcases. Nautilus internally only uses the tree representation and mutates the tree.
 In this section, we explain the design of how Nautilus generates and mutates the testcases.
 
 ### 3-1. Generation
