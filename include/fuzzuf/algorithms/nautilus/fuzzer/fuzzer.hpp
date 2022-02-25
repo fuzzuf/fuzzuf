@@ -24,12 +24,15 @@
 #define FUZZUF_INCLUDE_ALGORITHMS_NAUTILUS_FUZZER_FUZZER_HPP
 
 #include <memory>
+#include <nlohmann/json.hpp>
 #include "fuzzuf/algorithms/nautilus/fuzzer/state.hpp"
 #include "fuzzuf/fuzzer/fuzzer.hpp"
 #include "fuzzuf/hierarflow/hierarflow_node.hpp"
 
 
 namespace fuzzuf::algorithm::nautilus::fuzzer {
+
+using json = nlohmann::json;
 
 class NautilusFuzzer : public Fuzzer {
 public:
@@ -38,7 +41,11 @@ public:
 
   void BuildFuzzFlow();
   void CheckPathExistence();
-  void LoadGrammar();
+  static void LoadGrammar(Context& ctx, fs::path grammar_path);
+  static bool ParseAndAddRule(Context& ctx,
+                              std::string nt,
+                              json rule, bool
+                              recursive=false);
 
   virtual void OneLoop(void);
   virtual void ReceiveStopSignal(void);

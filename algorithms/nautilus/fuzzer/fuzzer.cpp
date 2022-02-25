@@ -20,9 +20,9 @@
  * @brief Fuzzing loop of Nautilus.
  * @author Ricerca Security <fuzzuf-dev@ricsec.co.jp>
  */
+#include <algorithm>
 #include <fstream>
 #include <memory>
-#include <nlohmann/json.hpp>
 #include <string>
 #include <vector>
 #include "fuzzuf/algorithms/nautilus/fuzzer/fuzzer.hpp"
@@ -39,8 +39,6 @@
 
 namespace fuzzuf::algorithm::nautilus::fuzzer {
 
-using json = nlohmann::json;
-
 /**
  * @fn
  * @brief Construct Nautilus fuzzer
@@ -48,9 +46,12 @@ using json = nlohmann::json;
  */
 NautilusFuzzer::NautilusFuzzer(std::unique_ptr<NautilusState>&& state_ref)
   : state(std::move(state_ref)) {
-  /* Check files and load grammar */
+  /* Check files */
   CheckPathExistence();
-  LoadGrammar();
+
+  /* Load grammar */
+  NautilusFuzzer::LoadGrammar(state->ctx, state->setting->path_to_grammar);
+  state->ctx.Initialize(state->setting->max_tree_size);
 
   /* Construct fuzzing loop */
   BuildFuzzFlow();
@@ -174,71 +175,147 @@ void NautilusFuzzer::CheckPathExistence() {
 
 /**
  * @fn
- * @brief Load grammar file
+ * @brief Parse and add rules in JSON object
+ * @param (ctx) Context
+ * @param (nt) Nontermnal symbol
+ * @param (rule) Rule for NT in JSON object
+ * @param ()
  */
-void NautilusFuzzer::LoadGrammar() {
-  std::shared_ptr<const NautilusSetting> setting(state->setting);
+bool NautilusFuzzer::ParseAndAddRule(Context& ctx,
+                                     std::string nt,
+                                     json rule,
+                                     bool recursive /*=false*/) {
+  if (rule.is_string()) {
+    /* Simple string rule: just add it */
+    ctx.AddRule(nt, rule.get<std::string>());
+    return true;
 
-  if (setting->path_to_grammar.extension() == ".json") {
+  } else if (rule.is_array()) {
+    /* Array rule: Union or binary */
+
+    /* Check if every rule is integer or string */
+    if (std::all_of(rule.begin(), rule.end(),
+                    [](const json& e) {
+                      return e.is_number_integer() || e.is_string();
+                    })) {
+      /* This is a binary rule */
+      std::string r;
+      for (const json& e: rule) {
+        if (e.is_string()) {
+          /* Simply concat string */
+          r += e.get<std::string>();
+
+        } else {
+          /* Read as a character code */
+          size_t c = e.get<size_t>();
+          if (c >= 0x100) {
+            std::cerr << "[-] Invalid character code" << std::endl
+                      << "    NT  : " << nt << std::endl
+                      << "    RULE: " << rule << std::endl
+                      << "    The value " << c << " is out-of-range." << std::endl;
+            std::exit(1);
+          }
+
+          r.push_back((char)c);
+        }
+      }
+
+      ctx.AddRule(nt, r);
+      return true;
+
+    } else if (!recursive) {
+      /* This is a union rule */
+      for (const json& e: rule) {
+        if (!NautilusFuzzer::ParseAndAddRule(ctx, nt, e, true)) {
+          std::cerr << "[-] Invalid rule" << std::endl
+                    << "    NT   : " << nt << std::endl
+                    << "    RULES: " << rule << std::endl
+                    << "    RULE : " << e << std::endl;
+          std::exit(1);
+        }
+      }
+      return true;
+
+    } else {
+      /* Invalid recursive array */
+      return false;
+    }
+
+  }
+
+  /* Invalid type */
+  std::cerr << "[-] Invalid rule" << std::endl
+            << "    NT  : " << nt << std::endl
+            << "    RULE: " << rule << std::endl;
+  std::exit(1);
+}
+
+/**
+ * @fn
+ * @brief Load grammar written in the grammar file
+ * @param (ctx) Context
+ * @param (grammar_path) Path to the grammar file
+ */
+void NautilusFuzzer::LoadGrammar(Context& ctx, fs::path grammar_path) {
+  /* Create new context and save it */
+  if (grammar_path.extension() == ".json") {
+    /* Check file */
+    if (!fs::exists(grammar_path) || fs::is_directory(grammar_path)) {
+      std::cerr << "[-] Grammar file does not exist or not a file." << std::endl
+                << "    Path: " << grammar_path << std::endl;
+      std::exit(1);
+    }
+
     /* Load JSON grammar */
-    std::ifstream ifs(setting->path_to_grammar.string());
-
+    std::ifstream ifs(grammar_path.string());
     try {
       json rules = json::parse(ifs);
 
-      /* Check JSON type */
-      if (rules.type() != json::value_t::array) {
-        throw exceptions::invalid_file(
-          "Invalid rules (Rules must be array)", __FILE__, __LINE__
-        );
-
+      if (!rules.is_array()) {
+        std::cerr << "[-] Invalid rules (Rules must be array)" << std::endl;
+        std::exit(1);
       } else if (rules.size() == 0) {
-        throw exceptions::invalid_file(
-          "Rule file doesn't include any rules", __FILE__, __LINE__
-        );
-
-      } else if (rules[0].type() != json::value_t::array
+        std::cerr << "[-] Rule file doesn't include any rules" << std::endl;
+        std::exit(1);
+      } else if (!rules[0].is_array()
                  || rules[0].size() != 2
-                 || rules[0].get<json>()[0].type() != json::value_t::string) {
-        throw exceptions::invalid_file(
-          Util::StrPrintf("Invalid rule (Each rule must be a pair of string)\n",
-                          "Rule: %s", rules[0].get<json>().dump().c_str()),
-          __FILE__, __LINE__
-        );
+                 || !rules[0].get<json>()[0].is_string()) {
+        std::cerr << "[-] First rule is invalid" << std::endl
+                  << "    It must be an array with 2 elements. The first" << std::endl
+                  << "    one must be  a string representing the name" << std::endl
+                  << "    of the nonterminal." << std::endl;
+        std::exit(1);
       }
 
       /* Add rules */
-      std::string root = "{" +                                \
-        rules[0].get<json>()[0].get_ref<std::string&>() +  \
-        "}";
-      state->ctx.AddRule("START", root);
+      std::string root = "{" + rules[0].get<json>()[0].get<std::string>() + "}";
+      NautilusFuzzer::ParseAndAddRule(ctx, "START", root);
 
       for (auto& rule: rules) {
-        if (rule.type() != json::value_t::array
+        if (!rule.is_array()
             || rule.size() != 2
-            || rule[0].type() != json::value_t::string
-            || rule[1].type() != json::value_t::string) {
-          throw exceptions::invalid_file(
-            Util::StrPrintf("Invalid rule (Each rule must be a pair of string)\n",
-                            "Rule: %s", rule.dump().c_str()),
-            __FILE__, __LINE__
-          );
+            || !rule[0].is_string()) {
+          std::cerr << "[-] Invalid rule" << std::endl
+                    << "    It must be an array with 2 elements. The first" << std::endl
+                    << "    one must be  a string representing the name" << std::endl
+                    << "    of the nonterminal." << std::endl;
+          std::cerr << "    RULE: " << rule << std::endl;
+          std::exit(1);
         }
 
-        state->ctx.AddRule(
-          rule[0].get<std::string>(), rule[1].get<std::string>()
-        );
+        NautilusFuzzer::ParseAndAddRule(ctx,
+                                        rule[0].get<std::string>(),
+                                        rule[1].get<json>());
       }
 
     } catch (std::exception& e) {
       /* JSON parse error */
-      throw exceptions::invalid_file(
-        Util::StrPrintf("Cannot parse grammar file\n%s", e.what()),
-        __FILE__, __LINE__
-      );
+      std::cerr << "[-] Cannot parse grammar file" << std::endl
+                << e.what() << std::endl;
+      std::exit(1);
     }
 
-  } else if (setting->path_to_grammar.extension() == ".py") {
+  } else if (grammar_path.extension() == ".py") {
     /* TODO: Support Python-written grammar */
     throw exceptions::not_implemented(
       "Grammar defined in Python is not supported yet", __FILE__, __LINE__
@@ -249,10 +326,8 @@ void NautilusFuzzer::LoadGrammar() {
       "Unknown grammar type ('.json' expected)", __FILE__, __LINE__
     );
   }
-
-  /* Initialize context */
-  state->ctx.Initialize(setting->max_tree_size);
 }
+
 
 /**
  * @fn
