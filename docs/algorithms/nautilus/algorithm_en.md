@@ -78,7 +78,7 @@ If a part of an expression is enclose by terminal characters `{` and `}`, you mu
 
 ### 2-2. Testing Grammar Files
 You may want to check if your grammar is correct when it gets complicated.
-`tools/antuilus/generator` is the program to generate some random test cases according to the grammar you define. If you give it the grammar we defined previously, a random string will be generated like the following if the grammar is correct.
+`tools/nautilus/generator` is the program to generate some random test cases according to the grammar you define. If you give it the grammar we defined previously, a random string will be generated like the following if the grammar is correct.
 ```
 $ tools/nautilus/generator -g ./calc_grammar.json -t 100
 4/(((4)+1+7+7+5*4+1)-2-6+2-48-9*+5+52-6)
