@@ -112,11 +112,12 @@ QueueItem Queue::Pop() {
     auto& [k, v] = *it;
 
     /* Retain elements in v */
-    for (auto vit = v.rbegin(); vit != v.rend(); ++vit) {
-      if (*vit == id) {
-        v.erase(--(vit.base()));
-      }
-    }
+    auto r = std::remove_if(v.begin(), v.end(),
+                            [id, &v](size_t vid) {
+                              if (vid == id) return true;
+                              else return false;
+                            });
+    v.erase(r, v.end());
 
     if (v.empty()) {
       to_remove.push_back(k);
