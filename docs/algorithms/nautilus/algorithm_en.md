@@ -160,7 +160,7 @@ NUMBER => FACTOR
 terminate called after throwing an instance of 'exceptions::fuzzuf_runtime_error'
   what():  Broken grammar
 ```
-This error occurs if a non-terminal cannot reach the terminal. In the example above, `NUMBER => FACTOR` is invalid because it cannot reach the terminal by traversing `FACTOR`, which is a infinite loop.
+This error occurs if a non-terminal cannot reach the terminal. In the example above, `NUMBER => FACTOR` is invalid because it cannot reach the terminal by traversing `FACTOR`, which is an infinite loop.
 This error also shows up if an undefined non-terminal identifier (like typo) apperas.
 
 You may encounter other errors like the following:
