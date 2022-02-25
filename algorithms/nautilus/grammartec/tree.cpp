@@ -123,6 +123,8 @@ void Tree::CalcSizes() {
 std::vector<RuleIDOrCustom> Tree::Slice(
   const NodeID& from, const NodeID& to
 ) const {
+  // FIXME: Copy happens (although RuleIDOrCustom is small)
+  //        We should return pair of iterators
   return std::vector<RuleIDOrCustom> (
     _rules.begin() + static_cast<size_t>(from), 
     _rules.begin() + static_cast<size_t>(to)
