@@ -228,7 +228,7 @@ Let's consider the following grammar:
 <NUMBER> := 2
 ```
 For example, `<STMT>` has 2 rules: `return 1` or `<VAR> = <EXPR>`. If we choose a rule for each non-terminal by naive randomness, `return 1` is chosen with 50% probability. On the other hand, if we choose `<VAR> = <EXPR>`, `<EXPR>` has another 2 rules: `<NUMBER>` and `<EXPR> + <EXPR>`. The probability that one of them is chosen is 25% from `<STMT>`.
-The deeper part of the tree is selected with less probability with a naive randomness like this, which results in generating similar testcases. Naitlus, on the other hand, uses an algorithm by McKenzie[^2] so that it can select every rule in the grammar with the same probability.
+The deeper part of the tree is selected with less probability with naive randomness like this, which results in generating similar testcases. Nautilus, on the other hand, uses an algorithm by McKenzie[^2] so that it can select every rule in the grammar with the same probability.
 
 ### 3-2. Minimization
 Nautilus attempts to create a smaller testcase that triggers the same new coverage after it found an interesting input. Minimized inputs can make the execution time shorter and the number of set of potential mutations smaller. Nautilus uses two approaches to minimize the testcase that found new paths.
