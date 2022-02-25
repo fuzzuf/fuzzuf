@@ -196,6 +196,7 @@ size_t Context::CalcNumOptionsForRule(const RuleID& r) const {
     if (__builtin_mul_overflow(res, v, &res)) {
       /* Saturate instead of overflow */
       res = std::numeric_limits<size_t>::max();
+      break;
     }
   }
 
@@ -209,7 +210,7 @@ size_t Context::CalcNumOptionsForRule(const RuleID& r) const {
 void Context::CalcNumOptions() {
   for (auto& elem: _nts_to_rules) {
     if (_nts_to_num_options.find(elem.first) == _nts_to_num_options.end()) {
-      _nts_to_num_options[elem.first] = _rules.size();
+      _nts_to_num_options[elem.first] = elem.second.size();
     }
   }
 
@@ -292,29 +293,29 @@ void Context::CalcMinLen() {
       size_t last_len = unknown_rules.size();
 
       /* Remove every rule with known minimum length */
-      for (auto it = unknown_rules.crbegin();
-           it != unknown_rules.crend();
-           ++it) {
-        const RuleID& rule = *it;
+      auto r = std::remove_if(
+        unknown_rules.begin(), unknown_rules.end(),
+        [this, &something_changed](const RuleID& rule) {
+          if (std::optional<size_t> min = CalcMinLenForRule(rule)) {
+            const NTermID& nt = GetRule(rule).Nonterm();
 
-        if (std::optional<size_t> min = CalcMinLenForRule(rule)) {
-          const NTermID& nt = GetRule(rule).Nonterm();
+            if (_nts_to_min_size.find(nt) == _nts_to_min_size.end())
+              _nts_to_min_size[nt] = min.value();
 
-          if (_nts_to_min_size.find(nt) == _nts_to_min_size.end())
-            _nts_to_min_size[nt] = min.value();
+            if (_nts_to_min_size[nt] > min.value()) {
+              /* Update minimum value */
+              _nts_to_min_size[nt] = min.value();
+              something_changed = true;
+            }
 
-          if (_nts_to_min_size[nt] > min.value()) {
-            /* Update minimum value */
-            _nts_to_min_size[nt] = min.value();
-            something_changed = true;
+            _rules_to_min_size[rule] = min.value();
+            return true;
           }
 
-          _rules_to_min_size[rule] = min.value();
-
-          /* Be careful base of reverse iterator is off by one */
-          unknown_rules.erase(--(it.base()));
+          return false;
         }
-      }
+      );
+      unknown_rules.erase(r, unknown_rules.end());
 
       if (last_len == unknown_rules.size()) {
         std::cerr << "Found unproductive rules: (missing base/non recursive case?)" << std::endl;
