@@ -99,7 +99,7 @@ You can write the binary data in the array format like the following in the Naut
 ```json
 ["NULL", [0]]
 ```
-You can also write a sequence of binary data. (Although JSON only supports decimal values unfortunately.)
+You can also write a sequence of binary data. (Although JSON only supports decimal values, unfortunately.)
 ```json
 ["DEADBEEF", [239, 190, 173, 222]]
 ```
