@@ -108,6 +108,7 @@ QueueItem Queue::Pop() {
 
   for (auto it = _bit_to_inputs.begin(); it != _bit_to_inputs.end();) {
     auto& [k, v] = *it;
+    UNUSED(k);
 
     /* Retain elements in v */
     auto r = std::remove_if(v.begin(), v.end(),
