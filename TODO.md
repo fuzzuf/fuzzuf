@@ -168,6 +168,17 @@ void SomeFunc(const SomeStruct& stru) {
 
 We should rewrite the classes of AFL in the same way eventually.
 
+### Nautilus
+This section documents To-Dos of the Nautilus mode.
+
+#### Use vector instead of string
+The current parser/unparser of the grammar and rules uses `std::string` as its data pool instead of `std::vector<u8>`.
+This should be changed to `std::vector<u8>` because `std::string` is originally not meant to hold unprintable strings.
+
+#### Improve queue
+The implementation of the seed queue in the original Nautilus has a lot of room for optimization.
+The current implementation of fuzzuf is similar to the original one and should be improved.
+
 ### Add CODING\_RULE.md and refactor the code in accordance with CODING\_RULE.md
 
 In the past, we didn't have no explicit coding rules. Nevertheless, we have continued developping fuzzuf simultaneously and almost independently of each other. As a result, the code base doesn't look well-organized. This would make the contributors and users confusing, so we must fix it. We have already almost finished creating CODING\_RULE.md internally. We will release it after review and formatting is complete. After Especially, because we started implementing libFuzzer at a very early stage, the large part of the implementation of libFuzzer doesn't conform to that rules. We will resolve this issue gradually simply because they are too large to fix immediately.
