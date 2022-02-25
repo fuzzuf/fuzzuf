@@ -69,7 +69,7 @@ bool Mutator::MinimizeTree(Tree& tree,
             tree, n, _scratchpad, NodeID(0), ctx, bits, tester
           )) {
         /* If the new transitions are still triggered, replace the tree */
-        tree = t.value();
+        tree = std::move(t.value());
       }
     }
 
@@ -111,7 +111,7 @@ bool Mutator::MinimizeRec(Tree& tree,
             tree, parent.value(), tree, n, ctx, bits, tester
           )) {
         /* If the new transitions are still triggered, replace the tree */
-        tree = t.value();
+        tree = std::move(t.value());
         i = static_cast<size_t>(parent.value());
       }
     }
