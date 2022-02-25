@@ -34,15 +34,14 @@ template<class State>
 class AFLFuzzerTemplate : public Fuzzer {
 public:
     explicit AFLFuzzerTemplate(std::unique_ptr<State>&& state);
-    ~AFLFuzzerTemplate();
+    virtual ~AFLFuzzerTemplate();
 
-    void BuildFuzzFlow(void);
-    void OneLoop(void);
-  
-    void ReceiveStopSignal(void);
-    bool ShouldEnd(void) { return false; }
+    virtual void BuildFuzzFlow(void);
+    virtual void OneLoop(void);
+    virtual void ReceiveStopSignal(void);
+    virtual bool ShouldEnd(void);
 
-private:
+protected:
     std::unique_ptr<State> state;
     HierarFlowNode<void(void), void(void)> fuzz_loop;
 };

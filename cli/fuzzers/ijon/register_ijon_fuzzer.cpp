@@ -15,20 +15,17 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see http://www.gnu.org/licenses/.
  */
-#pragma once
 
-#include <memory>
-#include <functional>
+#include "fuzzuf/algorithms/ijon/ijon_fuzzer.hpp"
+#include "fuzzuf/cli/fuzzer_builder_register.hpp"
+#include "fuzzuf/cli/fuzzer/ijon/build_ijon_fuzzer_from_args.hpp"
 
-class Fuzzer {
-public:
-    virtual ~Fuzzer() {}
+namespace fuzzuf::cli::fuzzer::ijon {
 
-    virtual void BuildFuzzFlow(void) {}
-    virtual void OneLoop(void) {}
+// builder_map.insert is called before main function if the below is declared as a global variable and linked as an
+// object file.
+// Conversely, if IJON cannot be built in a certain environment, do not compile it into an object file to prevent IJON
+// from being registered by accident.
+static FuzzerBuilderRegister global_ijon_register("ijon", BuildIJONFuzzerFromArgs<Fuzzer, algorithm::ijon::IJONFuzzer>);
 
-    // do not call non aync-signal-safe functions inside because this function can be called during signal handling
-    virtual void ReceiveStopSignal(void) = 0;
-
-    virtual bool ShouldEnd(void) { return false; }
-};
+} // namespace fuzzuf::cli::fuzzer::ijon

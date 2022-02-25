@@ -65,7 +65,7 @@ BOOST_AUTO_TEST_CASE(MutatorHavoc) {
                               const std::vector<AFLDictData>&
                           ) { return i; };
 
-        auto custom_cases = [](u32, u8*, u32) {
+        auto custom_cases = [](u32, u8*, u32, const std::vector<AFLDictData>&, const std::vector<AFLDictData>&) {
              BOOST_CHECK( false ); // this should be never called
         };
 
@@ -88,7 +88,10 @@ BOOST_AUTO_TEST_CASE(MutatorHavoc) {
                       ) { return NUM_CASE; };
 
     bool passed_custom_cases = false;
-    auto custom_cases = [&passed_custom_cases](u32, u8*, u32) {
+    auto custom_cases = [&passed_custom_cases](
+        u32, u8*, u32,
+        const std::vector<AFLDictData>&, const std::vector<AFLDictData>&
+    ) {
         passed_custom_cases = true;
     };
     mutator.Havoc(1, extras, a_extras, case_dist, custom_cases);

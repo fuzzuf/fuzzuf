@@ -38,7 +38,7 @@ namespace fuzzuf::algorithm::afl {
 // Responsibility:
 //   - The lifetime for an instance of this class must be longer than that of HierarFlow
 
-// NOTE: we should consider to apply "Type Erasure" to this structure due to the following reason:
+// NOTE: we should consider applying "Type Erasure" to this structure due to the following reason:
 // Let's consider the situation where some variant of AFL uses
 // "struct AFLDerivedState : public AFLStateTemplate<AFLDerivedTestcase>".
 // Then, AFLState(=AFLStateTemplate<AFLTestcase>) cannot be not the base class of AFLDerivedState.

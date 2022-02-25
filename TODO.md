@@ -95,15 +95,13 @@ As a comment in `HierarFlowRoutine::CallSuccessors` says, `HierarFlowCallee<I>::
 
 The following algorithms are currently planned to be implemented:  
 
-- IJON [^ijon]
 - MOpt [^mopt]
 - Eclipser [^eclipser]
 - QSYM [^qsym]
-- DIE [^die]
 
 About some algorithms, it is difficult to determine what is considered a *complete* implementation. For example, Eclipser is designed differently in v1.0 and v2.0, and we have to discuss whether to implement one or the other (or both). Such algorithms require some discussions.
 
-Among these, the implementations of IJON and MOpt are in progress.
+Among these, the implementation of MOpt is in progress.
 
 ### Implement more types of Executor
 
@@ -174,7 +172,6 @@ We should rewrite the classes of AFL in the same way eventually.
 
 In the past, we didn't have no explicit coding rules. Nevertheless, we have continued developping fuzzuf simultaneously and almost independently of each other. As a result, the code base doesn't look well-organized. This would make the contributors and users confusing, so we must fix it. We have already almost finished creating CODING\_RULE.md internally. We will release it after review and formatting is complete. After Especially, because we started implementing libFuzzer at a very early stage, the large part of the implementation of libFuzzer doesn't conform to that rules. We will resolve this issue gradually simply because they are too large to fix immediately.
 
-[^ijon]: Cornelius Aschermann, Sergej Schumilo, Ali Abbasi, and Thorsten Holz. 2020. IJON: Exploring Deep State Spaces via Fuzzing. In Proceedings of the 41st IEEE Symposium on Security and Privacy (S&P'20).
 [^mopt]: Chenyang Lyu, Shouling Ji, Chao Zhang, Yuwei Li, Wei-Han Lee, Yu Song, and Raheem Beyah. 2019. MOpt: Optimized Mutation Scheduling for Fuzzers. In Proceedings of the 28th USENIX Security Symposium (Security'19).
 [^eclipser]: Jaeseung Choi, Joonun Jang, Choongwoo Han, and Sang K. Cha. 2019. Grey-box Concolic Testing on Binary Code. In Proceedings of the 41st ACM/IEEE International Conference on Software Engineering (ICSE'19).
 [^qsym]: Insu Yun, Sangho Lee, Meng Xu, Yeongjin Jang, and Taesoo Kim. 2018. QSYM : A Practical Concolic Execution Engine Tailored for Hybrid Fuzzing. In Proceedings of the 27th USENIX Security Symposium (Security'18).

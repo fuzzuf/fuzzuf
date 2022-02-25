@@ -15,20 +15,28 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see http://www.gnu.org/licenses/.
  */
-#pragma once
 
-#include <memory>
-#include <functional>
+#ifndef FUZZUF_INCLUDE_ALGORITHM_IJON_SHARED_DATA_HPP
+#define FUZZUF_INCLUDE_ALGORITHM_IJON_SHARED_DATA_HPP
 
-class Fuzzer {
-public:
-    virtual ~Fuzzer() {}
+#include "fuzzuf/algorithms/ijon/ijon_option.hpp"
 
-    virtual void BuildFuzzFlow(void) {}
-    virtual void OneLoop(void) {}
+namespace fuzzuf::algorithm::ijon {
 
-    // do not call non aync-signal-safe functions inside because this function can be called during signal handling
-    virtual void ReceiveStopSignal(void) = 0;
-
-    virtual bool ShouldEnd(void) { return false; }
+/**
+ * @struct SharedData
+ * IJON has some extra fields in shared memory in addition to the array of edge coverage.
+ * This struct represents its memory layout.
+ *
+ * Corresponding code of original IJON implementation:
+ * https://github.com/RUB-SysSec/ijon/blob/4cb8ae04d/afl-ijon-min.h#L7-L11
+ */
+struct SharedData {
+    u8  afl_area[afl::option::GetMapSize<option::IJONTag>()];
+    u64 afl_max[option::GetMaxMapSize<option::IJONTag>()];
+    u8 is_selected;
 };
+
+} // namespace fuzzuf::algorithm::ijon
+
+#endif

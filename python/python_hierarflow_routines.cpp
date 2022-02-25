@@ -19,6 +19,7 @@
 
 #include <random>
 #include "fuzzuf/algorithms/afl/afl_dict_data.hpp"
+#include "fuzzuf/algorithms/afl/afl_util.hpp"
 #include "fuzzuf/executor/native_linux_executor.hpp"
 #include "fuzzuf/feedback/inplace_memory_feedback.hpp"
 #include "fuzzuf/feedback/exit_status_feedback.hpp"
@@ -126,8 +127,10 @@ NullableRef<HierarFlowCallee<void(u32)>> PyHavoc::operator()(u32 stacking) {
 
     if (stacking < 1 || 7 < stacking) ERROR("Havoc: 1 <= stack <= 7 must hold.");
     
-    using fuzzuf::algorithm::afl::util::HavocCaseDistrib;
-    mutator.Havoc(1 << stacking, {}, {}, HavocCaseDistrib, [](u32, u8*&, u32&){});
+    using algorithm::afl::util::AFLHavocCaseDistrib;
+    using algorithm::afl::dictionary::AFLDictData;
+    mutator.Havoc(1 << stacking, {}, {}, AFLHavocCaseDistrib, 
+                  [](u32, u8*&, u32&, const std::vector<AFLDictData>&, const std::vector<AFLDictData>&){} );
     CallSuccessors(mutator.GetBuf(), mutator.GetLen());
     return GoToParent();
 }
