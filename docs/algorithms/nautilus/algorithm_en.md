@@ -122,7 +122,7 @@ You may encounter other errors like the following:
 
 - `Invalid rules (Rule must be array)`: The grammar is not a JSON array.
 - `Invalid rule (Each rule must be a pair of string)`: Any of the non-terminal definition is not represented as a pair of strings. (This error will also show the invalid part of the JSON.)
-- `Could not interpret Nonterminal {...}. Nonterminal Descriptions need to match start with a capital letter and con only contain [a-zA-Z_-0-9]`: A non-terminal identifier does not start with a capital letter, or contains invalid characters.
+- `Could not interpret Nonterminal {...}. Nonterminal Descriptions need to match start with a capital letter and can only contain [a-zA-Z_-0-9]`: A non-terminal identifier does not start with a capital letter, or contains invalid characters.
 
 Also, be careful that no error will happen if you forget to write brace for a non-terminal because it can be recognized as terminal characters. (Although, you will be able to find the error immediately by checking the test cases generated.)
 ```
