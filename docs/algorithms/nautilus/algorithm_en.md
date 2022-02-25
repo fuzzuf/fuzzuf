@@ -214,7 +214,7 @@ Generally, grammar based fuzzers generates AST (abstract syntax tree) according 
 In this section, we explain the design of how Nautilus generates and mutates the testcases.
 
 ### 3-1. Generation
-Since a non-terminal may have multiple rules, we need an algorithm to decide which rule to pick up. Nautilus uses uniform generation algorithm.
+Since a non-terminal may have multiple rules, we need an algorithm to decide which rule to pick up. Nautilus uses a uniform generation algorithm.
 Let's consider the following grammar:
 ```
 <PROG> := <STMT>
