@@ -57,7 +57,6 @@ ProxyExecutor::ProxyExecutor(
     const fs::path &path_to_write_input,
     u32 afl_shm_size,
     u32  bb_shm_size,
-    int cpuid_to_bind,  // FIXME: Add tests against binding(How is it tested?）
     bool record_stdout_and_err
 ) :
     Executor( argv, exec_timelimit_ms, exec_memlimit, path_to_write_input.string() ),
@@ -66,11 +65,8 @@ ProxyExecutor::ProxyExecutor(
     forksrv( forksrv ),
     afl_shm_size( afl_shm_size ),
     bb_shm_size( bb_shm_size ),
-    binded_cpuid( std::nullopt ),
-    cpuid_to_bind( cpuid_to_bind ),
 
     // cargv and stdin_mode are initialized at SetCArgvAndDecideInputMode
-    cpu_core_count( Util::GetCpuCore() ), // This is a temporary implementation. Change the implementation properly if the value need to be specified from user side.
     bb_shmid( INVALID_SHMID ),
     afl_shmid( INVALID_SHMID ),
     forksrv_pid( 0 ),
@@ -95,7 +91,7 @@ ProxyExecutor::ProxyExecutor(
     u64 exec_memlimit,
     const fs::path &path_to_write_input
 ) :
-    ProxyExecutor(proxy_path, pargv, argv, exec_timelimit_ms, exec_memlimit, false, path_to_write_input, 0, 0, ProxyExecutor::CPUID_DO_NOT_BIND)
+    ProxyExecutor(proxy_path, pargv, argv, exec_timelimit_ms, exec_memlimit, false, path_to_write_input, 0, 0)
 {
 }
 
@@ -113,24 +109,6 @@ ProxyExecutor::ProxyExecutor(
 /**
  * Postcondition:
  *     - Run process below in order, with initializing members
- *       * Depending on the args, CPU cores to run both this process and the descendant processes need to be specified. There are three method to specify:
- *         1. Pass ProxyExecutor::CPUID_DO_NOT_BIND to cpu_to_bind to specify nothing.
- *         2. Pass integer value in [0, cpu core count) to cpu_to_bind to specify core number.
- *         3. Pass ProxyExecutor::CPUID BIND_WHICHEVER then this class looks for free cores and select it.
- *
- *         - Note1 (definition) :
- *           * Binding process P (and thats descendant) to core a means that process p (and thats descendant) is warran
-ied running on core a and other FUZZUF related processes never run on core a.
- *           * Currently, it is just a functionality depending on sched_setaffinity on Linux, and in precise word, it i
- a functionality that limit core which has permission to run to just one using sched_setaffinity.
- *          Refer man pages and Util::GetFreeCpu if you wonder that works properly as described in definition.
- *           * Therefore, this procedure is executed only on Linux
- *         - Note2 (The reason Executor having this functionality)
- *           * Limiting CPU cores is Proxy specific operation that algorithms should not care.
- *           * Therefore this Executor should handle it.
- *           * On the other hand, this procedure affects whole the process. In simple word, it requires only 1 executor existing in 1 process.
- *           * As the future work, the class managing CPU cores and executors should be introduced for solving this limitation.
- *           * For the time being, 3 options which cover all situation are provided.
  *       * Configure signal handlers (Temporary workaround for non fork server mode. This will be removed in future.)
  *       * Parsing and preprocessing of commandline arguments of PUT.
  *       * Generate a file for sending input to  PUT.
@@ -141,47 +119,10 @@ ied running on core a and other FUZZUF related processes never run on core a.
  *         - In kernel, Both parameters are round up to multiple of PAGE_SIZE, then memory is allocated.
  *       * Configure environment variables for PUT
  *       * If fork server mode, launch fork server.
+ *       * NOTE: Executor does not take care about binding a CPU core. The owner fuzzing algorithm is responsible to it.
  */
 void ProxyExecutor::Initilize()
 {
-#ifdef __linux__
-    // If cpuid_to_bind is not CPUID_DO_NOT_BIND,
-    // then the executor tries to bind this process to a cpu core somehow
-    if (cpuid_to_bind != CPUID_DO_NOT_BIND) {
-        std::set<int> vacant_cpus = Util::GetFreeCpu(cpu_core_count); 
-
-        if (cpuid_to_bind == CPUID_BIND_WHICHEVER) { 
-            // this means "don't care which cpu core, but should bind"
-
-            if (vacant_cpus.empty()) {
-                ERROR("No more free CPU cores");
-            }
-
-            binded_cpuid = *vacant_cpus.begin(); // just return a random number
-        } else { 
-            if (cpuid_to_bind < 0 || cpu_core_count <= cpuid_to_bind) {
-                ERROR("The CPU core id to bind should be between 0 and %d", cpu_core_count - 1);
-            }
-
-            if (vacant_cpus.count(cpuid_to_bind) == 0) {
-                ERROR("The CPU core #%d to bind is not free!", cpuid_to_bind);
-            }
-
-            binded_cpuid = cpuid_to_bind;
-        }
-
-        cpu_set_t c;
-        CPU_ZERO(&c);
-        CPU_SET(binded_cpuid.value(), &c);
-
-        if (sched_setaffinity(0, sizeof(c), &c)) ERROR("sched_setaffinity failed");
-    }
-#else 
-    if (cpuid_to_bind != CPUID_DO_NOT_BIND) {
-        DEBUG("In this environment, processes cannot be binded to a cpu core.");
-    }
-#endif /* __linux__ */
-
     if (!has_setup_sighandlers) {
 	// For the time being, as signal handler is set globally, this function is static method, therefore it is not needed to set again if has_setup_handlers is ture.
         SetupSignalHandlers();

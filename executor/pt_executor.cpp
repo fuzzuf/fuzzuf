@@ -28,10 +28,9 @@ PTExecutor::PTExecutor(
     u64 exec_memlimit,
     bool forksrv,
     const fs::path &path_to_write_input,
-    int cpuid_to_bind,
     bool record_stdout_and_err
 ) : ProxyExecutor ( proxy_path, std::vector<std::string>(), argv, exec_timelimit_ms, exec_memlimit, forksrv,
-                    path_to_write_input, 0, 0, cpuid_to_bind, record_stdout_and_err ),
+                    path_to_write_input, 0, 0, record_stdout_and_err ),
     path_shm_size ( PTExecutor::PATH_SHM_SIZE ),
     fav_shm_size ( PTExecutor::FAV_SHM_SIZE )
 {

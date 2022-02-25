@@ -58,7 +58,6 @@ BOOST_AUTO_TEST_CASE(QEMUExecutorRun) {
   QEMUExecutor executor(fs::path(FUZZUF_QEMU_EXECUTABLE),
                         {"/usr/bin/tee", output_file_path.native()}, 1000,
                         10000, true, path_to_write_seed,
-                        QEMUExecutor::CPUID_DO_NOT_BIND,
                         true /* record_stdout_and_err */
   );
   BOOST_CHECK_EQUAL(executor.stdin_mode, true);

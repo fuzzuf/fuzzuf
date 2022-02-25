@@ -67,7 +67,7 @@ static void AFLLoop(bool forksrv) {
       input_dir.native(), output_dir.native(),
       option::GetExecTimeout<AFLFastTag>(), option::GetMemLimit<AFLFastTag>(),
       forksrv, false, /* dumb_mode*/
-      NativeLinuxExecutor::CPUID_BIND_WHICHEVER, aflfastoption::FAST));
+      Util::CPUID_BIND_WHICHEVER, aflfastoption::FAST));
 
   // NativeLinuxExecutor needs the directory specified by "out_dir" to be
   // already set up so we need to create the directory first, and then
@@ -80,8 +80,8 @@ static void AFLLoop(bool forksrv) {
       setting->forksrv,
       setting->out_dir / option::GetDefaultOutfile<AFLFastTag>(),
       option::GetMapSize<AFLFastTag>(), // afl_shm_size
-      0,                                //  bb_shm_size
-      setting->cpuid_to_bind);
+      0                                 // bb_shm_size
+      );
 
   // Create AFLFastState
   auto state = std::make_unique<AFLFastState>(setting, executor);

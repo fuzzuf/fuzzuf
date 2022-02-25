@@ -82,7 +82,7 @@ BOOST_AUTO_TEST_CASE(DIELoop) {
       option::GetMemLimit<DIETag>(),
       true,  // forksrv
       false, // dump_mode
-      NativeLinuxExecutor::CPUID_BIND_WHICHEVER,
+      Util::CPUID_BIND_WHICHEVER,
       "../../../tools/die/DIE",      // die_dir
       "python3", "node",             // cmd_py, cmd_node
       path_put.string(), "",         // d8_path, d8_flags
@@ -104,8 +104,7 @@ BOOST_AUTO_TEST_CASE(DIELoop) {
     setting->forksrv,
     setting->out_dir / option::GetDefaultOutfile<DIETag>(),
     option::GetMapSize<DIETag>(), // afl_shm_size
-    0,                            //  bb_shm_size
-    setting->cpuid_to_bind
+    0                             // bb_shm_size
   );
 
   // Create DIEState

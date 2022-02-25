@@ -111,8 +111,7 @@ PythonFuzzer::PythonFuzzer(
                           setting.forksrv,
                           setting.out_dir / GetDefaultOutfile<PythonTag>(),
                           setting.need_afl_cov ? GetMapSize<PythonTag>() : 0,
-                          setting.need_bb_cov  ? GetMapSize<PythonTag>() : 0, 
-                          NativeLinuxExecutor::CPUID_BIND_WHICHEVER
+                          setting.need_bb_cov  ? GetMapSize<PythonTag>() : 0
     ));
 
     BuildFuzzFlow();
@@ -147,10 +146,7 @@ void PythonFuzzer::Reset(void) {
                           setting.forksrv,
                           setting.out_dir / GetDefaultOutfile<PythonTag>(),
                           setting.need_afl_cov ? GetMapSize<PythonTag>() : 0,
-                          setting.need_bb_cov  ? GetMapSize<PythonTag>(): 0, 
-                          // This process has been already bound.
-                          // Do not bind cpu cores twice.
-                          NativeLinuxExecutor::CPUID_DO_NOT_BIND 
+                          setting.need_bb_cov  ? GetMapSize<PythonTag>(): 0
     ));
 
     BuildFuzzFlow();    

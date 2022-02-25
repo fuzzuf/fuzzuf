@@ -128,7 +128,7 @@ BOOST_AUTO_TEST_CASE(HierarFlowExecute) {
         {FUZZUF_FUZZTOYS_DIR "/fuzz_toys-brainf_ck", output_file_path.string()},
         create_info.exec_timelimit_ms, create_info.exec_memlimit,
         create_info.forksrv, path_to_write_seed, create_info.afl_shm_size,
-        create_info.bb_shm_size, create_info.cpuid_to_bind));
+        create_info.bb_shm_size));
     std::size_t solution_count = 0u;
     for (const auto &filename :
          fs::directory_iterator{create_info.output_dir}) {
