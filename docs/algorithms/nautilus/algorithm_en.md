@@ -25,7 +25,7 @@ Nautilus can generate test cases according to a grammar defined by the user.
 You must write the grammar in [BNF form](https://en.wikipedia.org/wiki/Backus%E2%80%93Naur_form).
 
 #### 2-1-a. Basic Notation
-Let's write a BNF form of the arithmetic calculation of integer.
+Let's write a BNF of the arithmetic calculation of integer.
 ```
 <EXPRESSION> ::= <TERM>
                  | <EXPRESSION> + <EXPRESSION>
@@ -71,7 +71,7 @@ You have to define the grammar in JSON array to use it in Nautilus like the foll
 ]
 ```
 Each element of the array represents the definition for a non-terminal. The element has 2 string data: the first one is the non-terminal symbol and the second one is the definition (expression) for the non-terminal. You must enclose every non-terminal symbol in the expression by braces `{ }`. **The non-terminal symbol must start with a capital letter.**
-If a part of an expression is enclose by terminal characters `{` and `}`, you must escape them as special symbols to distinguish with non-terminals. If the definition of a non-terminal includes the pattern, please write like the following, for example:
+If a part of an expression is enclosed by terminal characters `{` and `}`, you must escape them as special symbols to distinguish them from non-terminals. If the definition of a non-terminal includes the pattern, please write like the following, for example:
 ```json
 [
     ["BLOCK", "\\{ {STATEMENT} \\}"],
@@ -94,12 +94,12 @@ You can use this notation even if the right-hand side expression contains non-te
 ```
 
 #### 2-1-c. Binary Data
-The Nautilus mode of fuzzuf is useful not only for generating human-readable inputs for programs such as calculator or interpreter, but also for generating structured binary files like PDFs. You need to include some binary data except for ASCII characters in the grammar but JSON format doesn't support binary data.
+The Nautilus mode of fuzzuf is useful not only for generating human-readable inputs for programs such as a calculator or an interpreter but also for generating structured binary files like PDFs. To do so, you need to include some binary data other than ASCII characters in the grammar, but the JSON format doesn't support them.
 You can write the binary data in the array format like the following in the Nautilus mode of fuzzuf.
 ```json
 ["NULL", [0]]
 ```
-You can also write a sequence of binary data. (Although JSON only supports decimal values unfortunately.)
+You can also write a sequence of binary data. (Although JSON only supports decimal values, unfortunately.)
 ```json
 ["DEADBEEF", [239, 190, 173, 222]]
 ```
@@ -160,8 +160,8 @@ NUMBER => FACTOR
 terminate called after throwing an instance of 'exceptions::fuzzuf_runtime_error'
   what():  Broken grammar
 ```
-This error occurs if a non-terminal cannot reach the terminal. In the example above, `NUMBER => FACTOR` is invalid because it cannot reach the terminal by traversing `FACTOR`, which is a infinite loop.
-This error also shows up if an undefined non-terminal identifier (like typo) apperas.
+This error occurs if a non-terminal cannot reach the terminal. In the example above, `NUMBER => FACTOR` is invalid because it cannot reach the terminal by traversing `FACTOR`, which is an infinite loop.
+This error also shows up if an undefined non-terminal identifier (like a typo) appears.
 
 You may encounter other errors like the following:
 
@@ -210,11 +210,11 @@ If your usage or grammar file is wrong, an error will show up.
 - `Cannot parse grammar file`: The content of grammar file is wrong. (Check your grammar file as explained in section 2-2.)
 
 ## 3. Algorithm
-Generally, grammar based fuzzers generates AST (abstract syntax tree) according to a specific grammar and mutates a part of the AST to create testcases. Nautilus internally only uses the tree representation and mutates the tree.
+Generally, grammar-based fuzzers generate AST (abstract syntax tree) according to a specific grammar and mutate a part of the AST to create testcases. Nautilus internally only uses the tree representation and mutates the tree.
 In this section, we explain the design of how Nautilus generates and mutates the testcases.
 
 ### 3-1. Generation
-Since a non-terminal may have multiple rules, we need an algorithm to decide which rule to pick up. Nautilus uses uniform generation algorithm.
+Since a non-terminal may have multiple rules, we need an algorithm to decide which rule to pick up. Nautilus uses a uniform generation algorithm.
 Let's consider the following grammar:
 ```
 <PROG> := <STMT>
@@ -228,14 +228,14 @@ Let's consider the following grammar:
 <NUMBER> := 2
 ```
 For example, `<STMT>` has 2 rules: `return 1` or `<VAR> = <EXPR>`. If we choose a rule for each non-terminal by naive randomness, `return 1` is chosen with 50% probability. On the other hand, if we choose `<VAR> = <EXPR>`, `<EXPR>` has another 2 rules: `<NUMBER>` and `<EXPR> + <EXPR>`. The probability that one of them is chosen is 25% from `<STMT>`.
-The deeper part of the tree is selected with less probability with a naive randomness like this, which results in generating similar testcases. Naitlus, on the other hand, uses an algorithm by McKenzie[^2] so that it can select every rule in the grammar with the same probability.
+The deeper part of the tree is selected with less probability with naive randomness like this, which results in generating similar testcases. Nautilus, on the other hand, uses an algorithm by McKenzie[^2] so that it can select every rule in the grammar with the same probability.
 
 ### 3-2. Minimization
 Nautilus attempts to create a smaller testcase that triggers the same new coverage after it found an interesting input. Minimized inputs can make the execution time shorter and the number of set of potential mutations smaller. Nautilus uses two approaches to minimize the testcase that found new paths.
 
 #### 3-2-a. Subtree Minimization
 **Subtree Minimization** is a process to make the subtree of AST as short as possible.
-We generate the smallest possible subtree for each non-terminal. Then, we replace the subtree of each node sequentially and check if we get the same coverage as that of the original tree. If we get the same coverage, the replace tree is taken and otherwise the change is discarded.
+We generate the smallest possible subtree for each non-terminal. Then, we replace the subtree of each node sequentially and check if we get the same coverage as that of the original tree. If we get the same coverage, the replaced tree is taken and otherwise, the change is discarded.
 
 #### 3-2-b. Recursive Minimization
 **Recursive Minimization** is a process executed after the subtree minimization.
@@ -264,7 +264,7 @@ After the minimization phase, Nautilus mutates the AST. Nautilus uses multiple m
 **Rules Mutation** sequentially replaces each node of the AST with a new subtree generated by all other possible rules of the non-terminal. By replacing a node with a new rule, improvement of the coverage is expected as it uses a new grammar.
 
 #### 3-3-c. Random Recursive Mutation
-**Random Recursive Mutation** randomly selects a recursive subtree and repeats it 2 to the nth power times (1≦n≦15). This mutation can create trees with higher degrees of nexting.
+**Random Recursive Mutation** randomly selects a recursive subtree and repeats it 2^n times (1≦n≦15). This mutation can create trees with higher degrees of nesting.
 The paper mentions 1≦n≦15 but the original Nautilus implementation uses 1≦n≦10 as the limit, so the fuzzuf also implements it with the latter bound.
 
 #### 3-3-d. Splicing Mutation
@@ -278,7 +278,7 @@ In this section, we explain some differences of the implementation between the N
 The original Nautilus implementation makes it possible to use Python and regular expressions in addition to JSON in order to write a grammar. Since those features are not necessarily required to define a grammar but require some external dependencies, we decided not to support those features in the first release of Nautilus mode.
 
 ### 4-2. ASAN
-The application does not send a signal on the vulnerability detection when it is compiled with address sanitizers. Nautilus also checks the feedback of the sanitizers to catch the vulnerabilities detected by ASAN.
+The application does not send a signal on vulnerability detection when it is compiled with address sanitizers. Nautilus also checks the feedback of the sanitizers to catch the vulnerabilities detected by ASAN.
 However, the current Nautilus mode of fuzzuf does not support ASAN-instrumented program. This is because we're currently working on the revision of the Executors and so on. We will likely support sanitizers in the future releases.
 
 ### 4-3. AFL Mutations
