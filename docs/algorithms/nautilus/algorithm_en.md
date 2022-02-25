@@ -278,7 +278,7 @@ In this section, we explain some differences of the implementation between the N
 The original Nautilus implementation makes it possible to use Python and regular expressions in addition to JSON in order to write a grammar. Since those features are not necessarily required to define a grammar but require some external dependencies, we decided not to support those features in the first release of Nautilus mode.
 
 ### 4-2. ASAN
-The application does not send a signal on the vulnerability detection when it is compiled with address sanitizers. Nautilus also checks the feedback of the sanitizers to catch the vulnerabilities detected by ASAN.
+The application does not send a signal on vulnerability detection when it is compiled with address sanitizers. Nautilus also checks the feedback of the sanitizers to catch the vulnerabilities detected by ASAN.
 However, the current Nautilus mode of fuzzuf does not support ASAN-instrumented program. This is because we're currently working on the revision of the Executors and so on. We will likely support sanitizers in the future releases.
 
 ### 4-3. AFL Mutations
