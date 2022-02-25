@@ -121,7 +121,7 @@ terminate called after throwing an instance of 'exceptions::fuzzuf_runtime_error
 
 - `Invalid rules (Rule must be array)`: 文法ファイルのJSONが配列形式でない。
 - `Invalid rule (Each rule must be a pair of string)`: 非終端記号の定義のいずれかが文字列のペアとして表記されていない。（誤った箇所のJSONが表示されます。）
-- `Could not interpret Nonterminal {...}. Nonterminal Descriptions need to match start with a capital letter and con only contain [a-zA-Z_-0-9]`: 非終端記号が大文字で始まっていない。あるいは使えない記号が含まれている。
+- `Could not interpret Nonterminal {...}. Nonterminal Descriptions need to match start with a capital letter and can only contain [a-zA-Z_-0-9]`: 非終端記号が大文字で始まっていない。あるいは使えない記号が含まれている。
 
 また、次のように非終端記号の括弧を忘れても終端記号として認識されてエラーは発生しないため注意してください。（しかし、ジェネレータで生成されたテストケースを見ればすぐに気づくでしょう。）
 ```
