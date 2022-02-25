@@ -131,7 +131,7 @@ Also, be careful that no error will happen if you forget to write brace for a no
 
 ### 2-3. Fuzzing
 Let's fuzz a calculator using the grammar we have written so far.
-At `test/put_binaries/nautilus/calc` exists a calculator instrumented by afl-gcc. This calculator prints the result of arithmetic calculation but it causes a crash when the result becomes a multiple of 314 which is non-zero.
+At `test/put_binaries/nautilus/calc`, there exists a calculator instrumented by afl-gcc. This calculator prints the result of arithmetic calculation but it causes a crash when the result becomes a multiple of 314 except zero.
 ```c
 int res = express();
 if (res != 0 && res % 314 == 0) crash();
