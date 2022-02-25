@@ -22,7 +22,10 @@ You have to build fuzzuf before using Nautilus mode. Please refer to [this docum
 
 ### 2-1. Preparing Grammar File
 Nautilus can generate test cases according to a grammar defined by the user.
-You must write the grammar in [BNF form](https://en.wikipedia.org/wiki/Backus%E2%80%93Naur_form). Let's write a BNF form of the arithmetic calculation of integer.
+You must write the grammar in [BNF form](https://en.wikipedia.org/wiki/Backus%E2%80%93Naur_form).
+
+#### 2-1-a. Basic Notation
+Let's write a BNF form of the arithmetic calculation of integer.
 ```
 <EXPRESSION> ::= <TERM>
                  | <EXPRESSION> + <EXPRESSION>
@@ -39,7 +42,7 @@ You must write the grammar in [BNF form](https://en.wikipedia.org/wiki/Backus%E2
 <DIGITS> ::= 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9
 ```
 The symbols enclosed by angle brackets `< >`, such as `<EXPRESSION>` or `<SIGN>`, are called **non-terminals** and the characters representing specific literals, such as `+` or `1`, are called **terminals**.
-You have to define the grammar in JSON array to use it in Nautilus.
+You have to define the grammar in JSON array to use it in Nautilus like the following way, for example:
 ```json
 [
     ["EXPRESSION", "{TERM}"],
@@ -75,6 +78,48 @@ If a part of an expression is enclose by terminal characters `{` and `}`, you mu
     ...
 ]
 ```
+
+#### 2-1-b. Merging Multiple Rules
+We split the rules with `|` (a symbol meaning "or") in the BNF format into multiple rules in the previous example. However, this makes the rule look complicated so the Nautilus mode of fuzzuf also supports the following notation:
+```json
+["DIGITS", ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9"]]
+```
+You can use this notation even if the right-hand side expression contains non-terminal symbols.
+```json
+["EXPRESSION", [
+  "{TERM}",
+  "{EXPRESSION}+{EXPRESSION}",
+  "{EXPRESSION}-{EXPRESSION}"
+]]
+```
+
+#### 2-1-c. Binary Data
+The Nautilus mode of fuzzuf is useful not only for generating human-readable inputs for programs such as calculator or interpreter, but also for generating structured binary files like PDFs. You need to include some binary data except for ASCII characters in the grammar but JSON format doesn't support binary data.
+You can write the binary data in the array format like the following in the Nautilus mode of fuzzuf.
+```json
+["NULL", [0]]
+```
+You can also write a sequence of binary data. (Although JSON only supports decimal values unfortunately.)
+```json
+["DEADBEEF", [239, 190, 173, 222]]
+```
+If the array of binary data contains string, they will be concatenated and recognized as a single rule. In the following rules, for instance, the non-terminal `A` will be expanded to `\x00A\x00BBBB\xFFA\xFF`.
+```json
+["A", [0, "A{B}A", 255]],
+["B", [0, "BBBB", 255]],
+```
+
+You can also use the binary format when you want to merge multiple rules by `|` symbol. That is to say,
+```json
+["A", ["hello", [0], ["bye", 128]]]
+```
+and
+```json
+["A", "hello"],
+["A", [0]],
+["A", ["bye", 128]]
+```
+are equivalent.
 
 ### 2-2. Testing Grammar Files
 You may want to check if your grammar is correct when it gets complicated.
