@@ -235,7 +235,7 @@ Nautilus attempts to create a smaller testcase that triggers the same new covera
 
 #### 3-2-a. Subtree Minimization
 **Subtree Minimization** is a process to make the subtree of AST as short as possible.
-We generate the smallest possible subtree for each non-terminal. Then, we replace the subtree of each node sequentially and check if we get the same coverage as that of the original tree. If we get the same coverage, the replace tree is taken and otherwise the change is discarded.
+We generate the smallest possible subtree for each non-terminal. Then, we replace the subtree of each node sequentially and check if we get the same coverage as that of the original tree. If we get the same coverage, the replaced tree is taken and otherwise, the change is discarded.
 
 #### 3-2-b. Recursive Minimization
 **Recursive Minimization** is a process executed after the subtree minimization.
