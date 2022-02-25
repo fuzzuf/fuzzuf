@@ -47,18 +47,17 @@ using fuzzuf::utils::random::WalkerDiscreteDistribution;
  * @param (t) Tree
  * @param (n) Nonterminal ID
  * @param (ctx) Context
- * @note This constructor may throw an exception of `const char*`
- *       Always catch the exception to see if there's a recursion.
+ * @return False if it cannot find parents, otherwise true
  */
-RecursionInfo::RecursionInfo(Tree& t, const NTermID& n, Context& ctx) {
+bool RecursionInfo::New(Tree& t, const NTermID& n, Context& ctx) {
   std::unordered_map<NodeID, NodeID> recursive_parents;
   std::vector<NodeID> node_by_offset;
   std::vector<size_t> depth_by_offset;
 
   std::optional<Parent> r = RecursionInfo::FindParents(t, n, ctx);
-  /* TODO: any other good way to return optional value in constructor? */
-  if (!r)
-    throw "Cannot find parents";
+  if (!r) {
+    return false;
+  }
 
   std::tie(recursive_parents, node_by_offset, depth_by_offset) = r.value();
 
@@ -68,6 +67,8 @@ RecursionInfo::RecursionInfo(Tree& t, const NTermID& n, Context& ctx) {
   _sampler = sampler;
   _node_by_offset = node_by_offset;
   _depth_by_offset = depth_by_offset;
+
+  return true;
 }
 
 /**

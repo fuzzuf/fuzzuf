@@ -43,7 +43,7 @@ using Parent = std::tuple<std::unordered_map<NodeID, NodeID>,
 
 class RecursionInfo {
 public:
-  RecursionInfo(Tree& t, const NTermID& n, Context& ctx);
+  bool New(Tree& t, const NTermID& n, Context& ctx);
 
   std::pair<NodeID, NodeID> GetRandomRecursionPair() const;
   std::pair<NodeID, NodeID> GetRecursionPairByOffset(size_t offset) const;

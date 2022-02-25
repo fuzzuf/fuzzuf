@@ -315,10 +315,9 @@ std::optional<std::vector<RecursionInfo>> Tree::CalcRecursions(Context& ctx) {
   for (const RuleIDOrCustom& rule: _rules) {
     const NTermID& nterm = ctx.GetNT(rule);
     if (done_nterms.find(nterm) == done_nterms.end()) {
-      try {
-        ret.emplace_back(*this, nterm, ctx);
-      } catch (const char*) {
-        // pass
+      RecursionInfo ri;
+      if (ri.New(*this, nterm, ctx)) {
+        ret.emplace_back(ri);
       }
 
       done_nterms.insert(nterm);
@@ -497,7 +496,6 @@ Unparser::Unparser(
 ) : _tree(tree), _w(w), _ctx(ctx) {
   _i = static_cast<size_t>(nid);
   _stack.emplace_back(tree.GetRule(NodeID(_i), ctx).Nonterm());
-  _buffers.clear();
 }
 
 /**
