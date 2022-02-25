@@ -33,6 +33,7 @@ public:
   IDBase() : _id(0) {}
   IDBase(size_t id) : _id(id) {}
   size_t id() const { return _id; }
+  virtual ~IDBase() {}
 
   IDBase(const IDBase& other) { _id = other.id(); } // copy constructor
   inline operator size_t() const { return _id; } // cast to size_t

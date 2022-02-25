@@ -46,7 +46,7 @@ NullableRef<HierarFlowCallee<void(void)>> FuzzLoop::operator()(void) {
  * @brief HierarFlow routine for SelectInput (select_input_and_switch)
  */
 RSelectInput SelectInput::operator()(void) {
-  std::unique_ptr<QueueItem> inp;
+  std::unique_ptr<QueueItem> inp(nullptr);
 
   auto& node = this->UnwrapCurrentLinkedNodeRef();
   auto& succ_nodes = node.succ_nodes;
@@ -59,7 +59,7 @@ RSelectInput SelectInput::operator()(void) {
   } else {
     /* If queue is not empty, pop a testcase and mutate it by ProcessInput */
     // TODO: Use lock when multi-threaded
-    inp = std::make_unique<QueueItem>(state.queue.Pop());
+    inp = state.queue.Pop();
     (*succ_nodes[_process_input_idx])(inp); // process_next_input
   }
 
@@ -94,7 +94,7 @@ RProcessInput ProcessInput::operator()(std::unique_ptr<QueueItem>& inp) {
 
   /* Mark as finished.
      We use `std::move` because `inp` will never be used after this. */
-  state.queue.Finished(std::move(*inp));
+  state.queue.Finished(std::move(inp));
 
   return GoToParent(); // back to select_input_and_switch
 }

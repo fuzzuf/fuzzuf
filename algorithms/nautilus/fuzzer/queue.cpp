@@ -20,6 +20,8 @@
  * @brief Corpus queue of Nautilus.
  * @author Ricerca Security <fuzzuf-dev@ricsec.co.jp>
  */
+#include <iterator>
+#include <memory>
 #include "fuzzuf/algorithms/nautilus/fuzzer/queue.hpp"
 #include "fuzzuf/exceptions.hpp"
 #include "fuzzuf/utils/common.hpp"
@@ -78,12 +80,15 @@ void Queue::Add(Tree&& tree,
   Util::CloseFile(fd);
 
   /* Add entry to queue */
-  _inputs.emplace_back(_current_id,
-                       std::move(tree),
-                       std::move(fresh_bits),
-                       std::move(all_bits),
-                       exit_reason,
-                       execution_time);
+  auto new_item = std::make_unique<QueueItem>(
+    _current_id,
+    std::move(tree),
+    std::move(fresh_bits),
+    std::move(all_bits),
+    exit_reason,
+    execution_time
+  );
+  _inputs.emplace_back(std::move(new_item));
 
   /* Increment current_id */
   if (_current_id == std::numeric_limits<size_t>::max()) {
@@ -98,13 +103,13 @@ void Queue::Add(Tree&& tree,
  * @brief Pop an item from queue
  * @return Top item of queue
  */
-QueueItem Queue::Pop() {
+std::unique_ptr<QueueItem> Queue::Pop() {
   DEBUG_ASSERT (!IsEmpty());
 
-  QueueItem item = _inputs.back();
+  std::unique_ptr<QueueItem> item(std::move(_inputs.back()));
   _inputs.pop_back();
 
-  size_t id = item.id;
+  size_t id = (*item).id;
 
   for (auto it = _bit_to_inputs.begin(); it != _bit_to_inputs.end();) {
     auto& [k, v] = *it;
@@ -142,10 +147,10 @@ bool Queue::IsEmpty() const {
  * @brief Mark item as finished
  * @param (item) Item
  */
-void Queue::Finished(QueueItem&& item) {
+void Queue::Finished(std::unique_ptr<QueueItem> item) {
   bool all_zero = true;
-  for (size_t i = 0; i < item.all_bits.size(); i++) {
-    if (item.all_bits[i] != 0
+  for (size_t i = 0; i < (*item).all_bits.size(); i++) {
+    if ((*item).all_bits[i] != 0
         && _bit_to_inputs.find(i) == _bit_to_inputs.end()) {
       all_zero = false;
       break;
@@ -155,20 +160,20 @@ void Queue::Finished(QueueItem&& item) {
   if (all_zero) {
     Util::DeleteFileOrDirectory(
       Util::StrPrintf("%s/outputs/queue/id:%09ld,er:%d",
-                      _work_dir.c_str(), item.id, item.exit_reason)
+                      _work_dir.c_str(), (*item).id, (*item).exit_reason)
     );
     return;
   }
 
   std::unordered_set<size_t> fresh_bits;
-  for (size_t i = 0; i < item.all_bits.size(); i++) {
-    if (item.all_bits[i]) {
+  for (size_t i = 0; i < (*item).all_bits.size(); i++) {
+    if ((*item).all_bits[i]) {
       if (_bit_to_inputs.find(i) == _bit_to_inputs.end()) {
         fresh_bits.insert(i);
         _bit_to_inputs[i] = {};
       }
 
-      _bit_to_inputs[i].push_back(item.id);
+      _bit_to_inputs[i].push_back((*item).id);
     }
   }
 
@@ -181,7 +186,9 @@ void Queue::Finished(QueueItem&& item) {
  */
 void Queue::NewRound() {
   _inputs.insert(_inputs.end(),
-                 _processed.begin(), _processed.end());
+                 std::make_move_iterator(_processed.begin()),
+                 std::make_move_iterator(_processed.end()));
+  _processed.clear();
 }
 
 } // namespace fuzzuf::algorithm::nautilus::fuzzer

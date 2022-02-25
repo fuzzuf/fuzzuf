@@ -73,7 +73,9 @@ struct QueueItem {
 class Queue {
 public:
   Queue(std::string work_dir) : _current_id(0), _work_dir(work_dir) {}
-  const std::vector<QueueItem>& inputs() const { return _inputs; }
+  const std::vector<std::unique_ptr<QueueItem>>& inputs() const {
+    return _inputs;
+  }
   size_t size() const { return _inputs.size(); }
 
   void Add(Tree&& tree,
@@ -81,14 +83,14 @@ public:
            PUTExitReasonType exit_reason,
            Context& ctx,
            uint64_t execution_time);
-  QueueItem Pop();
+  std::unique_ptr<QueueItem> Pop();
   bool IsEmpty() const;
-  void Finished(QueueItem&& item);
+  void Finished(std::unique_ptr<QueueItem> item);
   void NewRound();
 
 private:
-  std::vector<QueueItem> _inputs;
-  std::vector<QueueItem> _processed;
+  std::vector<std::unique_ptr<QueueItem>> _inputs;
+  std::vector<std::unique_ptr<QueueItem>> _processed;
   std::unordered_map<size_t, std::vector<size_t>> _bit_to_inputs;
   size_t _current_id;
   std::string _work_dir;
