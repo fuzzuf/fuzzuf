@@ -106,9 +106,7 @@ QueueItem Queue::Pop() {
 
   size_t id = item.id;
 
-  std::vector<size_t> to_remove;
-
-  for (auto it = _bit_to_inputs.begin(); it != _bit_to_inputs.end(); ++it) {
+  for (auto it = _bit_to_inputs.begin(); it != _bit_to_inputs.end();) {
     auto& [k, v] = *it;
 
     /* Retain elements in v */
@@ -120,13 +118,10 @@ QueueItem Queue::Pop() {
     v.erase(r, v.end());
 
     if (v.empty()) {
-      to_remove.push_back(k);
+      it = _bit_to_inputs.erase(it);
+    } else {
+      ++it;
     }
-  }
-
-  // TODO: O(N)? any other way to remove elements while iterating a hashmap?
-  for (size_t k: to_remove) {
-    _bit_to_inputs.erase(k);
   }
 
   return item;
