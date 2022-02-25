@@ -23,6 +23,7 @@
 #ifndef FUZZUF_INCLUDE_ALGORITHMS_NAUTILUS_GRAMMARTEC_RECURSION_INFO_HPP
 #define FUZZUF_INCLUDE_ALGORITHMS_NAUTILUS_GRAMMARTEC_RECURSION_INFO_HPP
 
+#include <memory>
 #include <optional>
 #include <tuple>
 #include <unordered_map>
@@ -43,7 +44,10 @@ using Parent = std::tuple<std::unordered_map<NodeID, NodeID>,
 
 class RecursionInfo {
 public:
-  bool New(Tree& t, const NTermID& n, Context& ctx);
+  RecursionInfo() = delete;
+  static std::optional<RecursionInfo> New(
+    Tree& t, const NTermID& n, Context& ctx
+  );
 
   std::pair<NodeID, NodeID> GetRandomRecursionPair() const;
   std::pair<NodeID, NodeID> GetRecursionPairByOffset(size_t offset) const;
@@ -54,6 +58,15 @@ public:
   );
 
 private:
+  RecursionInfo(std::unordered_map<NodeID, NodeID>&& recursive_parents,
+                WalkerDiscreteDistribution<size_t>&& sampler,
+                std::vector<size_t>&& depth_by_offset,
+                std::vector<NodeID>&& node_by_offset)
+    : _recursive_parents (std::move(recursive_parents)),
+      _sampler (std::move(sampler)),
+      _depth_by_offset (std::move(depth_by_offset)),
+      _node_by_offset (std::move(node_by_offset)) {}
+
   std::unordered_map<NodeID, NodeID> _recursive_parents;
   WalkerDiscreteDistribution<size_t> _sampler;
   std::vector<size_t> _depth_by_offset;

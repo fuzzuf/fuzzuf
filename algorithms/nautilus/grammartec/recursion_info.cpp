@@ -47,28 +47,28 @@ using fuzzuf::utils::random::WalkerDiscreteDistribution;
  * @param (t) Tree
  * @param (n) Nonterminal ID
  * @param (ctx) Context
- * @return False if it cannot find parents, otherwise true
+ * @return std::nullopt if it cannot find parents, otherwise RecursionInfo
  */
-bool RecursionInfo::New(Tree& t, const NTermID& n, Context& ctx) {
+std::optional<RecursionInfo> RecursionInfo::New(Tree& t,
+                                                const NTermID& n,
+                                                Context& ctx) {
   std::unordered_map<NodeID, NodeID> recursive_parents;
   std::vector<NodeID> node_by_offset;
   std::vector<size_t> depth_by_offset;
 
   std::optional<Parent> r = RecursionInfo::FindParents(t, n, ctx);
   if (!r) {
-    return false;
+    return std::nullopt;
   }
 
   std::tie(recursive_parents, node_by_offset, depth_by_offset) = r.value();
 
   auto sampler = WalkerDiscreteDistribution<size_t>(depth_by_offset);
 
-  _recursive_parents = recursive_parents;
-  _sampler = sampler;
-  _node_by_offset = node_by_offset;
-  _depth_by_offset = depth_by_offset;
-
-  return true;
+  return RecursionInfo(std::move(recursive_parents),
+                       std::move(sampler),
+                       std::move(depth_by_offset),
+                       std::move(node_by_offset));
 }
 
 /**

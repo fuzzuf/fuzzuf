@@ -315,9 +315,9 @@ std::optional<std::vector<RecursionInfo>> Tree::CalcRecursions(Context& ctx) {
   for (const RuleIDOrCustom& rule: _rules) {
     const NTermID& nterm = ctx.GetNT(rule);
     if (done_nterms.find(nterm) == done_nterms.end()) {
-      RecursionInfo ri;
-      if (ri.New(*this, nterm, ctx)) {
-        ret.emplace_back(ri);
+      std::optional<RecursionInfo> ri = RecursionInfo::New(*this, nterm, ctx);
+      if (ri) {
+        ret.emplace_back(ri.value());
       }
 
       done_nterms.insert(nterm);
