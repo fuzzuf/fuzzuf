@@ -94,7 +94,7 @@ You can use this notation even if the right-hand side expression contains non-te
 ```
 
 #### 2-1-c. Binary Data
-The Nautilus mode of fuzzuf is useful not only for generating human-readable inputs for programs such as calculator or interpreter, but also for generating structured binary files like PDFs. You need to include some binary data except for ASCII characters in the grammar but JSON format doesn't support binary data.
+The Nautilus mode of fuzzuf is useful not only for generating human-readable inputs for programs such as a calculator or an interpreter but also for generating structured binary files like PDFs. To do so, you need to include some binary data other than ASCII characters in the grammar, but the JSON format doesn't support them.
 You can write the binary data in the array format like the following in the Nautilus mode of fuzzuf.
 ```json
 ["NULL", [0]]
