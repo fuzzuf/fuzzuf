@@ -25,7 +25,7 @@ Nautilus can generate test cases according to a grammar defined by the user.
 You must write the grammar in [BNF form](https://en.wikipedia.org/wiki/Backus%E2%80%93Naur_form).
 
 #### 2-1-a. Basic Notation
-Let's write a BNF form of the arithmetic calculation of integer.
+Let's write a BNF of the arithmetic calculation of integer.
 ```
 <EXPRESSION> ::= <TERM>
                  | <EXPRESSION> + <EXPRESSION>
