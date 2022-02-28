@@ -108,7 +108,7 @@ public:
   size_t SubTreeSize(const NodeID& n) const;
   TreeMutation MutateReplaceFromTree(const NodeID& n,
                                      const Tree& other,
-                                     const NodeID& other_node);
+                                     const NodeID& other_node) const;
 
   void CalcSubTreeSizesAndParents(Context &ctx);
   void CalcParents(Context &ctx);

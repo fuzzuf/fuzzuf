@@ -53,7 +53,7 @@ bool Mutator::MinimizeTree(Tree& tree,
                            std::unordered_set<size_t>& bits,
                            Context& ctx,
                            size_t start_index, size_t end_index,
-                           FTester& tester) {
+                           const FTester& tester) {
   size_t i = start_index;
 
   /* For each nonterminal, we generate the smallest possible subtree */
@@ -100,7 +100,7 @@ bool Mutator::MinimizeRec(Tree& tree,
                           std::unordered_set<size_t>& bits,
                           Context& ctx,
                           size_t start_index, size_t end_index,
-                          FTester& tester) {
+                          const FTester& tester) const {
   size_t i = start_index;
 
   while (i < tree.Size()) {
@@ -141,7 +141,7 @@ bool Mutator::MinimizeRec(Tree& tree,
 bool Mutator::MutRules(Tree& tree,
                        Context& ctx,
                        size_t start_index, size_t end_index,
-                       FTesterMut& tester) {
+                       const FTesterMut& tester) {
   for (size_t i = start_index; i < end_index; i++) {
     if (i == tree.Size()) {
       return true;
@@ -186,8 +186,8 @@ bool Mutator::MutRules(Tree& tree,
  */
 void Mutator::MutSplice(Tree& tree,
                         Context &ctx,
-                        ChunkStore& cks,
-                        FTesterMut& tester) {
+                        const ChunkStore& cks,
+                        const FTesterMut& tester) const {
   /* Select a random node and its rule */
   NodeID n(utils::random::Random<size_t>(0, tree.Size() - 1));
   const RuleID& old_rule_id = tree.GetRuleID(n);
@@ -212,7 +212,7 @@ void Mutator::MutSplice(Tree& tree,
  *          replaces it with a randomly-generated new subtree
  *          sharing the same nonterminal as the original one.
  */
-void Mutator::MutRandom(Tree& tree, Context& ctx, FTesterMut& tester) {
+void Mutator::MutRandom(Tree& tree, Context& ctx, const FTesterMut& tester) {
   /* Select a random node and its rule */
   NodeID n(utils::random::Random<size_t>(0, tree.Size() - 1));
   NTermID nterm = tree.GetRule(n, ctx).Nonterm();
@@ -240,16 +240,16 @@ void Mutator::MutRandom(Tree& tree, Context& ctx, FTesterMut& tester) {
  *          and repeats the recursion 2^n times (1<=n<=10).
  */
 void Mutator::MutRandomRecursion(Tree& tree,
-                                 std::vector<RecursionInfo>& recursions,
+                                 const std::vector<RecursionInfo>& recursions,
                                  Context& ctx,
-                                 FTesterMut& tester) {
+                                 const FTesterMut& tester) const {
   if (recursions.size() == 0) return;
 
   /* The degree of nesting */
   size_t max_len_of_recursions = 2 << utils::random::Random<size_t>(1, 10);
 
   /* Get a random recursion from the tree */
-  RecursionInfo& recursion_info = utils::random::Choose(recursions);
+  const RecursionInfo& recursion_info = utils::random::Choose(recursions);
   auto [rec0, rec1] = recursion_info.GetRandomRecursionPair();
 
   size_t recursion_len_pre = static_cast<size_t>(rec1) - static_cast<size_t>(rec0);
@@ -327,7 +327,7 @@ void Mutator::MutRandomRecursion(Tree& tree,
  * @param (ctx) Context
  */
 std::optional<NodeID> Mutator::FindParentWithNT(
-  Tree& tree, const NodeID& node, Context& ctx
+  const Tree& tree, const NodeID& node, Context& ctx
 ) {
   const NTermID& nt = tree.GetRule(node, ctx).Nonterm();
 
@@ -355,11 +355,11 @@ std::optional<NodeID> Mutator::FindParentWithNT(
  * @param (tester) Tester function
  */
 std::optional<Tree> Mutator::TestAndConvert(
-  Tree& tree_a, const NodeID& n_a,
-  Tree& tree_b, const NodeID& n_b,
+  const Tree& tree_a, const NodeID& n_a,
+  const Tree& tree_b, const NodeID& n_b,
   Context& ctx,
   std::unordered_set<size_t>& fresh_bits,
-  FTester& tester
+  const FTester& tester
 ) {
   TreeMutation repl = tree_a.MutateReplaceFromTree(n_a, tree_b, n_b);
   if (tester(repl, fresh_bits, ctx)) {

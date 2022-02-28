@@ -50,35 +50,35 @@ public:
                     std::unordered_set<size_t>& bits,
                     Context& ctx,
                     size_t start_index, size_t end_index,
-                    FTester& tester);
+                    const FTester& tester);
   bool MinimizeRec(Tree& tree,
                    std::unordered_set<size_t>& bits,
                    Context& ctx,
                    size_t start_index, size_t end_index,
-                   FTester& tester);
+                   const FTester& tester) const;
   bool MutRules(Tree& tree,
                 Context& ctx,
                 size_t start_index, size_t end_index,
-                FTesterMut& tester);
+                const FTesterMut& tester);
   void MutSplice(Tree& tree,
                  Context &ctx,
-                 ChunkStore& cks,
-                 FTesterMut& tester);
-  void MutRandom(Tree& tree, Context& ctx, FTesterMut& tester);
+                 const ChunkStore& cks,
+                 const FTesterMut& tester) const;
+  void MutRandom(Tree& tree, Context& ctx, const FTesterMut& tester);
   void MutRandomRecursion(Tree& tree,
-                          std::vector<RecursionInfo>& recursions,
+                          const std::vector<RecursionInfo>& recursions,
                           Context& ctx,
-                          FTesterMut& tester);
+                          const FTesterMut& tester) const;
 
   static std::optional<NodeID> FindParentWithNT(
-    Tree& tree, const NodeID& node, Context& ctx
+    const Tree& tree, const NodeID& node, Context& ctx
   );
   static std::optional<Tree> TestAndConvert(
-    Tree& tree_a, const NodeID& n_a,
-    Tree& tree_b, const NodeID& n_b,
+    const Tree& tree_a, const NodeID& n_a,
+    const Tree& tree_b, const NodeID& n_b,
     Context& ctx,
     std::unordered_set<size_t>& fresh_bits,
-    FTester& tester
+    const FTester& tester
   );
 
 private:

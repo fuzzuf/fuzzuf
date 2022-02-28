@@ -62,9 +62,9 @@ using Custom = std::pair<RuleID, std::string>;
 class RuleIDOrCustom {
 public:
   RuleIDOrCustom() = delete;
-  RuleIDOrCustom(RuleID rid)
+  RuleIDOrCustom(const RuleID& rid)
     : _rule_id_or_custom(rid) {}
-  RuleIDOrCustom(RuleID rid, std::string s)
+  RuleIDOrCustom(const RuleID& rid, const std::string& s)
     : _rule_id_or_custom(Custom(rid, s)) {}
   const std::variant<RuleID, Custom> value() const {
     return _rule_id_or_custom;
@@ -83,12 +83,12 @@ private:
 
 struct PlainRule {
   PlainRule() {}; // for variant
-  PlainRule(NTermID nonterm,
-            std::vector<RuleChild>& children,
-            std::vector<NTermID>& nonterms)
+  PlainRule(const NTermID& nonterm,
+            std::vector<RuleChild>&& children,
+            std::vector<NTermID>&& nonterms)
     : nonterm(nonterm),
-      children(children),
-      nonterms(nonterms) {}
+      children(std::move(children)),
+      nonterms(std::move(nonterms)) {}
   std::string DebugShow(Context& ctx) const;
 
   NTermID nonterm;

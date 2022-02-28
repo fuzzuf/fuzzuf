@@ -65,7 +65,7 @@ Rule::Rule(Context& ctx, const std::string& nonterm, const std::string& format) 
     }
   }
 
-  _rule = PlainRule{ctx.AquireNTID(nonterm), children, nonterms};
+  _rule = PlainRule{ctx.AquireNTID(nonterm), std::move(children), std::move(nonterms)};
 }
 
 /**
