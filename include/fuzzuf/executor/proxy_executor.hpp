@@ -27,6 +27,8 @@
 #include "fuzzuf/exceptions.hpp"
 #include "fuzzuf/executor/executor.hpp"
 #include "fuzzuf/utils/common.hpp"
+#include "fuzzuf/coverage/afl_edge_cov_attacher.hpp"
+#include "fuzzuf/coverage/fuzzuf_bb_cov_attacher.hpp"
 #include "fuzzuf/feedback/inplace_memory_feedback.hpp"
 #include "fuzzuf/feedback/exit_status_feedback.hpp"
 #include "fuzzuf/feedback/file_feedback.hpp"
@@ -47,37 +49,22 @@ public:
     /* Distinctive exit code used to indicate MSAN trip condition: */
     static constexpr u32 MSAN_ERROR    =         86;
 
-    static constexpr int INVALID_SHMID = -1; 
-
     static constexpr int FORKSRV_FD_READ  = 198;
     static constexpr int FORKSRV_FD_WRITE = 199;
-
-    static constexpr const char* AFL_SHM_ENV_VAR = "__AFL_SHM_ID";
-    // FIXME: we have to modify fuzzuf-cc to change __WYVERN_SHM_ID to __FUZZUF_SHM_ID
-    static constexpr const char* FUZZUF_SHM_ENV_VAR = "__WYVERN_SHM_ID";
 
     // Members holding settings handed over a constructor
     const fs::path proxy_path;
     const std::vector<std::string> pargv;
     const bool forksrv;
 
-    // FIXME: we want to change the type of these variables to u64.
-    // But to do this, we have to modify InplaceFeedback and everything using it.
-    const u32  afl_shm_size;
-    const u32   bb_shm_size;
-
     const bool uses_asan = false; // May become one of the available options in the future, but currently not anticipated
 
-    // ProxyExecutor::INVALID_SHMID means not holding valid ID
-    int bb_shmid;  
-    int afl_shmid; 
+    AFLEdgeCovAttacher afl_edge_coverage;
+    FuzzufBBCovAttacher fuzzuf_bb_coverage;
 
     int forksrv_pid;
     int forksrv_read_fd;
     int forksrv_write_fd;
-
-    u8 *bb_trace_bits;
-    u8 *afl_trace_bits;
 
     bool child_timed_out;
 
@@ -135,12 +122,19 @@ public:
     void ReceiveStopSignal(void);
 
     // Environment-specific methods
+    u32 GetAFLMapSize();
+    u32 GetBBMapSize();
+    int GetAFLShmID();
+    int GetBBShmID();
+
     InplaceMemoryFeedback GetAFLFeedback();
     InplaceMemoryFeedback GetBBFeedback();
     InplaceMemoryFeedback GetStdOut();
     InplaceMemoryFeedback GetStdErr();
     FileFeedback GetFileFeedback(fs::path feed_path);
     ExitStatusFeedback GetExitStatusFeedback();
+
+    virtual bool IsFeedbackLocked();
 
     void TerminateForkServer();
     virtual void SetCArgvAndDecideInputMode();

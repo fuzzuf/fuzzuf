@@ -71,17 +71,13 @@ NativeLinuxExecutor::NativeLinuxExecutor(
 ) :
     Executor( argv, exec_timelimit_ms, exec_memlimit, path_to_write_input.string() ),
     forksrv( forksrv ),
-    afl_shm_size( afl_shm_size ),
-    bb_shm_size( bb_shm_size ),
+    afl_edge_coverage(afl_shm_size),
+    fuzzuf_bb_coverage(bb_shm_size),
 
     // cargv and stdin_mode are initialized at SetCArgvAndDecideInputMode
-    bb_shmid( INVALID_SHMID ),
-    afl_shmid( INVALID_SHMID ),
     forksrv_pid( 0 ),
     forksrv_read_fd( -1 ),
     forksrv_write_fd( -1 ),
-    bb_trace_bits( nullptr ),
-    afl_trace_bits( nullptr ),
     child_timed_out( false ),
     record_stdout_and_err( record_stdout_and_err )
 {
@@ -322,7 +318,7 @@ namespace detail {
 
 void NativeLinuxExecutor::Run(const u8 *buf, u32 len, u32 timeout_ms) {
     // locked until std::shared_ptr<u8> lock is used in other places
-    while (lock.use_count() > 1) {
+    while (IsFeedbackLocked()) {
         usleep(100);
     }
 
@@ -697,12 +693,28 @@ void NativeLinuxExecutor::Run(const u8 *buf, u32 len, u32 timeout_ms) {
     return;
 }
 
+u32 NativeLinuxExecutor::GetAFLMapSize() {
+    return afl_edge_coverage.GetMapSize();
+}
+
+u32 NativeLinuxExecutor::GetBBMapSize() {
+    return fuzzuf_bb_coverage.GetMapSize();
+}
+
+int NativeLinuxExecutor::GetAFLShmID() {
+    return afl_edge_coverage.GetShmID();
+}
+
+int NativeLinuxExecutor::GetBBShmID() {
+    return fuzzuf_bb_coverage.GetShmID();
+}
+
 InplaceMemoryFeedback NativeLinuxExecutor::GetAFLFeedback() {
-    return InplaceMemoryFeedback(afl_trace_bits, afl_shm_size, lock);
+    return afl_edge_coverage.GetFeedback();
 }
 
 InplaceMemoryFeedback NativeLinuxExecutor::GetBBFeedback() {
-    return InplaceMemoryFeedback( bb_trace_bits,  bb_shm_size, lock);
+    return fuzzuf_bb_coverage.GetFeedback();
 }
 
 InplaceMemoryFeedback NativeLinuxExecutor::GetStdOut() {
@@ -717,54 +729,29 @@ ExitStatusFeedback NativeLinuxExecutor::GetExitStatusFeedback() {
     return ExitStatusFeedback(last_exit_reason, last_signal);
 }
 
+bool NativeLinuxExecutor::IsFeedbackLocked() {
+    return (lock.use_count() > 1)
+    || (afl_edge_coverage.GetLockUseCount() > 1)
+    || (fuzzuf_bb_coverage.GetLockUseCount() > 1);
+}
+
 // Initialize shared memory group that the PUT writes the coverage.
 // These shared memory is reused for all PUTs (It is too slow to allocate for each PUT).
 void NativeLinuxExecutor::SetupSharedMemories() {
-    if (afl_shm_size > 0) {
-        afl_shmid = shmget(IPC_PRIVATE, afl_shm_size, IPC_CREAT | IPC_EXCL | 0600);
-        if (afl_shmid < 0) ERROR("shmget() failed");
-
-        afl_trace_bits = (u8 *)shmat(afl_shmid, nullptr, 0);
-        if (afl_trace_bits == (u8 *)-1) ERROR("shmat() failed");
-    }
-
-    if (bb_shm_size > 0) {
-        bb_shmid = shmget(IPC_PRIVATE, bb_shm_size, IPC_CREAT | IPC_EXCL | 0600);
-        if (bb_shmid < 0) ERROR("shmget() failed");
-
-        bb_trace_bits = (u8 *)shmat(bb_shmid, nullptr, 0);
-        if (bb_trace_bits == (u8 *)-1) ERROR("shmat() failed");
-    }
+    afl_edge_coverage.Setup();
+    fuzzuf_bb_coverage.Setup();
 }
 
 // Since shared memory is reused, it is initialized every time before passed to PUT.
 void NativeLinuxExecutor::ResetSharedMemories() {
-    if (afl_shm_size > 0) {
-        std::memset(afl_trace_bits, 0, afl_shm_size);
-    }
-
-    if (bb_shm_size > 0) {
-        std::memset(bb_trace_bits, 0, bb_shm_size);
-    }
-
-    MEM_BARRIER();
+    afl_edge_coverage.Reset();
+    fuzzuf_bb_coverage.Reset();
 }
 
 // Delete SharedMemory when the Executor is deleted
 void NativeLinuxExecutor::EraseSharedMemories() {
-    if (afl_shm_size > 0) {
-        if (shmdt(afl_trace_bits) == -1) ERROR("shmdt() failed");
-        afl_trace_bits = nullptr;
-        if (shmctl(afl_shmid, IPC_RMID, 0) == -1) ERROR("shmctl() failed");
-        afl_shmid = INVALID_SHMID;
-    }
-
-    if (bb_shm_size > 0) {
-        if (shmdt(bb_trace_bits) == -1) ERROR("shmdt() failed");
-        bb_trace_bits = nullptr;
-        if (shmctl(bb_shmid, IPC_RMID, 0) == -1) ERROR("shmctl() failed");
-        bb_shmid = INVALID_SHMID;
-    }
+    afl_edge_coverage.Erase();
+    fuzzuf_bb_coverage.Erase();
 }
 
 // Since PUT that is instrumented using afl-clang-fast or fuzzuf-cc
@@ -775,21 +762,8 @@ void NativeLinuxExecutor::EraseSharedMemories() {
 // As the additional advantage, it can avoid to waste Copy on Write of heap region due to StrPrintf.
 void NativeLinuxExecutor::SetupEnvironmentVariablesForTarget() {
     // Pass the id of shared memory to PUT.
-    if (afl_shm_size > 0) {
-        std::string afl_shmstr = std::to_string(afl_shmid);
-        setenv(AFL_SHM_ENV_VAR, afl_shmstr.c_str(), 1);
-    } else {
-        // make sure to unset the environmental variable if it's unused
-        unsetenv(AFL_SHM_ENV_VAR);
-    }
-
-    if (bb_shm_size > 0) {
-        std::string bb_shmstr = std::to_string(bb_shmid);
-        setenv(FUZZUF_SHM_ENV_VAR, bb_shmstr.c_str(), 1);
-    } else {
-        // make sure to unset the environmental variable if it's unused
-        unsetenv(FUZZUF_SHM_ENV_VAR);
-    }
+    afl_edge_coverage.SetupEnvironmentVariable();
+    fuzzuf_bb_coverage.SetupEnvironmentVariable();
 
     /* This should improve performance a bit, since it stops the linker from
         doing extra work post-fork(). */
