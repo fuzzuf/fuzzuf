@@ -111,7 +111,8 @@ std::optional<Parent> RecursionInfo::FindParents(
       maybe_parent = node;
     }
 
-    for (size_t j = 0; j < ctx.GetNumChildren(t.rules()[i]); j++) {
+    size_t n_children = ctx.GetNumChildren(t.rules()[i]);
+    for (size_t j = 0; j < n_children; j++) {
       stack.emplace_back(maybe_parent, depth + 1);
     }
   }

@@ -95,7 +95,7 @@ std::string Rule::Unescape(const std::string& bytes) {
   /* Convert "\{" into "{" and "\}" into "}" */
   std::string res;
   size_t i;
-  for (i = 0; i < bytes.size(); i++) {
+  for (i = 0; i < bytes.size() - 1; i++) {
     if (bytes[i] == '\\' && bytes[i+1] == '{') {
       res += "{";
       i++;
@@ -145,7 +145,6 @@ std::vector<RuleChild> Rule::Tokenize(const std::string& format, Context& ctx) {
     }
   }
 
-  ctx = ctx;
   return r;
 }
 
