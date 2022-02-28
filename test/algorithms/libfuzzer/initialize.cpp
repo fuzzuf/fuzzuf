@@ -60,12 +60,14 @@ BOOST_AUTO_TEST_CASE(Initialize) {
   BOOST_SCOPE_EXIT_END
   // NOLINTEND(cppcoreguidelines-pro-type-cstyle-cast,cppcoreguidelines-pro-type-member-init,cppcoreguidelines-special-member-functions,hicpp-explicit-conversions)
 
+  using fuzzuf::executor::LibFuzzerExecutorInterface;
   BOOST_TEST_CHECKPOINT("before init executor");
-  std::unique_ptr<NativeLinuxExecutor> executor(
+  std::shared_ptr<NativeLinuxExecutor> nle(
       new NativeLinuxExecutor({fuzzuf::utils::which(fs::path("tee")).c_str(),
                                output_file_path.native()},
                               1000, 10000, false, path_to_write_seed, 1000,
                               1000));
+  auto executor = std::make_unique<LibFuzzerExecutorInterface>(std::move(nle));
   BOOST_TEST_CHECKPOINT("after init executor");
 
   namespace lf = fuzzuf::algorithm::libfuzzer;
@@ -147,13 +149,16 @@ BOOST_AUTO_TEST_CASE(HierarFlowExecute) {
   BOOST_SCOPE_EXIT_END
   // NOLINTEND(cppcoreguidelines-pro-type-cstyle-cast,cppcoreguidelines-pro-type-member-init,cppcoreguidelines-special-member-functions,hicpp-explicit-conversions)
 
+  using fuzzuf::executor::LibFuzzerExecutorInterface;
+
   BOOST_TEST_CHECKPOINT("before int executor");
 
-  std::unique_ptr<NativeLinuxExecutor> executor(
+  std::shared_ptr<NativeLinuxExecutor> nle(
       new NativeLinuxExecutor({fuzzuf::utils::which(fs::path("tee")).c_str(),
                                output_file_path.native()},
                               1000, 10000, false, path_to_write_seed, 1000,
                               1000));
+  auto executor = std::make_unique<LibFuzzerExecutorInterface>(std::move(nle));
 
   BOOST_TEST_CHECKPOINT("after init executor");
 
@@ -184,7 +189,7 @@ BOOST_AUTO_TEST_CASE(HierarFlowExecute) {
   auto create_input_info = hf::CreateNode<
       lf::StaticAssign<lf::test::Full, decltype(Ord::exec_result)>>();
   auto execute = hf::CreateNode<
-      lf::standard_order::Execute<lf::test::Full, NativeLinuxExecutor, Ord>>(
+      lf::standard_order::Execute<lf::test::Full, LibFuzzerExecutorInterface, Ord>>(
       std::move(executor), true);
   auto collect_features = hf::CreateNode<
       lf::standard_order::CollectFeatures<lf::test::Full, Ord>>();

@@ -22,7 +22,7 @@
 #ifndef FUZZUF_INCLUDE_ALGORITHM_LIBFUZZER_CONFIG_HPP
 #define FUZZUF_INCLUDE_ALGORITHM_LIBFUZZER_CONFIG_HPP
 
-#include "fuzzuf/executor/native_linux_executor.hpp"
+#include "fuzzuf/executor/libfuzzer_executor_interface.hpp"
 #include "fuzzuf/utils/filesystem.hpp"
 #include "fuzzuf/utils/setter.hpp"
 #include <vector>

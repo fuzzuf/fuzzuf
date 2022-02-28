@@ -27,6 +27,7 @@
 #include "fuzzuf/algorithms/libfuzzer/mutation.hpp"
 #include "fuzzuf/algorithms/libfuzzer/select_seed.hpp"
 #include "fuzzuf/algorithms/libfuzzer/test_utils.hpp"
+#include "fuzzuf/executor/native_linux_executor.hpp"
 #include "fuzzuf/hierarflow/hierarflow_intermediates.hpp"
 #include "fuzzuf/utils/filesystem.hpp"
 #include "fuzzuf/utils/map_file.hpp"
@@ -65,6 +66,7 @@ BOOST_AUTO_TEST_CASE(HierarFlowOutputHash) {
 
   namespace lf = fuzzuf::algorithm::libfuzzer;
   namespace ne = fuzzuf::algorithm::nezha;
+  using fuzzuf::executor::LibFuzzerExecutorInterface;
 
   BOOST_TEST_CHECKPOINT("before init state");
 
@@ -133,16 +135,18 @@ BOOST_AUTO_TEST_CASE(HierarFlowOutputHash) {
     namespace tt = boost::test_tools;
     const auto output_file_path = create_info.output_dir / "result";
     const auto path_to_write_seed = create_info.output_dir / "cur_input";
-    std::unique_ptr<NativeLinuxExecutor> executor1(new NativeLinuxExecutor(
+    std::shared_ptr<NativeLinuxExecutor> nle1(new NativeLinuxExecutor(
         {FUZZUF_FUZZTOYS_DIR "/fuzz_toys-csv_small", output_file_path.string()},
         create_info.exec_timelimit_ms, create_info.exec_memlimit,
         create_info.forksrv, path_to_write_seed, create_info.afl_shm_size,
         create_info.bb_shm_size, true));
-    std::unique_ptr<NativeLinuxExecutor> executor2(new NativeLinuxExecutor(
+    auto executor1 = std::make_unique<LibFuzzerExecutorInterface>(std::move(nle1));
+    std::shared_ptr<NativeLinuxExecutor> nle2(new NativeLinuxExecutor(
         {FUZZUF_FUZZTOYS_DIR "/fuzz_toys-csv", output_file_path.string()},
         create_info.exec_timelimit_ms, create_info.exec_memlimit,
         create_info.forksrv, path_to_write_seed, create_info.afl_shm_size,
         create_info.bb_shm_size, true));
+    auto executor2 = std::make_unique<LibFuzzerExecutorInterface>(std::move(nle2));
     std::size_t solution_count = 0u;
     ne::known_outputs_t known;
     for (const auto &filename :
