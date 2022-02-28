@@ -30,6 +30,7 @@
 #include "fuzzuf/cli/put_args.hpp"
 #include "fuzzuf/exceptions.hpp"
 #include "fuzzuf/executor/native_linux_executor.hpp"
+#include "fuzzuf/utils/common.hpp"
 #include "fuzzuf/utils/filesystem.hpp"
 #include "fuzzuf/utils/optparser.hpp"
 
@@ -165,7 +166,7 @@ std::unique_ptr<TFuzzer> BuildNautilusFuzzerFromArgs(
       global_options.exec_timelimit_ms.value_or(GetExecTimeout<NautilusTag>()),
       global_options.exec_memlimit.value_or(GetMemLimit<NautilusTag>()),
       forksrv,
-      NativeLinuxExecutor::CPUID_BIND_WHICHEVER,
+      Util::CPUID_BIND_WHICHEVER,
 
       // TODO: Change here if threading is supported
       GetDefaultNumOfThreads(),

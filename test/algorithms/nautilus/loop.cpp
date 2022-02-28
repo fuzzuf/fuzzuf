@@ -75,7 +75,7 @@ static void NautilusLoop(bool forksrv, size_t iter) {
       fuzzuf::algorithm::afl::option::GetExecTimeout<NautilusTag>(),
       fuzzuf::algorithm::afl::option::GetMemLimit<NautilusTag>(),
       forksrv,
-      NativeLinuxExecutor::CPUID_BIND_WHICHEVER,
+      Util::CPUID_BIND_WHICHEVER,
 
       GetDefaultNumOfThreads(),
       GetDefaultThreadSize(),
