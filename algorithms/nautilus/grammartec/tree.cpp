@@ -181,7 +181,7 @@ size_t Tree::SubTreeSize(const NodeID& n) const {
  * @return TreeMutation instance
  */
 TreeMutation Tree::MutateReplaceFromTree(
-  NodeID n, Tree other, NodeID other_node
+  const NodeID& n, const Tree& other, const NodeID& other_node
 ) {
   size_t old_size = SubTreeSize(n);
   size_t new_size = other.SubTreeSize(other_node);

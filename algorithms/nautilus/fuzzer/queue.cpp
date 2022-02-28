@@ -109,7 +109,7 @@ std::unique_ptr<QueueItem> Queue::Pop() {
   std::unique_ptr<QueueItem> item(std::move(_inputs.back()));
   _inputs.pop_back();
 
-  size_t id = (*item).id;
+  size_t id = item->id;
 
   for (auto it = _bit_to_inputs.begin(); it != _bit_to_inputs.end();) {
     auto& [k, v] = *it;
@@ -149,8 +149,8 @@ bool Queue::IsEmpty() const {
  */
 void Queue::Finished(std::unique_ptr<QueueItem> item) {
   bool all_zero = true;
-  for (size_t i = 0; i < (*item).all_bits.size(); i++) {
-    if ((*item).all_bits[i] != 0
+  for (size_t i = 0; i < item->all_bits.size(); i++) {
+    if (item->all_bits[i] != 0
         && _bit_to_inputs.find(i) == _bit_to_inputs.end()) {
       all_zero = false;
       break;
@@ -160,20 +160,20 @@ void Queue::Finished(std::unique_ptr<QueueItem> item) {
   if (all_zero) {
     Util::DeleteFileOrDirectory(
       Util::StrPrintf("%s/outputs/queue/id:%09ld,er:%d",
-                      _work_dir.c_str(), (*item).id, (*item).exit_reason)
+                      _work_dir.c_str(), item->id, item->exit_reason)
     );
     return;
   }
 
   std::unordered_set<size_t> fresh_bits;
-  for (size_t i = 0; i < (*item).all_bits.size(); i++) {
-    if ((*item).all_bits[i]) {
+  for (size_t i = 0; i < item->all_bits.size(); i++) {
+    if (item->all_bits[i]) {
       if (_bit_to_inputs.find(i) == _bit_to_inputs.end()) {
         fresh_bits.insert(i);
         _bit_to_inputs[i] = {};
       }
 
-      _bit_to_inputs[i].push_back((*item).id);
+      _bit_to_inputs[i].push_back(item->id);
     }
   }
 

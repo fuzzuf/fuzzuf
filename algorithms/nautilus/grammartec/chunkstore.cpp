@@ -101,7 +101,7 @@ void ChunkStore::AddTree(Tree& tree, Context& ctx) {
  *          nonterminal as that if the given rule.
  *          This function is used by the random recursive mutation.
  */
-std::optional<std::pair<Tree, NodeID>> ChunkStore::GetAlternativeTo(
+std::optional<AlternativePair> ChunkStore::GetAlternativeTo(
   const RuleID& r, Context& ctx
 ) const {
   NTermID nt = ctx.GetNT(RuleIDOrCustom(r));
@@ -126,7 +126,10 @@ std::optional<std::pair<Tree, NodeID>> ChunkStore::GetAlternativeTo(
   }
 
   Chunk selected = utils::random::Choose(relevant);
-  return std::pair<Tree, NodeID>(_trees.at(selected.first), selected.second);
+  return std::make_pair(
+    std::move(std::make_unique<Tree>(_trees.at(selected.first))),
+    selected.second
+  );
 }
 
 } // namespace fuzzuf::algorithm::nautilus::grammartec

@@ -76,13 +76,13 @@ RProcessInput ProcessInput::operator()(std::unique_ptr<QueueItem>& inp) {
   auto& succ_nodes = node.succ_nodes;
 
   /* Call child node according to the state */
-  if (std::holds_alternative<InitState>((*inp).state)) {
+  if (std::holds_alternative<InitState>(inp->state)) {
     (*succ_nodes[_initialize_state_idx])(*inp); // initialize_state
 
-  } else if (std::holds_alternative<DetState>((*inp).state)) {
+  } else if (std::holds_alternative<DetState>(inp->state)) {
     (*succ_nodes[_apply_det_muts_idx])(*inp); // apply_det_muts
 
-  } else if (std::holds_alternative<RandomState>((*inp).state)) {
+  } else if (std::holds_alternative<RandomState>(inp->state)) {
     (*succ_nodes[_apply_rand_muts_idx])(*inp); // apply_rand_muts
 
   } else {

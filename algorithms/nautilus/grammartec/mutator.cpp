@@ -195,7 +195,7 @@ void Mutator::MutSplice(Tree& tree,
   /* Get a subtree that fits the selected rule from the other testcases */
   if (auto r = cks.GetAlternativeTo(old_rule_id, ctx)) {
     auto& [repl_tree, repl_node] = r.value();
-    TreeMutation repl = tree.MutateReplaceFromTree(n, repl_tree, repl_node);
+    TreeMutation repl = tree.MutateReplaceFromTree(n, *repl_tree, repl_node);
     tester(repl, ctx);
   }
 }

@@ -39,6 +39,7 @@
 namespace fuzzuf::algorithm::nautilus::grammartec {
 
 using Chunk = std::pair<size_t, NodeID>;
+using AlternativePair = std::pair<std::unique_ptr<Tree>, NodeID>;
 
 class ChunkStore {
 public:
@@ -51,7 +52,7 @@ public:
   std::unordered_set<std::string>& seen_outputs() { return _seen_outputs; }
 
   void AddTree(Tree& tree, Context& ctx);
-  std::optional<std::pair<Tree, NodeID>> GetAlternativeTo(
+  std::optional<AlternativePair> GetAlternativeTo(
     const RuleID& r, Context& ctx
   ) const;
 

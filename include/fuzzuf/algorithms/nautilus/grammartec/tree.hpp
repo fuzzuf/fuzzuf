@@ -67,16 +67,34 @@ public:
 class Tree: public TreeLike {
 public:
   Tree(std::vector<RuleIDOrCustom>&& rules, Context& ctx);
+
   Tree(std::vector<RuleIDOrCustom>&& rules,
        std::vector<size_t>&& sizes,
        std::vector<NodeID>&& paren)
     : _rules(std::move(rules)),
       _sizes(std::move(sizes)),
-      _paren(std::move(paren)) {};
+      _paren(std::move(paren)) {}
+
+  Tree(const Tree& o) // copy constructor
+    : _rules(o._rules), _sizes(o._sizes), _paren(o._paren) {}
+
+  Tree& operator=(Tree&& o) noexcept { // move assignment operator
+    _rules = std::move(o.rules());
+    _sizes = std::move(o.sizes());
+    _paren = std::move(o.paren());
+    return *this;
+  }
+
+  Tree(Tree&& o) noexcept // move constructor
+    : _rules(std::move(o.rules())),
+      _sizes(std::move(o.sizes())),
+      _paren(std::move(o.paren())) {}
+
   Tree(const std::vector<RuleIDOrCustom>& rules, // constructor with copy
        const std::vector<size_t>& sizes,
        const std::vector<NodeID>& paren)
-    : _rules(rules), _sizes(sizes), _paren(paren) {};
+    : _rules(rules), _sizes(sizes), _paren(paren) {}
+
   std::vector<RuleIDOrCustom>& rules() { return _rules; }
   std::vector<size_t>& sizes() { return _sizes; }
   std::vector<NodeID>& paren() { return _paren; }
@@ -88,7 +106,9 @@ public:
   const RuleIDOrCustom& GetRuleOrCustom(const NodeID& n) const;
   const std::string& GetCustomRuleData(const NodeID& n) const;
   size_t SubTreeSize(const NodeID& n) const;
-  TreeMutation MutateReplaceFromTree(NodeID n, Tree other, NodeID other_node);
+  TreeMutation MutateReplaceFromTree(const NodeID& n,
+                                     const Tree& other,
+                                     const NodeID& other_node);
 
   void CalcSubTreeSizesAndParents(Context &ctx);
   void CalcParents(Context &ctx);
