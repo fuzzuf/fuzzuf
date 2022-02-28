@@ -139,8 +139,7 @@ std::unique_ptr<TFuzzer> BuildIJONFuzzerFromArgs(
                         setting->forksrv,
                         setting->out_dir / GetDefaultOutfile<IJONTag>(),
                         sizeof(SharedData), // afl_shm_size
-                                         0, //  bb_shm_size
-                        setting->cpuid_to_bind
+                                         0  //  bb_shm_size
                     );
 
     // Create IJONState
