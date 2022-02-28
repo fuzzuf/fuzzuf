@@ -97,8 +97,7 @@ std::unique_ptr<TFuzzer> BuildAFLFastFuzzerFromArgs(
     u32 extra_mem = 0;
     if (aflfast_options.frida_mode) {
         setenv("__AFL_DEFER_FORKSRV", "1", 1);
-        fs::path fuzzuf_bin(fuzzer_args.argv[0]);
-        fs::path frida_bin = fuzzuf_bin.parent_path() / "afl-frida-trace.so";
+        fs::path frida_bin = fs::path(fuzzer_args.argv[0]).parent_path() / "afl-frida-trace.so";
 
         struct stat statbuf;
         if ((stat(frida_bin.c_str(), &statbuf)) == -1) {
