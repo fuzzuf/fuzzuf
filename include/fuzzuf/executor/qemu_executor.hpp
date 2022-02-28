@@ -32,7 +32,6 @@ public:
         u64 exec_memlimit,
         bool forksrv,
         const fs::path &path_to_write_input,
-        int cpuid_to_bind,
         // FIXME: see the comment for the same variable in NativeLinuxExecutor
         bool record_stdout_and_err = false
     );

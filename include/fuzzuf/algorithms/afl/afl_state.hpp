@@ -303,6 +303,12 @@ struct AFLStateTemplate {
     u64 total_bitmap_size = 0;              /* Total bit count for all bitmaps  */
     u64 total_bitmap_entries = 0;           /* Number of bitmaps counted        */
 
+    /* CPU core count                   */
+    int cpu_core_count;
+
+    /* Selected CPU core                */
+    int cpu_aff;
+
     /* Fuzzing queue (vector)           */
     std::vector<std::shared_ptr<Testcase>> case_queue;
 

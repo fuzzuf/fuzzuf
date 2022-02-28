@@ -129,7 +129,7 @@ auto createExecuteAndFeedback(const fs::path &target_path,
       {target_path.string(), output_file_path.string()},
       create_info.exec_timelimit_ms, create_info.exec_memlimit,
       create_info.forksrv, path_to_write_seed, create_info.afl_shm_size,
-      create_info.bb_shm_size, create_info.cpuid_to_bind));
+      create_info.bb_shm_size));
   auto execute_ =
       hf::CreateNode<standard_order::Execute<F, NativeLinuxExecutor, Ord>>(
           std::move(executor_), create_info.use_afl_coverage);

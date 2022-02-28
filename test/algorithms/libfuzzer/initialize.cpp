@@ -65,7 +65,7 @@ BOOST_AUTO_TEST_CASE(Initialize) {
       new NativeLinuxExecutor({fuzzuf::utils::which(fs::path("tee")).c_str(),
                                output_file_path.native()},
                               1000, 10000, false, path_to_write_seed, 1000,
-                              1000, NativeLinuxExecutor::CPUID_DO_NOT_BIND));
+                              1000));
   BOOST_TEST_CHECKPOINT("after init executor");
 
   namespace lf = fuzzuf::algorithm::libfuzzer;
@@ -153,7 +153,7 @@ BOOST_AUTO_TEST_CASE(HierarFlowExecute) {
       new NativeLinuxExecutor({fuzzuf::utils::which(fs::path("tee")).c_str(),
                                output_file_path.native()},
                               1000, 10000, false, path_to_write_seed, 1000,
-                              1000, NativeLinuxExecutor::CPUID_DO_NOT_BIND));
+                              1000));
 
   BOOST_TEST_CHECKPOINT("after init executor");
 

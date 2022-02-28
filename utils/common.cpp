@@ -428,6 +428,71 @@ std::set<int> GetFreeCpu(int allcpu) {
   return frees;
 }
 
+/**
+ * Bind a CPU core to current process.
+ * The cpuid_to_bind argument takes the following possible value:
+ *   1. Util::CPUID_DO_NOT_BIND: Do not bind to any CPU core.
+ *   2. Util::CPUID BIND_WHICHEVER: Bind to a free CPU core.
+ *   3. Integer value in [0, cpu_core_count): Bind to the specified CPU core.
+ *
+ * @note
+ * This function is splitted from NativeLinuxExecutor to reduce executor
+ * dependencies from fuzzing algorithms. Each algorithm is responsible for
+ * explicitly call this function if needed.
+ *
+ * @param cpu_core_count The number of the CPU core.
+ * @param cpuid_to_bind CPU core ID to bind to current process.
+ * @return Binded CPU core ID.
+ */
+int BindCpu(int cpu_core_count, int cpuid_to_bind) {
+#if defined(__linux__)
+  if (cpuid_to_bind == CPUID_DO_NOT_BIND) {
+    return CPUID_DO_NOT_BIND;
+  }
+
+  int binded_cpuid = CPUID_BIND_WHICHEVER;
+
+  // If cpuid_to_bind is not CPUID_DO_NOT_BIND,
+  // then this function tries to bind this process to a cpu core somehow
+  std::set<int> vacant_cpus = Util::GetFreeCpu(cpu_core_count);
+
+  if (cpuid_to_bind == CPUID_BIND_WHICHEVER) {
+    // this means "don't care which cpu core, but should bind"
+
+    if (vacant_cpus.empty()) {
+      ERROR("No more free CPU cores");
+    }
+
+    binded_cpuid = *vacant_cpus.begin(); // just return a random number
+  } else {
+    if (cpuid_to_bind < 0 || cpu_core_count <= cpuid_to_bind) {
+      ERROR("The CPU core id to bind should be between 0 and %d", cpu_core_count - 1);
+    }
+
+    if (vacant_cpus.count(cpuid_to_bind) == 0) {
+      ERROR("The CPU core #%d to bind is not free!", cpuid_to_bind);
+    }
+
+    binded_cpuid = cpuid_to_bind;
+  }
+
+  cpu_set_t c;
+  CPU_ZERO(&c);
+  CPU_SET(binded_cpuid, &c);
+
+  if (sched_setaffinity(0, sizeof(c), &c)) {
+    ERROR("sched_setaffinity failed");
+  }
+
+  return binded_cpuid;
+#else /* defined(__linux__) */
+  if (cpuid_to_bind != CPUID_DO_NOT_BIND) {
+      DEBUG("In this environment, processes cannot be binded to a cpu core.");
+  }
+  return CPUID_DO_NOT_BIND;
+#endif /* ^defined(__linux__) */
+}
+
 u64 NextP2(u64 val) {
   u64 ret = 1;
   while (val > ret)

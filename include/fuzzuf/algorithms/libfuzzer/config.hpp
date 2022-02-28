@@ -139,7 +139,13 @@ auto toString(std::string &dest, const Config &value, std::size_t indent_count,
               const std::string &indent) -> bool;
 
 struct FuzzerCreateInfo {
-  FuzzerCreateInfo() : input_dir("./input"), output_dir("./output") {}
+  FuzzerCreateInfo()
+    : input_dir("./input"),
+      output_dir("./output"),
+      // This is a temporary implementation. Change the implementation
+      // properly if the value need to be specified from user side.
+      cpu_core_count(Util::GetCpuCore()),
+      cpu_aff(Util::BindCpu(cpu_core_count, cpuid_to_bind)) {}
   FUZZUF_SETTER(input_dir)
   FUZZUF_SETTER(output_dir)
   FUZZUF_SETTER(dictionaries)
@@ -158,6 +164,8 @@ struct FuzzerCreateInfo {
   FUZZUF_SETTER(afl_shm_size)
   FUZZUF_SETTER(bb_shm_size)
   FUZZUF_SETTER(cpuid_to_bind)
+  FUZZUF_SETTER(cpu_core_count)
+  FUZZUF_SETTER(cpu_aff)
   FUZZUF_SETTER(use_afl_coverage)
   FUZZUF_SETTER(sparse_energy_updates)
   FUZZUF_SETTER(crashed_only)
@@ -279,7 +287,17 @@ struct FuzzerCreateInfo {
   /**
    * cpuid restriction to execute the target
    */
-  int cpuid_to_bind = NativeLinuxExecutor::CPUID_DO_NOT_BIND;
+  int cpuid_to_bind = Util::CPUID_DO_NOT_BIND;
+
+  /**
+   * CPU core count
+   */
+  int cpu_core_count = 0;
+
+  /**
+   * Selected CPU core
+   */
+  int cpu_aff = Util::CPUID_DO_NOT_BIND;
 
   /**
    * If true, feature is calculated using AFL compatible coverage

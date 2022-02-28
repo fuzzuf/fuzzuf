@@ -62,7 +62,7 @@ static void AFLLoop(bool forksrv) {
       {"../../put_binaries/libjpeg/libjpeg_turbo_fuzzer", "@@"},
       input_dir.native(), output_dir.native(), option::GetExecTimeout<AFLTag>(),
       option::GetMemLimit<AFLTag>(), forksrv, false, /* dumb_mode*/
-      NativeLinuxExecutor::CPUID_BIND_WHICHEVER));
+      Util::CPUID_BIND_WHICHEVER));
 
   // NativeLinuxExecutor needs the directory specified by "out_dir" to be
   // already set up so we need to create the directory first, and then
@@ -74,8 +74,8 @@ static void AFLLoop(bool forksrv) {
       setting->argv, setting->exec_timelimit_ms, setting->exec_memlimit,
       setting->forksrv, setting->out_dir / option::GetDefaultOutfile<AFLTag>(),
       option::GetMapSize<AFLTag>(), // afl_shm_size
-      0,                            //  bb_shm_size
-      setting->cpuid_to_bind);
+      0                             // bb_shm_size
+      );
 
   // Create AFLState
   auto state = std::make_unique<AFLState>(setting, executor);

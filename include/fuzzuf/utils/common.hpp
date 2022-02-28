@@ -167,8 +167,13 @@ void DeleteFileOrDirectory(std::string path);
 
 int ScanDirAlpha(std::string dir, struct dirent ***namelist);
 
+// Constant values used by `BindCpu()` to indicate CPU binding policy.
+constexpr int CPUID_DO_NOT_BIND = -2;
+constexpr int CPUID_BIND_WHICHEVER = -1;
+
 int GetCpuCore();
 std::set<int> GetFreeCpu(int);
+int BindCpu(int, int);
 
 u64 NextP2(u64);
 

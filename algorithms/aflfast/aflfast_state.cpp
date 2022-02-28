@@ -616,16 +616,16 @@ void AFLFastState::ShowStats(void) {
 
     /* Provide some CPU utilization stats. */
 
-    if (executor->cpu_core_count) {
+    if (cpu_core_count) {
         double cur_runnable = GetRunnableProcesses(*this);
-        u32 cur_utilization = cur_runnable * 100 / executor->cpu_core_count;
+        u32 cur_utilization = cur_runnable * 100 / cpu_core_count;
 
         std::string cpu_color = cCYA;
 
         /* If we could still run one or more processes, use green. */
 
-        if (executor->cpu_core_count > 1 &&
-            cur_runnable + 1 <= executor->cpu_core_count)
+        if (cpu_core_count > 1 &&
+            cur_runnable + 1 <= cpu_core_count)
             cpu_color = cLGN;
 
         /* If we're clearly oversubscribed, use red. */
@@ -634,9 +634,9 @@ void AFLFastState::ShowStats(void) {
 
 #ifdef HAVE_AFFINITY
 
-        if (executor->binded_cpuid.has_value()) {
+        if (cpu_aff >= 0) {
             MSG(SP10 cGRA "[cpu%03d:%s%3u%%" cGRA "]\r" cRST,
-                 std::min(executor->binded_cpuid.value(), 999),
+                 std::min(cpu_aff, 999),
                  cpu_color.c_str(), std::min(cur_utilization, 999u));
         } else {
             MSG(SP10 cGRA "   [cpu:%s%3u%%" cGRA "]\r" cRST,
