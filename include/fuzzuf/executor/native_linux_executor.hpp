@@ -46,10 +46,6 @@ public:
 
     static constexpr int INVALID_SHMID = -1; 
 
-    // Constant values used as "cpuid_to_bind", one of the arguments of the constructor
-    static constexpr int CPUID_DO_NOT_BIND    = -2;
-    static constexpr int CPUID_BIND_WHICHEVER = -1;
-
     static constexpr int FORKSRV_FD_READ  = 198;
     static constexpr int FORKSRV_FD_WRITE = 199;
 
@@ -65,13 +61,7 @@ public:
     const u32  afl_shm_size;
     const u32   bb_shm_size;
 
-    // NativeLinuxExecutor may specify a CPU core executing this process (or PUT processes) for speed
-    // If specified, an id in the range 0-origin is assigned. std::nullopt otherwise.
-    std::optional<int> binded_cpuid; 
-
     const bool uses_asan = false; // May become one of the available options in the future, but currently not anticipated
-
-    const int cpu_core_count;
 
     // NativeLinuxExecutor::INVALID_SHMID means not holding valid ID
     int bb_shmid;  
@@ -100,7 +90,6 @@ public:
         const fs::path &path_to_write_input,
         u32 afl_shm_size,
         u32  bb_shm_size,
-        int cpuid_to_bind, 
         // FIXME: The below is a temporary flag to avoid a big performance issue.
         // The issue appears when we save the outputs of stdout/stderr to buffers
         // in every execution of a PUT, which isn't required in most fuzzers.

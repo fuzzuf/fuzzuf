@@ -123,7 +123,7 @@ std::unique_ptr<TFuzzer> BuildAFLFuzzerFromArgs(
                         global_options.exec_memlimit.value_or(GetMemLimit<AFLTag>()),
                         afl_options.forksrv,
                         /* dumb_mode */ false,  // FIXME: add dumb_mode
-                        NativeLinuxExecutor::CPUID_BIND_WHICHEVER
+                        Util::CPUID_BIND_WHICHEVER
                     );
 
     // NativeLinuxExecutor needs the directory specified by "out_dir" to be already set up
@@ -143,8 +143,7 @@ std::unique_ptr<TFuzzer> BuildAFLFuzzerFromArgs(
                         setting->forksrv,
                         setting->out_dir / GetDefaultOutfile<AFLTag>(),
                         GetMapSize<AFLTag>(), // afl_shm_size
-                                           0, //  bb_shm_size
-                        setting->cpuid_to_bind
+                                           0  //  bb_shm_size
                     );
 
     // Create AFLState

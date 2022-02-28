@@ -54,7 +54,7 @@ public:
   virtual ~LibFuzzer() {}
   virtual void OneLoop();
   virtual void ReceiveStopSignal(void) {}
-  bool ShouldEnd() const { return end_; }
+  bool ShouldEnd() override { return end_; }
   const FuzzerCreateInfo &get_create_info() const { return create_info; }
 
 private:

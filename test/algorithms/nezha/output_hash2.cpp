@@ -137,12 +137,12 @@ BOOST_AUTO_TEST_CASE(HierarFlowOutputHash) {
         {FUZZUF_FUZZTOYS_DIR "/fuzz_toys-csv_small", output_file_path.string()},
         create_info.exec_timelimit_ms, create_info.exec_memlimit,
         create_info.forksrv, path_to_write_seed, create_info.afl_shm_size,
-        create_info.bb_shm_size, create_info.cpuid_to_bind, true));
+        create_info.bb_shm_size, true));
     std::unique_ptr<NativeLinuxExecutor> executor2(new NativeLinuxExecutor(
         {FUZZUF_FUZZTOYS_DIR "/fuzz_toys-csv", output_file_path.string()},
         create_info.exec_timelimit_ms, create_info.exec_memlimit,
         create_info.forksrv, path_to_write_seed, create_info.afl_shm_size,
-        create_info.bb_shm_size, create_info.cpuid_to_bind, true));
+        create_info.bb_shm_size, true));
     std::size_t solution_count = 0u;
     ne::known_outputs_t known;
     for (const auto &filename :

@@ -69,7 +69,7 @@ BOOST_AUTO_TEST_CASE(NativeLinuxExecutorVariableShm) {
     for (u32 bb : checked_sizes) {
       NativeLinuxExecutor executor({"/usr/bin/tee", output_file_path.native()},
                                    1000, 10000, false, path_to_write_seed, afl,
-                                   bb, NativeLinuxExecutor::CPUID_DO_NOT_BIND);
+                                   bb);
 
       std::string input("Hello, World!");
       executor.Run(reinterpret_cast<const u8 *>(input.c_str()), input.size());

@@ -167,7 +167,7 @@ std::unique_ptr<TFuzzer> BuildDIEFuzzerFromArgs(FuzzerArgs &fuzzer_args,
     global_options.exec_memlimit.value_or(GetMemLimit<DIETag>()),
     /* forksrv */   true,
     /* dumb_mode */ false,
-    NativeLinuxExecutor::CPUID_BIND_WHICHEVER,
+    Util::CPUID_BIND_WHICHEVER,
     die_options.die_dir, // vvv DIE vvv
     die_options.cmd_py,
     die_options.cmd_node,
@@ -191,8 +191,7 @@ std::unique_ptr<TFuzzer> BuildDIEFuzzerFromArgs(FuzzerArgs &fuzzer_args,
     setting->forksrv,
     setting->out_dir / GetDefaultOutfile<DIETag>(),
     GetMapSize<DIETag>(), // afl_shm_size
-    0, // bb_shm_size
-    setting->cpuid_to_bind
+    0 // bb_shm_size
   );
 
   using fuzzuf::algorithm::die::DIEState;

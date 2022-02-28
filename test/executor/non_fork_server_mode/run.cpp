@@ -62,7 +62,7 @@ BOOST_AUTO_TEST_CASE(NativeLinuxExecutorNativeRun) {
                                 output_file_path.native()},
                                1000, 10000, false, path_to_write_seed,
                                PAGE_SIZE, PAGE_SIZE,
-                               NativeLinuxExecutor::CPUID_DO_NOT_BIND, true);
+                               true);
   BOOST_CHECK_EQUAL(executor.stdin_mode, true);
 
   // Invoke NativeLinuxExecutor::Run()
@@ -158,8 +158,7 @@ BOOST_AUTO_TEST_CASE(NativeLinuxExecutorNativeRunOk) {
   NativeLinuxExecutor executor(
       //{ "/usr/bin/tee", output_file_path.native() },
       {TEST_BINARY_DIR "/executor/ok", output_file_path.native()}, 1000, 10000,
-      false, path_to_write_seed, PAGE_SIZE, PAGE_SIZE,
-      NativeLinuxExecutor::CPUID_DO_NOT_BIND);
+      false, path_to_write_seed, PAGE_SIZE, PAGE_SIZE);
   BOOST_CHECK_EQUAL(executor.stdin_mode, true);
 
   // Invoke NativeLinuxExecutor::Run()
@@ -201,8 +200,7 @@ BOOST_AUTO_TEST_CASE(NativeLinuxExecutorNativeRunFail) {
   auto path_to_write_seed = output_dir / "cur_input";
   NativeLinuxExecutor executor(
       {TEST_BINARY_DIR "/executor/fail", output_file_path.native()}, 1000,
-      10000, false, path_to_write_seed, PAGE_SIZE, PAGE_SIZE,
-      NativeLinuxExecutor::CPUID_DO_NOT_BIND);
+      10000, false, path_to_write_seed, PAGE_SIZE, PAGE_SIZE);
   BOOST_CHECK_EQUAL(executor.stdin_mode, true);
 
   // Invoke NativeLinuxExecutor::Run()
@@ -244,7 +242,7 @@ BOOST_AUTO_TEST_CASE(NativeLinuxExecutorNativeRunTooMuchOutput,
   NativeLinuxExecutor executor(
       {TEST_BINARY_DIR "/executor/too_much_output"}, 1000, 10000, false,
       path_to_write_seed, PAGE_SIZE, PAGE_SIZE,
-      NativeLinuxExecutor::CPUID_DO_NOT_BIND, true /* record_stdout_and_err */
+      true /* record_stdout_and_err */
   );
   BOOST_CHECK_EQUAL(executor.stdin_mode, true);
 
@@ -287,8 +285,7 @@ BOOST_AUTO_TEST_CASE(NativeLinuxExecutorNativeRunAbort) {
   auto path_to_write_seed = output_dir / "cur_input";
   NativeLinuxExecutor executor(
       {TEST_BINARY_DIR "/executor/abort", output_file_path.native()}, 1000,
-      10000, false, path_to_write_seed, PAGE_SIZE, PAGE_SIZE,
-      NativeLinuxExecutor::CPUID_DO_NOT_BIND);
+      10000, false, path_to_write_seed, PAGE_SIZE, PAGE_SIZE);
   BOOST_CHECK_EQUAL(executor.stdin_mode, true);
 
   // Invoke NativeLinuxExecutor::Run()
@@ -331,8 +328,7 @@ BOOST_AUTO_TEST_CASE(NativeLinuxExecutorNativeRunSegmentationFault) {
   NativeLinuxExecutor executor({TEST_BINARY_DIR "/executor/segmentation_fault",
                                 output_file_path.native()},
                                1000, 10000, false, path_to_write_seed,
-                               PAGE_SIZE, PAGE_SIZE,
-                               NativeLinuxExecutor::CPUID_DO_NOT_BIND);
+                               PAGE_SIZE, PAGE_SIZE);
   BOOST_CHECK_EQUAL(executor.stdin_mode, true);
 
   // Invoke NativeLinuxExecutor::Run()
@@ -374,8 +370,7 @@ BOOST_AUTO_TEST_CASE(NativeLinuxExecutorNativeRunNeverExit) {
   auto path_to_write_seed = output_dir / "cur_input";
   NativeLinuxExecutor executor(
       {TEST_BINARY_DIR "/executor/never_exit", output_file_path.native()}, 1000,
-      10000, false, path_to_write_seed, PAGE_SIZE, PAGE_SIZE,
-      NativeLinuxExecutor::CPUID_DO_NOT_BIND);
+      10000, false, path_to_write_seed, PAGE_SIZE, PAGE_SIZE);
   BOOST_CHECK_EQUAL(executor.stdin_mode, true);
 
   // Invoke NativeLinuxExecutor::Run()
@@ -417,8 +412,7 @@ BOOST_AUTO_TEST_CASE(NativeLinuxExecutorNativeRunNotExists) {
   auto path_to_write_seed = output_dir / "cur_input";
   NativeLinuxExecutor executor(
       {TEST_BINARY_DIR "/executor/not_exists", output_file_path.native()}, 1000,
-      10000, false, path_to_write_seed, PAGE_SIZE, PAGE_SIZE,
-      NativeLinuxExecutor::CPUID_DO_NOT_BIND);
+      10000, false, path_to_write_seed, PAGE_SIZE, PAGE_SIZE);
   BOOST_CHECK_EQUAL(executor.stdin_mode, true);
 
   // Invoke NativeLinuxExecutor::Run()
@@ -460,8 +454,7 @@ BOOST_AUTO_TEST_CASE(NativeLinuxExecutorNativeRunPermissionDenied) {
   auto path_to_write_seed = output_dir / "cur_input";
   NativeLinuxExecutor executor(
       {TEST_DICTIONARY_DIR "/test.dict", output_file_path.native()}, 1000,
-      10000, false, path_to_write_seed, PAGE_SIZE, PAGE_SIZE,
-      NativeLinuxExecutor::CPUID_DO_NOT_BIND);
+      10000, false, path_to_write_seed, PAGE_SIZE, PAGE_SIZE);
   BOOST_CHECK_EQUAL(executor.stdin_mode, true);
 
   // Invoke NativeLinuxExecutor::Run()
@@ -503,8 +496,7 @@ BOOST_AUTO_TEST_CASE(NativeLinuxExecutorNativeRunNotExecutable) {
   auto path_to_write_seed = output_dir / "cur_input";
   NativeLinuxExecutor executor(
       {TEST_SOURCE_DIR "/executor/not_executable", output_file_path.native()},
-      1000, 10000, false, path_to_write_seed, PAGE_SIZE, PAGE_SIZE,
-      NativeLinuxExecutor::CPUID_DO_NOT_BIND);
+      1000, 10000, false, path_to_write_seed, PAGE_SIZE, PAGE_SIZE);
   BOOST_CHECK_EQUAL(executor.stdin_mode, true);
 
   // Invoke NativeLinuxExecutor::Run()

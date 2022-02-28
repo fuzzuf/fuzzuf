@@ -64,8 +64,7 @@ BOOST_AUTO_TEST_CASE(ExecuteOutput) {
 
   std::unique_ptr<NativeLinuxExecutor> executor(new NativeLinuxExecutor(
       {fuzzuf::utils::which(fs::path("wc")).c_str(), "-c"}, 1000, 10000, false,
-      path_to_write_seed, 65536, 65536, NativeLinuxExecutor::CPUID_DO_NOT_BIND,
-      true));
+      path_to_write_seed, 65536, 65536, true));
 
   lf::InputInfo testcase;
   auto input = lf::test::getSeed1();
@@ -85,8 +84,7 @@ BOOST_AUTO_TEST_CASE(HierarFlowExecuteOutput) {
 
   std::unique_ptr<NativeLinuxExecutor> executor(new NativeLinuxExecutor(
       {fuzzuf::utils::which(fs::path("wc")).c_str(), "-c"}, 1000, 10000, false,
-      path_to_write_seed, 65536, 65536, NativeLinuxExecutor::CPUID_DO_NOT_BIND,
-      true));
+      path_to_write_seed, 65536, 65536, true));
 
   constexpr static auto output_loc = sp::root / sp::arg<1>;
   using Ord =
@@ -118,7 +116,7 @@ BOOST_AUTO_TEST_CASE(ExecuteStatusSuccess) {
 
   std::unique_ptr<NativeLinuxExecutor> executor(new NativeLinuxExecutor(
       {TEST_BINARY_DIR "/executor/ok"}, 1000, 10000, false, path_to_write_seed,
-      65536, 65536, NativeLinuxExecutor::CPUID_DO_NOT_BIND));
+      65536, 65536));
 
   lf::InputInfo testcase;
   auto input = lf::test::getSeed1();
@@ -136,7 +134,7 @@ BOOST_AUTO_TEST_CASE(HierarFlowExecuteStatusSuccess) {
 
   std::unique_ptr<NativeLinuxExecutor> executor(new NativeLinuxExecutor(
       {TEST_BINARY_DIR "/executor/ok"}, 1000, 10000, false, path_to_write_seed,
-      65536, 65536, NativeLinuxExecutor::CPUID_DO_NOT_BIND));
+      65536, 65536));
 
   auto node = hf::CreateNode<lf::standard_order::Execute<
       lf::test::Full, NativeLinuxExecutor, lf::test::Order>>(
@@ -161,8 +159,7 @@ BOOST_AUTO_TEST_CASE(ExecuteStatusAbort) {
 
   std::unique_ptr<NativeLinuxExecutor> executor(
       new NativeLinuxExecutor({TEST_BINARY_DIR "/executor/abort"}, 1000, 10000,
-                              false, path_to_write_seed, 65536, 65536,
-                              NativeLinuxExecutor::CPUID_DO_NOT_BIND));
+                              false, path_to_write_seed, 65536, 65536));
 
   lf::InputInfo testcase;
   auto input = lf::test::getSeed1();
@@ -182,8 +179,7 @@ BOOST_AUTO_TEST_CASE(HierarFlowExecuteAbort) {
 
   std::unique_ptr<NativeLinuxExecutor> executor(
       new NativeLinuxExecutor({TEST_BINARY_DIR "/executor/abort"}, 1000, 10000,
-                              false, path_to_write_seed, 65536, 65536,
-                              NativeLinuxExecutor::CPUID_DO_NOT_BIND));
+                              false, path_to_write_seed, 65536, 65536));
 
   auto node = hf::CreateNode<lf::standard_order::Execute<
       lf::test::Full, NativeLinuxExecutor, lf::test::Order>>(
@@ -209,7 +205,7 @@ BOOST_AUTO_TEST_CASE(ExecuteCoverage) {
   std::unique_ptr<NativeLinuxExecutor> executor(
       new NativeLinuxExecutor({FUZZUF_FUZZTOYS_DIR "/fuzz_toys-brainf_ck"},
                               1000, 10000, false, path_to_write_seed, 65536,
-                              65536, NativeLinuxExecutor::CPUID_DO_NOT_BIND));
+                              65536));
 
   lf::InputInfo testcase;
   std::vector<std::uint8_t> input{'+'};
@@ -230,7 +226,7 @@ BOOST_AUTO_TEST_CASE(HierarFlowExecuteCoverage) {
   std::unique_ptr<NativeLinuxExecutor> executor(
       new NativeLinuxExecutor({FUZZUF_FUZZTOYS_DIR "/fuzz_toys-brainf_ck"},
                               1000, 10000, false, path_to_write_seed, 65536,
-                              65536, NativeLinuxExecutor::CPUID_DO_NOT_BIND));
+                              65536));
 
   auto node = hf::CreateNode<lf::standard_order::Execute<
       lf::test::Full, NativeLinuxExecutor, lf::test::Order>>(

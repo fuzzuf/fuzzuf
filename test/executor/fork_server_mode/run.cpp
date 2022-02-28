@@ -61,7 +61,7 @@ BOOST_AUTO_TEST_CASE(NativeLinuxExecutorNativeRun) {
   NativeLinuxExecutor executor(
       {TEST_BINARY_DIR "/put_binaries/command_wrapper", "/bin/cat", "@@"}, 1000,
       10000, true, path_to_write_seed, PAGE_SIZE, PAGE_SIZE,
-      NativeLinuxExecutor::CPUID_DO_NOT_BIND, true /* record_stdout_and_err */
+      true /* record_stdout_and_err */
   );
   BOOST_CHECK_EQUAL(executor.stdin_mode, false);
 
@@ -141,7 +141,7 @@ BOOST_AUTO_TEST_CASE(NativeLinuxExecutorNativeRunTooMuchOutput,
       {TEST_BINARY_DIR "/put_binaries/command_wrapper",
        TEST_BINARY_DIR "/executor/too_much_output"},
       1000, 10000, true, path_to_write_seed, PAGE_SIZE, PAGE_SIZE,
-      NativeLinuxExecutor::CPUID_DO_NOT_BIND, true /* record_stdout_and_err */
+      true /* record_stdout_and_err */
   );
   BOOST_CHECK_EQUAL(executor.stdin_mode, true);
 

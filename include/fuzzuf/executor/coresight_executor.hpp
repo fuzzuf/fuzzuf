@@ -30,7 +30,6 @@ public:
         bool forksrv,
         const fs::path &path_to_write_input,
         u32 afl_shm_size,
-        int cpuid_to_bind,
         // FIXME: see the comment for the same variable in NativeLinuxExecutor
         bool record_stdout_and_err
     );

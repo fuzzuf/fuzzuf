@@ -62,8 +62,7 @@ BOOST_AUTO_TEST_CASE(ProxyExecutorRun) {
   // cannot be empty, we supply output_file_path as a place holder.
   ProxyExecutor executor(fs::path(TEST_BINARY_DIR "/put_binaries/zeroone"), {},
                          {output_file_path.native()}, 1000, 10000, true,
-                         path_to_write_seed, (1U << 16), 0,
-                         ProxyExecutor::CPUID_DO_NOT_BIND, true);
+                         path_to_write_seed, (1U << 16), 0, true);
   // Initialize executor instance
   // We have to run below initialization because ProxyExecutor is considered
   // as a base class and it expects initialization in the derived class constructors.
@@ -161,7 +160,7 @@ BOOST_AUTO_TEST_CASE(ProxyExecutorNativeRunTooMuchOutput,
       {TEST_BINARY_DIR "/executor/too_much_output"},
       {TEST_BINARY_DIR "/executor/too_much_output"}, 1000, 10000, true,
       path_to_write_seed, PAGE_SIZE, PAGE_SIZE,
-      ProxyExecutor::CPUID_DO_NOT_BIND, true /* record_stdout_and_err */
+      true /* record_stdout_and_err */
   );
   // Initialize executor instance
   // We have to run below initialization because ProxyExecutor is considered
