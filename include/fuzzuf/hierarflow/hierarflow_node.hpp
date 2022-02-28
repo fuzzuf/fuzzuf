@@ -80,7 +80,7 @@ public:
     }
 
     const CalleeIndex& GetCalleeIndexRef() const {
-        return impl->GetCalleeIndexRef();;
+        return impl->GetCalleeIndexRef();
     };
 
     HierarFlowNode<I, O, IS_REGULAR>& operator=(const HierarFlowNode<I, O, IS_REGULAR>& src) {

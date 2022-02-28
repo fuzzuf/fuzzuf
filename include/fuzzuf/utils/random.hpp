@@ -86,7 +86,7 @@ T Choose(const T* arr, size_t size) {
  * @return Reference to the randomly chosen element
  */
 template <class T>
-T& ChooseRef(std::vector<T>& v) {
+T& ChooseMutRef(std::vector<T>& v) {
   if (v.size() == 0)
     throw std::out_of_range("Array must not be empty");
 
