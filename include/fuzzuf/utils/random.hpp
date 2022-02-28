@@ -83,10 +83,24 @@ T Choose(const T* arr, size_t size) {
  * @fn
  * @brief Choose a random element from vector
  * @param (v) Vector
+ * @return Reference to the randomly chosen element
+ */
+template <class T>
+T& ChooseMutRef(std::vector<T>& v) {
+  if (v.size() == 0)
+    throw std::out_of_range("Array must not be empty");
+
+  return v[Random<size_t>(0, v.size() - 1)];
+}
+
+/**
+ * @fn
+ * @brief Choose a random element from vector
+ * @param (v) Vector
  * @return Randomly chosen element
  */
 template <class T>
-T& Choose(std::vector<T>& v) {
+const T& Choose(const std::vector<T>& v) {
   if (v.size() == 0)
     throw std::out_of_range("Array must not be empty");
 

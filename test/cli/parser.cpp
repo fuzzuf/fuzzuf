@@ -31,9 +31,9 @@
 #include "fuzzuf/cli/fuzzer/afl/build_afl_fuzzer_from_args.hpp"
 #include "fuzzuf/cli/fuzzer/aflfast/build_aflfast_fuzzer_from_args.hpp"
 #include "fuzzuf/cli/fuzzer/vuzzer/build_vuzzer_from_args.hpp"
+#include "fuzzuf/utils/common.hpp"
 
 #define Argc(argv) (sizeof(argv) / sizeof(char *))
-#define UNUSED(x) (void)(x)
 
 GlobalFuzzerOptions default_options; // Default value goes here
 

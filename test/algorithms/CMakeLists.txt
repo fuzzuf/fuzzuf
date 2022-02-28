@@ -4,6 +4,7 @@ subdirs(
   die
   ijon
   libfuzzer
+  nautilus
   nezha
   vuzzer
 )

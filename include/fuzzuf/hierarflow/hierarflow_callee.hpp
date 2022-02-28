@@ -55,6 +55,8 @@ public:
     virtual NullableRef<HierarFlowCallee<I>>
         operator()(IArgs... args) = 0;
 
+    const CalleeIndex& GetCalleeIndexRef() const { return idx; };
+
     HierarFlowCallee<I>& operator=(HierarFlowCallee<I>&& orig) {
         idx = orig.idx;
         std::swap(parent, orig.parent);
