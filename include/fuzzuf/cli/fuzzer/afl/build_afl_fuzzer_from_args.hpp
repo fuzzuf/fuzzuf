@@ -55,7 +55,7 @@ static void usage(po::options_description &desc) {
 }
 
 // Used only for CLI
-template <class TFuzzer, class TAFLFuzzer>
+template <class TFuzzer, class TAFLFuzzer, class TExecutor>
 std::unique_ptr<TFuzzer> BuildAFLFuzzerFromArgs(
     FuzzerArgs &fuzzer_args, 
     GlobalFuzzerOptions &global_options
@@ -157,9 +157,7 @@ std::unique_ptr<TFuzzer> BuildAFLFuzzerFromArgs(
     using fuzzuf::algorithm::afl::option::GetMapSize;
 
     // Create NativeLinuxExecutor
-    // TODO: support more types of executors
-
-    auto executor = std::make_shared<NativeLinuxExecutor>(
+    auto nle = std::make_shared<NativeLinuxExecutor>(
                         setting->argv,
                         setting->exec_timelimit_ms,
                         setting->exec_memlimit,
@@ -168,6 +166,9 @@ std::unique_ptr<TFuzzer> BuildAFLFuzzerFromArgs(
                         GetMapSize<AFLTag>(), // afl_shm_size
                                            0  //  bb_shm_size
                     );
+
+    // TODO: support more types of executors
+    auto executor = std::make_shared<TExecutor>(std::move(nle));
 
     // Create AFLState
     using fuzzuf::algorithm::afl::AFLState;

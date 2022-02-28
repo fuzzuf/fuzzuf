@@ -24,7 +24,7 @@
 #include "fuzzuf/utils/common.hpp"
 #include "fuzzuf/utils/filesystem.hpp"
 #include "fuzzuf/exec_input/exec_input_set.hpp"
-#include "fuzzuf/executor/native_linux_executor.hpp"
+#include "fuzzuf/executor/afl_executor_interface.hpp"
 #include "fuzzuf/feedback/inplace_memory_feedback.hpp"
 #include "fuzzuf/feedback/exit_status_feedback.hpp"
 #include "fuzzuf/algorithms/afl/afl_option.hpp"
@@ -54,7 +54,7 @@ struct AFLStateTemplate {
     using Tag = typename Testcase::Tag;
 
     // FIXME: how to support other executors?
-    explicit AFLStateTemplate(std::shared_ptr<const AFLSetting> setting, std::shared_ptr<NativeLinuxExecutor> executor);
+    explicit AFLStateTemplate(std::shared_ptr<const AFLSetting> setting, std::shared_ptr<executor::AFLExecutorInterface> executor);
     virtual ~AFLStateTemplate();
 
     AFLStateTemplate( const AFLStateTemplate& ) = delete;
@@ -129,7 +129,7 @@ struct AFLStateTemplate {
     void SetShouldConstructAutoDict(bool v);
 
     std::shared_ptr<const AFLSetting> setting;
-    std::shared_ptr<NativeLinuxExecutor> executor;
+    std::shared_ptr<executor::AFLExecutorInterface> executor;
     ExecInputSet input_set;
 
     // TODO: what if this product works on environments other than *NIX?

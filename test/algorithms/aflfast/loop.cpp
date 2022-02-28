@@ -23,6 +23,7 @@
 #include <random>
 
 #include "fuzzuf/algorithms/aflfast/aflfast_fuzzer.hpp"
+#include "fuzzuf/executor/native_linux_executor.hpp"
 #include "fuzzuf/utils/filesystem.hpp"
 #include "fuzzuf/utils/workspace.hpp"
 #include "move_to_program_location.hpp"
@@ -60,6 +61,7 @@ static void AFLLoop(bool forksrv) {
   using fuzzuf::algorithm::aflfast::AFLFastSetting;
   using fuzzuf::algorithm::aflfast::AFLFastState;
   using fuzzuf::algorithm::aflfast::option::AFLFastTag;
+  using fuzzuf::executor::AFLExecutorInterface;
   namespace aflfastoption = fuzzuf::algorithm::aflfast::option;
 
   std::shared_ptr<AFLFastSetting> setting(new AFLFastSetting(
@@ -75,13 +77,15 @@ static void AFLLoop(bool forksrv) {
   SetupDirs(setting->out_dir.string());
 
   // Create NativeLinuxExecutor
-  auto executor = std::make_shared<NativeLinuxExecutor>(
+  auto nle = std::make_shared<NativeLinuxExecutor>(
       setting->argv, setting->exec_timelimit_ms, setting->exec_memlimit,
       setting->forksrv,
       setting->out_dir / option::GetDefaultOutfile<AFLFastTag>(),
       option::GetMapSize<AFLFastTag>(), // afl_shm_size
       0                                 // bb_shm_size
       );
+
+  auto executor = std::make_shared<AFLExecutorInterface>(std::move(nle));
 
   // Create AFLFastState
   auto state = std::make_unique<AFLFastState>(setting, executor);

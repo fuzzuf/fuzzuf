@@ -97,9 +97,10 @@ static void NautilusLoop(bool forksrv, size_t iter) {
 
   using fuzzuf::algorithm::afl::option::GetDefaultOutfile;
   using fuzzuf::algorithm::afl::option::GetMapSize;
+  using fuzzuf::executor::AFLExecutorInterface;
 
   /* Create NativeLinuxExecutor */
-  auto executor = std::make_shared<NativeLinuxExecutor>(
+  auto nle = std::make_shared<NativeLinuxExecutor>(
     args,
     setting->exec_timeout_ms,
     setting->exec_memlimit,
@@ -109,6 +110,8 @@ static void NautilusLoop(bool forksrv, size_t iter) {
     0,                         // bb_shm_size
     setting->cpuid_to_bind
   );
+
+  auto executor = std::make_shared<AFLExecutorInterface>(std::move(nle));
 
   using fuzzuf::algorithm::nautilus::fuzzer::NautilusState;
   using fuzzuf::algorithm::nautilus::grammartec::ChunkStore;

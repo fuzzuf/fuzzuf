@@ -23,9 +23,10 @@
 #include "fuzzuf/algorithms/die/die_fuzzer.hpp"
 #include "fuzzuf/cli/fuzzer_builder_register.hpp"
 #include "fuzzuf/cli/fuzzer/die/build_die_fuzzer_from_args.hpp"
+#include "fuzzuf/executor/afl_executor_interface.hpp"
 
 namespace fuzzuf::algorithm::die {
 
-static FuzzerBuilderRegister global_die_register("die", BuildDIEFuzzerFromArgs<Fuzzer, DIEFuzzer>);
+static FuzzerBuilderRegister global_die_register("die", BuildDIEFuzzerFromArgs<Fuzzer, DIEFuzzer, executor::AFLExecutorInterface>);
 
 } // namespace fuzzuf::algorithm::die

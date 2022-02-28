@@ -52,7 +52,7 @@ static void usage(po::options_description &desc) {
 }
 
 // Used only for CLI
-template <class TFuzzer, class TIJONFuzzer>
+template <class TFuzzer, class TIJONFuzzer, class TExecutor>
 std::unique_ptr<TFuzzer> BuildIJONFuzzerFromArgs(
     FuzzerArgs &fuzzer_args, 
     GlobalFuzzerOptions &global_options
@@ -132,7 +132,7 @@ std::unique_ptr<TFuzzer> BuildIJONFuzzerFromArgs(
     // TODO: support more types of executors
 
     using algorithm::ijon::SharedData;
-    auto executor = std::make_shared<NativeLinuxExecutor>(
+    auto nle = std::make_shared<NativeLinuxExecutor>(
                         setting->argv,
                         setting->exec_timelimit_ms,
                         setting->exec_memlimit,
@@ -141,6 +141,8 @@ std::unique_ptr<TFuzzer> BuildIJONFuzzerFromArgs(
                         sizeof(SharedData), // afl_shm_size
                                          0  //  bb_shm_size
                     );
+
+    auto executor = std::make_shared<TExecutor>(std::move(nle));
 
     // Create IJONState
     using fuzzuf::algorithm::ijon::IJONState;

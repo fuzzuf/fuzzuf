@@ -71,7 +71,7 @@ struct DIEOptions {
  * @param (fuzzer_args) Arguments passed to DIE
  * @param (global_options) Global options
  */
-template <class TFuzzer, class TDIEFuzzer>
+template <class TFuzzer, class TDIEFuzzer, class TExecutor>
 std::unique_ptr<TFuzzer> BuildDIEFuzzerFromArgs(FuzzerArgs &fuzzer_args,
                                                 GlobalFuzzerOptions &global_options) {
   po::positional_options_description pargs_desc;
@@ -184,7 +184,7 @@ std::unique_ptr<TFuzzer> BuildDIEFuzzerFromArgs(FuzzerArgs &fuzzer_args,
   using fuzzuf::algorithm::afl::option::GetMapSize;
 
   /* Create NativeLinuxExecutor */
-  auto executor = std::make_shared<NativeLinuxExecutor>(
+  auto nle = std::make_shared<NativeLinuxExecutor>(
     setting->argv,
     setting->exec_timelimit_ms,
     setting->exec_memlimit,
@@ -193,6 +193,8 @@ std::unique_ptr<TFuzzer> BuildDIEFuzzerFromArgs(FuzzerArgs &fuzzer_args,
     GetMapSize<DIETag>(), // afl_shm_size
     0 // bb_shm_size
   );
+
+  auto executor = std::make_shared<TExecutor>(std::move(nle));
 
   using fuzzuf::algorithm::die::DIEState;
 

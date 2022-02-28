@@ -36,7 +36,7 @@
 #include "fuzzuf/algorithms/nautilus/grammartec/context.hpp"
 #include "fuzzuf/algorithms/nautilus/grammartec/mutator.hpp"
 #include "fuzzuf/algorithms/nautilus/grammartec/tree.hpp"
-#include "fuzzuf/executor/native_linux_executor.hpp"
+#include "fuzzuf/executor/afl_executor_interface.hpp"
 
 
 namespace fuzzuf::algorithm::nautilus::fuzzer {
@@ -51,7 +51,7 @@ enum ExecutionReason {
 struct NautilusState {
   explicit NautilusState(
     std::shared_ptr<const NautilusSetting> setting,
-    std::shared_ptr<NativeLinuxExecutor> executor
+    std::shared_ptr<executor::AFLExecutorInterface> executor
   );
 
   bool RunOnWithDedup(const TreeLike& tree,
@@ -81,7 +81,7 @@ struct NautilusState {
                                  size_t end_index);
 
   std::shared_ptr<const NautilusSetting> setting;
-  std::shared_ptr<NativeLinuxExecutor> executor;
+  std::shared_ptr<executor::AFLExecutorInterface> executor;
 
   /* Local state */
   Context ctx;

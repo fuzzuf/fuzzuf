@@ -18,6 +18,7 @@
 #include "fuzzuf/algorithms/afl/afl_fuzzer.hpp"
 #include "fuzzuf/cli/fuzzer_builder_register.hpp"
 #include "fuzzuf/cli/fuzzer/afl/build_afl_fuzzer_from_args.hpp"
+#include "fuzzuf/executor/afl_executor_interface.hpp"
 #include <boost/program_options.hpp>
 
 namespace fuzzuf::algorithm::afl {
@@ -26,6 +27,6 @@ namespace fuzzuf::algorithm::afl {
 // object file.
 // Conversely, if AFL cannot be built in a certain environment, do not compile it into an object file to prevent AFL
 // from being registered by accident.
-static FuzzerBuilderRegister global_afl_register("afl", BuildAFLFuzzerFromArgs<Fuzzer, AFLFuzzer>);
+static FuzzerBuilderRegister global_afl_register("afl", BuildAFLFuzzerFromArgs<Fuzzer, AFLFuzzer, executor::AFLExecutorInterface>);
 
 } // namespace fuzzuf::algorithm::afl
