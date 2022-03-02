@@ -40,6 +40,6 @@ IJON is implemented in a way that retains most of the functions of AFL, and adds
 - At the beginning of the fuzzing loop, the procedure branches randomly.
   - 80% of the time, a seed is selected from the IJON seed queue. In this case, the fuzzer immediately moves to the havoc stage, and returns to the beginning of the fuzzing loop after a certain number of havoc mutations.
   - 20% of the time, a seed is selected from the AFL seed queue. In this case, mutation is performed in the same flow as the original AFL.
-- After a PUT is executed, the IJON seed queue is updated based on the feedback obtained from the PUT.
+- After a PUT exits, the IJON seed queue is updated based on the feedback obtained from the PUT.
   - Even when AFL is selected in 20% probability, the IJON seed queue is also updated.
 - Some of the constants are changed.
