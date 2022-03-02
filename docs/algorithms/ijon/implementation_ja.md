@@ -20,5 +20,5 @@
 
 - SelectSeed: IJONのシードキューからシードを選択する。
 - PrintAflIsSelected: 20%の確率でAFLのコードフローが選択された場合に、AFLが選択された旨を出力する。
-- MaxHavoc: 80%の確率でIJONのコードフローが選択された場合に開始するミューテーション。
+- MaxHavoc: 80%の確率でIJONのコードフローが選択された場合に開始されるhavocミューテーション。
 - UpdateMax: IJONのシードキューを更新する処理。
