@@ -132,7 +132,7 @@ It's too bad `Mutator` has some raw pointers as its members, such as `u8 *Mutato
 
 ### Add CODING\_RULE.md and refactor the code in accordance with CODING\_RULE.md
 
-In the past, we didn't have no explicit coding rules. Nevertheless, we have continued developping fuzzuf simultaneously and almost independently of each other. As a result, the code base doesn't look well-organized. This would make the contributors and users confusing, so we must fix it. We have already almost finished creating CODING\_RULE.md internally. We will release it after review and formatting is complete. After Especially, because we started implementing libFuzzer at a very early stage, the large part of the implementation of libFuzzer doesn't conform to that rules. We will resolve this issue gradually simply because they are too large to fix immediately.
+In the past, we didn't have no explicit coding rules. Nevertheless, we have continued developping fuzzuf simultaneously and almost independently of each other. As a result, the code base doesn't look well-organized. This would make the contributors and users confusing, so we must fix it. We have already almost finished creating CODING\_RULE.md internally. We will release it after review and formatting is complete. Especially, because we started implementing libFuzzer at a very early stage, the large part of the implementation of libFuzzer doesn't conform to that rules. We will resolve this issue gradually simply because they are too large to fix immediately.
 
 
 ## To-Dos in each fuzzing algorithm (most of which don't require careful consideration)
@@ -152,7 +152,7 @@ This feature is just unimplemented.
 
 In the implmentation of AFL, we use a lot of `template` to allow users to define the derived classes of `AFLTestcase` and `AFLState`. But this is just cutting corners. Let us explain what we've done with an example. Let's say, we want to define a function that takes a reference of some struct as an argument. The struct has a member named "x". The function would look like the following:
 
-```
+```cpp
 void SomeFunc(const SomeStruct& stru) {
   std::cout << stru.x << std::endl;
 }
@@ -160,7 +160,7 @@ void SomeFunc(const SomeStruct& stru) {
 
 Next, we would like to generalize this function so that it can accept similar struct types. Specificallt, we should be able to pass to the function the instances of other structs that have the member "x". Obviously, we can do that in the following way:
 
-```
+```cpp
 template<class Struct>
 void SomeFunc(const Struct& stru) {
   std::cout << stru.x << std::endl;
@@ -169,7 +169,7 @@ void SomeFunc(const Struct& stru) {
 
 But, another possible solution would be to define the virtual member function `SomeStruct::GetX()`, and to make other structs derive it. Like this way:
 
-```
+```cpp
 // Define SomeStruct::GetX() in advance
 void SomeFunc(const SomeStruct& stru) {
   std::cout << stru.GetX() << std::endl;
@@ -185,7 +185,7 @@ This section documents To-Dos of IJON.
 #### Implement annotations
 
 What IJON proposed is not just a fuzzer, but a set of a fuzzer and an annotation mechanism in PUTs.
-Unfortunately, the annotation mechanism is not implemented in fuzzuf because it doesn't have its own instrumentation tool yet.
+Unfortunately, the annotation mechanism is not implemented in fuzzuf because fuzzuf doesn't have its own instrumentation tool yet.
 This should be implemented immediately after fuzzuf-cc becomes ready.
 
 #### Test with Super Mario Bros.
