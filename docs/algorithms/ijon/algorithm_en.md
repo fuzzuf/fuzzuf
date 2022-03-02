@@ -22,7 +22,7 @@ With `fuzzuf` installed, run
 fuzzuf ijon -i path/to/initial/seeds/ path/to/PUT @@
 ```
 
-to start IJON. The global options that can be specified are the same as for AFL.
+to start IJON. The global options available are the same as for AFL.
 For AFL options, see [AFL/algorithm_en.md](/docs/algorithms/afl/algorithm_en.md).
 
 The local options for IJON that can be used are:
