@@ -25,7 +25,7 @@ fuzzuf ijon -i path/to/initial/seeds/ path/to/PUT @@
 to start IJON. The global options available are the same as for AFL.
 For AFL options, see [AFL/algorithm_en.md](/docs/algorithms/afl/algorithm_en.md).
 
-The local options for IJON that can be used are:
+The local option for IJON is:
 
 - `--forksrv 0|1`
   - If 1 is specified, then fork server mode is enabled. It is enabled by default.
