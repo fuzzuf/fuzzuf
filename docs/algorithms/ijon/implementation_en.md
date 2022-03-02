@@ -12,7 +12,7 @@ However, the functions of the original AFL, which are not implemented in fuzzuf 
 
 ## Important To-Do: Implementing Annotations
 
-It should be noted that annotations, which must be a major component of IJON, are not implemented in fuzzuf at present.
+Be noted that annotation, which is one of the major components of IJON, is not implemented in fuzzuf at present.
 This is due to the fact that fuzzuf does not have its own instrumentation tool yet, and therefore we will start implementing it as soon as the instrumentation tool is ready.
 For other To-Dos, please check [TODO.md](https://github.com/fuzzuf/fuzzuf/blob/master/TODO.md).
 
