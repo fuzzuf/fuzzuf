@@ -34,7 +34,7 @@ The local option for IJON is:
 
 IJON is implemented in a way that retains most of the functions of AFL, and adds additional functions. Roughly speaking, the differences from AFL are as follows:
 
-- Some cases of havoc mutation have been modified.
+- Some cases of havoc mutation are modified.
 - IJON has its own seed queue, apart from the AFL seed queue.
   - For each element of a 64-bit non-negative integer array in shared memory, the IJON seed queue saves the seed that makes a program record the largest value in the element.
 - At the beginning of the fuzzing loop, the procedure branches randomly.
