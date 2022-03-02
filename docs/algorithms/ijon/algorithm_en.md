@@ -42,4 +42,4 @@ IJON is implemented in a way that retains most of the functions of AFL, and adds
   - 20% of the time, a seed is selected from the AFL seed queue. In this case, mutation is performed in the same flow as the original AFL.
 - After a PUT is executed, the IJON seed queue is updated based on the feedback obtained from the PUT.
   - Even when AFL is selected in 20% probability, the IJON seed queue is also updated.
-- Some of the constant values have been changed.
+- Some of the constants are changed.
