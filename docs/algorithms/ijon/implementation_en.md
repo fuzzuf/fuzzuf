@@ -8,7 +8,7 @@
 ## Differences from the original implementation
 
 Unless there are unintended discrepancies due to bugs, the original implementation has been completely reproduced and there are no differences between it and ours.
-However, the functions of the original AFL, which are not implemented in fuzzuf AFL, of course cannot be used in IJON.
+However, the functions of the original AFL, which are not implemented in fuzzuf AFL, cannot be used of course also in IJON.
 
 ## Important To-Do: Implementing Annotations
 

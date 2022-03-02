@@ -38,7 +38,7 @@ IJON is implemented in a way that retains most of the functions of AFL, and adds
 - IJON has its own seed queue, apart from the AFL seed queue.
   - For each element of a 64-bit non-negative integer array in shared memory, the IJON seed queue saves the seed that makes a program record the largest value in the element.
 - At the beginning of the fuzzing loop, the procedure branches randomly.
-  - 80% of the time, a seed is selected from the IJON seed queue. In this case, it immediately moves to the havoc stage, and returns to the beginning of the fuzzing loop after a certain number of havoc mutations.
+  - 80% of the time, a seed is selected from the IJON seed queue. In this case, the fuzzer immediately moves to the havoc stage, and returns to the beginning of the fuzzing loop after a certain number of havoc mutations.
   - 20% of the time, a seed is selected from the AFL seed queue. In this case, mutation is performed in the same flow as the original AFL.
 - After a PUT is executed, the IJON seed queue is updated based on the feedback obtained from the PUT.
   - Even when AFL is selected in 20% probability, the IJON seed queue is also updated.
