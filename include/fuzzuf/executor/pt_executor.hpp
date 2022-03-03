@@ -18,6 +18,8 @@
 #pragma once
 
 #include "fuzzuf/executor/proxy_executor.hpp"
+#include "fuzzuf/coverage/afl_pt_path_cov_attacher.hpp"
+#include "fuzzuf/coverage/afl_pt_path_fav_attacher.hpp"
 
 // A class for fuzz executions with Intel PT
 // NOTE:
@@ -30,21 +32,12 @@
 // https://github.com/junxzm1990/afl-pt/blob/master/afl-2.42b/pt-fuzz-fast.c#L1226-#L1229
 class PTExecutor : public ProxyExecutor {
 public:
-    static constexpr const char* PATH_SHM_ENV_VAR = "__AFL_SHM_ID"; // TODO: Use different environment variable.
-    static constexpr const char* FAV_SHM_ENV_VAR = "__AFL_PTFAV_SHM_ID";
-
     // shm_size is fixed in PTrix pt-proxy-fast.
     static constexpr u32 PATH_SHM_SIZE = (1U << 16);
     static constexpr u32 FAV_SHM_SIZE = (1U << 16);
 
-    const u32 path_shm_size;
-    const u32 fav_shm_size;
-
-    int path_shmid;
-    int fav_shmid;
-
-    u8 *path_trace_bits;
-    u8 *fav_trace_bits;
+    AFLPTPathCovAttacher afl_pt_path_coverage;
+    AFLPTPathFavAttacher afl_pt_path_fav;
 
     PTExecutor(
         const fs::path &proxy_path,
@@ -61,6 +54,8 @@ public:
     InplaceMemoryFeedback GetBBFeedback() = delete;
     InplaceMemoryFeedback GetPathFeedback();
     InplaceMemoryFeedback GetFavFeedback();
+
+    bool IsFeedbackLocked() override;
 
     void SetupSharedMemories() override;
     void ResetSharedMemories() override;
