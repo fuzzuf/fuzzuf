@@ -29,3 +29,77 @@ To support 1., libFuzzer will link the target built with `-fsanitize-coverage=ed
 
 To achieve 2., libFuzzer rewrites the information held by the sanitizer before and after executing the harness, if necessary.
 The implementation of LLVM's sanitizer is not an API that guarantees to be compatible in the future. Since libFuzzer itself is part of LLVM, it is implemented to be coupled with the corresponding version of LLVM's sanitizer.
+
+As mentioned in the previous section on feature behavior, the original libFuzzer has some minor differences in behavior depending on the version. For example, up to LLVM 8, mt19937 is used as the random number generator, and after LLVM 9, minstd_rand is used.
+
+## How libFuzzer works
+
+libFuzzer performs the process shown in the following pseudo-code.
+
+Where `initial_input` is the initial seed, `target` is the fuzzing target, `total_count` is the number of times to execute the target, and `mutation_depth` is the number of times to perform mutation on the same input value.
+
+```cpp
+count = 0;
+// Array of IDs of "unique" features that have appeared more than once but less frequently.
+unique_feature_set = {}
+// A map holding the number of times a feature has appeared.
+global_feature_freqs = {}
+corpus = {}
+// For all initial seeds:
+for( input in initial_inputs ) {
+  // Execute the target once.
+  exec_result = execute( target, input );
+  // Add the execution result to the corpus.
+  add_to_corpus( corpus, exec_result, input );
+}
+// Update the distribution of the probability of selecting the input value.
+dist = update_distribution( corpus );
+// Until the number of attempts reaches total_count:
+while( count < total_count ) {
+  // Until `i` reaches mutation_depth (default to 5 in libFuzzer):
+  for( i = 0; i < mutation_depth; ++i ) {
+    // Select a input value from corpus.
+    [old_exec_result,input] = corpus.select_seed();
+    // Perform mutation on the input value.
+    mut_input = mutate( dist, input );
+    // Execute the target.
+    exec_result = execute( target, mut_input );
+    // Collect the features from the execution result.
+    features = collect_features( old_exec_result, exec_result, unique_feature_set, global_feature_freqs );
+    // If a new feature has been discovered:
+    if( is_interesting( features ) ) {
+      // Add the execution result and the input value to corpus.
+      corpus.add( exec_result, mut_input );
+      // Update the distribution of the probability of selecting the input value.
+      dist = update_distribution( corpus );
+      // Increment the attempt counter.
+      ++count;
+      // Exit the loop if the execution result is added to corpus, even if `i` does not reach mutation_depth.
+      break;
+    }
+    else {
+      // Increment the attempt counter.
+      ++count;
+    }
+  }
+}
+```
+
+libFuzzer treats "features of interest" in the target execution results and gives them IDs.
+Features are the index of the edge in the edge coverage and the number of hits on the edge.
+
+In the pseudo code above, `collect_features()` collects features from `exec_result` of the current seed execution. `collect_features()` updates `unique_feature_set` and `global_feature_freqs` each time a feature is found.
+
+If there is a new feature in `features` collected by `collect_features()`, `corpus.add()` will add its execution result `exec_result` and the mutated input value `mut_input` to corpus. `is_interesting()` checks if `features` contains at least one "rare" feature from `unique_feature_set`. Finally, the probability `dist` of choosing the next input value is updated with `update_distribution()`.
+
+There are two types of behavior of `update_distribution()`, vanilla scheduling and entropic scheduling, and the libFuzzer implementation of fuzzuf uses the former by default. In vanilla scheduling, libFuzzer uses a simple "select more recently found items with higher probability" policy. On the other hand, entropic scheduling evaluates the results of the seed runs and updates the probability distribution `dist` so that the results with higher evaluation are more likely to be selected in the next `select_seed()`. The evaluation value of the result of this seed run used in entropic scheduling is called energy, and the fuzzer calculates it while collecting features with `collect_features()` in the following terms:
+
+* The number of "rare" features found.
+* The number of mutations performed from the initial seed to this input value.
+* How deviated from the average execution time is.
+
+In entropic scheduling, libFuzzer selects the seed according to the following policy by using energy:
+
+* Focus on the input that produced the rarest features
+* Select inputs that have repeatedly found new features with each mutation.
+* Select inputs that run more quickly if the same number of features are found.
