@@ -10,13 +10,16 @@
 
 IJONは、これらの問題点に対処できるシンプルな解決策として、「PUTに対して人の手でアノテーションを行う」という方法を提案しています。PUTをソースコードからビルドしカバレッジの取得を計装する際、人間がソースコードにアノテーションを加えることで、PUTがファザーに与えるフィードバックをカスタマイズできます。IJONが提供するアノテーションには様々なものがあり、人間が重要な内部状態だと考えるものを明示するために用います。例えば「ある変数の最大値をフィードバックに記録する」、「ある2変数の差の最小値を記録する」といったアノテーションが可能です。
 
-実際には、IJONはAFLをベースとして実装されているため、PUTが返すフィードバックは、(Hashed) Edge Coverageであり、共有メモリを経由してファザーに受け渡されます。したがって、IJONは、ソースコードに記述できるアノテーションを、具体的には共有メモリに対して値を書き込む関数およびマクロとして実装しています。これらのマクロや関数は、計装ツールがEdge Coverageを計装する際に、一緒にコンパイルされます。
+実際には、IJONのファザーはAFLをベースとして実装されているため、PUTが返すフィードバックは、(Hashed) Edge Coverageであり、共有メモリを経由してファザーに受け渡されます。したがって、IJONは、ソースコードに記述できるアノテーションを、具体的には共有メモリに対して値を書き込む関数およびマクロとして実装しています。これらのマクロや関数は、計装ツールがEdge Coverageを計装する際に、一緒にコンパイルされます。
 
 このようにIJONは、AFLベースかつ実用的なファジングにおいて求められるハーネス記述用のインターフェイスを備えており、fuzzufの応用可能性の向上を目的としてfuzzuf上に実装されています。
 
 ## CLI上での使用方法
 
-`fuzzuf`をインストールした状態で、
+IJONのファザーを利用するには、まず、計装ツールを用いてアノテーションをほどこしたPUTを準備する必要があります。
+fuzzufには計装ツールが存在していないため、[IJONのリポジトリ](https://github.com/RUB-SysSec/ijon/)からオリジナルの計装ツールをビルドしてください。
+
+IJONのファザーは、ビルドした計装ツールによってPUTを作成した後、`fuzzuf`をインストールした状態で、
 
 ```bash
 fuzzuf ijon -i path/to/initial/seeds/ path/to/PUT @@
@@ -30,6 +33,56 @@ AFLのオプションについては[AFL/algorithm_ja.md#cli上での使用方�
 - `--forksrv 0|1`
   - 1が指定された場合、fork server modeが有効になります。 デフォルトで有効です。
 
+
+## 使用例
+
+ビルドした計装ツールおよびfuzzufに実装されたIJONのファザーをテストする簡単な方法は、IJONのリポジトリにある[test.c](https://github.com/RUB-SysSec/ijon/blob/master/test.c)および[test2.c](https://github.com/RUB-SysSec/ijon/blob/master/test2.c)をビルドし、ファジングしてみることです。ただし、test.cは、現在の最新コミット(56ebfe34)では正常にビルドできないため、以下の変更を加えてください。
+
+```diff
+diff --git a/llvm_mode/afl-rt.h b/llvm_mode/afl-rt.h
+index 616cbd8..28d5f9d 100644
+--- a/llvm_mode/afl-rt.h
++++ b/llvm_mode/afl-rt.h
+@@ -45,14 +45,14 @@ void ijon_enable_feedback();
+ void ijon_disable_feedback();
+
+ #define _IJON_CONCAT(x, y) x##y
+-#define _IJON_UNIQ_NAME() IJON_CONCAT(temp,__LINE__)
++#define _IJON_UNIQ_NAME IJON_CONCAT(temp,__LINE__)
+ #define _IJON_ABS_DIST(x,y) ((x)<(y) ? (y)-(x) : (x)-(y))
+
+ #define IJON_BITS(x) ((x==0)?{0}:__builtin_clz(x))
+ #define IJON_INC(x) ijon_map_inc(ijon_hashstr(__LINE__,__FILE__)^(x))
+ #define IJON_SET(x) ijon_map_set(ijon_hashstr(__LINE__,__FILE__)^(x))
+
+-#define IJON_CTX(x) ({ uint32_t hash = hashstr(__LINE__,__FILE__); ijon_xor_state(hash); __typeof__(x) IJON_UNIQ_NAME() = (x); ijon_xor_state(hash); IJON_UNIQ_NAME(); })
++#define IJON_CTX(x) ({ uint32_t hash = ijon_hashstr(__LINE__,__FILE__); ijon_xor_state(hash); __typeof__(x) IJON_UNIQ_NAME = (x); ijon_xor_state(hash); IJON_UNIQ_NAME; })
+
+ #define IJON_MAX(x) ijon_max(ijon_hashstr(__LINE__,__FILE__),(x))
+ #define IJON_MIN(x) ijon_max(ijon_hashstr(__LINE__,__FILE__),0xffffffffffffffff-(x))
+diff --git a/test.c b/test.c
+index 50b1b05..aa022f6 100644
+--- a/test.c
++++ b/test.c
+@@ -3,6 +3,7 @@
+ #include<assert.h>
+ #include<stdbool.h>
+ #include <stdlib.h>
++#include <stdint.h>
+```
+
+例えば、test.cをビルドしたバイナリは、以下のようにしてファジングできます:
+
+```bash
+$ (path_to_ijon)/llvm_mode/afl-clang-fast (path_to_ijon)/test.c -o test
+$ mkdir /tmp/ijon_test_indir/ && echo hello > /tmp/ijon_test_indir/hello
+$ fuzzuf ijon -i /tmp/ijon_test_indir/ ./test
+```
+
+test.cは標準入力から入力を受け付けるため、`@@`を指定する必要がないことに注意してください。
+
+test.cおよびtest2.cを見れば、アノテーションの付け方のイメージを掴むことができますが、
+より詳しいアノテーションの使い方については、IJONのREADMEおよびソースコードを参照してください。
 
 ## アルゴリズム概要
 

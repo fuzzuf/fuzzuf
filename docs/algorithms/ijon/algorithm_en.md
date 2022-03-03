@@ -10,25 +10,76 @@
 
 IJON proposes a simple solution to these problems: human annotation on PUTs. When building a PUT from source code and instrumenting it to obtain coverage, humans can add annotations to the source code to customize the feedback that the PUT gives to a fuzzer. There are various annotations provided by IJON that humans can use to specify what they consider to be important internal states. For example, annotations such as "record the maximum value of a variable in the feedback" or "record the minimum difference between two variables" are possible.
 
-In practice, because IJON is implemented based on AFL, the feedback returned by PUT is (Hashed) Edge Coverage, which is passed on to the fuzzer via shared memory. Therefore, the annotations that can be written in the source code are specifically implemented as functions and macros that write values to the shared memory. These macros and functions are compiled together when the instrumentation tools instrument the Edge Coverage.
-Thus, because IJON is an AFL-based fuzzer and has an interface for harness description required in practical fuzzing, it has been implemented on fuzzuf to improve the applicability of fuzzuf.
-
+In practice, because IJON's fuzzer is implemented based on AFL, the feedback returned by PUT is (Hashed) Edge Coverage, which is passed on to the fuzzer via shared memory. Therefore, the annotations that can be written in the source code are specifically implemented as functions and macros that write values to the shared memory. These macros and functions are compiled together when the instrumentation tools instrument the Edge Coverage.
+Thus, because IJON has an AFL-based fuzzer and an interface for harness description required in practical fuzzing, it has been implemented on fuzzuf to improve the applicability of fuzzuf.
 
 ## How to use fuzzuf's IJON CLI
 
-With `fuzzuf` installed, run
+To use IJON's fuzzer, first you need to prepare annotated PUTs with instrumentation tools.
+Because fuzzuf doesn't have its own instrumentation tool, please visit [IJON's repo](https://github.com/RUB-SysSec/ijon/) and build the original instrumentation tool.
+
+After you create a PUT and install `fuzzuf`, run
 
 ```bash
 fuzzuf ijon -i path/to/initial/seeds/ path/to/PUT @@
 ```
 
-to start IJON. The global options available are the same as for AFL.
+to start IJON's fuzzer. The global options available are the same as for AFL.
 For AFL options, see [AFL/algorithm_en.md](/docs/algorithms/afl/algorithm_en.md).
 
 The local option for IJON is:
 
 - `--forksrv 0|1`
   - If 1 is specified, then fork server mode is enabled. It is enabled by default.
+
+## Example Usage
+
+You can test the original instrumentation tool and IJON's fuzzer in fuzzuf by building and fuzzing [test.c](https://github.com/RUB-SysSec/ijon/blob/master/test.c) and [test2.c](https://github.com/RUB-SysSec/ijon/blob/master/test2.c) found in IJON's repo. Note that, test.c, included in the latest commit (56ebfe34), may yield compilation errors and in that case you need to apply the following changes:
+
+```diff
+diff --git a/llvm_mode/afl-rt.h b/llvm_mode/afl-rt.h
+index 616cbd8..28d5f9d 100644
+--- a/llvm_mode/afl-rt.h
++++ b/llvm_mode/afl-rt.h
+@@ -45,14 +45,14 @@ void ijon_enable_feedback();
+ void ijon_disable_feedback();
+
+ #define _IJON_CONCAT(x, y) x##y
+-#define _IJON_UNIQ_NAME() IJON_CONCAT(temp,__LINE__)
++#define _IJON_UNIQ_NAME IJON_CONCAT(temp,__LINE__)
+ #define _IJON_ABS_DIST(x,y) ((x)<(y) ? (y)-(x) : (x)-(y))
+
+ #define IJON_BITS(x) ((x==0)?{0}:__builtin_clz(x))
+ #define IJON_INC(x) ijon_map_inc(ijon_hashstr(__LINE__,__FILE__)^(x))
+ #define IJON_SET(x) ijon_map_set(ijon_hashstr(__LINE__,__FILE__)^(x))
+
+-#define IJON_CTX(x) ({ uint32_t hash = hashstr(__LINE__,__FILE__); ijon_xor_state(hash); __typeof__(x) IJON_UNIQ_NAME() = (x); ijon_xor_state(hash); IJON_UNIQ_NAME(); })
++#define IJON_CTX(x) ({ uint32_t hash = ijon_hashstr(__LINE__,__FILE__); ijon_xor_state(hash); __typeof__(x) IJON_UNIQ_NAME = (x); ijon_xor_state(hash); IJON_UNIQ_NAME; })
+
+ #define IJON_MAX(x) ijon_max(ijon_hashstr(__LINE__,__FILE__),(x))
+ #define IJON_MIN(x) ijon_max(ijon_hashstr(__LINE__,__FILE__),0xffffffffffffffff-(x))
+diff --git a/test.c b/test.c
+index 50b1b05..aa022f6 100644
+--- a/test.c
++++ b/test.c
+@@ -3,6 +3,7 @@
+ #include<assert.h>
+ #include<stdbool.h>
+ #include <stdlib.h>
++#include <stdint.h>
+```
+
+For example, you can build test.c and fuzz the produced binary with the following commands:
+
+```bash
+$ (path_to_ijon)/llvm_mode/afl-clang-fast (path_to_ijon)/test.c -o test
+$ mkdir /tmp/ijon_test_indir/ && echo hello > /tmp/ijon_test_indir/hello
+$ fuzzuf ijon -i /tmp/ijon_test_indir/ ./test
+```
+
+Here, you don't need to specify `@@` in the last command because the binary receives inputs via stdin.
+
+While test.c and test2.c gives you an idea how you can use annotations, you can check README and source code in IJON's repo to understand their further usage.
 
 ## Algorithm Overview
 
