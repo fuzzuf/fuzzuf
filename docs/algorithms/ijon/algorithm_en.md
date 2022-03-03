@@ -10,7 +10,7 @@
 
 IJON proposes a simple solution to these problems: human annotation on PUTs. When building a PUT from source code and instrumenting it to obtain coverage, humans can add annotations to the source code to customize the feedback that the PUT gives to a fuzzer. There are various annotations provided by IJON that humans can use to specify what they consider to be important internal states. For example, annotations such as "record the maximum value of a variable in the feedback" or "record the minimum difference between two variables" are possible.
 
-In practice, because IJON's fuzzer is implemented based on AFL, the feedback returned by PUT is (Hashed) Edge Coverage, which is passed on to the fuzzer via shared memory. Therefore, the annotations that can be written in the source code are specifically implemented as functions and macros that write values to the shared memory. These macros and functions are compiled together when the instrumentation tools instrument the Edge Coverage.
+In practice, because IJON's fuzzer is implemented based on AFL, the feedback returned by PUT is (Hashed) Edge Coverage, which is passed on to the fuzzer via shared memory. Therefore, IJON specifically implemented the annotations, which users can write in the source code, as functions and macros that write values to the shared memory. These macros and functions are compiled together when the instrumentation tools instrument the Edge Coverage.
 Thus, because IJON has an AFL-based fuzzer and an interface for harness description required in practical fuzzing, it has been implemented on fuzzuf to improve the applicability of fuzzuf.
 
 ## How to use fuzzuf's IJON CLI
