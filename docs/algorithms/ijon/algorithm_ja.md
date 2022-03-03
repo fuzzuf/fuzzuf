@@ -69,6 +69,9 @@ index 50b1b05..aa022f6 100644
  #include<stdbool.h>
  #include <stdlib.h>
 +#include <stdint.h>
+
+ #define compare(x,y) IJON_CTX(compare_w((x),(y)))
+ bool compare_w(int x, int y){
 ```
 
 例えば、test.cをビルドしたバイナリは、以下のようにしてファジングできます:
