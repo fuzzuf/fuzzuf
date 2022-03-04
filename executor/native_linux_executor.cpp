@@ -19,6 +19,7 @@
 #include <chrono>
 #include <cstddef>
 #include <cassert>
+#include <cstdlib>
 #include <memory>
 #include <optional>
 #include <boost/container/static_vector.hpp>
@@ -37,6 +38,7 @@
 #include "fuzzuf/feedback/exit_status_feedback.hpp"
 #include "fuzzuf/feedback/put_exit_reason_type.hpp"
 #include "fuzzuf/logger/logger.hpp"
+#include "config.h"
 
 bool NativeLinuxExecutor::has_setup_sighandlers = false;
 
@@ -100,6 +102,22 @@ NativeLinuxExecutor::NativeLinuxExecutor(
     SetupSharedMemories();
     SetupEnvironmentVariablesForTarget();
     CreateJoinedEnvironmentVariables( std::move( environment_variables_ ) );
+
+    // Handle frida mode for NativeLinuxExecutor
+    if (getenv("FUZZUF_FRIDA_MODE")) {
+        unsetenv("FUZZUF_FRIDA_MODE");
+        struct stat statbuf;
+        if ((stat(FUZZUF_AFL_FRIDA_TRACE_SO, &statbuf)) == -1) {
+            std::cerr << cLRD <<
+                "[-] File afl-frida-trace.so not found\n" <<
+                "    Please specify the path with -DAFL_ROOT on cmake" <<
+                cRST << std::endl;
+        }
+        setenv("__AFL_DEFER_FORKSRV", "1", 1);
+        setenv("LD_PRELOAD", FUZZUF_AFL_FRIDA_TRACE_SO, 1);
+        // Need to add the size of the library
+        this->exec_memlimit += (statbuf.st_size >> 20);
+    }
 
     if (forksrv) {
         SetupForkServer();

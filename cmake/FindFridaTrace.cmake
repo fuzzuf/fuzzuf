@@ -19,17 +19,11 @@
 if( "${CMAKE_SYSTEM_PROCESSOR}" STREQUAL "x86_64" )
   if ( DEFINED AFL_ROOT )
     find_program(
-      FRIDA_TRACE_SO
+      AFL_FRIDA_TRACE_SO
       afl-frida-trace.so
       HINTS ${AFL_ROOT}/
     )
   else()
     message( STATUS "afl-frida-trace.so location is not specified." )
-  endif()
-  if ( DEFINED FRIDA_TRACE_SO )
-    file(
-      COPY ${FRIDA_TRACE_SO}
-      DESTINATION ${CMAKE_BINARY_DIR}
-    )
   endif()
 endif()
