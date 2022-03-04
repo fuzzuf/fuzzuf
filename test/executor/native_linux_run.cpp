@@ -75,21 +75,21 @@ BOOST_AUTO_TEST_CASE(NativeLinuxExecutorVariableShm) {
       executor.Run(reinterpret_cast<const u8 *>(input.c_str()), input.size());
 
       if (afl == 0) {
-        BOOST_CHECK_EQUAL(executor.afl_shmid,
-                          NativeLinuxExecutor::INVALID_SHMID);
+        BOOST_CHECK_EQUAL(executor.GetAFLShmID(),
+                          ShmCovAttacher::INVALID_SHMID);
       } else {
         struct shmid_ds info;
-        int res = shmctl(executor.afl_shmid, IPC_STAT, &info);
+        int res = shmctl(executor.GetAFLShmID(), IPC_STAT, &info);
         BOOST_CHECK_EQUAL(res, 0);
         BOOST_CHECK_EQUAL(info.shm_segsz, afl);
       }
 
       if (bb == 0) {
-        BOOST_CHECK_EQUAL(executor.bb_shmid,
-                          NativeLinuxExecutor::INVALID_SHMID);
+        BOOST_CHECK_EQUAL(executor.GetBBShmID(),
+                          ShmCovAttacher::INVALID_SHMID);
       } else {
         struct shmid_ds info;
-        int res = shmctl(executor.bb_shmid, IPC_STAT, &info);
+        int res = shmctl(executor.GetBBShmID(), IPC_STAT, &info);
         BOOST_CHECK_EQUAL(res, 0);
         BOOST_CHECK_EQUAL(info.shm_segsz, bb);
       }

@@ -1,11 +1,14 @@
 CC?=clang
 AFLCC?=afl-clang
-CFLAGS=-nopie -fno-stack-protector -Wno-address-of-packed-member -O3 -static
+CFLAGS=-no-pie -fno-stack-protector -Wno-address-of-packed-member -O3
 
-all: exifutil
+all: exifutil static-exifutil san-exifutil afl-exifutil
 
 exifutil: exifutil.c
 	$(CC) $(CFLAGS) $^ -o $@
+
+static-exifutil: exifutil.c
+	$(CC) $(CFLAGS) -static $^ -o $@
 
 san-exifutil: exifutil.c
 	$(CC) $(CFLAGS) $^ -o $@ -fsanitize=address

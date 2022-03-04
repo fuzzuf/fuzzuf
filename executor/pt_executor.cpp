@@ -31,10 +31,10 @@ PTExecutor::PTExecutor(
     bool record_stdout_and_err
 ) : ProxyExecutor ( proxy_path, std::vector<std::string>(), argv, exec_timelimit_ms, exec_memlimit, forksrv,
                     path_to_write_input, 0, 0, record_stdout_and_err ),
-    path_shm_size ( PTExecutor::PATH_SHM_SIZE ),
-    fav_shm_size ( PTExecutor::FAV_SHM_SIZE )
+    afl_pt_path_coverage(PTExecutor::PATH_SHM_SIZE),
+    afl_pt_path_fav(PTExecutor::FAV_SHM_SIZE)
 {
-    if (path_shm_size > 0 || fav_shm_size > 0) {
+    if (afl_pt_path_coverage.GetMapSize() > 0 || afl_pt_path_fav.GetMapSize() > 0) {
         has_shared_memories = true;
     }
 
@@ -43,75 +43,37 @@ PTExecutor::PTExecutor(
 }
 
 void PTExecutor::SetupSharedMemories() {
-    if (path_shm_size > 0) {
-        path_shmid = shmget(IPC_PRIVATE, path_shm_size, IPC_CREAT | IPC_EXCL | 0600);
-        if (path_shmid < 0) ERROR("shmget() failed");
-
-        path_trace_bits = (u8 *)shmat(path_shmid, nullptr, 0);
-        if (path_trace_bits == (u8 *)-1) ERROR("shmat() failed");
-    }
-
-    if (fav_shm_size > 0) {
-        fav_shmid = shmget(IPC_PRIVATE, fav_shm_size, IPC_CREAT | IPC_EXCL | 0600);
-        if (fav_shmid < 0) ERROR("shmget() failed");
-
-        fav_trace_bits = (u8 *)shmat(fav_shmid, nullptr, 0);
-        if (fav_trace_bits == (u8 *)-1) ERROR("shmat() failed");
-    }
+    afl_pt_path_coverage.Setup();
+    afl_pt_path_fav.Setup();
 }
 
 void PTExecutor::ResetSharedMemories() {
-    if (path_shm_size > 0) {
-        std::memset(path_trace_bits, 0, path_shm_size);
-    }
-
-    if (fav_shm_size > 0) {
-        std::memset(fav_trace_bits, 0, fav_shm_size);
-    }
-
-    MEM_BARRIER();
+    afl_pt_path_coverage.Reset();
+    afl_pt_path_fav.Reset();
 }
 
 void PTExecutor::EraseSharedMemories() {
-    if (path_shm_size > 0) {
-        if (shmdt(path_trace_bits) == -1) ERROR("shmdt() failed");
-        path_trace_bits = nullptr;
-        if (shmctl(path_shmid, IPC_RMID, 0) == -1) ERROR("shmctl() failed");
-        path_shmid = INVALID_SHMID;
-    }
-
-    if (fav_shm_size > 0) {
-        if (shmdt(fav_trace_bits) == -1) ERROR("shmdt() failed");
-        fav_trace_bits = nullptr;
-        if (shmctl(fav_shmid, IPC_RMID, 0) == -1) ERROR("shmctl() failed");
-        fav_shmid = INVALID_SHMID;
-    }
+    afl_pt_path_coverage.Erase();
+    afl_pt_path_fav.Erase();
 }
 
 void PTExecutor::SetupEnvironmentVariablesForTarget() {
+    afl_pt_path_coverage.SetupEnvironmentVariable();
+    afl_pt_path_fav.SetupEnvironmentVariable();
+
     ProxyExecutor::SetupEnvironmentVariablesForTarget();
-
-    if (path_shm_size > 0) {
-        std::string path_shmstr = std::to_string(path_shmid);
-        setenv(PATH_SHM_ENV_VAR, path_shmstr.c_str(), 1);
-    } else {
-        // make sure to unset the environmental variable if it's unused
-        unsetenv(PATH_SHM_ENV_VAR);
-    }
-
-    if (fav_shm_size > 0) {
-        std::string fav_shmstr = std::to_string(fav_shmid);
-        setenv(FAV_SHM_ENV_VAR, fav_shmstr.c_str(), 1);
-    } else {
-        // make sure to unset the environmental variable if it's unused
-        unsetenv(FAV_SHM_ENV_VAR);
-    }
 }
 
 InplaceMemoryFeedback PTExecutor::GetPathFeedback() {
-    return InplaceMemoryFeedback(path_trace_bits, path_shm_size, lock);
+    return afl_pt_path_coverage.GetFeedback();
 }
 
 InplaceMemoryFeedback PTExecutor::GetFavFeedback() {
-    return InplaceMemoryFeedback(fav_trace_bits, fav_shm_size, lock);
+    return afl_pt_path_fav.GetFeedback();
+}
+
+bool PTExecutor::IsFeedbackLocked() {
+    return (lock.use_count() > 1)
+    || (afl_pt_path_coverage.GetLockUseCount() > 1)
+    || (afl_pt_path_fav.GetLockUseCount() > 1);
 }

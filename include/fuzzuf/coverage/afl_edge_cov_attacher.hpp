@@ -16,16 +16,28 @@
  * along with this program.  If not, see http://www.gnu.org/licenses/.
  */
 
-#include "fuzzuf/algorithms/ijon/ijon_state.hpp"
+/**
+ * @file afl_edge_cov_attacher.hpp
+ * @author Ricerca Security <fuzzuf-dev@ricsec.co.jp>
+ */
 
-namespace fuzzuf::algorithm::ijon {
+#ifndef FUZZUF_INCLUDE_COVERAGE_AFL_EDGE_COV_ATTACHER_HPP
+#define FUZZUF_INCLUDE_COVERAGE_AFL_EDGE_COV_ATTACHER_HPP
 
-IJONState::IJONState(
-    std::shared_ptr<const afl::AFLSetting> setting,
-    std::shared_ptr<NativeLinuxExecutor> executor
-) : 
-    afl::AFLStateTemplate<IJONTestcase>(setting, executor) {}
+#include "fuzzuf/coverage/shm_cov_attacher.hpp"
 
-IJONState::~IJONState() {}
+/**
+ * @class AFLEdgeCovAttacher
+ * @brief AFL-compatible hashed edge coverage attacher.
+ */
+class AFLEdgeCovAttacher : public ShmCovAttacher {
+public:
+  static constexpr const char* SHM_ENV_VAR = "__AFL_SHM_ID";
 
-} // namespace fuzzuf::algorithm::ijon
+  AFLEdgeCovAttacher(u32 map_size) : ShmCovAttacher(map_size) {}
+  void SetupEnvironmentVariable(void) {
+    ShmCovAttacher::SetupEnvironmentVariable(SHM_ENV_VAR);
+  }
+};
+
+#endif // FUZZUF_INCLUDE_COVERAGE_AFL_EDGE_COV_ATTACHER_HPP
