@@ -180,6 +180,8 @@ BOOST_AUTO_TEST_CASE(NautilusGrammartecMutatorDeterministicRule) {
 
 BOOST_AUTO_TEST_CASE(NautilusGrammartecMutatorDeterministicSplice) {
   Context ctx;
+  fs::create_directories("/tmp/nautilus/chunks");
+
   ChunkStore cks("/tmp/nautilus");
   RuleID r1 = ctx.AddRule("A", "a {A:a}");
   ctx.AddRule("A", "b {A:a}");
