@@ -82,7 +82,7 @@ $ mkdir /tmp/ijon_test_indir/ && echo hello > /tmp/ijon_test_indir/hello
 $ fuzzuf ijon -i /tmp/ijon_test_indir/ ./test
 ```
 
-test.cは標準入力から入力を受け付けるため、`@@`を指定する必要がないことに注意してください。
+test.cは標準入力から入力を受け付けるため、`@@`を指定する必要がないことに注意してください。IJONの計装ツールおよびファザーが正常に機能している場合、高い確率で3分から5分程度の間にクラッシュが発見されます。
 
 test.cおよびtest2.cを見れば、アノテーションの付け方のイメージを掴むことができますが、
 より詳しいアノテーションの使い方については、IJONのREADMEおよびソースコードを参照してください。

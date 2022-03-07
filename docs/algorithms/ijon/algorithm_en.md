@@ -80,7 +80,7 @@ $ mkdir /tmp/ijon_test_indir/ && echo hello > /tmp/ijon_test_indir/hello
 $ fuzzuf ijon -i /tmp/ijon_test_indir/ ./test
 ```
 
-Here, you don't need to specify `@@` in the last command because the binary receives inputs via stdin.
+Here, you don't need to specify `@@` in the last command because the binary receives inputs via stdin. If IJON's instrumentation tool and fuzzer operate properly, the fuzzer will detect a crash within 3 to 5 minutes with a high probability.
 
 While test.c and test2.c gives you an idea how you can use annotations, you can check README and source code in IJON's repo to understand their further usage.
 
