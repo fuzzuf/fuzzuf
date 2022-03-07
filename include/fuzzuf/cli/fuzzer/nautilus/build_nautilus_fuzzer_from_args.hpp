@@ -30,6 +30,7 @@
 #include "fuzzuf/cli/put_args.hpp"
 #include "fuzzuf/exceptions.hpp"
 #include "fuzzuf/executor/native_linux_executor.hpp"
+#include "fuzzuf/executor/qemu_executor.hpp"
 #include "fuzzuf/utils/common.hpp"
 #include "fuzzuf/utils/filesystem.hpp"
 #include "fuzzuf/utils/optparser.hpp"
@@ -137,6 +138,10 @@ std::unique_ptr<TFuzzer> BuildNautilusFuzzerFromArgs(
     );
   }
 
+  if (global_options.executor == ExecutorKind::QEMU) {
+    bitmap_size = QEMUExecutor::QEMU_SHM_SIZE;
+  }
+
   po::notify(vm);
 
   PutArgs put(pargs);
@@ -204,6 +209,20 @@ std::unique_ptr<TFuzzer> BuildNautilusFuzzerFromArgs(
       0                     // bb_shm_size is not used
     );
     executor = std::make_shared<TExecutor>(std::move(nle));
+    break;
+  }
+
+  case ExecutorKind::QEMU: {
+    // NOTE: Assuming setting->bitmap_size == QEMUExecutor::QEMU_SHM_SIZE
+    auto qe = std::make_shared<QEMUExecutor>(
+      global_options.proxy_path.value(),
+      put.Args(),
+      setting->exec_timeout_ms,
+      setting->exec_memlimit,
+      setting->forksrv,
+      setting->path_to_workdir / GetDefaultOutfile<NautilusTag>()
+    );
+    executor = std::make_shared<TExecutor>(std::move(qe));
     break;
   }
 

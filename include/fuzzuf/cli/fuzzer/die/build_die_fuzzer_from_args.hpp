@@ -29,6 +29,7 @@
 #include "fuzzuf/cli/put_args.hpp"
 #include "fuzzuf/exceptions.hpp"
 #include "fuzzuf/executor/native_linux_executor.hpp"
+#include "fuzzuf/executor/qemu_executor.hpp"
 #include "fuzzuf/utils/optparser.hpp"
 #include "fuzzuf/utils/which.hpp"
 #include "fuzzuf/utils/workspace.hpp"
@@ -197,6 +198,20 @@ std::unique_ptr<TFuzzer> BuildDIEFuzzerFromArgs(FuzzerArgs &fuzzer_args,
       0 // bb_shm_size
     );
     executor = std::make_shared<TExecutor>(std::move(nle));
+    break;
+  }
+
+  case ExecutorKind::QEMU: {
+    // NOTE: Assuming GetMapSize<DIETag>() == QEMUExecutor::QEMU_SHM_SIZE
+    auto qe = std::make_shared<QEMUExecutor>(
+      global_options.proxy_path.value(),
+      setting->argv,
+      setting->exec_timelimit_ms,
+      setting->exec_memlimit,
+      setting->forksrv,
+      setting->out_dir / GetDefaultOutfile<DIETag>()
+    );
+    executor = std::make_shared<TExecutor>(std::move(qe));
     break;
   }
 

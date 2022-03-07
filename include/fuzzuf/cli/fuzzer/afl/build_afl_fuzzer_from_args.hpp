@@ -25,6 +25,7 @@
 #include "fuzzuf/algorithms/afl/afl_setting.hpp"
 #include "fuzzuf/algorithms/afl/afl_state.hpp"
 #include "fuzzuf/executor/native_linux_executor.hpp"
+#include "fuzzuf/executor/qemu_executor.hpp"
 #include <boost/program_options.hpp>
 
 namespace po = boost::program_options;
@@ -170,6 +171,20 @@ std::unique_ptr<TFuzzer> BuildAFLFuzzerFromArgs(
                             0 // bb_shm_size
                         );
         executor = std::make_shared<TExecutor>(std::move(nle));
+        break;
+    }
+
+    case ExecutorKind::QEMU: {
+        // NOTE: Assuming GetMapSize<AFLTag>() == QEMUExecutor::QEMU_SHM_SIZE
+        auto qe = std::make_shared<QEMUExecutor>(
+                            global_options.proxy_path.value(),
+                            setting->argv,
+                            setting->exec_timelimit_ms,
+                            setting->exec_memlimit,
+                            setting->forksrv,
+                            setting->out_dir / GetDefaultOutfile<AFLTag>()
+                        );
+        executor = std::make_shared<TExecutor>(std::move(qe));
         break;
     }
 
