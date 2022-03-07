@@ -31,6 +31,9 @@
 #include "fuzzuf/exceptions.hpp"
 #include "fuzzuf/executor/native_linux_executor.hpp"
 #include "fuzzuf/executor/qemu_executor.hpp"
+#ifdef __aarch64__
+#include "fuzzuf/executor/coresight_executor.hpp"
+#endif
 #include "fuzzuf/utils/common.hpp"
 #include "fuzzuf/utils/filesystem.hpp"
 #include "fuzzuf/utils/optparser.hpp"
@@ -225,6 +228,22 @@ std::unique_ptr<TFuzzer> BuildNautilusFuzzerFromArgs(
     executor = std::make_shared<TExecutor>(std::move(qe));
     break;
   }
+
+#ifdef __aarch64__
+  case ExecutorKind::CORESIGHT: {
+    auto cse = std::make_shared<CoreSightExecutor>(
+      global_options.proxy_path.value(),
+      put.Args(),
+      setting->exec_timeout_ms,
+      setting->exec_memlimit,
+      setting->forksrv,
+      setting->path_to_workdir / GetDefaultOutfile<NautilusTag>(),
+      setting->bitmap_size // afl_shm_size used as bitmap_size
+    );
+    executor = std::make_shared<TExecutor>(std::move(cse));
+    break;
+  }
+#endif
 
   default:
     EXIT("Unsupported executor: '%s'", global_options.executor.c_str());

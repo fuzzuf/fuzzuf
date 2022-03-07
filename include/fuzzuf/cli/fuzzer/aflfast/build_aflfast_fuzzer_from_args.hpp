@@ -26,6 +26,9 @@
 #include "fuzzuf/algorithms/aflfast/aflfast_state.hpp"
 #include "fuzzuf/executor/native_linux_executor.hpp"
 #include "fuzzuf/executor/qemu_executor.hpp"
+#ifdef __aarch64__
+#include "fuzzuf/executor/coresight_executor.hpp"
+#endif
 #include <boost/program_options.hpp>
 
 namespace po = boost::program_options;
@@ -186,6 +189,22 @@ std::unique_ptr<TFuzzer> BuildAFLFastFuzzerFromArgs(
         executor = std::make_shared<TExecutor>(std::move(qe));
         break;
     }
+
+#ifdef __aarch64__
+    case ExecutorKind::CORESIGHT: {
+        auto cse = std::make_shared<CoreSightExecutor>(
+                            global_options.proxy_path.value(),
+                            setting->argv,
+                            setting->exec_timelimit_ms,
+                            setting->exec_memlimit,
+                            setting->forksrv,
+                            setting->out_dir / GetDefaultOutfile<AFLFastTag>(),
+                            GetMapSize<AFLFastTag>() // afl_shm_size
+                        );
+        executor = std::make_shared<TExecutor>(std::move(cse));
+        break;
+    }
+#endif
 
     default:
         EXIT("Unsupported executor: '%s'", global_options.executor.c_str());
