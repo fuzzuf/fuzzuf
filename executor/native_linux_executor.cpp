@@ -108,10 +108,7 @@ NativeLinuxExecutor::NativeLinuxExecutor(
         unsetenv("FUZZUF_FRIDA_MODE");
         struct stat statbuf;
         if ((stat(FUZZUF_AFL_FRIDA_TRACE_SO, &statbuf)) == -1) {
-            std::cerr << cLRD <<
-                "[-] File afl-frida-trace.so not found\n" <<
-                "    Please specify the path with -DAFL_ROOT on cmake" <<
-                cRST << std::endl;
+            ERROR("A file afl-frida-trace.so not found. Please specify the path with -DAFL_ROOT on cmake");
         }
         setenv("__AFL_DEFER_FORKSRV", "1", 1);
         setenv("LD_PRELOAD", FUZZUF_AFL_FRIDA_TRACE_SO, 1);
