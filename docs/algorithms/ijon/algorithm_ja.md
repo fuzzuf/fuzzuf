@@ -77,7 +77,7 @@ index 50b1b05..aa022f6 100644
 例えば、test.cをビルドしたバイナリは、以下のようにしてファジングできます:
 
 ```bash
-$ (path_to_ijon)/llvm_mode/afl-clang-fast (path_to_ijon)/test.c -o test
+$ (path_to_ijon)/afl-clang-fast (path_to_ijon)/test.c -o test
 $ mkdir /tmp/ijon_test_indir/ && echo hello > /tmp/ijon_test_indir/hello
 $ fuzzuf ijon -i /tmp/ijon_test_indir/ ./test
 ```
