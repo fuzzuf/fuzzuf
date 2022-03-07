@@ -77,6 +77,9 @@ FuzzerArgs ParseGlobalOptionsForFuzzer(GlobalArgs &global_args, GlobalFuzzerOpti
         ("out_dir,o", 
             po::value<std::string>(&global_options.out_dir), 
             "Set output dir. Default is `/tmp/fuzzuf-out_dir`.")
+        ("executor,e",
+            po::value<fuzzuf::cli::ExecutorKind>(&global_options.executor)->default_value(global_options.executor),
+            "Specify fuzzing executor. Default is `native`.")
         ("exec_timelimit_ms",
 	    global_options.exec_timelimit_ms ?
               po::value<u32>()->default_value(*global_options.exec_timelimit_ms):

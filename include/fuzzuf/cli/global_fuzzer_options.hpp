@@ -72,6 +72,7 @@ struct GlobalFuzzerOptions {
     std::string fuzzer;                     // Required
     std::string in_dir;                     // Required; TODO: fs::path might be better
     std::string out_dir;                    // Required
+    fuzzuf::cli::ExecutorKind executor;     // Optional
     std::optional<u32> exec_timelimit_ms;   // Optional
     std::optional<u32> exec_memlimit;       // Optional
     Logger logger;                          // Required
@@ -83,6 +84,7 @@ struct GlobalFuzzerOptions {
         fuzzer("afl"), 
         in_dir("./seeds"), // FIXME: Assuming Linux
         out_dir("/tmp/fuzzuf-out_dir"), // FIXME: Assuming Linux
+        executor(fuzzuf::cli::ExecutorKind::NATIVE),
         exec_timelimit_ms(std::nullopt), // Specify no limits
         exec_memlimit(std::nullopt),
         logger(Logger::Stdout),
