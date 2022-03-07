@@ -31,7 +31,7 @@ fuzzuf afl --in_dir=path/to/initial/seeds/ -- path/to/PUT @@
    - `--log_file=path/to/log/file`
      - ログ出力や、デバッグモードでビルドした場合のデバッグ出力を記録するファイルを指定します。
      - 指定されない場合は、標準出力に出力されます。
- - ローカルなオプション(AFLのみで有効)
+- ローカルなオプション(AFLのみで有効)
   - `--dict_file=path/to/dict/file`
     - 追加の辞書ファイルへのパスを指定します。
 

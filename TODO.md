@@ -130,19 +130,29 @@ With this mode, the performance of fuzzuf's libFuzzer would be comparable to tha
 
 It's too bad `Mutator` has some raw pointers as its members, such as `u8 *Mutator::outbuf` and `u8 *Mutator::tmpbuf`. These members can be smart pointers or `std::vector`. We just want to replace them.
 
-### Implement resume mode and parallel fuzzing in AFL
+### Add CODING\_RULE.md and refactor the code in accordance with CODING\_RULE.md
+
+In the past, we didn't have no explicit coding rules. Nevertheless, we have continued developping fuzzuf simultaneously and almost independently of each other. As a result, the code base doesn't look well-organized. This would make the contributors and users confusing, so we must fix it. We have already almost finished creating CODING\_RULE.md internally. We will release it after review and formatting is complete. Especially, because we started implementing libFuzzer at a very early stage, the large part of the implementation of libFuzzer doesn't conform to that rules. We will resolve this issue gradually simply because they are too large to fix immediately.
+
+
+## To-Dos in each fuzzing algorithm (most of which don't require careful consideration)
+
+### AFL
+This section documents To-Dos of AFL.
+
+#### Implement resume mode and parallel fuzzing in AFL
 
 They are just unimplemented.
 
-### Implement SIGUSR1 Handling on AFL
+#### Implement SIGUSR1 Handling on AFL
 
 This feature is just unimplemented.
 
-### Remove careless templates from AFL
+#### Remove careless templates from AFL
 
 In the implmentation of AFL, we use a lot of `template` to allow users to define the derived classes of `AFLTestcase` and `AFLState`. But this is just cutting corners. Let us explain what we've done with an example. Let's say, we want to define a function that takes a reference of some struct as an argument. The struct has a member named "x". The function would look like the following:
 
-```
+```cpp
 void SomeFunc(const SomeStruct& stru) {
   std::cout << stru.x << std::endl;
 }
@@ -150,7 +160,7 @@ void SomeFunc(const SomeStruct& stru) {
 
 Next, we would like to generalize this function so that it can accept similar struct types. Specificallt, we should be able to pass to the function the instances of other structs that have the member "x". Obviously, we can do that in the following way:
 
-```
+```cpp
 template<class Struct>
 void SomeFunc(const Struct& stru) {
   std::cout << stru.x << std::endl;
@@ -159,7 +169,7 @@ void SomeFunc(const Struct& stru) {
 
 But, another possible solution would be to define the virtual member function `SomeStruct::GetX()`, and to make other structs derive it. Like this way:
 
-```
+```cpp
 // Define SomeStruct::GetX() in advance
 void SomeFunc(const SomeStruct& stru) {
   std::cout << stru.GetX() << std::endl;
@@ -168,20 +178,33 @@ void SomeFunc(const SomeStruct& stru) {
 
 We should rewrite the classes of AFL in the same way eventually.
 
+### IJON
+
+This section documents To-Dos of IJON.
+
+#### Implement annotations
+
+What IJON proposed is not just a fuzzer, but a set of a fuzzer and an annotation mechanism in PUTs.
+Unfortunately, the annotation mechanism is not implemented in fuzzuf because fuzzuf doesn't have its own instrumentation tool yet.
+This should be implemented immediately after fuzzuf-cc becomes ready.
+
+#### Test with Super Mario Bros.
+
+To prove that our IJON fuzzer works well to some extent, one of the most comprehensible tests would be check if the fuzzer can play Super Mario Bros. well, as done in the paper of IJON.
+
 ### Nautilus
-This section documents To-Dos of the Nautilus mode.
+
+This section documents To-Dos of Nautilus.
 
 #### Use vector instead of string
+
 The current parser/unparser of the grammar and rules uses `std::string` as its data pool instead of `std::vector<u8>`.
 This should be changed to `std::vector<u8>` because `std::string` is originally not meant to hold unprintable strings.
 
 #### Improve queue
+
 The implementation of the seed queue in the original Nautilus has a lot of room for optimization.
 The current implementation of fuzzuf is similar to the original one and should be improved.
-
-### Add CODING\_RULE.md and refactor the code in accordance with CODING\_RULE.md
-
-In the past, we didn't have no explicit coding rules. Nevertheless, we have continued developping fuzzuf simultaneously and almost independently of each other. As a result, the code base doesn't look well-organized. This would make the contributors and users confusing, so we must fix it. We have already almost finished creating CODING\_RULE.md internally. We will release it after review and formatting is complete. After Especially, because we started implementing libFuzzer at a very early stage, the large part of the implementation of libFuzzer doesn't conform to that rules. We will resolve this issue gradually simply because they are too large to fix immediately.
 
 [^mopt]: Chenyang Lyu, Shouling Ji, Chao Zhang, Yuwei Li, Wei-Han Lee, Yu Song, and Raheem Beyah. 2019. MOpt: Optimized Mutation Scheduling for Fuzzers. In Proceedings of the 28th USENIX Security Symposium (Security'19).
 [^eclipser]: Jaeseung Choi, Joonun Jang, Choongwoo Han, and Sang K. Cha. 2019. Grey-box Concolic Testing on Binary Code. In Proceedings of the 41st ACM/IEEE International Conference on Software Engineering (ICSE'19).
