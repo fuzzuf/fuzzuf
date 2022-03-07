@@ -30,7 +30,7 @@ QEMUExecutor::QEMUExecutor(
     const fs::path &path_to_write_input,
     bool record_stdout_and_err
 ) : ProxyExecutor ( proxy_path, std::vector<std::string>(), argv, exec_timelimit_ms, exec_memlimit, forksrv,
-                    path_to_write_input, QEMUExecutor::QEMU_SHM_SIZE, 0, record_stdout_and_err )
+                    path_to_write_input, QEMUExecutor::QEMU_SHM_SIZE, record_stdout_and_err )
 {
     ProxyExecutor::SetCArgvAndDecideInputMode();
     ProxyExecutor::Initilize();

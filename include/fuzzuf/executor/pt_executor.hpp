@@ -51,7 +51,6 @@ public:
     );
 
     InplaceMemoryFeedback GetAFLFeedback() = delete;
-    InplaceMemoryFeedback GetBBFeedback() = delete;
     InplaceMemoryFeedback GetPathFeedback();
     InplaceMemoryFeedback GetFavFeedback();
 
