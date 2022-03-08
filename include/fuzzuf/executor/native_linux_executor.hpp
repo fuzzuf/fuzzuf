@@ -32,6 +32,10 @@
 #include "fuzzuf/feedback/inplace_memory_feedback.hpp"
 #include "fuzzuf/feedback/exit_status_feedback.hpp"
 
+namespace fuzzuf::executor {
+  using EnvironmentVariables = std::vector< std::string >;
+}
+
 // A class for fuzz execution under native Linux environment (i.e. the Linux environment where the fuzzer tracer and the fuzz target are the same)
 //
 // Responsibility:
@@ -84,7 +88,8 @@ public:
         // In the future, we should generalize this flag so that we can arbitrarily specify 
         // which fd should be recorded. For example, by passing std::vector<int>{1, 2} to this class,
         // we would tell that we would like to record stdout and stderr.
-        bool record_stdout_and_err = false
+        bool record_stdout_and_err = false,
+	fuzzuf::executor::EnvironmentVariables &&environment_variables_ = {}
     );
     ~NativeLinuxExecutor();
 
@@ -129,6 +134,9 @@ public:
     // InplaceMemoryFeedback made of GetStdErr before calling this function becomes invalid after Run()
     fuzzuf::executor::output_t MoveStdErr();
 private:    
+    char **GetJoinedEnvironmentVariables(
+        std::vector< char* > &raw_environment_variables
+    ) const;
     PUTExitReasonType last_exit_reason;
     u8 last_signal;    
     fuzzuf::executor::output_t stdout_buffer;
@@ -141,4 +149,5 @@ private:
     epoll_event fork_server_read_event;
 
     bool record_stdout_and_err;
+    fuzzuf::executor::EnvironmentVariables environment_variables;
 };
