@@ -1709,7 +1709,7 @@ void AFLStateTemplate<Testcase>::ShowStats(void) {
     tmp = DescribeInteger(total_tmouts) + " (" +
           DescribeInteger(unique_tmouts);
     if (unique_hangs >= GetKeepUniqueHang(*this)) tmp += '+';
-    tmp += ')';
+    tmp += " unique)";
 
     MSG (bSTG bV bSTOP "  total tmouts : " cRST "%-22s " bSTG bV "\n", tmp.c_str());
 
