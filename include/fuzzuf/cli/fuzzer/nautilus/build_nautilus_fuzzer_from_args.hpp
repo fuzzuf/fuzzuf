@@ -55,7 +55,7 @@ using fuzzuf::algorithm::nautilus::fuzzer::NautilusFuzzer;
  * @param (fuzzer_args) Arguments passed to Nautilus
  * @param (global_options) Global options
  */
-template <class TFuzzer, class TNautilusFuzzer>
+template <class TFuzzer, class TNautilusFuzzer, class TExecutor>
 std::unique_ptr<TFuzzer> BuildNautilusFuzzerFromArgs(
   FuzzerArgs &fuzzer_args,
   GlobalFuzzerOptions &global_options
@@ -191,7 +191,7 @@ std::unique_ptr<TFuzzer> BuildNautilusFuzzerFromArgs(
   using fuzzuf::algorithm::afl::option::GetMapSize;
 
   /* Create NativeLinuxExecutor */
-  auto executor = std::make_shared<NativeLinuxExecutor>(
+  auto nle = std::make_shared<NativeLinuxExecutor>(
     put.Args(),
     setting->exec_timeout_ms,
     setting->exec_memlimit,
@@ -201,6 +201,8 @@ std::unique_ptr<TFuzzer> BuildNautilusFuzzerFromArgs(
     0,                    // bb_shm_size is not used
     setting->cpuid_to_bind
   );
+
+  auto executor = std::make_shared<TExecutor>(std::move(nle));
 
   using fuzzuf::algorithm::nautilus::fuzzer::NautilusState;
   using fuzzuf::algorithm::nautilus::grammartec::ChunkStore;

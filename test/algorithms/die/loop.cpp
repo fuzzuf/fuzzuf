@@ -30,6 +30,7 @@
 #include "fuzzuf/algorithms/die/die_fuzzer.hpp"
 #include "fuzzuf/algorithms/die/die_option.hpp"
 #include "fuzzuf/algorithms/die/die_setting.hpp"
+#include "fuzzuf/executor/native_linux_executor.hpp"
 #include "fuzzuf/utils/common.hpp"
 #include "fuzzuf/utils/filesystem.hpp"
 #include "fuzzuf/utils/workspace.hpp"
@@ -66,6 +67,7 @@ BOOST_AUTO_TEST_CASE(DIELoop) {
   fs::path output_dir = root_dir / "output";
 
   using namespace fuzzuf::algorithm::afl;
+  using fuzzuf::executor::AFLExecutorInterface;
   using fuzzuf::algorithm::die::DIEFuzzer;
   using fuzzuf::algorithm::die::DIESetting;
   using fuzzuf::algorithm::die::DIEState;
@@ -97,7 +99,7 @@ BOOST_AUTO_TEST_CASE(DIELoop) {
   SetupDirs(setting->out_dir.string());
 
   // Create NativeLinuxExecutor
-  auto executor = std::make_shared<NativeLinuxExecutor>(
+  auto nle = std::make_shared<NativeLinuxExecutor>(
     setting->argv,
     setting->exec_timelimit_ms,
     setting->exec_memlimit,
@@ -106,6 +108,8 @@ BOOST_AUTO_TEST_CASE(DIELoop) {
     option::GetMapSize<DIETag>(), // afl_shm_size
     0                             // bb_shm_size
   );
+
+  auto executor = std::make_shared<AFLExecutorInterface>(std::move(nle));
 
   // Create DIEState
   auto state = std::make_unique<DIEState>(setting, executor);

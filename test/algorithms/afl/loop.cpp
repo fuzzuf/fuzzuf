@@ -23,6 +23,7 @@
 #include <random>
 
 #include "fuzzuf/algorithms/afl/afl_fuzzer.hpp"
+#include "fuzzuf/executor/native_linux_executor.hpp"
 #include "fuzzuf/utils/filesystem.hpp"
 #include "fuzzuf/utils/workspace.hpp"
 #include "move_to_program_location.hpp"
@@ -56,6 +57,7 @@ static void AFLLoop(bool forksrv) {
   // FIXME: we can use BuildAFLFuzzerFromArgs after it supports forksrv as an
   // option
   using namespace fuzzuf::algorithm::afl;
+  using fuzzuf::executor::AFLExecutorInterface;
   using option::AFLTag;
 
   std::shared_ptr<AFLSetting> setting(new AFLSetting(
@@ -70,12 +72,14 @@ static void AFLLoop(bool forksrv) {
   SetupDirs(setting->out_dir.string());
 
   // Create NativeLinuxExecutor
-  auto executor = std::make_shared<NativeLinuxExecutor>(
+  auto nle = std::make_shared<NativeLinuxExecutor>(
       setting->argv, setting->exec_timelimit_ms, setting->exec_memlimit,
       setting->forksrv, setting->out_dir / option::GetDefaultOutfile<AFLTag>(),
       option::GetMapSize<AFLTag>(), // afl_shm_size
       0                             // bb_shm_size
       );
+
+  auto executor = std::make_shared<AFLExecutorInterface>(std::move(nle));
 
   // Create AFLState
   auto state = std::make_unique<AFLState>(setting, executor);

@@ -55,6 +55,7 @@ BOOST_AUTO_TEST_CASE(Feature) {
   namespace hf = fuzzuf::hierarflow;                                           \
   namespace ut = fuzzuf::utils;                                                \
   namespace sp = ut::struct_path;
+  using fuzzuf::executor::LibFuzzerExecutorInterface;
 
 // Check if lf::executor::Execute can retrive standard output
 BOOST_AUTO_TEST_CASE(ExecuteOutput) {
@@ -62,9 +63,10 @@ BOOST_AUTO_TEST_CASE(ExecuteOutput) {
   FUZZUF_TEST_ALGORITHM_LIBFUZZER_FEATURE_PREPARE_OUTDIR
   // NOLINTEND(cppcoreguidelines-pro-type-cstyle-cast,cppcoreguidelines-pro-type-member-init,cppcoreguidelines-special-member-functions,hicpp-explicit-conversions)
 
-  std::unique_ptr<NativeLinuxExecutor> executor(new NativeLinuxExecutor(
+  std::shared_ptr<NativeLinuxExecutor> nle(new NativeLinuxExecutor(
       {fuzzuf::utils::which(fs::path("wc")).c_str(), "-c"}, 1000, 10000, false,
       path_to_write_seed, 65536, 65536, true));
+  auto executor = std::make_unique<LibFuzzerExecutorInterface>(std::move(nle));
 
   lf::InputInfo testcase;
   auto input = lf::test::getSeed1();
@@ -82,9 +84,10 @@ BOOST_AUTO_TEST_CASE(HierarFlowExecuteOutput) {
   FUZZUF_TEST_ALGORITHM_LIBFUZZER_FEATURE_PREPARE_OUTDIR
   // NOLINTEND(cppcoreguidelines-pro-type-cstyle-cast,cppcoreguidelines-pro-type-member-init,cppcoreguidelines-special-member-functions,hicpp-explicit-conversions)
 
-  std::unique_ptr<NativeLinuxExecutor> executor(new NativeLinuxExecutor(
+  std::shared_ptr<NativeLinuxExecutor> nle(new NativeLinuxExecutor(
       {fuzzuf::utils::which(fs::path("wc")).c_str(), "-c"}, 1000, 10000, false,
       path_to_write_seed, 65536, 65536, true));
+  auto executor = std::make_unique<LibFuzzerExecutorInterface>(std::move(nle));
 
   constexpr static auto output_loc = sp::root / sp::arg<1>;
   using Ord =
@@ -92,7 +95,7 @@ BOOST_AUTO_TEST_CASE(HierarFlowExecuteOutput) {
                lf::test::Order::coverage && lf::test::Order::exec_result);
   using WithOutput = bool(lf::test::Variables &, std::vector<std::uint8_t> &,
                           ut::DumpTracer &, ut::ElapsedTimeTracer &);
-  auto node = hf::CreateNode<lf::Execute<WithOutput, NativeLinuxExecutor, Ord>>(
+  auto node = hf::CreateNode<lf::Execute<WithOutput, LibFuzzerExecutorInterface, Ord>>(
       std::move(executor), true);
 
   lf::test::Variables variables;
@@ -114,9 +117,10 @@ BOOST_AUTO_TEST_CASE(ExecuteStatusSuccess) {
   FUZZUF_TEST_ALGORITHM_LIBFUZZER_FEATURE_PREPARE_OUTDIR
   // NOLINTEND(cppcoreguidelines-pro-type-cstyle-cast,cppcoreguidelines-pro-type-member-init,cppcoreguidelines-special-member-functions,hicpp-explicit-conversions)
 
-  std::unique_ptr<NativeLinuxExecutor> executor(new NativeLinuxExecutor(
+  std::shared_ptr<NativeLinuxExecutor> nle(new NativeLinuxExecutor(
       {TEST_BINARY_DIR "/executor/ok"}, 1000, 10000, false, path_to_write_seed,
       65536, 65536));
+  auto executor = std::make_unique<LibFuzzerExecutorInterface>(std::move(nle));
 
   lf::InputInfo testcase;
   auto input = lf::test::getSeed1();
@@ -132,12 +136,13 @@ BOOST_AUTO_TEST_CASE(HierarFlowExecuteStatusSuccess) {
   FUZZUF_TEST_ALGORITHM_LIBFUZZER_FEATURE_PREPARE_OUTDIR
   // NOLINTEND(cppcoreguidelines-pro-type-cstyle-cast,cppcoreguidelines-pro-type-member-init,cppcoreguidelines-special-member-functions,hicpp-explicit-conversions)
 
-  std::unique_ptr<NativeLinuxExecutor> executor(new NativeLinuxExecutor(
+  std::shared_ptr<NativeLinuxExecutor> nle(new NativeLinuxExecutor(
       {TEST_BINARY_DIR "/executor/ok"}, 1000, 10000, false, path_to_write_seed,
       65536, 65536));
+  auto executor = std::make_unique<LibFuzzerExecutorInterface>(std::move(nle));
 
   auto node = hf::CreateNode<lf::standard_order::Execute<
-      lf::test::Full, NativeLinuxExecutor, lf::test::Order>>(
+      lf::test::Full, LibFuzzerExecutorInterface, lf::test::Order>>(
       std::move(executor), true);
 
   lf::test::Variables variables;
@@ -157,9 +162,10 @@ BOOST_AUTO_TEST_CASE(ExecuteStatusAbort) {
   FUZZUF_TEST_ALGORITHM_LIBFUZZER_FEATURE_PREPARE_OUTDIR
   // NOLINTEND(cppcoreguidelines-pro-type-cstyle-cast,cppcoreguidelines-pro-type-member-init,cppcoreguidelines-special-member-functions,hicpp-explicit-conversions)
 
-  std::unique_ptr<NativeLinuxExecutor> executor(
+  std::shared_ptr<NativeLinuxExecutor> nle(
       new NativeLinuxExecutor({TEST_BINARY_DIR "/executor/abort"}, 1000, 10000,
                               false, path_to_write_seed, 65536, 65536));
+  auto executor = std::make_unique<LibFuzzerExecutorInterface>(std::move(nle));
 
   lf::InputInfo testcase;
   auto input = lf::test::getSeed1();
@@ -177,12 +183,13 @@ BOOST_AUTO_TEST_CASE(HierarFlowExecuteAbort) {
   FUZZUF_TEST_ALGORITHM_LIBFUZZER_FEATURE_PREPARE_OUTDIR
   // NOLINTEND(cppcoreguidelines-pro-type-cstyle-cast,cppcoreguidelines-pro-type-member-init,cppcoreguidelines-special-member-functions,hicpp-explicit-conversions)
 
-  std::unique_ptr<NativeLinuxExecutor> executor(
+  std::shared_ptr<NativeLinuxExecutor> nle(
       new NativeLinuxExecutor({TEST_BINARY_DIR "/executor/abort"}, 1000, 10000,
                               false, path_to_write_seed, 65536, 65536));
+  auto executor = std::make_unique<LibFuzzerExecutorInterface>(std::move(nle));
 
   auto node = hf::CreateNode<lf::standard_order::Execute<
-      lf::test::Full, NativeLinuxExecutor, lf::test::Order>>(
+      lf::test::Full, LibFuzzerExecutorInterface, lf::test::Order>>(
       std::move(executor), true);
 
   lf::test::Variables variables;
@@ -202,10 +209,11 @@ BOOST_AUTO_TEST_CASE(ExecuteCoverage) {
   FUZZUF_TEST_ALGORITHM_LIBFUZZER_FEATURE_PREPARE_OUTDIR
   // NOLINTEND(cppcoreguidelines-pro-type-cstyle-cast,cppcoreguidelines-pro-type-member-init,cppcoreguidelines-special-member-functions,hicpp-explicit-conversions)
 
-  std::unique_ptr<NativeLinuxExecutor> executor(
+  std::shared_ptr<NativeLinuxExecutor> nle(
       new NativeLinuxExecutor({FUZZUF_FUZZTOYS_DIR "/fuzz_toys-brainf_ck"},
                               1000, 10000, false, path_to_write_seed, 65536,
                               65536));
+  auto executor = std::make_unique<LibFuzzerExecutorInterface>(std::move(nle));
 
   lf::InputInfo testcase;
   std::vector<std::uint8_t> input{'+'};
@@ -223,13 +231,14 @@ BOOST_AUTO_TEST_CASE(HierarFlowExecuteCoverage) {
   FUZZUF_TEST_ALGORITHM_LIBFUZZER_FEATURE_PREPARE_OUTDIR
   // NOLINTEND(cppcoreguidelines-pro-type-cstyle-cast,cppcoreguidelines-pro-type-member-init,cppcoreguidelines-special-member-functions,hicpp-explicit-conversions)
 
-  std::unique_ptr<NativeLinuxExecutor> executor(
+  std::shared_ptr<NativeLinuxExecutor> nle(
       new NativeLinuxExecutor({FUZZUF_FUZZTOYS_DIR "/fuzz_toys-brainf_ck"},
                               1000, 10000, false, path_to_write_seed, 65536,
                               65536));
+  auto executor = std::make_unique<LibFuzzerExecutorInterface>(std::move(nle));
 
   auto node = hf::CreateNode<lf::standard_order::Execute<
-      lf::test::Full, NativeLinuxExecutor, lf::test::Order>>(
+      lf::test::Full, LibFuzzerExecutorInterface, lf::test::Order>>(
       std::move(executor), true);
 
   lf::test::Variables variables;

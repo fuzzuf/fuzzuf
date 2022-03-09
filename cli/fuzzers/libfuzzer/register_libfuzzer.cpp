@@ -18,8 +18,9 @@
 #include "fuzzuf/algorithms/libfuzzer/cli_compat/fuzzer.hpp"
 #include "fuzzuf/cli/fuzzer_builder_register.hpp"
 #include "fuzzuf/cli/fuzzer/libfuzzer/build_libfuzzer_from_args.hpp"
+#include "fuzzuf/executor/libfuzzer_executor_interface.hpp"
 
 namespace fuzzuf::algorithm::libfuzzer {
-  static FuzzerBuilderRegister global_libfuzzer_register("libfuzzer", BuildLibFuzzerFromArgs<Fuzzer, fuzzuf::algorithm::libfuzzer::LibFuzzer>);
+  static FuzzerBuilderRegister global_libfuzzer_register("libfuzzer", BuildLibFuzzerFromArgs<Fuzzer, fuzzuf::algorithm::libfuzzer::LibFuzzer, executor::LibFuzzerExecutorInterface>);
 }
 

@@ -18,8 +18,13 @@
 #include "fuzzuf/algorithms/nautilus/fuzzer/fuzzer.hpp"
 #include "fuzzuf/cli/fuzzer_builder_register.hpp"
 #include "fuzzuf/cli/fuzzer/nautilus/build_nautilus_fuzzer_from_args.hpp"
+#include "fuzzuf/executor/afl_executor_interface.hpp"
+
+namespace fuzzuf::cli::fuzzer::nautilus {
 
 static FuzzerBuilderRegister global_nautilus_register(
   "nautilus",
-  BuildNautilusFuzzerFromArgs<Fuzzer, NautilusFuzzer>
+  BuildNautilusFuzzerFromArgs<Fuzzer, NautilusFuzzer, executor::AFLExecutorInterface>
 );
+
+} // namespace fuzzuf::cli::fuzzer::nautilus

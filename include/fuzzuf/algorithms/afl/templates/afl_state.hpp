@@ -27,7 +27,7 @@
 #include "fuzzuf/utils/filesystem.hpp"
 #include "fuzzuf/exec_input/exec_input.hpp"
 #include "fuzzuf/exec_input/exec_input_set.hpp"
-#include "fuzzuf/executor/native_linux_executor.hpp"
+#include "fuzzuf/executor/afl_executor_interface.hpp"
 #include "fuzzuf/feedback/inplace_memory_feedback.hpp"
 #include "fuzzuf/feedback/exit_status_feedback.hpp"
 #include "fuzzuf/algorithms/afl/afl_option.hpp"
@@ -43,7 +43,7 @@ namespace fuzzuf::algorithm::afl {
 template<class Testcase>
 AFLStateTemplate<Testcase>::AFLStateTemplate(
     std::shared_ptr<const AFLSetting> setting,
-    std::shared_ptr<NativeLinuxExecutor> executor
+    std::shared_ptr<executor::AFLExecutorInterface> executor
 )
     : setting( setting ),
       executor( executor ),

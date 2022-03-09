@@ -153,10 +153,11 @@ BOOST_AUTO_TEST_CASE(BuildAFLByParsingGlobalOptionAndPUT) {
     };
 
     using AFLState = fuzzuf::algorithm::afl::AFLState;
+    using fuzzuf::executor::AFLExecutorInterface;
 
     // Parse global options and PUT, and build fuzzer
     auto fuzzer_args = ParseGlobalOptionsForFuzzer(args, options);
-    auto fuzzer = BuildAFLFuzzerFromArgs<AFLFuzzerStub<AFLState>, AFLFuzzerStub<AFLState>>(
+    auto fuzzer = BuildAFLFuzzerFromArgs<AFLFuzzerStub<AFLState>, AFLFuzzerStub<AFLState>, AFLExecutorInterface>(
             fuzzer_args, options
         );
 
@@ -191,10 +192,11 @@ BOOST_AUTO_TEST_CASE(BuildAFLByParsingGlobalOptionAndFuzzerOptionAndPUT) {
     };
 
     using AFLState = fuzzuf::algorithm::afl::AFLState;
+    using fuzzuf::executor::AFLExecutorInterface;
 
     // Parse global options and PUT, and build fuzzer
     auto fuzzer_args = ParseGlobalOptionsForFuzzer(args, options);
-    auto fuzzer = BuildAFLFuzzerFromArgs<AFLFuzzerStub<AFLState>, AFLFuzzerStub<AFLState>>(
+    auto fuzzer = BuildAFLFuzzerFromArgs<AFLFuzzerStub<AFLState>, AFLFuzzerStub<AFLState>, AFLExecutorInterface>(
             fuzzer_args, options
         );
 
@@ -214,6 +216,7 @@ BOOST_AUTO_TEST_CASE(BuildAFLByParsingGlobalOptionAndFuzzerOptionAndPUT) {
 
 BOOST_AUTO_TEST_CASE(BuildAFLFastByParsingGlobalOptionAndPUT) {
     using AFLFastState = fuzzuf::algorithm::aflfast::AFLFastState;
+    using fuzzuf::executor::AFLExecutorInterface;
     GlobalFuzzerOptions options;
     #pragma GCC diagnostic ignored "-Wwrite-strings"
     // 本来はschedule用のオプションもテストされるべきだが、CLI側の改修が必要なので一旦放置
@@ -236,7 +239,7 @@ BOOST_AUTO_TEST_CASE(BuildAFLFastByParsingGlobalOptionAndPUT) {
 
     // Parse global options and PUT, and build fuzzer
     auto fuzzer_args = ParseGlobalOptionsForFuzzer(args, options);
-    auto fuzzer = BuildAFLFastFuzzerFromArgs<AFLFuzzerStub<AFLFastState>, AFLFuzzerStub<AFLFastState>>(
+    auto fuzzer = BuildAFLFastFuzzerFromArgs<AFLFuzzerStub<AFLFastState>, AFLFuzzerStub<AFLFastState>, AFLExecutorInterface>(
             fuzzer_args, options
         );
 

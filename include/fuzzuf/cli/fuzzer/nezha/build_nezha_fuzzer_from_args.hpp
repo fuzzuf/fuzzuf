@@ -23,7 +23,7 @@
 #include "fuzzuf/exceptions.hpp"
 
 // Used only for CLI
-template <class TFuzzer, class TNezhaFuzzer>
+template <class TFuzzer, class TNezhaFuzzer, class TExecutor>
 std::unique_ptr<TFuzzer> BuildNezhaFuzzerFromArgs(
     FuzzerArgs &fuzzer_args, 
     GlobalFuzzerOptions &global_options
