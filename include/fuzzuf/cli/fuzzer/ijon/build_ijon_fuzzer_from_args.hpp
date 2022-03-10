@@ -127,22 +127,29 @@ std::unique_ptr<TFuzzer> BuildIJONFuzzerFromArgs(
     SetupDirs(setting->out_dir.string());
 
     using fuzzuf::algorithm::afl::option::GetDefaultOutfile;
+    using fuzzuf::cli::ExecutorKind;
 
-    // Create NativeLinuxExecutor
-    // TODO: support more types of executors
+    std::shared_ptr<TExecutor> executor;
+    switch (global_options.executor) {
+    case ExecutorKind::NATIVE: {
+        using algorithm::ijon::SharedData;
+        // Create NativeLinuxExecutor
+        auto nle = std::make_shared<NativeLinuxExecutor>(
+                            setting->argv,
+                            setting->exec_timelimit_ms,
+                            setting->exec_memlimit,
+                            setting->forksrv,
+                            setting->out_dir / GetDefaultOutfile<IJONTag>(),
+                            sizeof(SharedData), // afl_shm_size
+                            0 // bb_shm_size
+                        );
+        executor = std::make_shared<TExecutor>(std::move(nle));
+        break;
+    }
 
-    using algorithm::ijon::SharedData;
-    auto nle = std::make_shared<NativeLinuxExecutor>(
-                        setting->argv,
-                        setting->exec_timelimit_ms,
-                        setting->exec_memlimit,
-                        setting->forksrv,
-                        setting->out_dir / GetDefaultOutfile<IJONTag>(),
-                        sizeof(SharedData), // afl_shm_size
-                                         0  //  bb_shm_size
-                    );
-
-    auto executor = std::make_shared<TExecutor>(std::move(nle));
+    default:
+        EXIT("Unsupported executor: '%s'", global_options.executor.c_str());
+    }
 
     // Create IJONState
     using fuzzuf::algorithm::ijon::IJONState;

@@ -72,6 +72,7 @@ std::unique_ptr<TFuzzer> BuildNautilusFuzzerFromArgs(
 
   /* Set up additional options for Nautilus */
   using namespace fuzzuf::algorithm::nautilus::fuzzer::option;
+  using fuzzuf::cli::ExecutorKind;
 
   po::options_description fuzzer_desc("Nautilus options");
   std::vector<std::string> pargs;
@@ -190,19 +191,25 @@ std::unique_ptr<TFuzzer> BuildNautilusFuzzerFromArgs(
   using fuzzuf::algorithm::afl::option::GetDefaultOutfile;
   using fuzzuf::algorithm::afl::option::GetMapSize;
 
-  /* Create NativeLinuxExecutor */
-  auto nle = std::make_shared<NativeLinuxExecutor>(
-    put.Args(),
-    setting->exec_timeout_ms,
-    setting->exec_memlimit,
-    setting->forksrv,
-    setting->path_to_workdir / GetDefaultOutfile<NautilusTag>(),
-    setting->bitmap_size, // afl_shm_size used as bitmap_size
-    0,                    // bb_shm_size is not used
-    setting->cpuid_to_bind
-  );
+  std::shared_ptr<TExecutor> executor;
+  switch (global_options.executor) {
+  case ExecutorKind::NATIVE: {
+    auto nle = std::make_shared<NativeLinuxExecutor>(
+      put.Args(),
+      setting->exec_timeout_ms,
+      setting->exec_memlimit,
+      setting->forksrv,
+      setting->path_to_workdir / GetDefaultOutfile<NautilusTag>(),
+      setting->bitmap_size, // afl_shm_size used as bitmap_size
+      0                     // bb_shm_size is not used
+    );
+    executor = std::make_shared<TExecutor>(std::move(nle));
+    break;
+  }
 
-  auto executor = std::make_shared<TExecutor>(std::move(nle));
+  default:
+    EXIT("Unsupported executor: '%s'", global_options.executor.c_str());
+  }
 
   using fuzzuf::algorithm::nautilus::fuzzer::NautilusState;
   using fuzzuf::algorithm::nautilus::grammartec::ChunkStore;

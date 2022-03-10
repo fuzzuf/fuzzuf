@@ -155,20 +155,27 @@ std::unique_ptr<TFuzzer> BuildAFLFuzzerFromArgs(
 
     using fuzzuf::algorithm::afl::option::GetDefaultOutfile;
     using fuzzuf::algorithm::afl::option::GetMapSize;
+    using fuzzuf::cli::ExecutorKind;
 
-    // Create NativeLinuxExecutor
-    auto nle = std::make_shared<NativeLinuxExecutor>(
-                        setting->argv,
-                        setting->exec_timelimit_ms,
-                        setting->exec_memlimit,
-                        setting->forksrv,
-                        setting->out_dir / GetDefaultOutfile<AFLTag>(),
-                        GetMapSize<AFLTag>(), // afl_shm_size
-                                           0  //  bb_shm_size
-                    );
+    std::shared_ptr<TExecutor> executor;
+    switch (global_options.executor) {
+    case ExecutorKind::NATIVE: {
+        auto nle = std::make_shared<NativeLinuxExecutor>(
+                            setting->argv,
+                            setting->exec_timelimit_ms,
+                            setting->exec_memlimit,
+                            setting->forksrv,
+                            setting->out_dir / GetDefaultOutfile<AFLTag>(),
+                            GetMapSize<AFLTag>(), // afl_shm_size
+                            0 // bb_shm_size
+                        );
+        executor = std::make_shared<TExecutor>(std::move(nle));
+        break;
+    }
 
-    // TODO: support more types of executors
-    auto executor = std::make_shared<TExecutor>(std::move(nle));
+    default:
+        EXIT("Unsupported executor: '%s'", global_options.executor.c_str());
+    }
 
     // Create AFLState
     using fuzzuf::algorithm::afl::AFLState;

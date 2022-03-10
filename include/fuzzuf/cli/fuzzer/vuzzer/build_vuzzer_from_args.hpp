@@ -159,6 +159,11 @@ std::unique_ptr<TFuzzer> BuildVUzzerFromArgs(FuzzerArgs &fuzzer_args, GlobalFuzz
     // so we need to create the directory first, and then initialize Executor
     SetupDirs(setting->out_dir.string());
 
+    // XXX: VUzzer supports PinToolExecutor/PolyTrackerExecutor only. It does not actually support `native` executor.
+    if (global_options.executor != fuzzuf::cli::ExecutorKind::NATIVE) {
+        EXIT("Unsupported executor: `%s`", global_options.executor.c_str());
+    }
+
     // Create PinToolExecutor
     // FIXME: TEST_BINARY_DIR macro should be used only for test codes. We must define a new macro in config.h.
     std::shared_ptr<PinToolExecutor> executor(
