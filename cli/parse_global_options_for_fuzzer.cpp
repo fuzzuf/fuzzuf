@@ -35,6 +35,25 @@
 
 namespace po = boost::program_options;
 
+namespace fuzzuf::cli {
+
+// Implements >>operator for ExecutorKind to support the class in boost::program_options.
+std::istream& operator>>(std::istream& in, ExecutorKind& executor) {
+    std::string token;
+    in >> token;
+    if (token == "native")
+        executor = ExecutorKind::NATIVE;
+    else if (token == "qemu")
+        executor = ExecutorKind::QEMU;
+    else if (token == "coresight")
+        executor = ExecutorKind::CORESIGHT;
+    else
+        in.setstate(std::ios_base::failbit);
+    return in;
+}
+
+} // namespace fuzzuf::cli
+
 FuzzerArgs ParseGlobalOptionsForFuzzer(GlobalArgs &global_args, GlobalFuzzerOptions &global_options) {
     // Parse a sub-command
     po::positional_options_description subcommand;

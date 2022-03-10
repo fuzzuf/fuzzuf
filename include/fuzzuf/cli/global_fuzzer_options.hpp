@@ -63,6 +63,8 @@ private:
     Kind kind;
 };
 
+std::istream& operator>>(std::istream& in, ExecutorKind& executor);
+
 } // namespace fuzzuf::cli
 
 struct GlobalFuzzerOptions {
