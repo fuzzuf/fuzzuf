@@ -80,6 +80,11 @@ FuzzerArgs ParseGlobalOptionsForFuzzer(GlobalArgs &global_args, GlobalFuzzerOpti
         ("executor,e",
             po::value<fuzzuf::cli::ExecutorKind>(&global_options.executor)->default_value(global_options.executor),
             "Specify fuzzing executor. Default is `native`.")
+        ("proxy_path",
+        global_options.proxy_path ?
+            po::value<std::string>()->default_value(global_options.proxy_path->string()) :
+            po::value<std::string>()->default_value(""),
+            "Specify executor proxy (e.g. `afl-qemu-trace`) path.")
         ("exec_timelimit_ms",
 	    global_options.exec_timelimit_ms ?
               po::value<u32>()->default_value(*global_options.exec_timelimit_ms):
@@ -127,6 +132,19 @@ FuzzerArgs ParseGlobalOptionsForFuzzer(GlobalArgs &global_args, GlobalFuzzerOpti
     DEBUG("[*] global_options.fuzzer = %s", global_options.fuzzer.c_str());
 
     // Store values to `global_options` manually 
+
+    using fuzzuf::cli::ExecutorKind;
+    auto exec_kind = vm["executor"].as<ExecutorKind>();
+    auto proxy_path = vm["proxy_path"].as<std::string>();
+    if (exec_kind == ExecutorKind::NATIVE && !proxy_path.empty()) {
+        // ExecutorKind::NATIVE must not take proxy_path.
+        throw exceptions::cli_error("`--proxy_path` is specified, but never used by `native` executor", __FILE__, __LINE__);
+    } else if (exec_kind != ExecutorKind::NATIVE && proxy_path.empty()) {
+        // Other ExecutorKind must take proxy_path.
+        throw exceptions::cli_error("`--proxy_path` is not specified", __FILE__, __LINE__);
+    } else {
+        global_options.proxy_path = fs::path(std::move(proxy_path));
+    }
     // since type T = { std::optional, fs::path, Logger (enum) }, is not cpmatible with po::value<T>()
     if(vm.count("exec_timelimit_ms")) {
         global_options.exec_timelimit_ms = vm["exec_timelimit_ms"].as<u32>();
