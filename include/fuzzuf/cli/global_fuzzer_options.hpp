@@ -23,6 +23,48 @@
 #include "fuzzuf/logger/logger.hpp"
 #include "fuzzuf/utils/filesystem.hpp"
 
+namespace fuzzuf::cli {
+
+/**
+ * @class ExecutorKind
+ * @brief Represents an executor type for CLI.
+ */
+class ExecutorKind {
+public:
+    enum Kind {
+        UNKNOWN = 0, // Unknown Executor Type
+        NATIVE, // Native Executor (e.g. NativeLinuxExecutor)
+        QEMU, // QEMU Executor
+        CORESIGHT // CoreSight Executor
+    };
+
+    ExecutorKind() = default;
+
+    constexpr ExecutorKind(Kind kind) : kind(kind) {}
+    // Allow switch case.
+    constexpr operator Kind() const { return kind; }
+    // Prevent if (executor_kind) usage.
+    explicit operator bool() = delete;
+
+    const char *c_str() const {
+        switch (kind) {
+            case Kind::NATIVE:
+                return "native";
+            case Kind::QEMU:
+                return "qemu";
+            case Kind::CORESIGHT:
+                return "coresight";
+            default:
+                return "unknown";
+        }
+    }
+
+private:
+    Kind kind;
+};
+
+} // namespace fuzzuf::cli
+
 struct GlobalFuzzerOptions {
     bool help;
     std::string fuzzer;                     // Required
