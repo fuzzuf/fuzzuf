@@ -31,6 +31,10 @@
 #include "fuzzuf/coverage/fuzzuf_bb_cov_attacher.hpp"
 #include "fuzzuf/feedback/inplace_memory_feedback.hpp"
 #include "fuzzuf/feedback/exit_status_feedback.hpp"
+#include "boost/logic/tribool.hpp"
+
+using tribool = boost::logic::tribool;
+BOOST_TRIBOOL_THIRD_STATE(deferred);
 
 // A class for fuzz execution under native Linux environment (i.e. the Linux environment where the fuzzer tracer and the fuzz target are the same)
 //
@@ -50,7 +54,7 @@ public:
     static constexpr int FORKSRV_FD_WRITE = 199;
 
     // Members holding settings handed over a constructor
-    const bool forksrv;
+    const tribool forksrv;
 
     const bool uses_asan = false; // May become one of the available options in the future, but currently not anticipated
 
@@ -73,7 +77,7 @@ public:
         const std::vector<std::string> &argv,
         u32 exec_timelimit_ms,
         u64 exec_memlimit,
-        bool forksrv,
+        tribool forksrv,
         const fs::path &path_to_write_input,
         u32 afl_shm_size,
         u32  bb_shm_size,

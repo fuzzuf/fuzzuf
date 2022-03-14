@@ -65,7 +65,7 @@ NativeLinuxExecutor::NativeLinuxExecutor(
     const std::vector<std::string> &argv,
     u32 exec_timelimit_ms,
     u64 exec_memlimit,
-    bool forksrv,
+    tribool forksrv,
     const fs::path &path_to_write_input,
     u32 afl_shm_size,
     u32  bb_shm_size,
@@ -103,21 +103,12 @@ NativeLinuxExecutor::NativeLinuxExecutor(
     SetupEnvironmentVariablesForTarget();
     CreateJoinedEnvironmentVariables( std::move( environment_variables_ ) );
 
-    // Handle frida mode for NativeLinuxExecutor
-    if (getenv("FUZZUF_FRIDA_MODE")) {
-        unsetenv("FUZZUF_FRIDA_MODE");
-        struct stat statbuf;
-        if ((stat(FUZZUF_AFL_FRIDA_TRACE_SO, &statbuf)) == -1) {
-            ERROR("A file afl-frida-trace.so not found. Please specify the path with -DAFL_ROOT on cmake");
-        }
-        setenv("__AFL_DEFER_FORKSRV", "1", 1);
-        setenv("LD_PRELOAD", FUZZUF_AFL_FRIDA_TRACE_SO, 1);
-        // Need to add the size of the library
-        this->exec_memlimit += (statbuf.st_size >> 20);
-    }
-
     if (forksrv) {
         SetupForkServer();
+    } else if (!forksrv);
+    else {
+        MSG(cCYA "[*] fuzzuf deferred fork-server mode\n" cRST);
+        setenv("__AFL_DEFER_FORKSRV", "1", 1);
     }
 }
 
