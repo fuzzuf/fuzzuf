@@ -194,37 +194,54 @@ bool NautilusFuzzer::ParseAndAddRule(Context& ctx,
     /* Array rule: Union or binary */
 
     /* Check if every rule is integer or string */
+    bool has_integer = false;
     if (std::all_of(rule.begin(), rule.end(),
-                    [](const json& e) {
+                    [&has_integer](const json& e) {
+                      has_integer |= e.is_number_integer();
                       return e.is_number_integer() || e.is_string();
                     })) {
-      /* This is a binary rule */
-      std::string r;
-      for (const json& e: rule) {
-        if (e.is_string()) {
-          /* Simply concat string */
-          r += e.get<std::string>();
-
-        } else {
-          /* Read as a character code */
-          size_t c = e.get<size_t>();
-          if (c >= 0x100) {
-            std::cerr << "[-] Invalid character code" << std::endl
-                      << "    NT  : " << nt << std::endl
-                      << "    RULE: " << rule << std::endl
-                      << "    The value " << c << " is out-of-range." << std::endl;
+      if (!has_integer) {
+        /* Union rule if every rule is string */
+        for (const json& e: rule) {
+          if (!NautilusFuzzer::ParseAndAddRule(ctx, nt, e, true)) {
+            std::cerr << "[-] Invalid rule" << std::endl
+                      << "    NT   : " << nt << std::endl
+                      << "    RULES: " << rule << std::endl
+                      << "    RULE : " << e << std::endl;
             std::exit(1);
           }
-
-          r.push_back((char)c);
         }
+        return true;
+
+      } else {
+        /* This is a binary rule */
+        std::string r;
+        for (const json& e: rule) {
+          if (e.is_string()) {
+            /* Simply concat string */
+            r += e.get<std::string>();
+
+          } else {
+            /* Read as a character code */
+            size_t c = e.get<size_t>();
+            if (c >= 0x100) {
+              std::cerr << "[-] Invalid character code" << std::endl
+                        << "    NT  : " << nt << std::endl
+                        << "    RULE: " << rule << std::endl
+                        << "    The value " << c << " is out-of-range." << std::endl;
+              std::exit(1);
+            }
+
+            r.push_back((char)c);
+          }
+        }
+
+        ctx.AddRule(nt, r);
+        return true;
       }
 
-      ctx.AddRule(nt, r);
-      return true;
-
     } else if (!recursive) {
-      /* This is a union rule */
+      /* Union rule with binary rule inside */
       for (const json& e: rule) {
         if (!NautilusFuzzer::ParseAndAddRule(ctx, nt, e, true)) {
           std::cerr << "[-] Invalid rule" << std::endl
