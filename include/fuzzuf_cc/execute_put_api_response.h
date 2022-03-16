@@ -5,4 +5,5 @@
 typedef struct {
     enum ExecutePUTError error;
     int32_t exit_code;
+    int32_t signal_number;
 } ExecutePUTAPIResponse;

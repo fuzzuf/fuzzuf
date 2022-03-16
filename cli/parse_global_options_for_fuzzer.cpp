@@ -43,6 +43,8 @@ std::istream& operator>>(std::istream& in, ExecutorKind& executor) {
     in >> token;
     if (token == "native")
         executor = ExecutorKind::NATIVE;
+    else if (token == "forkserver")
+        executor = ExecutorKind::FORKSERVER;
     else if (token == "qemu")
         executor = ExecutorKind::QEMU;
     else if (token == "coresight")
@@ -136,10 +138,11 @@ FuzzerArgs ParseGlobalOptionsForFuzzer(GlobalArgs &global_args, GlobalFuzzerOpti
     using fuzzuf::cli::ExecutorKind;
     auto exec_kind = vm["executor"].as<ExecutorKind>();
     auto proxy_path = vm["proxy_path"].as<std::string>();
-    if (exec_kind == ExecutorKind::NATIVE && !proxy_path.empty()) {
+    bool takes_proxy_path = !(exec_kind == ExecutorKind::NATIVE) && !(exec_kind == ExecutorKind::FORKSERVER);
+    if (!takes_proxy_path && !proxy_path.empty()) {
         // ExecutorKind::NATIVE must not take proxy_path.
         throw exceptions::cli_error("`--proxy_path` is specified, but never used by `native` executor", __FILE__, __LINE__);
-    } else if (exec_kind != ExecutorKind::NATIVE && proxy_path.empty()) {
+    } else if (takes_proxy_path && proxy_path.empty()) {
         // Other ExecutorKind must take proxy_path.
         throw exceptions::cli_error("`--proxy_path` is not specified", __FILE__, __LINE__);
     } else {

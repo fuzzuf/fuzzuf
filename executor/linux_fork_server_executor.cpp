@@ -63,7 +63,6 @@ LinuxForkServerExecutor::LinuxForkServerExecutor(
     const std::vector<std::string> &argv,
     u32 exec_timelimit_ms,
     u64 exec_memlimit,
-    bool forksrv,
     const fs::path &path_to_write_input,
     u32 afl_shm_size,
     u32  bb_shm_size,
@@ -71,12 +70,10 @@ LinuxForkServerExecutor::LinuxForkServerExecutor(
     std::vector< std::string > &&environment_variables_
 ) :
     Executor( argv, exec_timelimit_ms, exec_memlimit, path_to_write_input.string() ),
-    forksrv( forksrv ),
     afl_edge_coverage(afl_shm_size),
     fuzzuf_bb_coverage(bb_shm_size),
 
     // cargv and stdin_mode are initialized at SetCArgvAndDecideInputMode
-    forksrv_pid( 0 ),
     child_timed_out( false ),
     record_stdout_and_err( record_stdout_and_err ),
     // put_channel( "ipc:///tmp/forkserver.ipc" ) // FIXME: ユーザーが設定可能に
@@ -101,7 +98,7 @@ LinuxForkServerExecutor::LinuxForkServerExecutor(
     SetupEnvironmentVariablesForTarget();
     CreateJoinedEnvironmentVariables( std::move( environment_variables_ ) );
 
-    SetupForkServer();
+    put_channel.SetupForkServer((char* const*) cargv.data());
 }
 
 /**
@@ -130,11 +127,9 @@ LinuxForkServerExecutor::~LinuxForkServerExecutor() {
 
     EraseSharedMemories();
 
-    if (forksrv) {
-        TerminateForkServer();
-        // Although, PUT process should be handled by fork server, kill it just in case. (Since fork server is expected to be killed using kill, therefore it will never becoome a zombie. So never wait.)
-        KillChildWithoutWait();
-    }
+    TerminateForkServer();
+    // Although, PUT process should be handled by fork server, kill it just in case. (Since fork server is expected to be killed using kill, therefore it will never becoome a zombie. So never wait.)
+    KillChildWithoutWait();
 }
 
 void LinuxForkServerExecutor::SetCArgvAndDecideInputMode() {
@@ -153,40 +148,8 @@ void LinuxForkServerExecutor::SetCArgvAndDecideInputMode() {
     cargv.emplace_back(nullptr);
 }
 
-/**
- * Stop fork server, then delete relevant values properly.
- * Postcondition:
- *  - If forksrv_{read,write}_fd have valid values,
- *      - Close them
- *      - invalidate the values(fail-safe)
- *  - If forksrv_pid has valid value,
- *      - Terminate the process identified by forksrv_pid
- *      - Reap the process terminating using waitpid
- *      - Furthermore, invalidate the value of forksrv_pid(fail-safe)
- */
 void LinuxForkServerExecutor::TerminateForkServer() {
-    if (fork_server_epoll_fd != -1) {
-        close( fork_server_epoll_fd );
-        fork_server_epoll_fd = -1;
-    }
-
-    if (fork_server_stdout_fd != -1) {
-        close( fork_server_stdout_fd );
-        fork_server_stdout_fd = -1;
-    }
-    
-    if (fork_server_stderr_fd != -1) {
-        close( fork_server_stderr_fd );
-        fork_server_stderr_fd = -1;
-    }
-
-
-    if (forksrv_pid > 0) {
-        int status;
-        kill(forksrv_pid, SIGKILL);
-        waitpid(forksrv_pid, &status, 0);
-        forksrv_pid = -1;
-    }
+    put_channel.TerminateForkServer();
 }
 
 /**
@@ -338,25 +301,14 @@ void LinuxForkServerExecutor::Run(const u8 *buf, u32 len, u32 timeout_ms) {
       fuzzuf::executor::ChildState{ 0, 0 }
     );
 
-    std::array< int, 2u > stdout_fd{ 0, 0 };
-    std::array< int, 2u > stderr_fd{ 0, 0 };
+    // TODO: 標準入出力の記録はフェーズ3で
+    // std::array< int, 2u > stdout_fd{ 0, 0 };
+    // std::array< int, 2u > stderr_fd{ 0, 0 };
     // constexpr std::size_t read_size = 8u;
     // boost::container::static_vector< std::uint8_t, read_size > read_buffer;
-    // bool timeout = true;
-    ;
-    // Request creating PUT process to fork server
-    // The new PUT execution can be requested to the fork server by writing 4byte values to the pipe.
-    // If the PUT launched successfully, the pid of PUT process is returned via the pipe.
-    // WriteFile, ReadFile throw exception if writing or reading couldn't consume specified bytes.
-    try {
-        // FIXME: When persistent mode is implemented, this tmp must be set to the value that represent if the last execution failed for timeout.
-        ExecutePUTAPIResponse response = this->put_channel.ExecutePUT();
-    } catch(const FileError &e) {
-        ERROR("Unable to request new process from fork server (OOM?)");
-    }
 
     typedef struct {
-        bool is_stopped;
+        bool is_exited;
         int signal_number;
         int exit_status;
 
@@ -366,33 +318,41 @@ void LinuxForkServerExecutor::Run(const u8 *buf, u32 len, u32 timeout_ms) {
     } PUTStatus;
 
     PUTStatus put_status {
-        .is_stopped = false,
+        .is_exited = false,
         .signal_number = 0,
         .exit_status = 0,
     };
 
-    // TODO: フェーズ3で考える
-    if (record_stdout_and_err) {
-        while( detail::read_chunk( stdout_buffer, fork_server_stdout_fd ) );
-        while( detail::read_chunk( stderr_buffer, fork_server_stderr_fd ) );
-    }
+    // Request creating PUT process to fork server
+    // The new PUT execution can be requested to the fork server by writing 4byte values to the pipe.
+    // If the PUT launched successfully, the pid of PUT process is returned via the pipe.
+    // WriteFile, ReadFile throw exception if writing or reading couldn't consume specified bytes.
+    try {
+        // FIXME: When persistent mode is implemented, this tmp must be set to the value that represent if the last execution failed for timeout.
+        ExecutePUTAPIResponse response = this->put_channel.ExecutePUT();
 
-    // HACK: forkserver側でwaitpidのstatusを取得するのが難しいので仕方ない
-    put_status.is_stopped = true;
-    put_status.exit_status = response.exit_code;
-    if (response.signal_number > 0) {
-        put_status.is_signaled = true;
+        // TODO: フェーズ3で考える
+        if (record_stdout_and_err) {
+            while( detail::read_chunk( stdout_buffer, fork_server_stdout_fd ) );
+            while( detail::read_chunk( stderr_buffer, fork_server_stderr_fd ) );
+        }
+
+        // HACK: forkserver側でwaitpidのstatusを取得するのが難しいので仕方ない
+        put_status.is_exited = true; // FIXME: PUTがシグナルで止まったときにバグる
+        put_status.exit_status = response.exit_code;
         put_status.signal_number = response.signal_number;
         if (put_status.signal_number == SIGKILL) {
             child_timed_out = true;
             DEBUG("PUT Execution Timeout");
         }
+    } catch(const FileError &e) {
+        ERROR("Unable to request new process from fork server (OOM?)");
     }
 
     // If the PUT process is not stopped but exited ( It should happen except in persistent mode ), since child_pid is no longer needed, it can be set to 0.
-    if (!put_status.is_stopped) child_pid = 0; 
+    if (!put_status.is_exited) child_pid = 0; 
     DEBUG("Exec Status { is_signaled=%s, signal_number=%d, exit_status=%d } (pid %d)\n", 
-        put_status.is_signaled ? "true" : "false", 
+        put_status.is_signaled() ? "true" : "false", 
         put_status.signal_number,
         put_status.exit_status,
         child_pid);
@@ -417,7 +377,7 @@ void LinuxForkServerExecutor::Run(const u8 *buf, u32 len, u32 timeout_ms) {
 
     /* Report outcome to caller. */
     // TODO: 余裕があったら PUTExitReasonType に終了コードとシグナル番号を持たせたい
-    if (put_status.is_signaled) {
+    if (put_status.is_signaled()) {
         last_signal = put_status.signal_number;
 
         if (child_timed_out && last_signal == SIGKILL) 
@@ -436,7 +396,7 @@ void LinuxForkServerExecutor::Run(const u8 *buf, u32 len, u32 timeout_ms) {
         return;
     }
 
-    if ( !forksrv && tb4 == EXEC_FAIL_SIG) {
+    if (tb4 == EXEC_FAIL_SIG) {
         last_exit_reason = PUTExitReasonType::FAULT_ERROR;
         return;
     }
@@ -600,120 +560,9 @@ void LinuxForkServerExecutor::CreateJoinedEnvironmentVariables(
  *  - Apply proper limits ( ex. memory limits ) on PUT.
  *  - Setup the pipe between parent process ( the process that runs fuzzuf ) and child process.
  */
-void LinuxForkServerExecutor::SetupForkServer() {
-    std::array< int, 2u > stdout_fd{ -1, -1 };
-    std::array< int, 2u > stderr_fd{ -1, -1 };
-
-    if (record_stdout_and_err) {
-        if ( pipe( stdout_fd.data() ) < 0 ) {
-            ERROR("Unable to create stdout pipe");
-        }
-        if ( pipe( stderr_fd.data() ) < 0 ) {
-            ERROR("Unable to create stderr pipe");
-        }
-    }
-
-    forksrv_pid = fork();
-    if (forksrv_pid < 0) ERROR("fork() failed");
-
-    if (!forksrv_pid) {
-        struct rlimit r;
-        /* Umpf. On OpenBSD, the default fd limit for root users is set to
-           soft 128. Let's try to fix that... */
-
-	// Although since FORKSRV_FD_WRITE=199, FORKSRV_FD_READ=198, the required limit is 200,
-	// set std::max() + 1 to suppose those values are changed in future.
-        // long unsigned int needed_fd_lim = std::max(FORKSRV_FD_WRITE, FORKSRV_FD_READ) + 1;
-        // if (!getrlimit(RLIMIT_NOFILE, &r) && r.rlim_cur < needed_fd_lim) {
-
-        //     r.rlim_cur = needed_fd_lim;
-        //     setrlimit(RLIMIT_NOFILE, &r); /* Ignore errors */
-        // }
-
-        if (exec_memlimit) {
-            r.rlim_max = r.rlim_cur = ((rlim_t)exec_memlimit) << 20;
-
-#ifdef RLIMIT_AS
-            setrlimit(RLIMIT_AS, &r); /* Ignore errors */
-#else
-          /* This takes care of OpenBSD, which doesn't have RLIMIT_AS, but
-             according to reliable sources, RLIMIT_DATA covers anonymous
-             maps - so we should be getting good protection against OOM bugs. */
-            setrlimit(RLIMIT_DATA, &r); /* Ignore errors */
-#endif /* ^RLIMIT_AS */
-
-
-        }
-
-        r.rlim_max = r.rlim_cur = 0;
-        setrlimit(RLIMIT_CORE, &r);
-
-        setsid();
-
-        if (record_stdout_and_err) {
-            dup2(stdout_fd[ 1 ], 1);
-            dup2(stderr_fd[ 1 ], 2);
-            close( stdout_fd[ 0 ] );
-            close( stderr_fd[ 0 ] );
-        } else {
-            dup2(null_fd, 1);
-            dup2(null_fd, 2);
-        }
-
-        if (stdin_mode) {
-            dup2(input_fd, 0);
-        } else {
-            dup2(null_fd, 0);
-        }
-
-        execve(
-            cargv[0],
-            (char**)cargv.data(),
-            const_cast< char** >( raw_environment_variables.data() )
-	    );
-
-	    // TODO: It must be discussed whether it is needed that equivalent to EXEC_FAIL_SIG that is used in non-fork server mode.
-        exit(0);
-    }
-
-    if (record_stdout_and_err) {
-        close( stdout_fd[ 1 ] );
-        close( stderr_fd[ 1 ] );
-        fork_server_stdout_fd = stdout_fd[ 0 ];
-        fork_server_stderr_fd = stderr_fd[ 0 ];
-        fcntl( fork_server_stdout_fd, F_SETFL, O_NONBLOCK );
-        fcntl( fork_server_stderr_fd, F_SETFL, O_NONBLOCK );
-    }
-
-    fork_server_epoll_fd = epoll_create( 1 );
-    if (record_stdout_and_err) {
-        fork_server_stdout_event.data.fd = fork_server_stdout_fd;
-        fork_server_stdout_event.events = EPOLLIN|EPOLLRDHUP;
-        if (epoll_ctl(
-              fork_server_epoll_fd,
-              EPOLL_CTL_ADD,
-              fork_server_stdout_fd,
-              &fork_server_stdout_event
-            ) < 0 ) {
-
-            ERROR("Unable to epoll stdout pipe");
-        }
-
-        fork_server_stderr_event.data.fd = fork_server_stderr_fd;
-        fork_server_stderr_event.events = EPOLLIN|EPOLLRDHUP;
-        if (epoll_ctl(
-                fork_server_epoll_fd,
-                EPOLL_CTL_ADD,
-                fork_server_stderr_fd,
-                &fork_server_stderr_event
-            ) < 0 ) {
-
-            ERROR("Unable to epoll stderr pipe");
-        }
-    }
-
-    return;
-}
+// void LinuxForkServerExecutor::SetupForkServer() {
+//     return;
+// }
 
 // this function may be called in signal handlers.
 // use only async-signal-safe functions inside.

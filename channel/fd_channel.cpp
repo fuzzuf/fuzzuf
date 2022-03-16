@@ -105,3 +105,43 @@ pid_t FdChannel::SetupForkServer(char *const pargv[]) {
 
     return forksrv_pid;
 }
+
+// PUT API
+/**
+ * Stop fork server, then delete relevant values properly.
+ * Postcondition:
+ *  - If forksrv_{read,write}_fd have valid values,
+ *      - Close them
+ *      - invalidate the values(fail-safe)
+ *  - If forksrv_pid has valid value,
+ *      - Terminate the process identified by forksrv_pid
+ *      - Reap the process terminating using waitpid
+ *      - Furthermore, invalidate the value of forksrv_pid(fail-safe)
+ */
+void FdChannel::TerminateForkServer() {
+    // if (fork_server_stdout_fd != -1) {
+    //     close( fork_server_stdout_fd );
+    //     fork_server_stdout_fd = -1;
+    // }
+    
+    // if (fork_server_stderr_fd != -1) {
+    //     close( fork_server_stderr_fd );
+    //     fork_server_stderr_fd = -1;
+    // }
+
+    if (forksrv_write_fd > 0) {
+        close(forksrv_write_fd);
+        forksrv_write_fd = -1;
+    }
+    if (forksrv_read_fd > 0) {
+        close(forksrv_read_fd);
+        forksrv_read_fd = -1;
+    }
+
+    if (forksrv_pid > 0) {
+        int status;
+        kill(forksrv_pid, SIGKILL);
+        waitpid(forksrv_pid, &status, 0);
+        forksrv_pid = -1;
+    }
+}

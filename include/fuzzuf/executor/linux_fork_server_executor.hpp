@@ -52,10 +52,6 @@ public:
     AFLEdgeCovAttacher afl_edge_coverage;
     FuzzufBBCovAttacher fuzzuf_bb_coverage;
 
-    int forksrv_pid;
-    // int forksrv_read_fd;
-    // int forksrv_write_fd;
-
     bool child_timed_out;
 
     static bool has_setup_sighandlers;
@@ -114,7 +110,7 @@ public:
     void ResetSharedMemories();
     void EraseSharedMemories();
     void SetupEnvironmentVariablesForTarget();
-    void SetupForkServer();    
+    // void SetupForkServer();    
 
     static void SetupSignalHandlers();
     static void AlarmHandler(int signum);
