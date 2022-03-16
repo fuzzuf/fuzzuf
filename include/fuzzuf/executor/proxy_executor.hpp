@@ -28,7 +28,6 @@
 #include "fuzzuf/executor/executor.hpp"
 #include "fuzzuf/utils/common.hpp"
 #include "fuzzuf/coverage/afl_edge_cov_attacher.hpp"
-#include "fuzzuf/coverage/fuzzuf_bb_cov_attacher.hpp"
 #include "fuzzuf/feedback/inplace_memory_feedback.hpp"
 #include "fuzzuf/feedback/exit_status_feedback.hpp"
 #include "fuzzuf/feedback/file_feedback.hpp"
@@ -60,7 +59,6 @@ public:
     const bool uses_asan = false; // May become one of the available options in the future, but currently not anticipated
 
     AFLEdgeCovAttacher afl_edge_coverage;
-    FuzzufBBCovAttacher fuzzuf_bb_coverage;
 
     int forksrv_pid;
     int forksrv_read_fd;
@@ -83,7 +81,6 @@ public:
         bool forksrv,
         const fs::path &path_to_write_input,
         u32 afl_shm_size,
-        u32  bb_shm_size,
         // FIXME: The below is a temporary flag to avoid a big performance issue.
         // The issue appears when we save the outputs of stdout/stderr to buffers
         // in every execution of a PUT, which isn't required in most fuzzers.
@@ -123,12 +120,9 @@ public:
 
     // Environment-specific methods
     u32 GetAFLMapSize();
-    u32 GetBBMapSize();
     int GetAFLShmID();
-    int GetBBShmID();
 
     InplaceMemoryFeedback GetAFLFeedback();
-    InplaceMemoryFeedback GetBBFeedback();
     InplaceMemoryFeedback GetStdOut();
     InplaceMemoryFeedback GetStdErr();
     FileFeedback GetFileFeedback(fs::path feed_path);

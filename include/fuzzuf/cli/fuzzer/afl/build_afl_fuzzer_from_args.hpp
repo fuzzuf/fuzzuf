@@ -25,6 +25,10 @@
 #include "fuzzuf/algorithms/afl/afl_setting.hpp"
 #include "fuzzuf/algorithms/afl/afl_state.hpp"
 #include "fuzzuf/executor/native_linux_executor.hpp"
+#include "fuzzuf/executor/qemu_executor.hpp"
+#ifdef __aarch64__
+#include "fuzzuf/executor/coresight_executor.hpp"
+#endif
 #include <boost/program_options.hpp>
 
 namespace po = boost::program_options;
@@ -155,20 +159,57 @@ std::unique_ptr<TFuzzer> BuildAFLFuzzerFromArgs(
 
     using fuzzuf::algorithm::afl::option::GetDefaultOutfile;
     using fuzzuf::algorithm::afl::option::GetMapSize;
+    using fuzzuf::cli::ExecutorKind;
 
-    // Create NativeLinuxExecutor
-    auto nle = std::make_shared<NativeLinuxExecutor>(
-                        setting->argv,
-                        setting->exec_timelimit_ms,
-                        setting->exec_memlimit,
-                        setting->forksrv,
-                        setting->out_dir / GetDefaultOutfile<AFLTag>(),
-                        GetMapSize<AFLTag>(), // afl_shm_size
-                                           0  //  bb_shm_size
-                    );
+    std::shared_ptr<TExecutor> executor;
+    switch (global_options.executor) {
+    case ExecutorKind::NATIVE: {
+        auto nle = std::make_shared<NativeLinuxExecutor>(
+                            setting->argv,
+                            setting->exec_timelimit_ms,
+                            setting->exec_memlimit,
+                            setting->forksrv,
+                            setting->out_dir / GetDefaultOutfile<AFLTag>(),
+                            GetMapSize<AFLTag>(), // afl_shm_size
+                            0 // bb_shm_size
+                        );
+        executor = std::make_shared<TExecutor>(std::move(nle));
+        break;
+    }
 
-    // TODO: support more types of executors
-    auto executor = std::make_shared<TExecutor>(std::move(nle));
+    case ExecutorKind::QEMU: {
+        // NOTE: Assuming GetMapSize<AFLTag>() == QEMUExecutor::QEMU_SHM_SIZE
+        auto qe = std::make_shared<QEMUExecutor>(
+                            global_options.proxy_path.value(),
+                            setting->argv,
+                            setting->exec_timelimit_ms,
+                            setting->exec_memlimit,
+                            setting->forksrv,
+                            setting->out_dir / GetDefaultOutfile<AFLTag>()
+                        );
+        executor = std::make_shared<TExecutor>(std::move(qe));
+        break;
+    }
+
+#ifdef __aarch64__
+    case ExecutorKind::CORESIGHT: {
+        auto cse = std::make_shared<CoreSightExecutor>(
+                            global_options.proxy_path.value(),
+                            setting->argv,
+                            setting->exec_timelimit_ms,
+                            setting->exec_memlimit,
+                            setting->forksrv,
+                            setting->out_dir / GetDefaultOutfile<AFLTag>(),
+                            GetMapSize<AFLTag>() // afl_shm_size
+                        );
+        executor = std::make_shared<TExecutor>(std::move(cse));
+        break;
+    }
+#endif
+
+    default:
+        EXIT("Unsupported executor: '%s'", global_options.executor.c_str());
+    }
 
     // Create AFLState
     using fuzzuf::algorithm::afl::AFLState;
