@@ -12,11 +12,11 @@
 #include <unistd.h>
 
 FdChannel::FdChannel() {
-    // FIXME: perror -> throw Exception
+    // Nothing to do
 }
 
 FdChannel::~FdChannel() {
-    // TODO:
+    TerminateForkServer();
 }
 
 int FdChannel::Send(void *buf, size_t size) {
@@ -57,28 +57,28 @@ ExecutePUTAPIResponse FdChannel::ExecutePUT() {
 pid_t FdChannel::SetupForkServer(char *const pargv[]) {
     DEBUG("[*] [FdChannel] SetupForkserver");
 
+    if (!fs::exists(pargv[0])) {
+        ERROR("PUT does not exists: %s", pargv[0]);
+    }
+
     int par2chld[2], chld2par[2];
 
     if (pipe(par2chld) || pipe(chld2par)) {
-        perror("pipe() failed");
-        exit(1);
+        ERROR("pipe() failed");
     }
 
     forksrv_pid = fork();
     if (forksrv_pid < 0) {
-        perror("fork() failed");
-        exit(1);
+        ERROR("fork() failed");
     }
 
     if (forksrv_pid == 0) {
         // In PUT process
         if (dup2(par2chld[0], FORKSRV_FD_READ) < 0) {
-            perror("dup2() failed");
-            exit(1);
+            ERROR("dup2() failed");
         };
         if (dup2(chld2par[1], FORKSRV_FD_WRITE) < 0) {
-            perror("dup2() failed");
-            exit(1);
+            ERROR("dup2() failed");
         }
 
         close(par2chld[0]);
