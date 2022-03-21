@@ -37,6 +37,7 @@ namespace exceptions {
   };
 FUZZUF_BASE_EXCEPTION(std::logic_error, fuzzuf_logic_error)
 FUZZUF_BASE_EXCEPTION(std::runtime_error, fuzzuf_runtime_error)
+FUZZUF_BASE_EXCEPTION(std::invalid_argument, fuzzuf_invalid_argument)
 FUZZUF_INHERIT_EXCEPTION(fuzzuf_logic_error, used_after_free)
 FUZZUF_INHERIT_EXCEPTION(fuzzuf_logic_error, wrong_hierarflow_usage)
 FUZZUF_INHERIT_EXCEPTION(fuzzuf_logic_error, not_implemented)
@@ -47,5 +48,6 @@ FUZZUF_INHERIT_EXCEPTION(fuzzuf_runtime_error, invalid_file)
 FUZZUF_INHERIT_EXCEPTION(fuzzuf_runtime_error, cli_error)
 FUZZUF_INHERIT_EXCEPTION(fuzzuf_runtime_error, logger_error)
 FUZZUF_INHERIT_EXCEPTION(fuzzuf_logic_error, unexpected_leave_event)
+FUZZUF_INHERIT_EXCEPTION(fuzzuf_invalid_argument, invalid_argument)
 } // namespace exceptions
 #endif

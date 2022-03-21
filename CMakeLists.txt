@@ -364,6 +364,8 @@ set(
   utils/sha1.cpp
   utils/to_hex.cpp
   utils/to_string.cpp
+  utils/vfs/vfs.cpp
+  utils/vfs/local_filesystem.cpp
   utils/which.cpp
   utils/workspace.cpp
   utils/zip_range.cpp

@@ -68,7 +68,8 @@ NativeLinuxExecutor::NativeLinuxExecutor(
     u32 afl_shm_size,
     u32  bb_shm_size,
     bool record_stdout_and_err,
-    std::vector< std::string > &&environment_variables_
+    std::vector< std::string > &&environment_variables_,
+    std::vector< fs::path > &&allowed_path_
 ) :
     Executor( argv, exec_timelimit_ms, exec_memlimit, path_to_write_input.string() ),
     forksrv( forksrv ),
@@ -80,7 +81,8 @@ NativeLinuxExecutor::NativeLinuxExecutor(
     forksrv_read_fd( -1 ),
     forksrv_write_fd( -1 ),
     child_timed_out( false ),
-    record_stdout_and_err( record_stdout_and_err )
+    record_stdout_and_err( record_stdout_and_err ),
+    filesystem( std::move( allowed_path_ ) )
 {
     if (!has_setup_sighandlers) {
 	// For the time being, as signal handler is set globally, this function is static method, therefore it is not needed to set again if has_setup_handlers is ture.
