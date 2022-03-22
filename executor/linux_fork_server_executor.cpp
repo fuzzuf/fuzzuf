@@ -216,6 +216,12 @@ void LinuxForkServerExecutor::Run(const u8 *buf, u32 len, u32 timeout_ms) {
     // Request creating PUT process to fork server
     ExecutePUTAPIResponse response = this->put_channel.ExecutePUT();
 
+    // NOTE: Avoids reading shared memory before PUT exit.
+    /* Any subsequent operations on trace_bits must not be moved by the
+       compiler below this point. Past this location, trace_bits[] behave
+       very normally and do not have to be treated as volatile. */
+    MEM_BARRIER();
+
     // TODO: フェーズ3で考える。たぶんこのコードは消える
     // if (record_stdout_and_err) {
     //     while( detail::read_chunk( stdout_buffer, fork_server_stdout_fd ) );
