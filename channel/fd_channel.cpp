@@ -37,8 +37,10 @@ int FdChannel::Recv(void *buf, size_t size) {
 }
 
 // PUT API
-// 現在PUTが実行を終了するまで待つブロッキングな実装になっています
-// Persistent mode だとプロセスが止まってfuzzerからの指示を待つらしいのでこれは実装不備
+// NOTE: 現在PUTが実行を終了するまで待つブロッキングな実装になっています
+//  Persistent mode だとプロセスが止まってfuzzerからの指示を待つらしいのでこれは実装不備
+// FIXME: fuzzuf-ccは4バイト以上読み取れなかったら forkserver プロセスが終了する実装になっています。
+//  そのとき、FdChannelはforkserverは生きていると思っていて、APIの返答を待つ。これはまずい。
 ExecutePUTAPIResponse FdChannel::ExecutePUT() {
     Send((void *) "ExecutePUT", 10);
 
