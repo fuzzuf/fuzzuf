@@ -1,6 +1,7 @@
 #include "fuzzuf/channel/fd_channel.hpp"
 #include "fuzzuf/logger/logger.hpp"
 #include "fuzzuf/utils/common.hpp"
+#include "fuzzuf/utils/errno_to_system_error.hpp"
 
 #include <signal.h>
 #include <stdarg.h>
@@ -19,17 +20,19 @@ FdChannel::~FdChannel() {
     TerminateForkServer();
 }
 
-int FdChannel::Send(void *buf, size_t size) {
-    int nbytes = write(forksrv_write_fd, buf, size);
+// Write exact `size` bytes
+ssize_t FdChannel::Send(void *buf, size_t size) {
+    ssize_t nbytes = Util::WriteFile(forksrv_write_fd, buf, size);
     if (nbytes < 0) {
         ERROR("[FdChannel] Failed to send");
     }
     return nbytes;
 }
 
+// Read exact `size` bytes
 // Recieved data to be stored to user allocated pointer `buf`
-int FdChannel::Recv(void *buf, size_t size) {
-    int nbytes = read(forksrv_read_fd, buf, size);
+ssize_t FdChannel::Recv(void *buf, size_t size) {
+    ssize_t nbytes = Util::ReadFile(forksrv_read_fd, buf, size, true);
     if (nbytes < 0) {
         ERROR("[!] [FdChannel] Failed to recv");
     }
@@ -58,9 +61,7 @@ ExecutePUTAPIResponse FdChannel::ExecutePUT() {
 // Helper function to assure forkserver is up
 pid_t FdChannel::WaitForkServerStart() {
     pid_t forksrv_pid = 0;
-    // NOTE: Do not recover erroneous state (such that read() fails, read bytes less than expected).
-    //  Aussuming the following read() performs reading `sizeof(forksrv_pid)` bytes exactly.
-    if (read(forksrv_read_fd, &forksrv_pid, sizeof(forksrv_pid)) < sizeof(forksrv_pid)) {
+    if (Recv(&forksrv_pid, sizeof(forksrv_pid)) < 0) {
         ERROR("Failed to wait for server start");
     }
     DEBUG("Forkserver started: pid=%d\n", forksrv_pid);

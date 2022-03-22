@@ -174,14 +174,32 @@ static ssize_t write_n(int fd, const void *buf, size_t n) {
   return nwritten;
 }
 
-void ReadFile(int fd, void *buf, u32 len, bool original_behaviour) {
-  if (read_n(fd, buf, len, original_behaviour) != len)
-    throw FileError(StrPrintf("Failed to read fd=%d", fd));
+// Read exact `len` bytes
+ssize_t ReadFile(int fd, void *buf, u32 len, bool original_behaviour) {
+  try {
+    ssize_t nbytes = read_n(fd, buf, len, original_behaviour);
+    if (nbytes != len) {
+      if (original_behaviour)
+        return -1;
+      else 
+        throw FileError(StrPrintf("Failed to read exact len bytes: fd=%d, len=%d, nbytes=%d", fd, len, nbytes));
+    }
+    return nbytes;
+  } catch (std::system_error& e) {
+    throw FileError(StrPrintf("Failed to read from fd=%d: errno_to_system_error(errno=%s)", fd, e.what()));
+  }
 }
 
-void WriteFile(int fd, const void *buf, u32 len) {
-  if (write_n(fd, buf, len) != len)
-    throw FileError(StrPrintf("Failed to write fd=%d", fd));
+// Write exact `len` bytes
+ssize_t WriteFile(int fd, const void *buf, u32 len, bool original_behaviour) {
+  ssize_t nbytes = write_n(fd, buf, len);
+  if (nbytes != len) {
+    if (original_behaviour)
+      return -1;
+    else 
+      throw FileError(StrPrintf("Failed to write fd=%d", fd));
+  }
+  return nbytes;
 }
 
 // 時間制限付きReadFile

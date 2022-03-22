@@ -20,8 +20,8 @@ public:
     void TerminateForkServer();
 
 private:
-    int Send(void *buf, size_t size);
-    int Recv(void *buf, size_t size);
+    ssize_t Send(void *buf, size_t size);
+    ssize_t Recv(void *buf, size_t size);
 
     pid_t WaitForkServerStart();
 
