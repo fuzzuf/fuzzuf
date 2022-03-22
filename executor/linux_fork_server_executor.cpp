@@ -38,10 +38,6 @@
 #include "fuzzuf/feedback/put_exit_reason_type.hpp"
 #include "fuzzuf/logger/logger.hpp"
 
-bool LinuxForkServerExecutor::has_setup_sighandlers = false;
-
-LinuxForkServerExecutor* LinuxForkServerExecutor::active_instance = nullptr;
-
 /**
  * Precondition:
  *   - A file can be created at path path_str_to_write_input.
@@ -76,19 +72,8 @@ LinuxForkServerExecutor::LinuxForkServerExecutor(
     // cargv and stdin_mode are initialized at SetCArgvAndDecideInputMode
     child_timed_out( false ),
     record_stdout_and_err( record_stdout_and_err ),
-    // put_channel( "ipc:///tmp/forkserver.ipc" ) // FIXME: ユーザーが設定可能に
     put_channel() // TODO: Make channel configurable outside of executor
 {
-    if (!has_setup_sighandlers) {
-	// For the time being, as signal handler is set globally, this function is static method, therefore it is not needed to set again if has_setup_handlers is ture.
-        SetupSignalHandlers();
-        has_setup_sighandlers = true;
-    }
-    // Assign self address to static pointer to make signal handlers can refer.
-    // active_instance may refer other instance if multiple LinuxForkServerExecutor exist, therefore following assertion is not appliable.
-    // assert(active_instance == nullptr);
-    active_instance = this;
-
     SetCArgvAndDecideInputMode();
     OpenExecutorDependantFiles();
 
@@ -109,12 +94,6 @@ LinuxForkServerExecutor::LinuxForkServerExecutor(
  *  - Temporary purpose: If actve_instance which signal handlers refer has a pointer to self value, assign nullptr to it and invalidate.
  */
 LinuxForkServerExecutor::~LinuxForkServerExecutor() {
-    // Since active_instance can refer another instance of multiple N, it is considered FuzzerHandle::Reset is called if active_instance is not self value, therefore do nothing. On the other hand, assign nullptr if active_instance is self value.
-    // Although, assigning nullptr just in case, since the handlers will never called when the destructor is called, it is basically not a problem.
-    if (active_instance == this) {
-        active_instance = nullptr;
-    }
-
     if (input_fd != -1) {
         Util::CloseFile(input_fd);
         input_fd = -1;
@@ -128,8 +107,6 @@ LinuxForkServerExecutor::~LinuxForkServerExecutor() {
     EraseSharedMemories();
 
     TerminateForkServer();
-    // Although, PUT process should be handled by fork server, kill it just in case. (Since fork server is expected to be killed using kill, therefore it will never becoome a zombie. So never wait.)
-    KillChildWithoutWait();
 }
 
 void LinuxForkServerExecutor::SetCArgvAndDecideInputMode() {
@@ -150,73 +127,6 @@ void LinuxForkServerExecutor::SetCArgvAndDecideInputMode() {
 
 void LinuxForkServerExecutor::TerminateForkServer() {
     put_channel.TerminateForkServer();
-}
-
-/**
- * An static method
- * Precondition:
- *  - active_instance has a non-nullptr value definitely when this function is called.
- *  - active_instance has an address of valid Executor instance.
- *  - The global timer exists in the self process, and the function is called for SIGALRM signal.
- * Postcondition:
- *  - The function works as signal handler for SIGALRM
- *      - If called, the PUT is considered as expiring the execution time, therefore kill active_instance->child_pid.
- *      - Set a flag active_instance->child_timed_out
- */
-void LinuxForkServerExecutor::AlarmHandler(int signum) {
-    assert (signum == SIGALRM);
-    assert (active_instance != nullptr);
-    active_instance->KillChildWithoutWait();
-    active_instance->child_timed_out = true;
-}
-
-/*
- * An static method
- * Postcondition:
- *  - It defines how the fuzzuf process respond to signals.
- *  - If signal handlers are needed, signal handlers are set.
- * FIXME: Since the configuration on signal handlers is shared in whole process,
- * it affects all fuzzuf instances running on the process.
- * As the result, it requires change of process design in some cases,
- * Therefore, the process design may be changed, 
- * yet currently the static function is implemented under the expection that only one fuzzuf instance is used simultaneously.
- */
-void LinuxForkServerExecutor::SetupSignalHandlers() {
-    struct sigaction sa;
-
-    sa.sa_handler = NULL;
-    sa.sa_flags = SA_RESTART;
-    sa.sa_sigaction = NULL;
-
-    sigemptyset(&sa.sa_mask);
-// Since there is no agreement on handling following signals, ignoring for now.
-#if 0
-    /* Various ways of saying "stop". */
-
-    sa.sa_handler = handle_stop_sig;
-    sigaction(SIGHUP, &sa, NULL);
-    sigaction(SIGINT, &sa, NULL);
-    sigaction(SIGTERM, &sa, NULL);
-
-    /* Window resize */
-
-    sa.sa_handler = handle_resize;
-    sigaction(SIGWINCH, &sa, NULL);
-
-    /* SIGUSR1: skip entry */
-
-    sa.sa_handler = handle_skipreq;
-    sigaction(SIGUSR1, &sa, NULL);
-#endif
-
-    /* Things we don't care about. */
-
-    sa.sa_handler = SIG_IGN;
-    sigaction(SIGTSTP, &sa, NULL);
-    sigaction(SIGPIPE, &sa, NULL);
-
-    sa.sa_handler = LinuxForkServerExecutor::AlarmHandler;
-    sigaction(SIGALRM, &sa, NULL);
 }
 
 namespace detail {
@@ -263,10 +173,6 @@ namespace detail {
  *      - If Executor::stdin_mode is true, use input_fd as a standard input.
  *    (3) Competent process stops execution after the time specified by timeout_ms. As the exception, if the value is 0, the time limit is determined using member variable exec_timelimit_ms.
  *    (4) When the method exits, it is triggered by self or third-party signals.
- *    (5) Assign process ID of competent process to child_pid
- *      - This postcondition is needed for third-party to exit competent process
- *        Is there need for third-party to exit the process in future? -> It might be used in the case signal handler is in use.
- *        The postcondition is left for future extension.
  */
 
 void LinuxForkServerExecutor::Run(const u8 *buf, u32 len, u32 timeout_ms) {
@@ -295,12 +201,6 @@ void LinuxForkServerExecutor::Run(const u8 *buf, u32 len, u32 timeout_ms) {
     DEBUG("\n")
     //#endif
 
-    // This structure is shared by both parent process and child process.
-    // Since execv never returns on success, it is initialized as success(0), then set value on failed.
-    auto child_state = fuzzuf::utils::interprocess::create_shared_object(
-      fuzzuf::executor::ChildState{ 0, 0 }
-    );
-
     // TODO: 標準入出力の記録はフェーズ3で
     // std::array< int, 2u > stdout_fd{ 0, 0 };
     // std::array< int, 2u > stderr_fd{ 0, 0 };
@@ -323,22 +223,30 @@ void LinuxForkServerExecutor::Run(const u8 *buf, u32 len, u32 timeout_ms) {
         .exit_status = 0,
     };
 
+    last_exit_reason = PUTExitReasonType::FAULT_NONE;
+
     // Request creating PUT process to fork server
     // The new PUT execution can be requested to the fork server by writing 4byte values to the pipe.
     // If the PUT launched successfully, the pid of PUT process is returned via the pipe.
     // WriteFile, ReadFile throw exception if writing or reading couldn't consume specified bytes.
     try {
         // FIXME: When persistent mode is implemented, this tmp must be set to the value that represent if the last execution failed for timeout.
+        
         ExecutePUTAPIResponse response = this->put_channel.ExecutePUT();
 
-        // TODO: フェーズ3で考える
+        // TODO: フェーズ3で考える。たぶんこのコードは消える
         if (record_stdout_and_err) {
             while( detail::read_chunk( stdout_buffer, fork_server_stdout_fd ) );
             while( detail::read_chunk( stderr_buffer, fork_server_stderr_fd ) );
         }
 
-        // HACK: forkserver側でwaitpidのstatusを取得するのが難しいので仕方ない
-        put_status.is_exited = true; // FIXME: PUTがシグナルで止まったときにバグる
+        if (response.error) {
+            last_exit_reason = PUTExitReasonType::FAULT_ERROR;
+            return;
+        }
+
+        // FIXME: PUT実行がシグナルで止まったときにバグる。APIのレスポンスが返ったということはPUTが終了したという前提で書いた。
+        put_status.is_exited = true; 
         put_status.exit_status = response.exit_code;
         put_status.signal_number = response.signal_number;
         if (put_status.signal_number == SIGKILL) {
@@ -349,13 +257,10 @@ void LinuxForkServerExecutor::Run(const u8 *buf, u32 len, u32 timeout_ms) {
         ERROR("Unable to request new process from fork server (OOM?)");
     }
 
-    // If the PUT process is not stopped but exited ( It should happen except in persistent mode ), since child_pid is no longer needed, it can be set to 0.
-    if (!put_status.is_exited) child_pid = 0; 
-    DEBUG("Exec Status { is_signaled=%s, signal_number=%d, exit_status=%d } (pid %d)\n", 
+    DEBUG("Exec Status { is_signaled=%s, signal_number=%d, exit_status=%d }\n", 
         put_status.is_signaled() ? "true" : "false", 
         put_status.signal_number,
-        put_status.exit_status,
-        child_pid);
+        put_status.exit_status);
 
     /* Any subsequent operations on trace_bits must not be moved by the
        compiler below this point. Past this location, trace_bits[] behave
@@ -363,16 +268,6 @@ void LinuxForkServerExecutor::Run(const u8 *buf, u32 len, u32 timeout_ms) {
 
     MEM_BARRIER();
 
-    // Following implementation is dirty.
-    // This may be inherited implementation from afl, and it may feel dirty, so it shall be fixed.
-
-    u32 tb4 = 0;
-
-    // Consider execution was failed if execv of child process failed.
-    if ( child_state->exec_result < 0 )
-        tb4 = EXEC_FAIL_SIG;
-
-    last_exit_reason = PUTExitReasonType::FAULT_NONE;
     last_signal = 0;
 
     /* Report outcome to caller. */
@@ -396,12 +291,6 @@ void LinuxForkServerExecutor::Run(const u8 *buf, u32 len, u32 timeout_ms) {
         return;
     }
 
-    if (tb4 == EXEC_FAIL_SIG) {
-        last_exit_reason = PUTExitReasonType::FAULT_ERROR;
-        return;
-    }
-
-    last_exit_reason = PUTExitReasonType::FAULT_NONE;
     return;
 }
 

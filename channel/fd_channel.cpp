@@ -56,7 +56,7 @@ ExecutePUTAPIResponse FdChannel::ExecutePUT() {
 }
 
 // PUT API
-pid_t FdChannel::SetupForkServer(char *const pargv[]) {
+void FdChannel::SetupForkServer(char *const pargv[]) {
     DEBUG("[*] [FdChannel] SetupForkserver");
 
     if (!fs::exists(pargv[0])) {
@@ -105,7 +105,7 @@ pid_t FdChannel::SetupForkServer(char *const pargv[]) {
     forksrv_write_fd = par2chld[1];
     forksrv_read_fd = chld2par[0];
 
-    return forksrv_pid;
+    return;
 }
 
 // PUT API

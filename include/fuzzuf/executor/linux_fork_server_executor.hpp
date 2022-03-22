@@ -54,12 +54,6 @@ public:
 
     bool child_timed_out;
 
-    static bool has_setup_sighandlers;
-    // A pointer to a currently active instance, used by a signal handler.
-    // nullptr if no such instance.
-    // Beware that it temporarily assumes that multiple fuzzer instances do not become active simultaneously.
-    static LinuxForkServerExecutor *active_instance;
-
     LinuxForkServerExecutor(  
         const std::vector<std::string> &argv,
         u32 exec_timelimit_ms,
@@ -110,9 +104,7 @@ public:
     void ResetSharedMemories();
     void EraseSharedMemories();
     void SetupEnvironmentVariablesForTarget();
-    // void SetupForkServer();    
 
-    static void SetupSignalHandlers();
     static void AlarmHandler(int signum);
 
     // InplaceMemoryFeedback made of GetStdOut before calling this function becomes invalid after Run()

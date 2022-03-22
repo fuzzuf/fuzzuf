@@ -16,7 +16,7 @@ public:
     // PUT API
     // TODO: これは暫定。フェーズ3で標準入出力の record 機能の実現のために、Execute開始と終了待ちを別々に扱う可能性あり。
     ExecutePUTAPIResponse ExecutePUT();
-    pid_t SetupForkServer(char *const pargv[]);
+    void SetupForkServer(char *const pargv[]);
     void TerminateForkServer();
 
 private:
