@@ -1,7 +1,6 @@
 #include "fuzzuf/channel/fd_channel.hpp"
 #include "fuzzuf/logger/logger.hpp"
 #include "fuzzuf/utils/common.hpp"
-#include "fuzzuf/utils/errno_to_system_error.hpp"
 
 #include <signal.h>
 #include <stdarg.h>
@@ -22,7 +21,7 @@ FdChannel::~FdChannel() {
 
 // Write exact `size` bytes
 ssize_t FdChannel::Send(void *buf, size_t size) {
-    ssize_t nbytes = Util::WriteFile(forksrv_write_fd, buf, size);
+    ssize_t nbytes = Util::WriteFile(forksrv_write_fd, buf, size, true);
     if (nbytes < 0) {
         ERROR("[FdChannel] Failed to send");
     }
@@ -34,7 +33,7 @@ ssize_t FdChannel::Send(void *buf, size_t size) {
 ssize_t FdChannel::Recv(void *buf, size_t size) {
     ssize_t nbytes = Util::ReadFile(forksrv_read_fd, buf, size, true);
     if (nbytes < 0) {
-        ERROR("[!] [FdChannel] Failed to recv");
+        ERROR("[FdChannel] Failed to recv");
     }
     return nbytes;
 }

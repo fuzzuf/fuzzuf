@@ -186,7 +186,7 @@ ssize_t ReadFile(int fd, void *buf, u32 len, bool original_behaviour) {
     }
     return nbytes;
   } catch (std::system_error& e) {
-    throw FileError(StrPrintf("Failed to read from fd=%d: errno_to_system_error(errno=%s)", fd, e.what()));
+    throw FileError(StrPrintf("Failed to read fd=%d: errno_to_system_error(errno=%s)", fd, e.what()));
   }
 }
 
