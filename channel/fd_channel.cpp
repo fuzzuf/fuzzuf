@@ -58,7 +58,9 @@ ExecutePUTAPIResponse FdChannel::ExecutePUT() {
 // Helper function to assure forkserver is up
 pid_t FdChannel::WaitForkServerStart() {
     pid_t forksrv_pid = 0;
-    if (read(forksrv_read_fd, &forksrv_pid, sizeof(forksrv_pid)) < 0) {
+    // NOTE: Do not recover erroneous state (such that read() fails, read bytes less than expected).
+    //  Aussuming the following read() performs reading `sizeof(forksrv_pid)` bytes exactly.
+    if (read(forksrv_read_fd, &forksrv_pid, sizeof(forksrv_pid)) < sizeof(forksrv_pid)) {
         ERROR("Failed to wait for server start");
     }
     DEBUG("Forkserver started: pid=%d\n", forksrv_pid);
