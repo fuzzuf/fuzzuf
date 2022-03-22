@@ -70,7 +70,6 @@ LinuxForkServerExecutor::LinuxForkServerExecutor(
     fuzzuf_bb_coverage(bb_shm_size),
 
     // cargv and stdin_mode are initialized at SetCArgvAndDecideInputMode
-    child_timed_out( false ),
     record_stdout_and_err( record_stdout_and_err ),
     put_channel() // TODO: Make channel configurable outside of executor
 {
@@ -174,7 +173,6 @@ namespace detail {
  *    (3) Competent process stops execution after the time specified by timeout_ms. As the exception, if the value is 0, the time limit is determined using member variable exec_timelimit_ms.
  *    (4) When the method exits, it is triggered by self or third-party signals.
  */
-
 void LinuxForkServerExecutor::Run(const u8 *buf, u32 len, u32 timeout_ms) {
     // locked until std::shared_ptr<u8> lock is used in other places
     while (IsFeedbackLocked()) {
@@ -183,13 +181,16 @@ void LinuxForkServerExecutor::Run(const u8 *buf, u32 len, u32 timeout_ms) {
 
     // if timeout_ms is 0, then we use exec_timelimit_ms;
     if (timeout_ms == 0) timeout_ms = exec_timelimit_ms;
+    // TODO: タイムアウト設定をPUTに反映
 
     // Aliases
     ResetSharedMemories();
-    if (record_stdout_and_err) {
-        stdout_buffer.clear();
-        stderr_buffer.clear();
-    }
+
+    // TODO: 標準入出力の記録はフェーズ3で
+    // if (record_stdout_and_err) {
+    //     stdout_buffer.clear();
+    //     stderr_buffer.clear();
+    // }
 
     WriteTestInputToFile(buf, len);
 
@@ -207,91 +208,59 @@ void LinuxForkServerExecutor::Run(const u8 *buf, u32 len, u32 timeout_ms) {
     // constexpr std::size_t read_size = 8u;
     // boost::container::static_vector< std::uint8_t, read_size > read_buffer;
 
-    typedef struct {
-        bool is_exited;
-        int signal_number;
-        int exit_status;
-
-        bool is_signaled() {
-            return this->signal_number > 0;
-        }
-    } PUTStatus;
-
-    PUTStatus put_status {
-        .is_exited = false,
-        .signal_number = 0,
-        .exit_status = 0,
-    };
-
     last_exit_reason = PUTExitReasonType::FAULT_NONE;
-
-    // Request creating PUT process to fork server
-    // The new PUT execution can be requested to the fork server by writing 4byte values to the pipe.
-    // If the PUT launched successfully, the pid of PUT process is returned via the pipe.
-    // WriteFile, ReadFile throw exception if writing or reading couldn't consume specified bytes.
-    try {
-        // FIXME: When persistent mode is implemented, this tmp must be set to the value that represent if the last execution failed for timeout.
-        
-        ExecutePUTAPIResponse response = this->put_channel.ExecutePUT();
-
-        // TODO: フェーズ3で考える。たぶんこのコードは消える
-        if (record_stdout_and_err) {
-            while( detail::read_chunk( stdout_buffer, fork_server_stdout_fd ) );
-            while( detail::read_chunk( stderr_buffer, fork_server_stderr_fd ) );
-        }
-
-        if (response.error) {
-            last_exit_reason = PUTExitReasonType::FAULT_ERROR;
-            return;
-        }
-
-        // FIXME: PUT実行がシグナルで止まったときにバグる。APIのレスポンスが返ったということはPUTが終了したという前提で書いた。
-        put_status.is_exited = true; 
-        put_status.exit_status = response.exit_code;
-        put_status.signal_number = response.signal_number;
-        if (put_status.signal_number == SIGKILL) {
-            child_timed_out = true;
-            DEBUG("PUT Execution Timeout");
-        }
-    } catch(const FileError &e) {
-        ERROR("Unable to request new process from fork server (OOM?)");
-    }
-
-    DEBUG("Exec Status { is_signaled=%s, signal_number=%d, exit_status=%d }\n", 
-        put_status.is_signaled() ? "true" : "false", 
-        put_status.signal_number,
-        put_status.exit_status);
-
-    /* Any subsequent operations on trace_bits must not be moved by the
-       compiler below this point. Past this location, trace_bits[] behave
-       very normally and do not have to be treated as volatile. */
-
-    MEM_BARRIER();
-
     last_signal = 0;
 
-    /* Report outcome to caller. */
-    // TODO: 余裕があったら PUTExitReasonType に終了コードとシグナル番号を持たせたい
-    if (put_status.is_signaled()) {
-        last_signal = put_status.signal_number;
+    // FIXME: When persistent mode is implemented, this tmp must be set to the value that represent if the last execution failed for timeout.
+    
+    // Request creating PUT process to fork server
+    ExecutePUTAPIResponse response = this->put_channel.ExecutePUT();
 
-        if (child_timed_out && last_signal == SIGKILL) 
+    // TODO: フェーズ3で考える。たぶんこのコードは消える
+    // if (record_stdout_and_err) {
+    //     while( detail::read_chunk( stdout_buffer, fork_server_stdout_fd ) );
+    //     while( detail::read_chunk( stderr_buffer, fork_server_stderr_fd ) );
+    // }
+
+    DEBUG("Response { error=%d, exit_status=%d, signal_number=%d }\n", 
+        response.error,
+        response.exit_code,
+        response.signal_number
+        );
+
+    if (response.error) {
+        last_exit_reason = PUTExitReasonType::FAULT_ERROR;
+        return;
+    }
+
+    /* Report outcome to caller. */
+    // FIXME: PUT実行がシグナルで止まったときにバグる。
+    //  APIのレスポンスが返ったということはPUTが終了したという前提で書いた。
+    // TODO: 余裕があったら PUTExitReasonType に終了コードとシグナル番号を持たせたい
+    bool child_timed_out = response.signal_number == SIGKILL;
+    if (response.signal_number > 0) {
+        last_signal = response.signal_number;
+
+        if (child_timed_out && last_signal == SIGKILL) {
+            DEBUG("PUT Execution Timeout");
             last_exit_reason = PUTExitReasonType::FAULT_TMOUT;
-        else 
+        } else {
             last_exit_reason = PUTExitReasonType::FAULT_CRASH;
+        }
 
         return;
     }
 
-    /* A somewhat nasty hack for MSAN, which doesn't support abort_on_error and
-       must use a special exit code. */
-
-    if (uses_asan && put_status.exit_status == MSAN_ERROR) {
+    if (uses_asan && response.exit_code == MSAN_ERROR) {
         last_exit_reason = PUTExitReasonType::FAULT_CRASH;
         return;
     }
 
     return;
+}
+
+void LinuxForkServerExecutor::ReceiveStopSignal(void) {
+    // Do nothing
 }
 
 u32 LinuxForkServerExecutor::GetAFLMapSize() {
@@ -439,30 +408,6 @@ void LinuxForkServerExecutor::CreateJoinedEnvironmentVariables(
     );
     raw_environment_variables.push_back( nullptr );
     raw_environment_variables.shrink_to_fit();
-}
-
-/*
- * Precondition:
- *  - The target PUT is a binary that supports fork server mode.
- * Postcondition:
- *  - Generate child process, then launch PUT in fork server mode on the child process side.
- *  - Apply proper limits ( ex. memory limits ) on PUT.
- *  - Setup the pipe between parent process ( the process that runs fuzzuf ) and child process.
- */
-// void LinuxForkServerExecutor::SetupForkServer() {
-//     return;
-// }
-
-// this function may be called in signal handlers.
-// use only async-signal-safe functions inside.
-// basically, we care about only the case where LinuxForkServerExecutor::Run is running.
-// in that case, we should kill the child process(of PUT) so that LinuxForkServerExecutor could halt without waiting the timeout.
-// if this function is called during the call of other functions, then the child process is not active.
-// we can call KillChildWithoutWait() anyways because the function checks if the child process is active.
-void LinuxForkServerExecutor::ReceiveStopSignal(void) {
-    // kill is async-signal-safe
-    // the child process is active only in LinuxForkServerExecutor::Run and Run always uses waitpid, so we don't need to use waitpid here
-    KillChildWithoutWait();
 }
 
 fuzzuf::executor::output_t LinuxForkServerExecutor::MoveStdOut() {

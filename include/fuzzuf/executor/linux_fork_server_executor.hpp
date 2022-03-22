@@ -52,8 +52,6 @@ public:
     AFLEdgeCovAttacher afl_edge_coverage;
     FuzzufBBCovAttacher fuzzuf_bb_coverage;
 
-    bool child_timed_out;
-
     LinuxForkServerExecutor(  
         const std::vector<std::string> &argv,
         u32 exec_timelimit_ms,
