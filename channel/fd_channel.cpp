@@ -59,10 +59,9 @@ ExecutePUTAPIResponse FdChannel::ExecutePUT() {
 pid_t FdChannel::WaitForkServerStart() {
     pid_t forksrv_pid = 0;
     if (read(forksrv_read_fd, &forksrv_pid, sizeof(forksrv_pid)) < 0) {
-        perror("[!] [Bench] Failed to wait for server start");
-        exit(1);
+        ERROR("Failed to wait for server start");
     }
-    fprintf(stderr, "[*] [Bench] Forkserver started: pid=%d\n", forksrv_pid);
+    DEBUG("Forkserver started: pid=%d\n", forksrv_pid);
     return forksrv_pid;
 }
 
