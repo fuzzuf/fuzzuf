@@ -23,6 +23,8 @@ private:
     int Send(void *buf, size_t size);
     int Recv(void *buf, size_t size);
 
+    pid_t WaitForkServerStart();
+
     // TODO: fuzzuf-cc がPUTに付加した情報をもとに設定したいな
     // afl-gcc を使い回す都合で、本家とバッチングしない値を使う
     static const int FORKSRV_FD_READ = 196; // 本家とバッチングしない値で

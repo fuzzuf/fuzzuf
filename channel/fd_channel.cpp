@@ -55,6 +55,17 @@ ExecutePUTAPIResponse FdChannel::ExecutePUT() {
     return response;
 }
 
+// Helper function to assure forkserver is up
+pid_t FdChannel::WaitForkServerStart() {
+    pid_t forksrv_pid = 0;
+    if (read(forksrv_read_fd, &forksrv_pid, sizeof(forksrv_pid)) < 0) {
+        perror("[!] [Bench] Failed to wait for server start");
+        exit(1);
+    }
+    fprintf(stderr, "[*] [Bench] Forkserver started: pid=%d\n", forksrv_pid);
+    return forksrv_pid;
+}
+
 // PUT API
 void FdChannel::SetupForkServer(char *const pargv[]) {
     DEBUG("[*] [FdChannel] SetupForkserver");
@@ -104,6 +115,8 @@ void FdChannel::SetupForkServer(char *const pargv[]) {
 
     forksrv_write_fd = par2chld[1];
     forksrv_read_fd = chld2par[0];
+
+    assert(WaitForkServerStart() == forksrv_pid);
 
     return;
 }
