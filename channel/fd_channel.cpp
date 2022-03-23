@@ -101,16 +101,23 @@ void FdChannel::SetupForkServer(char *const pargv[]) {
         close(par2chld[1]);
         close(chld2par[0]);
         close(chld2par[1]);
+        DEBUG("[*] [FdChannel] pargv[0]=\"%s\": pid=%d\n", pargv[0], getpid());
 
         // FIXME: 無条件で標準（エラ）出力をクローズ。標準入出力を記録する機能が死んでいるのはフェーズ3で直す
         int null_fd = Util::OpenFile("/dev/null", O_RDONLY | O_CLOEXEC);
-        dup2(null_fd, 1);
-        dup2(null_fd, 2);
-        
-        DEBUG("[*] [FdChannel] pargv[0]=\"%s\": pid=%d\n", pargv[0], getpid());
+        int stdout_fd = dup(STDOUT_FILENO);
+        int stderr_fd = dup(STDERR_FILENO);
+        fcntl(stdout_fd, F_SETFD, O_CLOEXEC);
+        fcntl(stderr_fd, F_SETFD, O_CLOEXEC);
+        dup2(null_fd, STDOUT_FILENO);
+        dup2(null_fd, STDERR_FILENO);
 
         execv(pargv[0], pargv);
-        exit(0);
+
+        /* Execution failed */
+        dup2(stdout_fd, STDOUT_FILENO);
+        dup2(stderr_fd, STDERR_FILENO);
+        ERROR("execv() failed");
     }
 
     close(par2chld[0]);
@@ -119,7 +126,23 @@ void FdChannel::SetupForkServer(char *const pargv[]) {
     forksrv_write_fd = par2chld[1];
     forksrv_read_fd = chld2par[0];
 
-    assert(WaitForkServerStart() == forksrv_pid);
+    if (WaitForkServerStart() != forksrv_pid) {
+        /* Invalid instrumentation detected or PUT execution failed */
+        int status = 0;
+        waitpid(forksrv_pid, &status, WNOHANG);
+
+        if (WSTOPSIG(status)) {
+            /* Show error message in case PUT is not instrumented
+               and exits immediately with non-zero status code */
+            ERROR("Failed to execute PUT (exited)");
+            exit(1);
+        } else {
+            /* If child process is alive, instrumentation is invalid */
+            MSG(cLRD "[-] " cRST
+                "    Looks like the target binary is not instrumented by fuzzuf-cc!\n");
+            ERROR("No valid instrumentation detected");
+        }
+    }
 
     return;
 }
