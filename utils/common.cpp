@@ -136,7 +136,7 @@ int OpenFile(std::string path, int flag, mode_t mode) {
    argument 'n', it's safe to wrap read/write so that they should read/write
    just 'n' bytes
  */
-static ssize_t read_n(int fd, void *buf, size_t n, bool original_behaviour) {
+ssize_t read_n(int fd, void *buf, size_t n, bool original_behaviour) {
   size_t nread = 0;
   while (nread < n) {
     ssize_t res = read(fd, (char *)buf + nread, n - nread);
@@ -159,7 +159,7 @@ static ssize_t read_n(int fd, void *buf, size_t n, bool original_behaviour) {
   return nread;
 }
 
-static ssize_t write_n(int fd, const void *buf, size_t n) {
+ssize_t write_n(int fd, const void *buf, size_t n) {
   size_t nwritten = 0;
   while (nwritten < n) {
     ssize_t res = write(fd, (char *)buf + nwritten, n - nwritten);
@@ -174,14 +174,22 @@ static ssize_t write_n(int fd, const void *buf, size_t n) {
   return nwritten;
 }
 
-void ReadFile(int fd, void *buf, u32 len, bool original_behaviour) {
-  if (read_n(fd, buf, len, original_behaviour) != len)
-    throw FileError(StrPrintf("Failed to read fd=%d", fd));
+// Read exact `len` bytes
+ssize_t ReadFile(int fd, void *buf, u32 len, bool original_behaviour) {
+  ssize_t nbytes = read_n(fd, buf, len, original_behaviour);
+  if (nbytes != len) {
+    throw FileError(StrPrintf("Failed to read exact len bytes: fd=%d, len=%d, nbytes=%d", fd, len, nbytes));
+  }
+  return nbytes;
 }
 
-void WriteFile(int fd, const void *buf, u32 len) {
-  if (write_n(fd, buf, len) != len)
-    throw FileError(StrPrintf("Failed to write fd=%d", fd));
+// Write exact `len` bytes
+ssize_t WriteFile(int fd, const void *buf, u32 len) {
+  ssize_t nbytes = write_n(fd, buf, len);
+  if (nbytes != len) {
+    throw FileError(StrPrintf("Failed to write exact len bytes: fd=%d, len=%d, nbytes=%d", fd, len, nbytes));
+  }
+  return nbytes;
 }
 
 // 時間制限付きReadFile

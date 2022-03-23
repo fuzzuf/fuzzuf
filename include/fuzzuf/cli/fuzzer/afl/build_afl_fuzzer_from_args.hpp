@@ -177,6 +177,19 @@ std::unique_ptr<TFuzzer> BuildAFLFuzzerFromArgs(
         break;
     }
 
+    case ExecutorKind::FORKSERVER: {
+        auto lfe = std::make_shared<LinuxForkServerExecutor>(
+                            setting->argv,
+                            setting->exec_timelimit_ms,
+                            setting->exec_memlimit,
+                            setting->out_dir / GetDefaultOutfile<AFLTag>(),
+                            GetMapSize<AFLTag>(), // afl_shm_size
+                            0 // bb_shm_size
+                        );
+        executor = std::make_shared<TExecutor>(std::move(lfe));
+        break;
+    }
+
     case ExecutorKind::QEMU: {
         // NOTE: Assuming GetMapSize<AFLTag>() == QEMUExecutor::QEMU_SHM_SIZE
         auto qe = std::make_shared<QEMUExecutor>(

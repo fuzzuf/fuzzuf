@@ -326,11 +326,13 @@ set(
   algorithms/vuzzer/vuzzer_testcase.cpp
   algorithms/vuzzer/vuzzer_update_hierarflow_routines.cpp
   algorithms/vuzzer/vuzzer_util.cpp
+  channel/fd_channel.cpp
   exec_input/exec_input.cpp
   exec_input/exec_input_set.cpp
   exec_input/on_disk_exec_input.cpp
   exec_input/on_memory_exec_input.cpp
   executor/executor.cpp
+  executor/linux_fork_server_executor.cpp
   executor/native_linux_executor.cpp
   executor/pintool_executor.cpp
   executor/polytracker_executor.cpp
@@ -412,6 +414,7 @@ set(
   cli/fuzzers/nezha/register_nezha_fuzzer.cpp
   cli/fuzzers/vuzzer/register_vuzzer.cpp
   cli/parse_global_options_for_fuzzer.cpp
+  cli/setup_execution_environment.cpp
 )
 
 ### CLI tool

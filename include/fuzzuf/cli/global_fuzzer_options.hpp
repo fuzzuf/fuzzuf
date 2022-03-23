@@ -22,6 +22,7 @@
 #include "fuzzuf/utils/common.hpp"
 #include "fuzzuf/logger/logger.hpp"
 #include "fuzzuf/utils/filesystem.hpp"
+#include "fuzzuf/executor/linux_fork_server_executor.hpp"
 
 namespace fuzzuf::cli {
 
@@ -34,6 +35,7 @@ public:
     enum Kind {
         UNKNOWN = 0, // Unknown Executor Type
         NATIVE, // Native Executor (e.g. NativeLinuxExecutor)
+        FORKSERVER, // Use fuzzuf's forkserver
         QEMU, // QEMU Executor
         CORESIGHT // CoreSight Executor
     };
@@ -50,6 +52,8 @@ public:
         switch (kind) {
             case Kind::NATIVE:
                 return "native";
+            case Kind::FORKSERVER:
+                return "forkserver";
             case Kind::QEMU:
                 return "qemu";
             case Kind::CORESIGHT:
