@@ -21,6 +21,7 @@
 #include "fuzzuf/cli/fuzzer/afl/build_afl_fuzzer_from_args.hpp"
 #include "fuzzuf/cli/global_args.hpp"
 #include "fuzzuf/cli/parse_global_options_for_fuzzer.hpp"
+#include "fuzzuf/cli/setup_execution_environment.hpp"
 #include "fuzzuf/exceptions.hpp"
 #include "fuzzuf/logger/log_file_logger.hpp"
 #include "fuzzuf/logger/logger.hpp"
@@ -31,6 +32,8 @@
 
 int main(int argc, const char *argv[]) {
   try {
+    fuzzuf::cli::SetupExecutionEnvironment();
+
     // Prepare a fuzzer specified by the command line as it states
     auto fuzzer = fuzzuf::cli::CreateFuzzerInstanceFromArgv(argc, argv);
 

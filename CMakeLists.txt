@@ -414,6 +414,7 @@ set(
   cli/fuzzers/nezha/register_nezha_fuzzer.cpp
   cli/fuzzers/vuzzer/register_vuzzer.cpp
   cli/parse_global_options_for_fuzzer.cpp
+  cli/setup_execution_environment.cpp
 )
 
 ### CLI tool
