@@ -30,6 +30,10 @@
 #include "fuzzuf/cli/put_args.hpp"
 #include "fuzzuf/exceptions.hpp"
 #include "fuzzuf/executor/native_linux_executor.hpp"
+#include "fuzzuf/executor/qemu_executor.hpp"
+#ifdef __aarch64__
+#include "fuzzuf/executor/coresight_executor.hpp"
+#endif
 #include "fuzzuf/utils/common.hpp"
 #include "fuzzuf/utils/filesystem.hpp"
 #include "fuzzuf/utils/optparser.hpp"
@@ -55,7 +59,7 @@ using fuzzuf::algorithm::nautilus::fuzzer::NautilusFuzzer;
  * @param (fuzzer_args) Arguments passed to Nautilus
  * @param (global_options) Global options
  */
-template <class TFuzzer, class TNautilusFuzzer>
+template <class TFuzzer, class TNautilusFuzzer, class TExecutor>
 std::unique_ptr<TFuzzer> BuildNautilusFuzzerFromArgs(
   FuzzerArgs &fuzzer_args,
   GlobalFuzzerOptions &global_options
@@ -72,6 +76,7 @@ std::unique_ptr<TFuzzer> BuildNautilusFuzzerFromArgs(
 
   /* Set up additional options for Nautilus */
   using namespace fuzzuf::algorithm::nautilus::fuzzer::option;
+  using fuzzuf::cli::ExecutorKind;
 
   po::options_description fuzzer_desc("Nautilus options");
   std::vector<std::string> pargs;
@@ -136,6 +141,10 @@ std::unique_ptr<TFuzzer> BuildNautilusFuzzerFromArgs(
     );
   }
 
+  if (global_options.executor == ExecutorKind::QEMU) {
+    bitmap_size = QEMUExecutor::QEMU_SHM_SIZE;
+  }
+
   po::notify(vm);
 
   PutArgs put(pargs);
@@ -190,17 +199,55 @@ std::unique_ptr<TFuzzer> BuildNautilusFuzzerFromArgs(
   using fuzzuf::algorithm::afl::option::GetDefaultOutfile;
   using fuzzuf::algorithm::afl::option::GetMapSize;
 
-  /* Create NativeLinuxExecutor */
-  auto executor = std::make_shared<NativeLinuxExecutor>(
-    put.Args(),
-    setting->exec_timeout_ms,
-    setting->exec_memlimit,
-    setting->forksrv,
-    setting->path_to_workdir / GetDefaultOutfile<NautilusTag>(),
-    setting->bitmap_size, // afl_shm_size used as bitmap_size
-    0,                    // bb_shm_size is not used
-    setting->cpuid_to_bind
-  );
+  std::shared_ptr<TExecutor> executor;
+  switch (global_options.executor) {
+  case ExecutorKind::NATIVE: {
+    auto nle = std::make_shared<NativeLinuxExecutor>(
+      put.Args(),
+      setting->exec_timeout_ms,
+      setting->exec_memlimit,
+      setting->forksrv,
+      setting->path_to_workdir / GetDefaultOutfile<NautilusTag>(),
+      setting->bitmap_size, // afl_shm_size used as bitmap_size
+      0                     // bb_shm_size is not used
+    );
+    executor = std::make_shared<TExecutor>(std::move(nle));
+    break;
+  }
+
+  case ExecutorKind::QEMU: {
+    // NOTE: Assuming setting->bitmap_size == QEMUExecutor::QEMU_SHM_SIZE
+    auto qe = std::make_shared<QEMUExecutor>(
+      global_options.proxy_path.value(),
+      put.Args(),
+      setting->exec_timeout_ms,
+      setting->exec_memlimit,
+      setting->forksrv,
+      setting->path_to_workdir / GetDefaultOutfile<NautilusTag>()
+    );
+    executor = std::make_shared<TExecutor>(std::move(qe));
+    break;
+  }
+
+#ifdef __aarch64__
+  case ExecutorKind::CORESIGHT: {
+    auto cse = std::make_shared<CoreSightExecutor>(
+      global_options.proxy_path.value(),
+      put.Args(),
+      setting->exec_timeout_ms,
+      setting->exec_memlimit,
+      setting->forksrv,
+      setting->path_to_workdir / GetDefaultOutfile<NautilusTag>(),
+      setting->bitmap_size // afl_shm_size used as bitmap_size
+    );
+    executor = std::make_shared<TExecutor>(std::move(cse));
+    break;
+  }
+#endif
+
+  default:
+    EXIT("Unsupported executor: '%s'", global_options.executor.c_str());
+  }
 
   using fuzzuf::algorithm::nautilus::fuzzer::NautilusState;
   using fuzzuf::algorithm::nautilus::grammartec::ChunkStore;

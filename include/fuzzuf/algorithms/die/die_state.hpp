@@ -35,7 +35,7 @@ namespace fuzzuf::algorithm::die {
 struct DIEState : public afl::AFLStateTemplate<DIETestcase> {
   explicit DIEState(
     std::shared_ptr<const DIESetting> setting,
-    std::shared_ptr<NativeLinuxExecutor> executor
+    std::shared_ptr<executor::AFLExecutorInterface> executor
   ) : AFLStateTemplate<DIETestcase>(setting, executor),
       setting(setting) {};
 

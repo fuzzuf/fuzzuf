@@ -24,7 +24,7 @@
 
 #include "fuzzuf/utils/filesystem.hpp"
 #include "fuzzuf/exec_input/exec_input_set.hpp"
-#include "fuzzuf/executor/native_linux_executor.hpp"
+#include "fuzzuf/executor/afl_executor_interface.hpp"
 #include "fuzzuf/algorithms/afl/afl_state.hpp"
 #include "fuzzuf/algorithms/ijon/ijon_option.hpp"
 #include "fuzzuf/algorithms/ijon/ijon_testcase.hpp"
@@ -38,7 +38,7 @@ namespace fuzzuf::algorithm::ijon {
  * The lifetime for an instance of this class must be longer than that of HierarFlow.
  */
 struct IJONState : public afl::AFLStateTemplate<IJONTestcase> {
-    explicit IJONState(std::shared_ptr<const afl::AFLSetting> setting, std::shared_ptr<NativeLinuxExecutor> executor);
+    explicit IJONState(std::shared_ptr<const afl::AFLSetting> setting, std::shared_ptr<executor::AFLExecutorInterface> executor);
     ~IJONState();
 
     IJONState( const IJONState& ) = delete;

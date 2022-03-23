@@ -31,7 +31,7 @@ CoreSightExecutor::CoreSightExecutor(
     u32 afl_shm_size,
     bool record_stdout_and_err
 ) : ProxyExecutor ( proxy_path, std::vector<std::string>(), argv, exec_timelimit_ms, exec_memlimit, forksrv,
-                    path_to_write_input, afl_shm_size, 0, record_stdout_and_err )
+                    path_to_write_input, afl_shm_size, record_stdout_and_err )
 {
     ProxyExecutor::SetCArgvAndDecideInputMode();
     ProxyExecutor::Initilize();

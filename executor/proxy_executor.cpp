@@ -56,7 +56,6 @@ ProxyExecutor::ProxyExecutor(
     bool forksrv,
     const fs::path &path_to_write_input,
     u32 afl_shm_size,
-    u32  bb_shm_size,
     bool record_stdout_and_err
 ) :
     Executor( argv, exec_timelimit_ms, exec_memlimit, path_to_write_input.string() ),
@@ -64,7 +63,6 @@ ProxyExecutor::ProxyExecutor(
     pargv ( pargv ),
     forksrv( forksrv ),
     afl_edge_coverage(afl_shm_size),
-    fuzzuf_bb_coverage(bb_shm_size),
 
     // cargv and stdin_mode are initialized at SetCArgvAndDecideInputMode
     forksrv_pid( 0 ),
@@ -74,7 +72,7 @@ ProxyExecutor::ProxyExecutor(
     record_stdout_and_err( record_stdout_and_err ),
     has_shared_memories ( false )
 {
-    if (afl_edge_coverage.GetMapSize() > 0 || fuzzuf_bb_coverage.GetMapSize() > 0)
+    if (afl_edge_coverage.GetMapSize() > 0)
         has_shared_memories = true;
 }
 
@@ -87,7 +85,7 @@ ProxyExecutor::ProxyExecutor(
     u64 exec_memlimit,
     const fs::path &path_to_write_input
 ) :
-    ProxyExecutor(proxy_path, pargv, argv, exec_timelimit_ms, exec_memlimit, false, path_to_write_input, 0, 0)
+    ProxyExecutor(proxy_path, pargv, argv, exec_timelimit_ms, exec_memlimit, false, path_to_write_input, 0)
 {
 }
 
@@ -110,8 +108,7 @@ ProxyExecutor::ProxyExecutor(
  *       * Generate a file for sending input to  PUT.
  *       * Configure shared memory
  *         - afl_shm_size should indicate the size of shared memory which PUT built using AFL style cc uses.
- *         - bb_shm_size should indicate the size of shared memory that is used to record Basic Block Coverage by PUT built using fuzzuf-cc.
- *         - If both parameters are set to zero, it is considered as unused, and never allocate.
+ *         - If afl_shm_size sets to zero, it is considered as unused, and never allocate.
  *         - In kernel, Both parameters are round up to multiple of PAGE_SIZE, then memory is allocated.
  *       * Configure environment variables for PUT
  *       * If fork server mode, launch fork server.
@@ -770,24 +767,12 @@ u32 ProxyExecutor::GetAFLMapSize() {
     return afl_edge_coverage.GetMapSize();
 }
 
-u32 ProxyExecutor::GetBBMapSize() {
-    return fuzzuf_bb_coverage.GetMapSize();
-}
-
 int ProxyExecutor::GetAFLShmID() {
     return afl_edge_coverage.GetShmID();
 }
 
-int ProxyExecutor::GetBBShmID() {
-    return fuzzuf_bb_coverage.GetShmID();
-}
-
 InplaceMemoryFeedback ProxyExecutor::GetAFLFeedback() {
     return afl_edge_coverage.GetFeedback();
-}
-
-InplaceMemoryFeedback ProxyExecutor::GetBBFeedback() {
-    return fuzzuf_bb_coverage.GetFeedback();
 }
 
 InplaceMemoryFeedback ProxyExecutor::GetStdOut() {
@@ -808,27 +793,23 @@ ExitStatusFeedback ProxyExecutor::GetExitStatusFeedback() {
 
 bool ProxyExecutor::IsFeedbackLocked() {
     return (lock.use_count() > 1)
-    || (afl_edge_coverage.GetLockUseCount() > 1)
-    || (fuzzuf_bb_coverage.GetLockUseCount() > 1);
+    || (afl_edge_coverage.GetLockUseCount() > 1);
 }
 
 // Initialize shared memory group that the PUT writes the coverage.
 // These shared memory is reused for all PUTs (It is too slow to allocate for each PUT).
 void ProxyExecutor::SetupSharedMemories() {
     afl_edge_coverage.Setup();
-    fuzzuf_bb_coverage.Setup();
 }
 
 // Since shared memory is reused, it is initialized every time before passed to PUT.
 void ProxyExecutor::ResetSharedMemories() {
     afl_edge_coverage.Reset();
-    fuzzuf_bb_coverage.Reset();
 }
 
 // Delete SharedMemory when the Executor is deleted
 void ProxyExecutor::EraseSharedMemories() {
     afl_edge_coverage.Erase();
-    fuzzuf_bb_coverage.Erase();
 }
 
 
@@ -841,7 +822,6 @@ void ProxyExecutor::EraseSharedMemories() {
 void ProxyExecutor::SetupEnvironmentVariablesForTarget() {
     // Pass the id of shared memory to PUT.
     afl_edge_coverage.SetupEnvironmentVariable();
-    fuzzuf_bb_coverage.SetupEnvironmentVariable();
 
     /* This should improve performance a bit, since it stops the linker from
         doing extra work post-fork(). */

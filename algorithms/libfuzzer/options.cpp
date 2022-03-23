@@ -256,6 +256,10 @@ auto postProcess(
     return false;
   }
 
+  if (global.executor != fuzzuf::cli::ExecutorKind::NATIVE) {
+    EXIT("Unsupported executor: `%s`", global.executor.c_str());
+  }
+
   for (auto &v : dest.raw_targets) {
     DEBUG("[*] dest.raw_targets[] = %s", v.c_str());
   }

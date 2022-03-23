@@ -22,7 +22,7 @@ namespace fuzzuf::algorithm::ijon {
 
 IJONState::IJONState(
     std::shared_ptr<const afl::AFLSetting> setting,
-    std::shared_ptr<NativeLinuxExecutor> executor
+    std::shared_ptr<executor::AFLExecutorInterface> executor
 ) : 
     afl::AFLStateTemplate<IJONTestcase>(setting, executor) {}
 

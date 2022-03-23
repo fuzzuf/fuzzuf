@@ -24,6 +24,7 @@
 #include <iomanip>
 #include <sstream>
 #include "fuzzuf/algorithms/nautilus/fuzzer/state.hpp"
+#include "fuzzuf/exceptions.hpp"
 #include "fuzzuf/feedback/inplace_memory_feedback.hpp"
 #include "fuzzuf/feedback/persistent_memory_feedback.hpp"
 #include "fuzzuf/feedback/put_exit_reason_type.hpp"
@@ -35,7 +36,7 @@ namespace fuzzuf::algorithm::nautilus::fuzzer {
 // MEMO: "this->" is used for members of Fuzzer in original Nautilus
 NautilusState::NautilusState(
     std::shared_ptr<const NautilusSetting> setting,
-    std::shared_ptr<NativeLinuxExecutor> executor
+    std::shared_ptr<executor::AFLExecutorInterface> executor
 ) : setting (setting),
     executor (executor),
     cks (setting->path_to_workdir.string()),

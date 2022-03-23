@@ -51,6 +51,7 @@ public:
 
     // Members holding settings handed over a constructor
     const bool forksrv;
+    const bool deferred_forksrv;
 
     const bool uses_asan = false; // May become one of the available options in the future, but currently not anticipated
 
@@ -84,7 +85,9 @@ public:
         // In the future, we should generalize this flag so that we can arbitrarily specify 
         // which fd should be recorded. For example, by passing std::vector<int>{1, 2} to this class,
         // we would tell that we would like to record stdout and stderr.
-        bool record_stdout_and_err = false
+        bool record_stdout_and_err = false,
+        std::vector< std::string > &&environment_variables_ = {},
+        bool deferred_forksrv = false
     );
     ~NativeLinuxExecutor();
 
@@ -128,7 +131,14 @@ public:
     fuzzuf::executor::output_t MoveStdOut();
     // InplaceMemoryFeedback made of GetStdErr before calling this function becomes invalid after Run()
     fuzzuf::executor::output_t MoveStdErr();
-private:    
+protected:
+    /**
+     * Take snapshot of environment variables.
+     * This updates both environment_variables and raw_environment_variables.
+     * @param extra Executor specific environment variables those are set only on the child process of this executor.
+     */ 
+    void CreateJoinedEnvironmentVariables( std::vector< std::string > &&extra );
+private:
     PUTExitReasonType last_exit_reason;
     u8 last_signal;    
     fuzzuf::executor::output_t stdout_buffer;
@@ -141,4 +151,21 @@ private:
     epoll_event fork_server_read_event;
 
     bool record_stdout_and_err;
+
+    /**
+     * Snapshot of environment variables.
+     * This contains following values.
+     * * All global environment variables available whien the constructor is executed.
+     * * Executor specific environment variables specified on the constructor argument.
+     * The child process invoked by this executor will take these values as environment variables.
+     * (This means the executor created prior to modification of environment variables will take old environment variables)
+     */
+    std::vector< std::string > environment_variables;
+
+    /**
+     * Since some C APIs require environment variables in null terminated array of C-string, environment_variables is transformed into that form.
+     * Each element of raw_environment_variables points value of environment_variables except last value that points nullptr.
+     * raw_environment_variables should be rebuilt if environment_variables is modified.
+     */
+    std::vector< const char* > raw_environment_variables;
 };

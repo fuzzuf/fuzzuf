@@ -28,7 +28,7 @@ namespace fuzzuf::algorithm::aflfast {
 struct AFLFastState : public afl::AFLStateTemplate<AFLFastTestcase> {
     explicit AFLFastState(
         std::shared_ptr<const AFLFastSetting> setting,
-        std::shared_ptr<NativeLinuxExecutor> executor
+        std::shared_ptr<executor::AFLExecutorInterface> executor
     );
 
     std::shared_ptr<AFLFastTestcase> AddToQueue(

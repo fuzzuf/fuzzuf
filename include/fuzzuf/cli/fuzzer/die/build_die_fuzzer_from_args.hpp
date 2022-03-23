@@ -29,6 +29,10 @@
 #include "fuzzuf/cli/put_args.hpp"
 #include "fuzzuf/exceptions.hpp"
 #include "fuzzuf/executor/native_linux_executor.hpp"
+#include "fuzzuf/executor/qemu_executor.hpp"
+#ifdef __aarch64__
+#include "fuzzuf/executor/coresight_executor.hpp"
+#endif
 #include "fuzzuf/utils/optparser.hpp"
 #include "fuzzuf/utils/which.hpp"
 #include "fuzzuf/utils/workspace.hpp"
@@ -71,7 +75,7 @@ struct DIEOptions {
  * @param (fuzzer_args) Arguments passed to DIE
  * @param (global_options) Global options
  */
-template <class TFuzzer, class TDIEFuzzer>
+template <class TFuzzer, class TDIEFuzzer, class TExecutor>
 std::unique_ptr<TFuzzer> BuildDIEFuzzerFromArgs(FuzzerArgs &fuzzer_args,
                                                 GlobalFuzzerOptions &global_options) {
   po::positional_options_description pargs_desc;
@@ -182,17 +186,57 @@ std::unique_ptr<TFuzzer> BuildDIEFuzzerFromArgs(FuzzerArgs &fuzzer_args,
 
   using fuzzuf::algorithm::afl::option::GetDefaultOutfile;
   using fuzzuf::algorithm::afl::option::GetMapSize;
+  using fuzzuf::cli::ExecutorKind;
 
-  /* Create NativeLinuxExecutor */
-  auto executor = std::make_shared<NativeLinuxExecutor>(
-    setting->argv,
-    setting->exec_timelimit_ms,
-    setting->exec_memlimit,
-    setting->forksrv,
-    setting->out_dir / GetDefaultOutfile<DIETag>(),
-    GetMapSize<DIETag>(), // afl_shm_size
-    0 // bb_shm_size
-  );
+  std::shared_ptr<TExecutor> executor;
+  switch (global_options.executor) {
+  case ExecutorKind::NATIVE: {
+    auto nle = std::make_shared<NativeLinuxExecutor>(
+      setting->argv,
+      setting->exec_timelimit_ms,
+      setting->exec_memlimit,
+      setting->forksrv,
+      setting->out_dir / GetDefaultOutfile<DIETag>(),
+      GetMapSize<DIETag>(), // afl_shm_size
+      0 // bb_shm_size
+    );
+    executor = std::make_shared<TExecutor>(std::move(nle));
+    break;
+  }
+
+  case ExecutorKind::QEMU: {
+    // NOTE: Assuming GetMapSize<DIETag>() == QEMUExecutor::QEMU_SHM_SIZE
+    auto qe = std::make_shared<QEMUExecutor>(
+      global_options.proxy_path.value(),
+      setting->argv,
+      setting->exec_timelimit_ms,
+      setting->exec_memlimit,
+      setting->forksrv,
+      setting->out_dir / GetDefaultOutfile<DIETag>()
+    );
+    executor = std::make_shared<TExecutor>(std::move(qe));
+    break;
+  }
+
+#ifdef __aarch64__
+  case ExecutorKind::CORESIGHT: {
+    auto cse = std::make_shared<CoreSightExecutor>(
+      global_options.proxy_path.value(),
+      setting->argv,
+      setting->exec_timelimit_ms,
+      setting->exec_memlimit,
+      setting->forksrv,
+      setting->out_dir / GetDefaultOutfile<DIETag>(),
+      GetMapSize<DIETag>() // afl_shm_size
+    );
+    executor = std::make_shared<TExecutor>(std::move(cse));
+    break;
+  }
+#endif
+
+  default:
+    EXIT("Unsupported executor: '%s'", global_options.executor.c_str());
+  }
 
   using fuzzuf::algorithm::die::DIEState;
 

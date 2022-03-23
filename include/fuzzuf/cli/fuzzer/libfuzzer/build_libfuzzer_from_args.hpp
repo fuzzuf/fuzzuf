@@ -26,7 +26,7 @@
 namespace po = boost::program_options;
 
 // Used only for CLI
-template <class TFuzzer, class TLibFuzzer>
+template <class TFuzzer, class TLibFuzzer, class TExecutor>
 std::unique_ptr<TFuzzer> BuildLibFuzzerFromArgs(
     FuzzerArgs &fuzzer_args, 
     GlobalFuzzerOptions &global_options

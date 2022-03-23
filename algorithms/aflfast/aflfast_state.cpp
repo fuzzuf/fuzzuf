@@ -25,7 +25,7 @@ namespace fuzzuf::algorithm::aflfast {
 // FIXME: check if we are initializing all the members that need to be initialized
 AFLFastState::AFLFastState(
     std::shared_ptr<const AFLFastSetting> setting,
-    std::shared_ptr<NativeLinuxExecutor> executor
+    std::shared_ptr<executor::AFLExecutorInterface> executor
 ) : AFLStateTemplate<AFLFastTestcase>(setting, executor),
     setting(setting) {}
 
@@ -524,7 +524,7 @@ void AFLFastState::ShowStats(void) {
     tmp = DescribeInteger(total_tmouts) + " (" +
           DescribeInteger(unique_tmouts);
     if (unique_hangs >= GetKeepUniqueHang(*this)) tmp += '+';
-    tmp += ')';
+    tmp += " unique)";
 
     MSG (bSTG bV bSTOP "  total tmouts : " cRST "%-22s " bSTG bV "\n", tmp.c_str());
 
