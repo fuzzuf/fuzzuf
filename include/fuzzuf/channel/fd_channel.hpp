@@ -20,8 +20,8 @@ public:
     void TerminateForkServer();
 
 private:
-    ssize_t Send(void *buf, size_t size);
-    ssize_t Recv(void *buf, size_t size);
+    ssize_t Send(void *buf, size_t size, const char* comment = "");
+    ssize_t Recv(void *buf, size_t size, const char* comment = "");
 
     pid_t WaitForkServerStart();
 

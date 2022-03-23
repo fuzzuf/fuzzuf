@@ -1,6 +1,7 @@
 #include "fuzzuf/channel/fd_channel.hpp"
 #include "fuzzuf/logger/logger.hpp"
 #include "fuzzuf/utils/common.hpp"
+#include "fuzzuf/utils/errno_to_system_error.hpp"
 
 #include <signal.h>
 #include <stdarg.h>
@@ -10,6 +11,7 @@
 #include <sys/wait.h>
 #include <time.h>
 #include <unistd.h>
+#include <errno.h>
 
 FdChannel::FdChannel() {
     // Nothing to do
@@ -20,20 +22,22 @@ FdChannel::~FdChannel() {
 }
 
 // Write exact `size` bytes
-ssize_t FdChannel::Send(void *buf, size_t size) {
-    ssize_t nbytes = Util::WriteFile(forksrv_write_fd, buf, size, true);
-    if (nbytes < 0) {
-        ERROR("[FdChannel] Failed to send");
+ssize_t FdChannel::Send(void *buf, size_t size, const char* comment) {
+    ssize_t nbytes = Util::write_n(forksrv_write_fd, buf, size);
+    if (nbytes < (ssize_t) size) {
+        throw fuzzuf::utils::errno_to_system_error(
+            errno, Util::StrPrintf("[FdChannel] Failed to send: %s (Requested %d bytes, Sent %d bytes)", comment, size, nbytes));
     }
     return nbytes;
 }
 
 // Read exact `size` bytes
 // Recieved data to be stored to user allocated pointer `buf`
-ssize_t FdChannel::Recv(void *buf, size_t size) {
-    ssize_t nbytes = Util::ReadFile(forksrv_read_fd, buf, size, true);
-    if (nbytes < 0) {
-        ERROR("[FdChannel] Failed to recv");
+ssize_t FdChannel::Recv(void *buf, size_t size, const char* comment) {
+    ssize_t nbytes = Util::read_n(forksrv_read_fd, buf, size, true);
+    if (nbytes < (ssize_t) size) {
+        throw fuzzuf::utils::errno_to_system_error(
+            errno, Util::StrPrintf("[FdChannel] Failed to recieve: %s (Requested %d bytes, Recieved %d bytes)", comment, size, nbytes));
     }
     return nbytes;
 }
@@ -44,10 +48,10 @@ ssize_t FdChannel::Recv(void *buf, size_t size) {
 // FIXME: fuzzuf-ccは4バイト以上読み取れなかったら forkserver プロセスが終了する実装になっています。
 //  そのとき、FdChannelはforkserverは生きていると思っていて、APIの返答を待つ。これはまずい。
 ExecutePUTAPIResponse FdChannel::ExecutePUT() {
-    Send((void *) "ExecutePUT", 10);
+    Send((void *) "ExecutePUT", 10, __func__);
 
     ExecutePUTAPIResponse response;
-    Recv((void *) &response, sizeof(response));
+    Recv((void *) &response, sizeof(response), __func__);
 
     DEBUG("Response { error=%d, exit_code=%d, signal_number=%d }", 
         response.error, response.exit_code, response.signal_number);
@@ -60,9 +64,7 @@ ExecutePUTAPIResponse FdChannel::ExecutePUT() {
 // Helper function to assure forkserver is up
 pid_t FdChannel::WaitForkServerStart() {
     pid_t forksrv_pid = 0;
-    if (Recv(&forksrv_pid, sizeof(forksrv_pid)) < 0) {
-        ERROR("Failed to wait for server start");
-    }
+    Recv(&forksrv_pid, sizeof(forksrv_pid), __func__);
     DEBUG("Forkserver started: pid=%d\n", forksrv_pid);
     return forksrv_pid;
 }
