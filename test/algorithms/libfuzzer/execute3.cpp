@@ -128,12 +128,14 @@ BOOST_AUTO_TEST_CASE(HierarFlowExecute) {
     const auto &create_info = fuzzer.get_create_info();
     const auto output_file_path = create_info.output_dir / "result";
     const auto path_to_write_seed = create_info.output_dir / "cur_input";
-    std::shared_ptr<NativeLinuxExecutor> nle(new NativeLinuxExecutor(
+    std::vector< LibFuzzerExecutorInterface > executor;
+    executor.push_back(
+      std::shared_ptr<NativeLinuxExecutor>(new NativeLinuxExecutor(
         {FUZZUF_FUZZTOYS_DIR "/fuzz_toys-brainf_ck", output_file_path.string()},
         create_info.exec_timelimit_ms, create_info.exec_memlimit,
         create_info.forksrv, path_to_write_seed, create_info.afl_shm_size,
-        create_info.bb_shm_size));
-    auto executor = std::make_unique<LibFuzzerExecutorInterface>(std::move(nle));
+        create_info.bb_shm_size))
+    );
     std::size_t solution_count = 0u;
     for (const auto &filename :
          fs::directory_iterator{create_info.output_dir}) {
@@ -147,7 +149,7 @@ BOOST_AUTO_TEST_CASE(HierarFlowExecute) {
         std::vector<std::uint8_t> output;
         std::vector<std::uint8_t> coverage;
         lf::InputInfo input_info;
-        lf::executor::Execute(input, output, coverage, input_info, *executor,
+        lf::executor::Execute(input, output, coverage, input_info, executor, 0u,
                               true);
         // target fails to execute found inputs
         BOOST_CHECK_NE(input_info.status, PUTExitReasonType::FAULT_NONE);

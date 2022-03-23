@@ -76,7 +76,7 @@ auto AddFeature(State &state, Corpus &corpus, size_t index,
                                                             old_index);
     } else {
       ++state.added_features_count;
-      if (state.config.entropic.enabled)
+      if (state.create_info.config.entropic.enabled)
         AddRareFeature(state, corpus, index);
     }
     ++state.updated_features_count;

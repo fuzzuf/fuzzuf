@@ -1,7 +1,7 @@
 /*
  * fuzzuf
  * Copyright (C) 2021 Ricerca Security
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -21,6 +21,7 @@
  */
 #ifndef FUZZUF_INCLUDE_ALGORITHM_LIBFUZZER_STATE_COMMON_TYPES_HPP
 #define FUZZUF_INCLUDE_ALGORITHM_LIBFUZZER_STATE_COMMON_TYPES_HPP
+#include "fuzzuf/utils/map_file.hpp"
 #include <cstdint>
 #include <vector>
 
@@ -34,6 +35,8 @@ using coverage_t = std::vector<std::uint8_t>;
  * A container type that is available to store standard output
  */
 using output_t = std::vector<std::uint8_t>;
+
+using output_files_t = std::vector<fuzzuf::utils::mapped_file_t>;
 
 } // namespace fuzzuf::algorithm::libfuzzer
 

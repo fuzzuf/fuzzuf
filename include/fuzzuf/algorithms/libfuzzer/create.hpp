@@ -1,7 +1,7 @@
 /*
  * fuzzuf
  * Copyright (C) 2021 Ricerca Security
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -23,6 +23,7 @@
 #define FUZZUF_INCLUDE_ALGORITHM_LIBFUZZER_CREATE_HPP
 #include "fuzzuf/algorithms/libfuzzer/exec_input_set_range.hpp"
 #include "fuzzuf/algorithms/libfuzzer/hierarflow.hpp"
+#include "fuzzuf/algorithms/libfuzzer/no_new_coverage.hpp"
 #include "fuzzuf/algorithms/libfuzzer/select_seed.hpp"
 #include "fuzzuf/hierarflow/hierarflow_intermediates.hpp"
 #include <config.h>
@@ -71,19 +72,17 @@ auto createMutator(const FuzzerCreateInfo &create_info) {
   auto root = hf::CreateNode<Proxy<F>>();
 
   if (create_info.do_crossover) {
-    root << (random <= (erase_bytes || insert_byte_ ||
-                         insert_repeated_bytes_ || change_byte_ ||
-                         change_bit_ || shuffle_bytes_ ||
-                         change_ascii_integer_ || change_binary_integer_ ||
-                         copy_part_ || crossover_ || manual_dict ||
-                         persistent_auto_dict) ||
+    root << (random <= (erase_bytes || insert_byte_ || insert_repeated_bytes_ ||
+                        change_byte_ || change_bit_ || shuffle_bytes_ ||
+                        change_ascii_integer_ || change_binary_integer_ ||
+                        copy_part_ || crossover_ || manual_dict ||
+                        persistent_auto_dict) ||
              to_ascii_);
   } else {
-    root << (random <= (erase_bytes || insert_byte_ ||
-                         insert_repeated_bytes_ || change_byte_ ||
-                         change_bit_ || shuffle_bytes_ ||
-                         change_ascii_integer_ || change_binary_integer_ ||
-                         copy_part_ || manual_dict || persistent_auto_dict) ||
+    root << (random <= (erase_bytes || insert_byte_ || insert_repeated_bytes_ ||
+                        change_byte_ || change_bit_ || shuffle_bytes_ ||
+                        change_ascii_integer_ || change_binary_integer_ ||
+                        copy_part_ || manual_dict || persistent_auto_dict) ||
              to_ascii_);
   }
 
@@ -98,7 +97,6 @@ auto createMutator(const FuzzerCreateInfo &create_info) {
  * @tparam F Input function type of HierarFlow node
  * @tparam Ord Type to specify how to retrive values from the arguments.
  * @tparam Sink Type of the callable with one string argument
- * @param target_path Path of the target executable
  * @param create_info Parameters on building the fuzzer
  * @param force_add_to_corpus If true, the execution result is added to the
  * corpus regardless of features. Otherwise, the execution result is added to
@@ -113,28 +111,20 @@ auto createMutator(const FuzzerCreateInfo &create_info) {
  * @return root node of the HierarFlow
  */
 template <typename F, typename Ord, typename Sink>
-auto createExecuteAndFeedback(const fs::path &target_path,
-                              const FuzzerCreateInfo &create_info,
+auto createExecuteAndFeedback(const FuzzerCreateInfo &create_info,
                               bool force_add_to_corpus, bool may_delete_file,
                               bool persistent, bool strict_match,
                               const Sink &sink) {
   namespace hf = fuzzuf::hierarflow;
   using fuzzuf::executor::LibFuzzerExecutorInterface;
 
-  const auto output_file_path = create_info.output_dir / "result";
-  const auto path_to_write_seed = create_info.output_dir / "cur_input";
-
   auto create_coverage = hf::CreateNode<Clear<F, decltype(Ord::coverage)>>();
 
-  std::shared_ptr<NativeLinuxExecutor> nle_(new NativeLinuxExecutor(
-      {target_path.string(), output_file_path.string()},
-      create_info.exec_timelimit_ms, create_info.exec_memlimit,
-      create_info.forksrv, path_to_write_seed, create_info.afl_shm_size,
-      create_info.bb_shm_size));
-  auto executor_ = std::make_unique<LibFuzzerExecutorInterface>(std::move(nle_));
-  auto execute_ =
-      hf::CreateNode<standard_order::Execute<F, LibFuzzerExecutorInterface, Ord>>(
-          std::move(executor_), create_info.use_afl_coverage);
+  auto set_executor =
+      hf::CreateNode<StaticAssign<F, decltype(Ord::executor_index)>>(
+          create_info.target_offset);
+
+  auto execute_ = hf::CreateNode<standard_order::Execute<F, Ord>>();
 
   auto collect_features =
       hf::CreateNode<standard_order::CollectFeatures<F, Ord>>();
@@ -142,9 +132,31 @@ auto createExecuteAndFeedback(const fs::path &target_path,
       force_add_to_corpus, may_delete_file, persistent, strict_match,
       create_info.output_dir, Sink(sink));
 
-  create_coverage << execute_ << collect_features << add_to_corpus;
+  create_coverage << set_executor << execute_ << collect_features
+                  << add_to_corpus;
 
   return create_coverage;
+}
+
+template <typename F, typename Ord, typename Sink>
+auto createSymCC(const FuzzerCreateInfo &create_info, bool force_add_to_corpus,
+                 bool may_delete_file, bool persistent, bool strict_match,
+                 const Sink &sink) {
+  namespace hf = fuzzuf::hierarflow;
+  using fuzzuf::executor::LibFuzzerExecutorInterface;
+
+  auto create_outputs = hf::CreateNode<Clear<F, decltype(Ord::symcc_out)>>();
+  auto for_each_symcc_output = hf::CreateNode<
+      ForEachDynamicData<F, decltype(Ord::symcc_out && Ord::input)>>();
+
+  auto execute_ = hf::CreateNode<standard_order::ExecuteSymCC<F, Ord>>();
+
+  create_outputs << execute_ << for_each_symcc_output
+                 << createExecuteAndFeedback<F, Ord>(
+                        create_info, force_add_to_corpus, may_delete_file,
+                        persistent, strict_match, sink);
+
+  return create_outputs;
 }
 
 /**
@@ -156,7 +168,6 @@ auto createExecuteAndFeedback(const fs::path &target_path,
  * @tparam F Input function type of HierarFlow node
  * @tparam Ord Type to specify how to retrive values from the arguments.
  * @tparam Sink Type of the callable with one string argument
- * @param target_path Path of the target executable
  * @param create_info Parameters on building the fuzzer
  * @param initial_inputs ExecInputSet that contains initial inputs
  * @param strict_match If true, the execution result with completely same unique
@@ -165,8 +176,7 @@ auto createExecuteAndFeedback(const fs::path &target_path,
  * @return root node of the HierarFlow
  */
 template <typename F, typename Ord, typename Sink>
-auto createInitialize(const fs::path &target_path,
-                      const FuzzerCreateInfo &create_info,
+auto createInitialize(const FuzzerCreateInfo &create_info,
                       ExecInputSet &initial_inputs, bool strict_match,
                       const Sink &sink) {
   namespace hf = fuzzuf::hierarflow;
@@ -190,13 +200,11 @@ auto createInitialize(const fs::path &target_path,
 
   if (create_info.merge)
     nop3 << (for_each_initial_input << createExecuteAndFeedback<F, Ord>(
-                  target_path, create_info, true, true, false, strict_match,
-                  sink) ||
+                 create_info, true, true, false, strict_match, sink) ||
              (new_cov << add_to_solution_) || update_distribution);
   else
     nop3 << (for_each_initial_input << createExecuteAndFeedback<F, Ord>(
-                  target_path, create_info, true, true, false, strict_match,
-                  sink) ||
+                 create_info, true, true, false, strict_match, sink) ||
              update_distribution);
 
   return nop3;
@@ -218,8 +226,7 @@ auto createInitialize(const fs::path &target_path,
  * @return root node of the HierarFlow
  */
 template <typename F, typename Ord, typename Sink>
-auto createRunone(const fs::path &target_path,
-                  const FuzzerCreateInfo &create_info,
+auto createRunone(const FuzzerCreateInfo &create_info,
                   ExecInputSet & /*initial_inputs*/, const Sink &sink) {
   namespace hf = fuzzuf::hierarflow;
 
@@ -285,20 +292,62 @@ auto createRunone(const fs::path &target_path,
   auto assign_last_corpus_update_run = hf::CreateNode<
       DynamicAssign<F, decltype(Ord::count && Ord::last_corpus_update_run)>>();
 
+  namespace sp = utils::struct_path;
+  auto symcc = hf::CreateNode<Proxy<F>>();
+  if (create_info.symcc_target_count && create_info.symcc_freq ) {
+    if( create_info.symcc_freq >= 2u ) {
+      auto threshold =
+        hf::CreateNode<If<F, decltype(sp::root / sp::ident<std::greater_equal<unsigned int>> &&
+                                      Ord::stuck_count && Ord::symcc_freq)>>();
+      auto if_no_new_coverage =
+          hf::CreateNode<If<F, decltype(sp::root / sp::ident<NoNewCoverage> &&
+                                        Ord::state && Ord::exec_result)>>();
+      auto if_new_coverage =
+          hf::CreateNode<If<F, decltype(sp::root / sp::ident<NewCoverage> &&
+                                        Ord::state && Ord::exec_result)>>();
+      auto increment_stuck_count =
+        hf::CreateNode<StaticAppend<F, decltype(Ord::stuck_count)>>(1u);
+      auto reset_stuck_count1 =
+        hf::CreateNode<StaticAssign<F, decltype(Ord::stuck_count)>>(0u);
+      auto reset_stuck_count2 =
+        hf::CreateNode<StaticAssign<F, decltype(Ord::stuck_count)>>(0u);
+
+      symcc << (
+        if_no_new_coverage << (
+	  increment_stuck_count ||
+	  threshold << (
+            reset_stuck_count1 ||
+	    createSymCC<F, Ord>(create_info, false, true, false, false, sink)
+	  )
+        ) ||
+        if_new_coverage << (
+          reset_stuck_count2
+        )
+      );
+    }
+    else {
+      auto if_no_new_coverage =
+          hf::CreateNode<If<F, decltype(sp::root / sp::ident<NoNewCoverage> &&
+                                        Ord::state && Ord::exec_result)>>();
+      symcc << (
+	if_no_new_coverage <<
+	  createSymCC<F, Ord>(create_info, false, true, false, false, sink)
+      );
+    }
+  }
+
   nop4 << (select_crossover || select_input ||
-           local_loop << (create_history || create_dict_entry ||
-                          mutation_loop
-                              << createMutator<F, Ord>(create_info) ||
-                          nop2
-                              << (increment_mutations_count_ ||
-                                  createExecuteAndFeedback<F, Ord>(
-                                      target_path, create_info, false, true,
-                                      false, false, sink) ||
-                                  new_cov << (update_dict || add_to_solution ||
-                                              print ||
-                                              assign_last_corpus_update_run)) ||
-                          increment_counter) ||
-           update_distribution || update_max_length);
+           local_loop
+               << (create_history || create_dict_entry ||
+                   mutation_loop << createMutator<F, Ord>(create_info) ||
+                   nop2 << (increment_mutations_count_ ||
+                            createExecuteAndFeedback<F, Ord>(
+                                create_info, false, true, false, false, sink) ||
+                            new_cov
+                                << (update_dict || add_to_solution || print ||
+                                    assign_last_corpus_update_run)) ||
+                   increment_counter) ||
+           symcc || update_distribution || update_max_length);
   return nop4;
 }
 
@@ -314,8 +363,8 @@ auto createRunone(const fs::path &target_path,
  * @return root node of the HierarFlow
  */
 template <typename F, typename Ord, typename Sink>
-auto create(const fs::path &target_path, const FuzzerCreateInfo &create_info,
-            ExecInputSet &initial_inputs, const Sink &sink) {
+auto create(const FuzzerCreateInfo &create_info, ExecInputSet &initial_inputs,
+            const Sink &sink) {
   namespace hf = fuzzuf::hierarflow;
 
   auto global_loop =
@@ -329,10 +378,9 @@ auto create(const fs::path &target_path, const FuzzerCreateInfo &create_info,
                               "state\n", 1, "  ", sink)
                         : hf::CreateNode<Proxy<F>>();
 
-  nop1 << (createInitialize<F, Ord>(target_path, create_info, initial_inputs,
-                                    false, sink) ||
-           global_loop << (createRunone<F, Ord>(target_path, create_info,
-                                                 initial_inputs, sink)) ||
+  nop1 << (createInitialize<F, Ord>(create_info, initial_inputs, false, sink) ||
+           global_loop << (createRunone<F, Ord>(create_info, initial_inputs,
+                                                sink)) ||
            dump_state);
 
   return nop1;

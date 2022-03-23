@@ -51,9 +51,9 @@ auto AddRareFeature(State &state, Corpus &corpus, std::uint32_t index)
   // and all features with a frequency below ConsideredRare.
   // Remove all other features.
   while (state.rare_features.size() >
-             state.config.entropic.number_of_rarest_features &&
+             state.create_info.config.entropic.number_of_rarest_features &&
          state.freq_of_most_abundant_rare_feature >
-             state.config.entropic.feature_frequency_threshold) {
+             state.create_info.config.entropic.feature_frequency_threshold) {
     // Find most and second most abbundant feature.
     std::array<std::uint32_t, 2u> most_abundant_rare_feature_indices{
         state.rare_features[0], state.rare_features[0]};

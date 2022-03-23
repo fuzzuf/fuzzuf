@@ -1,7 +1,7 @@
 /*
  * fuzzuf
  * Copyright (C) 2021 Ricerca Security
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -32,12 +32,13 @@
 #include "fuzzuf/algorithms/libfuzzer/hierarflow/dump.hpp"
 #include "fuzzuf/algorithms/libfuzzer/hierarflow/execute.hpp"
 #include "fuzzuf/algorithms/libfuzzer/hierarflow/for_each.hpp"
+#include "fuzzuf/algorithms/libfuzzer/hierarflow/if.hpp"
 #include "fuzzuf/algorithms/libfuzzer/hierarflow/if_new_coverage.hpp"
 #include "fuzzuf/algorithms/libfuzzer/hierarflow/marker.hpp"
 #include "fuzzuf/algorithms/libfuzzer/hierarflow/mask.hpp"
 #include "fuzzuf/algorithms/libfuzzer/hierarflow/mutator.hpp"
-#include "fuzzuf/algorithms/libfuzzer/hierarflow/proxy.hpp"
 #include "fuzzuf/algorithms/libfuzzer/hierarflow/print_status_for_new_unit.hpp"
+#include "fuzzuf/algorithms/libfuzzer/hierarflow/proxy.hpp"
 #include "fuzzuf/algorithms/libfuzzer/hierarflow/random_call.hpp"
 #include "fuzzuf/algorithms/libfuzzer/hierarflow/repeat.hpp"
 #include "fuzzuf/algorithms/libfuzzer/hierarflow/repeat_until_mutated.hpp"

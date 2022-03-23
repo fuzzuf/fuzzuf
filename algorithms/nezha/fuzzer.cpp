@@ -1,7 +1,7 @@
 /*
  * fuzzuf
  * Copyright (C) 2021 Ricerca Security
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -20,9 +20,9 @@
  * @author Ricerca Security <fuzzuf-dev@ricsec.co.jp>
  */
 #include "fuzzuf/algorithms/nezha/cli_compat/fuzzer.hpp"
-#include "fuzzuf/algorithms/nezha/create.hpp"
 #include "fuzzuf/algorithms/libfuzzer/cli_compat/options.hpp"
 #include "fuzzuf/algorithms/libfuzzer/config.hpp"
+#include "fuzzuf/algorithms/nezha/create.hpp"
 #include "fuzzuf/cli/fuzzer_args.hpp"
 #include "fuzzuf/cli/global_fuzzer_options.hpp"
 #include <boost/program_options.hpp>
@@ -58,7 +58,7 @@ NezhaFuzzer::NezhaFuzzer(const FuzzerArgs &fuzzer_args,
   }
 
   create_info = opts.create_info;
-  libfuzzer_variables.state.config = opts.create_info.config;
+  libfuzzer_variables.state.create_info = opts.create_info;
   libfuzzer_variables.rng = std::move(opts.rng);
 
   ExecInputSet initial_inputs =
@@ -69,29 +69,40 @@ NezhaFuzzer::NezhaFuzzer(const FuzzerArgs &fuzzer_args,
   total_cycles = opts.total_cycles;
   print_final_stats = opts.print_final_stats;
 
+  const auto output_file_path = create_info.output_dir / "result";
+  const auto path_to_write_seed = create_info.output_dir / "cur_input";
+  for (const auto &target_path : opts.targets) {
+    libfuzzer_variables.executors.push_back(
+        std::shared_ptr<NativeLinuxExecutor>(new NativeLinuxExecutor(
+            {target_path.string(), output_file_path.string()},
+            create_info.exec_timelimit_ms, create_info.exec_memlimit,
+            create_info.forksrv, path_to_write_seed, create_info.afl_shm_size,
+            create_info.bb_shm_size, true)));
+  }
+
   libfuzzer_variables.begin_date = std::chrono::system_clock::now();
   if (use_output) {
-    auto root = lf::createInitialize<Func, Order>(
-        opts.targets[0], opts.create_info, initial_inputs, false, sink);
+    auto root = lf::createInitialize<Func, Order>(opts.create_info,
+                                                  initial_inputs, false, sink);
 
     namespace hf = fuzzuf::hierarflow;
     hf::WrapToMakeHeadNode(root)(libfuzzer_variables, nezha_variables,
                                  node_tracer, ett);
-    auto runone_ = createRunone<Func, Order>(opts.targets, opts.create_info,
-                                             use_output, sink);
+    auto runone_ =
+        createRunone<Func, Order>(opts.create_info, use_output, sink);
     auto runone_wrapped = hf::WrapToMakeHeadNode(runone_);
     runone = [this, runone_wrapped = std::move(runone_wrapped)]() mutable {
       runone_wrapped(libfuzzer_variables, nezha_variables, node_tracer, ett);
     };
   } else {
-    auto root = lf::createInitialize<Func, Order>(
-        opts.targets[0], opts.create_info, initial_inputs, false, sink);
+    auto root = lf::createInitialize<Func, Order>(opts.create_info,
+                                                  initial_inputs, false, sink);
 
     namespace hf = fuzzuf::hierarflow;
     hf::WrapToMakeHeadNode(root)(libfuzzer_variables, nezha_variables,
                                  node_tracer, ett);
-    auto runone_ = createRunone<Func, Order>(opts.targets, opts.create_info,
-                                             use_output, sink);
+    auto runone_ =
+        createRunone<Func, Order>(opts.create_info, use_output, sink);
     auto runone_wrapped = hf::WrapToMakeHeadNode(runone_);
     runone = [this, runone_wrapped = std::move(runone_wrapped)]() mutable {
       runone_wrapped(libfuzzer_variables, nezha_variables, node_tracer, ett);

@@ -1,7 +1,7 @@
 /*
  * fuzzuf
  * Copyright (C) 2021 Ricerca Security
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -39,6 +39,7 @@ struct Options {
   std::uint64_t exec_memlimit_mb = 2048u;
   std::vector<fs::path> targets;
   std::vector<std::string> raw_targets;
+  std::vector<std::string> raw_symcc_targets;
   std::vector<std::string> dicts;
   std::vector<std::string> input_dir;
   std::string output_dir;

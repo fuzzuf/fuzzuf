@@ -75,7 +75,7 @@ auto CollectFeatures(State &state, const Cov &cov, std::uint32_t module_offset,
   using count_t = std::uint32_t;
   auto handle_8bit_counter = [&](count_t first_feature, count_t index,
                                  std::uint8_t counter) {
-    if (state.config.use_counters)
+    if (state.create_info.config.use_counters)
       cb(first_feature * 8 + index * 8 + CounterToFeature(counter));
     else
       cb(first_feature + index);

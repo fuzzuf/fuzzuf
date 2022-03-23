@@ -117,7 +117,7 @@ auto GenerateEntropicSchedule(State &state, Corpus &corpus,
                                 std::vector<double> &weights,
                                 std::uint8_t max_mutation_factor)
     -> std::enable_if_t<is_state_v<State> && is_full_corpus_v<Corpus>, bool> {
-  if (!state.config.entropic.enabled)
+  if (!state.create_info.config.entropic.enabled)
     return false;
   const std::size_t corpus_size = corpus.corpus.size();
   weights.reserve(corpus_size);
@@ -134,7 +134,7 @@ auto GenerateEntropicSchedule(State &state, Corpus &corpus,
         if (input.needs_energy_update && input.energy != 0.0) {
           input.needs_energy_update = false;
           input.updateEnergy(state.rare_features.size(),
-                             state.config.entropic.scale_per_exec_time,
+                             state.create_info.config.entropic.scale_per_exec_time,
                              average_unit_execution_time);
         }
       });
@@ -187,7 +187,7 @@ auto UpdateDistribution(State &state, Corpus &corpus, RNG &rng,
                             (llvm_version >= MakeVersion(11u, 0u, 0u)),
                         bool> {
   if (!state.distribution_needs_update &&
-      (!state.config.entropic.enabled ||
+      (!state.create_info.config.entropic.enabled ||
        random_value(rng, sparse_energy_updates)))
     return false;
 
@@ -199,14 +199,14 @@ auto UpdateDistribution(State &state, Corpus &corpus, RNG &rng,
   std::vector<double> weights;
 
   bool vanilla_schedule = true;
-  if (state.config.entropic.enabled)
+  if (state.create_info.config.entropic.enabled)
     vanilla_schedule = !GenerateEntropicSchedule(state, corpus, weights,
                                                    max_mutation_factor);
 
   if (vanilla_schedule)
     GenerateVanillaSchedule(corpus, weights);
 
-  if (state.config.debug)
+  if (state.create_info.config.debug)
     DumpDistribution(corpus, weights, sink);
 
   if (std::find_if(weights.begin(), weights.end(),
@@ -249,7 +249,7 @@ auto UpdateDistribution(State &state, Corpus &corpus, RNG &, std::size_t,
   std::iota(intervals.begin(), intervals.end(), 0);
   std::vector<double> weights;
   GenerateVanillaSchedule(corpus, weights);
-  if (state.config.debug) {
+  if (state.create_info.config.debug) {
     DumpDistribution(corpus, weights, sink);
   }
   state.corpus_distribution = std::piecewise_constant_distribution<double>(

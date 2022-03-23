@@ -90,6 +90,7 @@ find_package( FridaTrace )
 # fuzz_toysはリチェルカセキュリティが内部で使用しているテスト用バイナリ群である
 # Nezhaは類似した2つのPUTを必要としており、fuzz_toysにはその条件を満たす物が含まれている
 find_package( FuzzToys )
+find_package( FuzzToysSymCC )
 if( ${CMAKE_VERSION} VERSION_GREATER_EQUAL 3.6.0 )
   option( ENABLE_CLANG_TIDY "enable clang-tidy" OFF )
   if( ENABLE_CLANG_TIDY )

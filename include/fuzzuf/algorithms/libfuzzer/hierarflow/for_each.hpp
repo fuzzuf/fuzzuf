@@ -1,7 +1,7 @@
 /*
  * fuzzuf
  * Copyright (C) 2021 Ricerca Security
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -105,6 +105,7 @@ struct ForEachDynamicData<R(Args...), Path>
   callee_ref_t operator()(Args... args) {
     FUZZUF_ALGORITHM_LIBFUZZER_HIERARFLOW_CHECKPOINT("ForEachDynamicData",
                                                      enter)
+    bool aborted = false;
     Path()(
         [&](auto &&data, auto &&v) {
 #pragma GCC diagnostic push
@@ -115,13 +116,17 @@ struct ForEachDynamicData<R(Args...), Path>
             utils::range::assign(elem, v);
             if (this->CallSuccessors(std::forward<Args>(args)...)) {
               base_type::SetResponseValue(true);
-              FUZZUF_ALGORITHM_LIBFUZZER_HIERARFLOW_CHECKPOINT(
-                  "ForEachDynamicData", abort)
-              return base_type::GoToParent();
+              aborted = true;
+              return;
             }
           }
         },
         std::forward<Args>(args)...);
+    if (aborted) {
+      FUZZUF_ALGORITHM_LIBFUZZER_HIERARFLOW_CHECKPOINT("ForEachDynamicData",
+                                                       abort)
+      return base_type::GoToParent();
+    }
     FUZZUF_ALGORITHM_LIBFUZZER_HIERARFLOW_CHECKPOINT("ForEachDynamicData",
                                                      leave)
     return base_type::GoToDefaultNext();

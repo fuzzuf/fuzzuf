@@ -62,21 +62,23 @@ BOOST_AUTO_TEST_CASE(Initialize) {
 
   using fuzzuf::executor::LibFuzzerExecutorInterface;
   BOOST_TEST_CHECKPOINT("before init executor");
-  std::shared_ptr<NativeLinuxExecutor> nle(
+  std::vector< LibFuzzerExecutorInterface > executor;
+  executor.push_back(
+    std::shared_ptr<NativeLinuxExecutor>(
       new NativeLinuxExecutor({fuzzuf::utils::which(fs::path("tee")).c_str(),
                                output_file_path.native()},
                               1000, 10000, false, path_to_write_seed, 1000,
-                              1000));
-  auto executor = std::make_unique<LibFuzzerExecutorInterface>(std::move(nle));
+                              1000))
+  );
   BOOST_TEST_CHECKPOINT("after init executor");
 
   namespace lf = fuzzuf::algorithm::libfuzzer;
   lf::State state;
-  state.config.debug = true;
-  state.config.entropic.enabled = true;
-  state.config.entropic.number_of_rarest_features = 10;
-  state.config.entropic.feature_frequency_threshold = 3;
-  state.config.entropic.scale_per_exec_time = false;
+  state.create_info.config.debug = true;
+  state.create_info.config.entropic.enabled = true;
+  state.create_info.config.entropic.number_of_rarest_features = 10;
+  state.create_info.config.entropic.feature_frequency_threshold = 3;
+  state.create_info.config.entropic.scale_per_exec_time = false;
   std::minstd_rand rng;
 
   BOOST_TEST_CHECKPOINT("after init state");
@@ -98,7 +100,7 @@ BOOST_AUTO_TEST_CASE(Initialize) {
     std::vector<std::uint8_t> copied(data.begin(), data.end());
     std::vector<std::uint8_t> cov;
     std::vector<std::uint8_t> output;
-    lf::executor::Execute(copied, output, cov, testcase, *executor, true);
+    lf::executor::Execute(copied, output, cov, testcase, executor, 0u, true);
     lf::executor::CollectFeatures(state, corpus, copied, testcase, cov, 0U);
     lf::executor::AddToCorpus(
         state, corpus, copied, testcase, true, true, false, false, output_dir,
@@ -153,21 +155,23 @@ BOOST_AUTO_TEST_CASE(HierarFlowExecute) {
 
   BOOST_TEST_CHECKPOINT("before int executor");
 
-  std::shared_ptr<NativeLinuxExecutor> nle(
+  std::vector< LibFuzzerExecutorInterface > executor;
+  executor.push_back(
+    std::shared_ptr<NativeLinuxExecutor>(
       new NativeLinuxExecutor({fuzzuf::utils::which(fs::path("tee")).c_str(),
                                output_file_path.native()},
                               1000, 10000, false, path_to_write_seed, 1000,
-                              1000));
-  auto executor = std::make_unique<LibFuzzerExecutorInterface>(std::move(nle));
+                              1000))
+  );
 
   BOOST_TEST_CHECKPOINT("after init executor");
 
   lf::State state;
-  state.config.debug = true;
-  state.config.entropic.enabled = true;
-  state.config.entropic.number_of_rarest_features = 10;
-  state.config.entropic.feature_frequency_threshold = 3;
-  state.config.entropic.scale_per_exec_time = false;
+  state.create_info.config.debug = true;
+  state.create_info.config.entropic.enabled = true;
+  state.create_info.config.entropic.number_of_rarest_features = 10;
+  state.create_info.config.entropic.feature_frequency_threshold = 3;
+  state.create_info.config.entropic.scale_per_exec_time = false;
 
   BOOST_TEST_CHECKPOINT("after init state");
 
@@ -189,8 +193,7 @@ BOOST_AUTO_TEST_CASE(HierarFlowExecute) {
   auto create_input_info = hf::CreateNode<
       lf::StaticAssign<lf::test::Full, decltype(Ord::exec_result)>>();
   auto execute = hf::CreateNode<
-      lf::standard_order::Execute<lf::test::Full, LibFuzzerExecutorInterface, Ord>>(
-      std::move(executor), true);
+      lf::standard_order::Execute<lf::test::Full, Ord>>();
   auto collect_features = hf::CreateNode<
       lf::standard_order::CollectFeatures<lf::test::Full, Ord>>();
   auto add_to_corpus =
@@ -211,6 +214,7 @@ BOOST_AUTO_TEST_CASE(HierarFlowExecute) {
   BOOST_TEST_CHECKPOINT("after init graph");
 
   lf::test::Variables vars;
+  vars.executor = std::move( executor );
   fuzzuf::utils::DumpTracer tracer(
       [](std::string &&m) { std::cout << "trace : " << m << std::flush; });
   fuzzuf::utils::ElapsedTimeTracer ett;

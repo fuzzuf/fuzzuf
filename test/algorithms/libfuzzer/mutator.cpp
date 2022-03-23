@@ -1,7 +1,7 @@
 /*
  * fuzzuf
  * Copyright (C) 2021 Ricerca Security
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -617,18 +617,75 @@ BOOST_AUTO_TEST_CASE(HierarFlowDynamicRepeat) {
   namespace sp = fuzzuf::utils::struct_path;
   auto repeat = hf::CreateNode<lf::DynamicRepeat<
       lf::test::Full,
-      decltype(Ord::count && sp::root / sp::int_<std::size_t, 10U>)>>();
+      decltype(sp::root / sp::ident<std::less<std::size_t>> && Ord::count &&
+               sp::root / sp::int_<std::size_t, 10U>)>>();
   auto append =
       hf::CreateNode<lf::StaticAppend<lf::test::Full, decltype(Ord::count)>>(
           1U);
   lf::test::Variables vars;
+  // initial value is 0
+  vars.count = 0u;
   vars.rng.seed(5U);
+  // increment 10 times
   fuzzuf::utils::DumpTracer tracer(
       [](std::string &&m) { std::cout << m << std::flush; });
   fuzzuf::utils::ElapsedTimeTracer ett;
   repeat << (append);
   fuzzuf::hierarflow::WrapToMakeHeadNode(repeat)(vars, tracer, ett);
   ett.dump([](std::string &&m) { std::cout << m << std::flush; });
+  // the final value should be 10
+  BOOST_CHECK_EQUAL(vars.count, 10u);
+}
+
+/**
+ * check "if" node works properly
+ */
+BOOST_AUTO_TEST_CASE(HierarFlowIf) {
+  namespace lf = fuzzuf::algorithm::libfuzzer;
+  namespace hf = fuzzuf::hierarflow;
+  using Ord = lf::test::Order;
+  namespace sp = fuzzuf::utils::struct_path;
+  auto if_ = hf::CreateNode<
+      lf::If<lf::test::Full,
+             decltype(sp::root / sp::ident<std::less<std::size_t>> &&
+                      Ord::count && sp::root / sp::int_<std::size_t, 2U>)>>();
+  auto append =
+      hf::CreateNode<lf::StaticAppend<lf::test::Full, decltype(Ord::count)>>(
+          1U);
+  // increment until 2
+  if_ << append;
+  auto wrapped = fuzzuf::hierarflow::WrapToMakeHeadNode(if_);
+  lf::test::Variables vars;
+  // initial value is 0
+  vars.count = 0u;
+  vars.rng.seed(5U);
+  // 0 -> 1
+  {
+    fuzzuf::utils::DumpTracer tracer(
+        [](std::string &&m) { std::cout << m << std::flush; });
+    fuzzuf::utils::ElapsedTimeTracer ett;
+    wrapped(vars, tracer, ett);
+    ett.dump([](std::string &&m) { std::cout << m << std::flush; });
+    BOOST_CHECK_EQUAL(vars.count, 1u);
+  }
+  // 1 -> 2
+  {
+    fuzzuf::utils::DumpTracer tracer(
+        [](std::string &&m) { std::cout << m << std::flush; });
+    fuzzuf::utils::ElapsedTimeTracer ett;
+    wrapped(vars, tracer, ett);
+    ett.dump([](std::string &&m) { std::cout << m << std::flush; });
+    BOOST_CHECK_EQUAL(vars.count, 2u);
+  }
+  // 2 -> 2
+  {
+    fuzzuf::utils::DumpTracer tracer(
+        [](std::string &&m) { std::cout << m << std::flush; });
+    fuzzuf::utils::ElapsedTimeTracer ett;
+    wrapped(vars, tracer, ett);
+    ett.dump([](std::string &&m) { std::cout << m << std::flush; });
+    BOOST_CHECK_EQUAL(vars.count, 2u);
+  }
 }
 
 /**

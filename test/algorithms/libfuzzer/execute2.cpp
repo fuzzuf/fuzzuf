@@ -1,7 +1,7 @@
 /*
  * fuzzuf
  * Copyright (C) 2021 Ricerca Security
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -25,8 +25,8 @@
 #include "fuzzuf/algorithms/libfuzzer/mutation.hpp"
 #include "fuzzuf/algorithms/libfuzzer/select_seed.hpp"
 #include "fuzzuf/algorithms/libfuzzer/test_utils.hpp"
-#include "fuzzuf/executor/native_linux_executor.hpp"
 #include "fuzzuf/executor/libfuzzer_executor_interface.hpp"
+#include "fuzzuf/executor/native_linux_executor.hpp"
 #include "fuzzuf/hierarflow/hierarflow_intermediates.hpp"
 #include "fuzzuf/utils/filesystem.hpp"
 #include "fuzzuf/utils/map_file.hpp"
@@ -94,10 +94,26 @@ BOOST_AUTO_TEST_CASE(HierarFlowExecute) {
               std::vector<fs::path>{TEST_DICTIONARY_DIR "/brainf_ck.dict"});
 
   lf::test::Variables vars;
-  vars.state.config = create_info.config;
+  vars.state.create_info = create_info;
   vars.rng.seed(create_info.seed);
 
   BOOST_TEST_CHECKPOINT("after init state");
+  {
+    const auto output_file_path = create_info.output_dir / "result";
+    const auto path_to_write_seed = create_info.output_dir / "cur_input";
+    std::vector<LibFuzzerExecutorInterface> executor;
+    executor.push_back(std::shared_ptr<NativeLinuxExecutor>(
+        new NativeLinuxExecutor({FUZZUF_FUZZTOYS_DIR "/fuzz_toys-brainf_ck",
+                                 output_file_path.string()},
+                                create_info.exec_timelimit_ms,
+                                create_info.exec_memlimit, create_info.forksrv,
+                                path_to_write_seed, create_info.afl_shm_size,
+                                create_info.bb_shm_size)));
+    vars.executor = std::move(executor);
+  }
+  BOOST_CHECK_EQUAL(vars.executor.size(), 1);
+
+  BOOST_TEST_CHECKPOINT("after init executor");
 
   ExecInputSet initial_inputs;
   const auto data = std::vector<uint8_t>{'+'};
@@ -111,7 +127,7 @@ BOOST_AUTO_TEST_CASE(HierarFlowExecute) {
       create_info.len_control ? 4u : create_info.max_input_length;
 
   auto root = lf::create<lf::test::Full, lf::test::Order>(
-      FUZZUF_FUZZTOYS_DIR "/fuzz_toys-brainf_ck", create_info, initial_inputs,
+      create_info, initial_inputs,
       [](std::string &&m) { std::cout << m << std::flush; });
 
   BOOST_TEST_CHECKPOINT("after init graph");
@@ -125,14 +141,6 @@ BOOST_AUTO_TEST_CASE(HierarFlowExecute) {
 
   BOOST_TEST_CHECKPOINT("after execution");
   {
-    const auto output_file_path = create_info.output_dir / "result";
-    const auto path_to_write_seed = create_info.output_dir / "cur_input";
-    std::shared_ptr<NativeLinuxExecutor> nle(new NativeLinuxExecutor(
-        {FUZZUF_FUZZTOYS_DIR "/fuzz_toys-brainf_ck", output_file_path.string()},
-        create_info.exec_timelimit_ms, create_info.exec_memlimit,
-        create_info.forksrv, path_to_write_seed, create_info.afl_shm_size,
-        create_info.bb_shm_size));
-    auto executor = std::make_unique<LibFuzzerExecutorInterface>(std::move(nle));
     std::size_t solution_count = 0u;
     for (const auto &filename :
          fs::directory_iterator{create_info.output_dir}) {
@@ -146,8 +154,8 @@ BOOST_AUTO_TEST_CASE(HierarFlowExecute) {
         std::vector<std::uint8_t> output;
         std::vector<std::uint8_t> coverage;
         lf::InputInfo input_info;
-        lf::executor::Execute(input, output, coverage, input_info, *executor,
-                              true);
+        lf::executor::Execute(input, output, coverage, input_info,
+                              vars.executor, 0u, true);
         // target fails to execute found inputs
         ++solution_count;
       }

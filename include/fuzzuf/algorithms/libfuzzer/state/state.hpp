@@ -54,7 +54,7 @@ struct State {
         smallest_element_per_feature(feature_set_size, 0u) {}
 
   // Config to alter libFuzzer behaviour
-  Config config;
+  FuzzerCreateInfo create_info;
   // Current probability of choosing each input value
   corpus_distribution_t corpus_distribution;
   // If true, corpus_distribution need to be recalculated.
@@ -92,8 +92,8 @@ struct IsState<
     T,
     std::enable_if_t<
         std::is_same_v<utils::type_traits::RemoveCvrT<decltype(
-                           std::declval<T &>().config)>,
-                       Config> &&
+                           std::declval<T &>().create_info)>,
+                       FuzzerCreateInfo> &&
         is_std_distribution_v<utils::type_traits::RemoveCvrT<decltype(
             std::declval<T &>().corpus_distribution)>> &&
         std::is_convertible_v<

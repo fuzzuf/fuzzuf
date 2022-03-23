@@ -71,15 +71,15 @@ auto CollectFeatures(State &state, Corpus &corpus, Range &range,
       state, cov, module_offset, [&](auto f) -> void {
         libfuzzer::feature::AddFeature(state, corpus, f,
                                        static_cast<std::uint32_t>(size),
-                                       state.config.shrink);
+                                       state.create_info.config.shrink);
 
-        if (state.config.reduce_inputs)
+        if (state.create_info.config.reduce_inputs)
           unique_feature_set_temp.push_back(f);
 
-        if (state.config.entropic.enabled)
+        if (state.create_info.config.entropic.enabled)
           libfuzzer::feature::UpdateFeatureFrequency(state, exec_result, f);
 
-        if (state.config.reduce_inputs && !exec_result.never_reduce)
+        if (state.create_info.config.reduce_inputs && !exec_result.never_reduce)
           ++found_unique_features_of_input_info;
       });
   exec_result.found_unique_features = found_unique_features_of_input_info;

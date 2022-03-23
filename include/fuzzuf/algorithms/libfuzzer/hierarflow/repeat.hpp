@@ -1,7 +1,7 @@
 /*
  * fuzzuf
  * Copyright (C) 2021 Ricerca Security
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -147,30 +147,22 @@ public:
    * @return direction of next node
    */
   callee_ref_t operator()(Args... args) {
-    FUZZUF_ALGORITHM_LIBFUZZER_HIERARFLOW_CHECKPOINT("DynamicRepeat", enter)
+    FUZZUF_ALGORITHM_LIBFUZZER_HIERARFLOW_CHECKPOINT("Repeat", enter)
     while (1) {
-      bool break_ = false;
-      std::size_t count_ = 0u;
-      std::size_t cycle_ = 0u;
-      Path()(
-          [&](auto &&count, auto &&cycle) {
-            count_ = count;
-            cycle_ = cycle;
-            break_ = count >= cycle;
-          },
-          std::forward<Args>(args)...);
-      if (break_) {
-        FUZZUF_ALGORITHM_LIBFUZZER_HIERARFLOW_CHECKPOINT("DynamicRepeat",
-                                                         break_)
+      bool state = false;
+      Path()([&](auto &&cond, auto &&...args_) { state = cond(args_...); },
+             std::forward<Args>(args)...);
+      if (!state) {
+        FUZZUF_ALGORITHM_LIBFUZZER_HIERARFLOW_CHECKPOINT("Repeat", break_)
         break;
       }
       if (this->CallSuccessors(std::forward<Args>(args)...)) {
         base_type::SetResponseValue(true);
-        FUZZUF_ALGORITHM_LIBFUZZER_HIERARFLOW_CHECKPOINT("DynamicRepeat", abort)
+        FUZZUF_ALGORITHM_LIBFUZZER_HIERARFLOW_CHECKPOINT("Repeat", abort)
         return base_type::GoToParent();
       }
     }
-    FUZZUF_ALGORITHM_LIBFUZZER_HIERARFLOW_CHECKPOINT("DynamicRepeat", leave)
+    FUZZUF_ALGORITHM_LIBFUZZER_HIERARFLOW_CHECKPOINT("Repeat", leave)
     return base_type::GoToDefaultNext();
   }
 };
