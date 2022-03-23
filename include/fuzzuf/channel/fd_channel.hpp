@@ -5,6 +5,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+#include <optional>
 
 #include "fuzzuf_cc/execute_put_api_response.h"
 
@@ -23,7 +24,7 @@ private:
     ssize_t Send(void *buf, size_t size, const char* comment = "");
     ssize_t Recv(void *buf, size_t size, const char* comment = "");
 
-    pid_t WaitForkServerStart();
+    std::optional<pid_t> WaitForkServerStart();
 
     // TODO: fuzzuf-cc がPUTに付加した情報をもとに設定したいな
     // afl-gcc を使い回す都合で、本家とバッチングしない値を使う

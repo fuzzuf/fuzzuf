@@ -62,9 +62,14 @@ ExecutePUTAPIResponse FdChannel::ExecutePUT() {
 }
 
 // Helper function to assure forkserver is up
-pid_t FdChannel::WaitForkServerStart() {
+std::optional<pid_t> FdChannel::WaitForkServerStart() {
     pid_t forksrv_pid = 0;
-    Recv(&forksrv_pid, sizeof(forksrv_pid), __func__);
+    try {
+        Recv(&forksrv_pid, sizeof(forksrv_pid), __func__);
+    } catch (const std::system_error& e) {
+        MSG(cLRD "[-] " cRST "    %s\n", e.what());
+        return std::nullopt;
+    }
     DEBUG("Forkserver started: pid=%d\n", forksrv_pid);
     return forksrv_pid;
 }
@@ -126,23 +131,35 @@ void FdChannel::SetupForkServer(char *const pargv[]) {
     forksrv_write_fd = par2chld[1];
     forksrv_read_fd = chld2par[0];
 
+    // Handshakes with forkserver
+    // Our goal is to distinguish following four cases:
+    //  - (1) Correctly instrumented
+    //  - (2) No instrumentation and no output
+    //  - (3) Not instrumented, no output or immediate termination
+    //  - (4) It's not instrumented and it outputs something (which is received during the handshake).
     if (WaitForkServerStart() != forksrv_pid) {
+        // If case (2) and (3) occurs, then WaitForkServerStart() returns std::nullopt
+        // If case (4) occurs, then return value won't be equal to forksrv_pid
+
         /* Invalid instrumentation detected or PUT execution failed */
         int status = 0;
         waitpid(forksrv_pid, &status, WNOHANG);
 
         if (WSTOPSIG(status)) {
+            // Met case (3)
             /* Show error message in case PUT is not instrumented
                and exits immediately with non-zero status code */
             ERROR("Failed to execute PUT (exited)");
             exit(1);
         } else {
+            // Met case (2) or (4)
             /* If child process is alive, instrumentation is invalid */
             MSG(cLRD "[-] " cRST
                 "    Looks like the target binary is not instrumented by fuzzuf-cc!\n");
             ERROR("No valid instrumentation detected");
         }
     }
+    // Reaching here meets case (1). Let's start fuzzing!
 
     return;
 }
