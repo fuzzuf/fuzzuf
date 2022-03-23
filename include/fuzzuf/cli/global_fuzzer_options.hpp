@@ -35,7 +35,8 @@ public:
         UNKNOWN = 0, // Unknown Executor Type
         NATIVE, // Native Executor (e.g. NativeLinuxExecutor)
         QEMU, // QEMU Executor
-        CORESIGHT // CoreSight Executor
+        CORESIGHT, // CoreSight Executor
+        FRIDA // FRIDA Executor
     };
 
     ExecutorKind() = default;
@@ -54,6 +55,8 @@ public:
                 return "qemu";
             case Kind::CORESIGHT:
                 return "coresight";
+            case Kind::FRIDA:
+                return "frida";
             default:
                 return "unknown";
         }

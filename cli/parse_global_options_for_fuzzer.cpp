@@ -47,6 +47,8 @@ std::istream& operator>>(std::istream& in, ExecutorKind& executor) {
         executor = ExecutorKind::QEMU;
     else if (token == "coresight")
         executor = ExecutorKind::CORESIGHT;
+    else if (token == "frida")
+        executor = ExecutorKind::FRIDA;
     else
         in.setstate(std::ios_base::failbit);
     return in;

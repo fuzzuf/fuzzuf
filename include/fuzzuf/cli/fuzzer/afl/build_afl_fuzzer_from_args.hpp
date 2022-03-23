@@ -29,6 +29,7 @@
 #ifdef __aarch64__
 #include "fuzzuf/executor/coresight_executor.hpp"
 #endif
+#include "fuzzuf/executor/frida_linux_executor.hpp"
 #include <boost/program_options.hpp>
 
 namespace po = boost::program_options;
@@ -193,6 +194,21 @@ std::unique_ptr<TFuzzer> BuildAFLFuzzerFromArgs(
         break;
     }
 #endif
+
+    case ExecutorKind::FRIDA: {
+        auto fe = std::make_shared<FridaLinuxExecutor>(
+                            setting->argv,
+                            setting->exec_timelimit_ms,
+                            setting->exec_memlimit,
+                            setting->forksrv,
+                            setting->out_dir / GetDefaultOutfile<AFLTag>(),
+                            GetMapSize<AFLTag>(), // afl_shm_size
+                            0, // bb_shm_size
+                            global_options.proxy_path.value()
+                        );
+        executor = std::make_shared<TExecutor>(std::move(fe));
+        break;
+    }
 
     default:
         EXIT("Unsupported executor: '%s'", global_options.executor.c_str());

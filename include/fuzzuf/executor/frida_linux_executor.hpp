@@ -51,6 +51,7 @@ public:
         const fs::path &path_to_write_input,
         u32 afl_shm_size,
         u32  bb_shm_size,
+        const fs::path &proxy_path,
         // FIXME: The below is a temporary flag to avoid a big performance issue.
         // The issue appears when we save the outputs of stdout/stderr to buffers
         // in every execution of a PUT, which isn't required in most fuzzers.
@@ -58,7 +59,8 @@ public:
         // In the future, we should generalize this flag so that we can arbitrarily specify 
         // which fd should be recorded. For example, by passing std::vector<int>{1, 2} to this class,
         // we would tell that we would like to record stdout and stderr.
-        bool record_stdout_and_err = false
+        bool record_stdout_and_err = false,
+        std::vector<std::string> &&environment_variabels_ = {}
     );
     ~FridaLinuxExecutor() override;
 
