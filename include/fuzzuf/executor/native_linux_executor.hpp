@@ -31,10 +31,6 @@
 #include "fuzzuf/coverage/fuzzuf_bb_cov_attacher.hpp"
 #include "fuzzuf/feedback/inplace_memory_feedback.hpp"
 #include "fuzzuf/feedback/exit_status_feedback.hpp"
-#include "boost/logic/tribool.hpp"
-
-using tribool = boost::logic::tribool;
-BOOST_TRIBOOL_THIRD_STATE(deferred);
 
 // A class for fuzz execution under native Linux environment (i.e. the Linux environment where the fuzzer tracer and the fuzz target are the same)
 //
@@ -54,7 +50,8 @@ public:
     static constexpr int FORKSRV_FD_WRITE = 199;
 
     // Members holding settings handed over a constructor
-    const tribool forksrv;
+    const bool forksrv;
+    const bool deferred_forksrv;
 
     const bool uses_asan = false; // May become one of the available options in the future, but currently not anticipated
 
@@ -77,7 +74,7 @@ public:
         const std::vector<std::string> &argv,
         u32 exec_timelimit_ms,
         u64 exec_memlimit,
-        tribool forksrv,
+        bool forksrv,
         const fs::path &path_to_write_input,
         u32 afl_shm_size,
         u32  bb_shm_size,
@@ -89,7 +86,8 @@ public:
         // which fd should be recorded. For example, by passing std::vector<int>{1, 2} to this class,
         // we would tell that we would like to record stdout and stderr.
         bool record_stdout_and_err = false,
-	std::vector< std::string > &&environment_variables_ = {}
+        std::vector< std::string > &&environment_variables_ = {},
+        bool deferred_forksrv = false
     );
     ~NativeLinuxExecutor();
 
@@ -133,13 +131,14 @@ public:
     fuzzuf::executor::output_t MoveStdOut();
     // InplaceMemoryFeedback made of GetStdErr before calling this function becomes invalid after Run()
     fuzzuf::executor::output_t MoveStdErr();
-private:
+protected:
     /**
      * Take snapshot of environment variables.
      * This updates both environment_variables and raw_environment_variables.
      * @param extra Executor specific environment variables those are set only on the child process of this executor.
      */ 
     void CreateJoinedEnvironmentVariables( std::vector< std::string > &&extra );
+private:
     PUTExitReasonType last_exit_reason;
     u8 last_signal;    
     fuzzuf::executor::output_t stdout_buffer;

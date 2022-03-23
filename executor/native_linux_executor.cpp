@@ -38,7 +38,6 @@
 #include "fuzzuf/feedback/exit_status_feedback.hpp"
 #include "fuzzuf/feedback/put_exit_reason_type.hpp"
 #include "fuzzuf/logger/logger.hpp"
-#include "config.h"
 
 bool NativeLinuxExecutor::has_setup_sighandlers = false;
 
@@ -65,15 +64,17 @@ NativeLinuxExecutor::NativeLinuxExecutor(
     const std::vector<std::string> &argv,
     u32 exec_timelimit_ms,
     u64 exec_memlimit,
-    tribool forksrv,
+    bool forksrv,
     const fs::path &path_to_write_input,
     u32 afl_shm_size,
     u32  bb_shm_size,
     bool record_stdout_and_err,
-    std::vector< std::string > &&environment_variables_
+    std::vector< std::string > &&environment_variables_,
+    bool deferred_forksrv
 ) :
     Executor( argv, exec_timelimit_ms, exec_memlimit, path_to_write_input.string() ),
     forksrv( forksrv ),
+    deferred_forksrv(deferred_forksrv),
     afl_edge_coverage(afl_shm_size),
     fuzzuf_bb_coverage(bb_shm_size),
 
@@ -104,11 +105,12 @@ NativeLinuxExecutor::NativeLinuxExecutor(
     CreateJoinedEnvironmentVariables( std::move( environment_variables_ ) );
 
     if (forksrv) {
-        SetupForkServer();
-    } else if (!forksrv);
-    else {
-        MSG(cCYA "[*] fuzzuf deferred fork-server mode\n" cRST);
-        setenv("__AFL_DEFER_FORKSRV", "1", 1);
+        if (!deferred_forksrv) {
+            SetupForkServer();
+        } else {
+            MSG(cLBL "[*] " cRST "fuzzuf deferred fork-server mode\n");
+            setenv("__AFL_DEFER_FORKSRV", "1", 1);
+        }
     }
 }
 
