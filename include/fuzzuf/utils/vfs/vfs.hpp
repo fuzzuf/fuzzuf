@@ -129,8 +129,7 @@ public:
   Permissions(const fs::path &p, fs::perms prms,
               fs::perm_options opts = fs::perm_options::replace) = 0;
 #else
-  virtual void
-  Permissions(const fs::path &p, fs::perms prms) = 0;
+  virtual void Permissions(const fs::path &p, fs::perms prms) = 0;
 #endif
   virtual bool Remove(const fs::path &p) = 0;
   virtual std::uintmax_t RemoveAll(const fs::path &p) = 0;
@@ -154,11 +153,13 @@ public:
 #ifdef HAS_CXX_STD_FILESYSTEM
   virtual fs::file_time_type LastWriteTime(const fs::path &p) = 0;
 #else
-  virtual std::chrono::system_clock::time_point LastWriteTime(const fs::path &p) = 0;
+  virtual std::chrono::system_clock::time_point
+  LastWriteTime(const fs::path &p) = 0;
 #endif
   virtual fs::space_info Space(const fs::path &p) = 0;
   virtual mapped_file_t Mmap(const fs::path &, unsigned int flags,
                              bool populate) = 0;
+
 protected:
   VFS(const VFS &) = default;
   VFS(VFS &&) = default;

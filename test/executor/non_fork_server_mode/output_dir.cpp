@@ -74,7 +74,7 @@ BOOST_AUTO_TEST_CASE(RetriveGeneratedFiles) {
   BOOST_CHECK(std::equal(data.begin(), data.end(), expected_data.begin(),
                          expected_data.end()));
 
-  // Check if the executor automatically remove unretrived files.
+  // Check if RemoveAll removes unretrived files.
   executor.Run(nullptr, 0);
   BOOST_CHECK_EQUAL(executor.GetExitStatusFeedback().exit_reason,
                     PUTExitReasonType::FAULT_NONE);
