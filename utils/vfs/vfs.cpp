@@ -38,14 +38,13 @@ VFS::VFS(std::vector<fs::path> &&allowed_path_) {
   for (auto cur = std::next(duplicated_allowed_path.begin());
        cur != duplicated_allowed_path.end(); ++cur) {
     auto cur_len = std::distance(cur->begin(), cur->end());
+    bool should_retain;
     /*
      * Since the paths are sorted, the path shorter than previous one definitely
      * means no inclusion nor duplication. So the path should be left.
      */
     if (prev_len > cur_len) {
-      prev = *cur;
-      allowed_path->push_back(std::move(*cur));
-      prev_len = std::distance(prev.begin(), prev.end());
+        should_retain = true;
     }
     /*
      * If the path doesn't contain previous path as prefix, the path is not
@@ -53,14 +52,21 @@ VFS::VFS(std::vector<fs::path> &&allowed_path_) {
      */
     else if (!std::equal(prev.begin(), prev.end(), cur->begin(),
                          std::next(cur->begin(), prev_len))) {
-      prev = *cur;
-      allowed_path->push_back(std::move(*cur));
-      prev_len = std::distance(prev.begin(), prev.end());
+        should_retain = true;
     }
     /*
      * Otherwise, the path is same as or included by previous one.
      * So the path should be discarded.
      */
+     else {
+         should_retain = false;
+     }
+     
+     if (should_retain) {
+        prev = *cur;
+        allowed_path->push_back(std::move(*cur));
+        prev_len = std::distance(prev.begin(), prev.end());
+     }
   }
   /*
    * Although Windows has current directories for each drives, VFS provides *NIX
