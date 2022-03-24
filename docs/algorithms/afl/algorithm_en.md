@@ -23,6 +23,10 @@ Options available are listed below:
 - Global options (available for all fuzzers on `fuzzuf`)
     - `--out_dir=path/to/output/directory`
         - Specifies a path to the directory, where all the outputs from fuzzers go, such as crash seeds. The default path `/tmp/fuzzuf-out_dir` is used if not specified.
+    - `--executor=native|qemu|coresight`
+        - Specifies an executor type for the PUT. The default value is `native`.
+    - `--proxy_path=path/to/proxy/application`
+        - Specifies a path to the executor proxy application (e.g. `afl-qemu-trace`). This option is required when an executor other than `native` is specified.
     - `--exec_timelimit_ms=1234`
         - Specifies a time limit per PUT execution in milliseconds. The default time limit is 1 second (i.e. 1000 ms).
     - `--exec_memlimit=1234`

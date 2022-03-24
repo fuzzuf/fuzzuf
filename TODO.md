@@ -73,13 +73,11 @@ This to-do is very important to complete libFuzzer because it use some metrics l
 
 Also, we need to replace all the tests that use raw binaries in the repo after this to-do is resolved. That is definitely unsound.
 
-### Support multiple types of executors in the fuzzers
+### Support for multiple types of executors in non-AFL family fuzzers
 
-At present, the fuzzers implemented in fuzzuf employ one fixed executor and don't support switching executors. However, there are many fuzzers that can work with different sorts of executor. For example, the original AFL has QEMU mode, which enables AFL to work without compile-time instrumentation. Another example might be VUzzer. VUzzer originally uses pintool to obtain basic block coverage, but it doesn't matter if we use QEMU or compile-time instrumentation instead as long as basic block coverage is correctly extracted. Thus, we should design executors and their usage so that algorithms can use them interchangeably if possible.
+The current fuzzuf implements `AFLExecutorInterface` and `LibFuzzerExecutorInterface` to deal with executors from fuzzing algorithms in a unified manner. These classes wrap the executor with type erasure. There is currently support for multiple executors in the AFL family of fuzzing algorithms, including AFL, AFLFast, DIE, and Nautilus. libFuzzer family has only one executor that meets the requirements, NativeLinuxExecutor. For this reason, although the corresponding class is implemented, it is not utilized internally. Also, VUzzer is not utilized other than PinToolExecutor because there is no other executor available as well.
 
-Here comes OOP. We first need to think how to achieve polymorphism. One ordinary way would be to provide a base class like `BasicBlockExecutor` and its method `BasicBlockExecutor::GetBasicBlockCov()`. Alternatively, template classes may be usable. Another interesting way is to rely on HierarFlow. If we carefully build a flow, we can swap executors by just swapping a node that represents the execution of PUT.
-
-We should work on this to-do after `QemuExecutor` and `PintoolExecutor` are completely ready.
+In the future, when additional executors are available for these algorithms, we will need to refactor the executors.
 
 ### "Daemonize" and enhance the fuzzuf CLI
 
