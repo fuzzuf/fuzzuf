@@ -63,10 +63,10 @@ VFS::VFS(std::vector<fs::path> &&allowed_path_) {
      */
   }
   /*
-   * Although Windows has current directory for each drives, VFS provides *NIX
+   * Although Windows has current directories for each drives, VFS provides *NIX
    * style single current directory. As the result, accepting multiple drives
-   * causes confusing result on windows environment. Instead, multiple drives as
-   * accessible paths is forbidden in current implementation.
+   * causes confusing results on windows environment. Therefore, we forbid
+   * multiple drives from being included in the current implementation.
    */
   if (std::find_if(allowed_path->begin(), allowed_path->end(),
                    [rn = (*allowed_path)[0].root_name()](const auto &p) {
