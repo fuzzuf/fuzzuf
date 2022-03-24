@@ -45,6 +45,17 @@ add_executable( illegal_instruction illegal_instruction.cpp )
 set_target_properties( illegal_instruction PROPERTIES COMPILE_FLAGS "" )
 add_executable( print_env print_env.cpp )
 set_target_properties( print_env PROPERTIES COMPILE_FLAGS "" )
+add_executable( generate_outputs generate_outputs.cpp )
+target_include_directories(
+  generate_outputs
+  PRIVATE
+  ${FUZZUF_INCLUDE_DIRS}
+)
+target_link_libraries(
+  generate_outputs
+  ${FUZZUF_LIBRARIES}
+)
+set_target_properties( generate_outputs PROPERTIES COMPILE_FLAGS "" )
 
 subdirs(
   non_fork_server_mode
