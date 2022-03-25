@@ -69,10 +69,10 @@ BOOST_AUTO_TEST_CASE(ParseGlobalFuzzerOptions_AllOptions) {
     BOOST_CHECK_EQUAL(options.exec_memlimit.value(), 456);
 }
 
-BOOST_AUTO_TEST_CASE(ParseGlobalFuzzerOptions_InOutDirsAreBlank) {
+BOOST_AUTO_TEST_CASE(ParseGlobalFuzzerOptions_DefaultValues) {
     GlobalFuzzerOptions options;
     #pragma GCC diagnostic ignored "-Wwrite-strings"
-    const char *argv[] = {"fuzzuf", "fuzzer", "--exec_timelimit_ms=123", "--exec_memlimit=456", "--"};
+    const char *argv[] = {"fuzzuf", "fuzzer", "--"};
     GlobalArgs args = {
         .argc = Argc(argv),
         .argv = argv,
@@ -82,17 +82,10 @@ BOOST_AUTO_TEST_CASE(ParseGlobalFuzzerOptions_InOutDirsAreBlank) {
     // `*_dir` must be default value since they are not specifed by the commad line
     BOOST_CHECK_EQUAL(options.in_dir, default_options.in_dir);
     BOOST_CHECK_EQUAL(options.out_dir, default_options.out_dir);
-}
 
-BOOST_AUTO_TEST_CASE(ParseGlobalFuzzerOptions_NoLogFileSpecified) {
-    GlobalFuzzerOptions options;
-    #pragma GCC diagnostic ignored "-Wwrite-strings"
-    const char *argv[] = {"fuzzuf", "fuzzer", "--"};
-    GlobalArgs args = {
-        .argc = Argc(argv),
-        .argv = argv,
-    };
-    ParseGlobalOptionsForFuzzer(args, options);
+    // Check `executor` and `proxy_path` default value.
+    BOOST_CHECK_EQUAL(options.executor, fuzzuf::cli::ExecutorKind::NATIVE);
+    BOOST_CHECK_EQUAL(options.proxy_path.value(), "");
 
     BOOST_CHECK_EQUAL(options.logger, Logger::Stdout);
 }
