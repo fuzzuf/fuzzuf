@@ -90,6 +90,116 @@ BOOST_AUTO_TEST_CASE(ParseGlobalFuzzerOptions_DefaultValues) {
     BOOST_CHECK_EQUAL(options.logger, Logger::Stdout);
 }
 
+BOOST_AUTO_TEST_CASE(ParseGlobalFuzzerOptions_ExecutorKinds) {
+
+    // Check `native` executor.
+    {
+        GlobalFuzzerOptions options;
+        #pragma GCC diagnostic ignored "-Wwrite-strings"
+        const char *argv[] = {"fuzzuf", "fuzzer", "--executor=native", "--"};
+        GlobalArgs args = {
+            .argc = Argc(argv),
+            .argv = argv,
+        };
+        ParseGlobalOptionsForFuzzer(args, options);
+
+        // Check `executor` and `proxy_path`.
+        BOOST_CHECK_EQUAL(options.executor, fuzzuf::cli::ExecutorKind::NATIVE);
+        BOOST_CHECK_EQUAL(options.proxy_path.value(), "");
+    }
+
+    // Check `qemu` executor.
+    {
+        GlobalFuzzerOptions options;
+        #pragma GCC diagnostic ignored "-Wwrite-strings"
+        const char *argv[] = {"fuzzuf", "fuzzer", "--executor=qemu", "--proxy_path=test_proxy", "--"};
+        GlobalArgs args = {
+            .argc = Argc(argv),
+            .argv = argv,
+        };
+        ParseGlobalOptionsForFuzzer(args, options);
+
+        // Check `executor` and `proxy_path`.
+        BOOST_CHECK_EQUAL(options.executor, fuzzuf::cli::ExecutorKind::QEMU);
+        BOOST_CHECK_EQUAL(options.proxy_path.value(), "test_proxy");
+    }
+
+    // Check `coresight` executor.
+    {
+        GlobalFuzzerOptions options;
+        #pragma GCC diagnostic ignored "-Wwrite-strings"
+        const char *argv[] = {"fuzzuf", "fuzzer", "--executor=coresight", "--proxy_path=test_proxy", "--"};
+        GlobalArgs args = {
+            .argc = Argc(argv),
+            .argv = argv,
+        };
+        ParseGlobalOptionsForFuzzer(args, options);
+
+        // Check `executor` and `proxy_path`.
+        BOOST_CHECK_EQUAL(options.executor, fuzzuf::cli::ExecutorKind::CORESIGHT);
+        BOOST_CHECK_EQUAL(options.proxy_path.value(), "test_proxy");
+    }
+}
+
+BOOST_AUTO_TEST_CASE(ParseGlobalFuzzerOptions_ExecutorKindsFailure) {
+
+    // Supply unknown executor type `foo`.
+    {
+        GlobalFuzzerOptions options;
+        #pragma GCC diagnostic ignored "-Wwrite-strings"
+        const char *argv[] = {"fuzzuf", "fuzzer", "--executor=foo", "--"};
+        GlobalArgs args = {
+            .argc = Argc(argv),
+            .argv = argv,
+        };
+
+        // Check if the parser throws expected exception.
+        BOOST_CHECK_THROW(ParseGlobalOptionsForFuzzer(args, options), boost::program_options::invalid_option_value);
+    }
+
+    // Supply `proxy_path` with `native` executor.
+    {
+        GlobalFuzzerOptions options;
+        #pragma GCC diagnostic ignored "-Wwrite-strings"
+        const char *argv[] = {"fuzzuf", "fuzzer", "--executor=native", "--proxy_path=test_proxy", "--"};
+        GlobalArgs args = {
+            .argc = Argc(argv),
+            .argv = argv,
+        };
+
+        // Check if the parser throws expected exception.
+        BOOST_CHECK_THROW(ParseGlobalOptionsForFuzzer(args, options), exceptions::cli_error);
+    }
+
+    // `qemu` executor without supplying `proxy_path`.
+    {
+        GlobalFuzzerOptions options;
+        #pragma GCC diagnostic ignored "-Wwrite-strings"
+        const char *argv[] = {"fuzzuf", "fuzzer", "--executor=qemu", "--"};
+        GlobalArgs args = {
+            .argc = Argc(argv),
+            .argv = argv,
+        };
+
+        // Check if the parser throws expected exception.
+        BOOST_CHECK_THROW(ParseGlobalOptionsForFuzzer(args, options), exceptions::cli_error);
+    }
+
+    // `coresight` executor without supplying `proxy_path`.
+    {
+        GlobalFuzzerOptions options;
+        #pragma GCC diagnostic ignored "-Wwrite-strings"
+        const char *argv[] = {"fuzzuf", "fuzzer", "--executor=coresight", "--"};
+        GlobalArgs args = {
+            .argc = Argc(argv),
+            .argv = argv,
+        };
+
+        // Check if the parser throws expected exception.
+        BOOST_CHECK_THROW(ParseGlobalOptionsForFuzzer(args, options), exceptions::cli_error);
+    }
+}
+
 BOOST_AUTO_TEST_CASE(ParseGlobalFuzzerOptions_LogFileSpecified) {
     GlobalFuzzerOptions options;
     #pragma GCC diagnostic ignored "-Wwrite-strings"
