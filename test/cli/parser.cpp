@@ -41,7 +41,16 @@ BOOST_AUTO_TEST_CASE(ParseGlobalFuzzerOptions_AllOptions) {
     GlobalFuzzerOptions options;
 
     #pragma GCC diagnostic ignored "-Wwrite-strings"
-    const char *argv[] = {"fuzzuf", "fuzzer", "--in_dir=test-in", "--out_dir=test-out", "--exec_timelimit_ms=123", "--exec_memlimit=456"};
+    const char *argv[] = {
+        "fuzzuf",
+        "fuzzer",
+        "--in_dir=test-in",
+        "--out_dir=test-out",
+        "--executor=qemu",
+        "--proxy_path=test-proxy",
+        "--exec_timelimit_ms=123",
+        "--exec_memlimit=456"
+        };
     GlobalArgs args = {
         .argc = Argc(argv),
         .argv = argv,
@@ -54,6 +63,8 @@ BOOST_AUTO_TEST_CASE(ParseGlobalFuzzerOptions_AllOptions) {
     // Check if `options` reflects `argv`
     BOOST_CHECK_EQUAL(options.in_dir, "test-in");
     BOOST_CHECK_EQUAL(options.out_dir, "test-out");
+    BOOST_CHECK_EQUAL(options.executor, fuzzuf::cli::ExecutorKind::QEMU);
+    BOOST_CHECK_EQUAL(options.proxy_path.value(), "test-proxy");
     BOOST_CHECK_EQUAL(options.exec_timelimit_ms.value(), 123);
     BOOST_CHECK_EQUAL(options.exec_memlimit.value(), 456);
 }
