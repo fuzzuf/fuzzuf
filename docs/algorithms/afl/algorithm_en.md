@@ -30,7 +30,7 @@ Options available are listed below:
     - `--exec_timelimit_ms=1234`
         - Specifies a time limit per PUT execution in milliseconds. The default time limit is 1 second (i.e. 1000 ms).
     - `--exec_memlimit=1234`
-        - Specifies the amount of memory available per PUT execution in megabytes. The default memory limit is 25 MB in 64-bit environment, and 50 MB in 32-bit environment.
+        - Specifies the amount of memory available per PUT execution in megabytes. The default memory limit is unlimited.
     - `--log_file=path/to/log/file`
         - Specifies a path to the file, where log outputs (and debug-log outputs if built with debug mode) go. Logs are printed to stdout if a path is not specified.
 
