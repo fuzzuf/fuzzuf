@@ -93,17 +93,10 @@ constexpr u32 GetExecTimeout(void) {
 
 // NOTE: this function cannot have the argument
 // because this is used outside AFL.
-// In 32-bit environments, MEM_LIMIT = 50.
-// In 64-bit environments, MEM_LIMIT = 25.
 template<class Tag>
-constexpr u32 GetMemLimit(void) { 
-    static_assert(sizeof(size_t) == 4 || sizeof(size_t) == 8);
-
-    if constexpr (sizeof(size_t) == 4) {
-        return 50;
-    } else {
-        return 25;
-    }
+constexpr u32 GetMemLimit(void) {
+    // Unlimited by default.
+    return 0;
 }
 
 template<class Testcase>

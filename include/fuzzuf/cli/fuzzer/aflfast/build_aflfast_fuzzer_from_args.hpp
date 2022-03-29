@@ -98,22 +98,26 @@ std::unique_ptr<TFuzzer> BuildAFLFastFuzzerFromArgs(
         fuzzuf::cli::fuzzer::aflfast::usage(fuzzer_args.global_options_description);
     }
 
-    u32 extra_mem = 0;
+    using fuzzuf::algorithm::aflfast::option::AFLFastTag;
+    using fuzzuf::algorithm::afl::option::GetMemLimit;
+
+    u32 mem_limit = global_options.exec_memlimit.value_or(GetMemLimit<AFLFastTag>());
     if (aflfast_options.frida_mode) {
         setenv("__AFL_DEFER_FORKSRV", "1", 1);
         fs::path frida_bin = fs::path(fuzzer_args.argv[0]).parent_path() / "afl-frida-trace.so";
-
-        struct stat statbuf;
-        if ((stat(frida_bin.c_str(), &statbuf)) == -1) {
-            std::cerr << cLRD <<
-                "[-] File afl-frida-trace.so not found\n" <<
-                "    Build one first with cmake where -DENABLE_FRIDA_TRACE=1" <<
-                cRST << std::endl;
-        }
-        // Need to add the size of the library
-        extra_mem += statbuf.st_size;
-
         setenv("LD_PRELOAD", frida_bin.c_str(), 1);
+
+        if (mem_limit > 0) {
+            struct stat statbuf;
+            if ((stat(frida_bin.c_str(), &statbuf)) == -1) {
+                std::cerr << cLRD <<
+                    "[-] File afl-frida-trace.so not found\n" <<
+                    "    Build one first with cmake where -DENABLE_FRIDA_TRACE=1" <<
+                    cRST << std::endl;
+            }
+            // Need to add the size of the library
+            mem_limit += statbuf.st_size;
+        }
     }
 
     PutArgs put(pargs);
@@ -133,9 +137,7 @@ std::unique_ptr<TFuzzer> BuildAFLFastFuzzerFromArgs(
     DEBUG("    ]");
 
     using fuzzuf::algorithm::aflfast::AFLFastSetting;
-    using fuzzuf::algorithm::aflfast::option::AFLFastTag;
     using fuzzuf::algorithm::afl::option::GetExecTimeout;
-    using fuzzuf::algorithm::afl::option::GetMemLimit;
     using fuzzuf::algorithm::aflfast::option::FAST;
 
     // Create AFLFastSetting
@@ -145,7 +147,7 @@ std::unique_ptr<TFuzzer> BuildAFLFastFuzzerFromArgs(
                         global_options.in_dir,
                         global_options.out_dir,
                         global_options.exec_timelimit_ms.value_or(GetExecTimeout<AFLFastTag>()),
-                        global_options.exec_memlimit.value_or(GetMemLimit<AFLFastTag>()) + extra_mem,
+                        mem_limit,
                         aflfast_options.forksrv,
                         /* dumb_mode */ false,  // FIXME: add dumb_mode
                         Util::CPUID_BIND_WHICHEVER,
