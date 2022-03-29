@@ -187,7 +187,7 @@ The Nautilus mode of fuzzuf provides the following options:
 
 - `--out_dir`, `-o`: Path to folder to save the fuzzing result [**Required**]
 - `--exec_timelimit_ms`: Time limit of an execution (ms) [Default: 1000]
-- `--exec_memlimit`: Memory limit of the target binary (MB) [Default: 25]
+- `--exec_memlimit`: Memory limit of the target binary (MB) [Default: 0 (Unlimited)]
 - `--grammar`: Path to grammar file [**Required**]
 - `--bitmap-size`: Bitmap size [Default: 1<<16]
 - `--generate-num`: The number of test cases generated in one fuzz loop [Default: 100]
