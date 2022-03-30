@@ -22,9 +22,9 @@
  */
 #pragma once
 
-#include "fuzzuf/executor/proxy_executor.hpp"
+#include "fuzzuf/executor/base_proxy_executor.hpp"
 
-class PolyTrackerExecutor : public ProxyExecutor {
+class PolyTrackerExecutor : public BaseProxyExecutor {
 public:
     const std::string path_str_to_executor; // Path to executor bin
     const std::string path_str_to_db; // Path to taint database

@@ -33,14 +33,14 @@ PolyTrackerExecutor::PolyTrackerExecutor(
     u64 exec_memlimit,
     const fs::path &path_to_write_input
 ) :
-    ProxyExecutor(argv, exec_timelimit_ms, exec_memlimit, path_to_write_input),
+    BaseProxyExecutor(argv, exec_timelimit_ms, exec_memlimit, path_to_write_input),
     path_str_to_executor( path_to_executor.string() ),
     path_str_to_db( path_to_db.string() ),
     path_str_to_inst_bin( path_to_inst_bin.string() ),
     path_str_to_output( path_to_output.string() )
 {
     SetCArgvAndDecideInputMode();
-    ProxyExecutor::Initilize();
+    BaseProxyExecutor::Initilize();
 }
 
 void PolyTrackerExecutor::SetCArgvAndDecideInputMode() {
