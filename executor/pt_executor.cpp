@@ -29,8 +29,8 @@ PTExecutor::PTExecutor(
     bool forksrv,
     const fs::path &path_to_write_input,
     bool record_stdout_and_err
-) : ProxyExecutor ( proxy_path, std::vector<std::string>(), argv, exec_timelimit_ms, exec_memlimit, forksrv,
-                    path_to_write_input, 0, record_stdout_and_err ),
+) : BaseProxyExecutor ( proxy_path, std::vector<std::string>(), argv, exec_timelimit_ms, exec_memlimit, forksrv,
+                    path_to_write_input, record_stdout_and_err ),
     afl_pt_path_coverage(PTExecutor::PATH_SHM_SIZE),
     afl_pt_path_fav(PTExecutor::FAV_SHM_SIZE)
 {
@@ -38,8 +38,8 @@ PTExecutor::PTExecutor(
         has_shared_memories = true;
     }
 
-    ProxyExecutor::SetCArgvAndDecideInputMode();
-    ProxyExecutor::Initilize();
+    BaseProxyExecutor::SetCArgvAndDecideInputMode();
+    BaseProxyExecutor::Initilize();
 }
 
 void PTExecutor::SetupSharedMemories() {
@@ -61,7 +61,7 @@ void PTExecutor::SetupEnvironmentVariablesForTarget() {
     afl_pt_path_coverage.SetupEnvironmentVariable();
     afl_pt_path_fav.SetupEnvironmentVariable();
 
-    ProxyExecutor::SetupEnvironmentVariablesForTarget();
+    BaseProxyExecutor::SetupEnvironmentVariablesForTarget();
 }
 
 InplaceMemoryFeedback PTExecutor::GetPathFeedback() {
