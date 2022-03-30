@@ -332,6 +332,7 @@ set(
   exec_input/exec_input_set.cpp
   exec_input/on_disk_exec_input.cpp
   exec_input/on_memory_exec_input.cpp
+  executor/base_proxy_executor.cpp
   executor/executor.cpp
   executor/linux_fork_server_executor.cpp
   executor/native_linux_executor.cpp
