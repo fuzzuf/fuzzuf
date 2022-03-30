@@ -25,10 +25,10 @@ PinToolExecutor::PinToolExecutor(
     u64 exec_memlimit,
     const fs::path &path_to_write_input
 ) :
-    ProxyExecutor ( proxy_path, pargv, argv, exec_timelimit_ms, exec_memlimit, path_to_write_input )
+    BaseProxyExecutor ( proxy_path, pargv, argv, exec_timelimit_ms, exec_memlimit, path_to_write_input )
 {    
     SetCArgvAndDecideInputMode();
-    ProxyExecutor::Initilize();
+    BaseProxyExecutor::Initilize();
 }
 
 void PinToolExecutor::SetCArgvAndDecideInputMode() {
