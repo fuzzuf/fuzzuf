@@ -34,4 +34,5 @@ The following code implements the routines for each node:
   - [include/fuzzuf/algorithms/vuzzer/vuzzer_other_hierarflow_routines.hpp](/include/fuzzuf/algorithms/vuzzer/vuzzer_other_hierarflow_routines.hpp)
 
 ## Different part from an original one
+
 In fuzzuf, the implementation of VUzzer is a bit different from the original one. One of the most notable different parts is the lightweight design of the seed queues to reduce the performance overhead of manipulating seeds. A new design of VUzzer uses `OnDiskExecInput` to implement seeds, which can delay I/O operations until it is required.
