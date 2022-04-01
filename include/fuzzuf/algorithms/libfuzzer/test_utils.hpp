@@ -1,7 +1,7 @@
 /*
  * fuzzuf
  * Copyright (C) 2021 Ricerca Security
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -78,6 +78,10 @@ struct Variables {
   std::size_t count = 0u;
   ElapsedTimeClock begin_date;
   std::size_t last_corpus_update_run = 0u;
+  std::vector<fuzzuf::executor::LibFuzzerExecutorInterface> executor;
+  std::size_t executor_index = 0u;
+  std::vector<fuzzuf::utils::mapped_file_t> symcc_out;
+  unsigned int stuck_count = 0u;
 };
 
 // Function type that has arguments required to run all functionalities.
@@ -86,8 +90,11 @@ using Full = bool(Variables &, utils::DumpTracer &, utils::ElapsedTimeTracer &);
 namespace sp = utils::struct_path;
 struct Order {
   using V = Variables;
+  using Executors = std::vector<fuzzuf::executor::LibFuzzerExecutorInterface>;
   constexpr static auto arg0 = sp::root / sp::arg<0>;
   constexpr static auto state = arg0 / sp::mem<V, State, &V::state>;
+  constexpr static auto create_info =
+      state / sp::mem<State, FuzzerCreateInfo, &State::create_info>;
   constexpr static auto corpus = arg0 / sp::mem<V, FullCorpus, &V::corpus>;
   constexpr static auto rng = arg0 / sp::mem<V, std::minstd_rand, &V::rng>;
   constexpr static auto input =
@@ -113,13 +120,32 @@ struct Order {
       arg0 / sp::mem<V, Ranges, &V::input> / sp::elem<2u>;
   constexpr static auto last_corpus_update_run =
       arg0 / sp::mem<V, std::size_t, &V::last_corpus_update_run>;
+  constexpr static auto use_afl_coverage =
+      create_info /
+      sp::mem<FuzzerCreateInfo, bool, &FuzzerCreateInfo::use_afl_coverage>;
+  constexpr static auto executors = arg0 / sp::mem<V, Executors, &V::executor>;
+  constexpr static auto executor_index =
+      arg0 / sp::mem<V, std::size_t, &V::executor_index>;
+  constexpr static auto added_to_corpus =
+      exec_result / sp::mem<InputInfo, bool, &InputInfo::added_to_corpus>;
+  constexpr static auto symcc_out =
+      arg0 /
+      sp::mem<V, std::vector<fuzzuf::utils::mapped_file_t>, &V::symcc_out>;
+  constexpr static auto symcc_target_offset =
+      create_info / sp::mem<FuzzerCreateInfo, std::size_t,
+                            &FuzzerCreateInfo::symcc_target_offset>;
+  constexpr static auto stuck_count =
+      arg0 / sp::mem<V, unsigned int, &V::stuck_count>;
+  constexpr static auto symcc_freq =
+      create_info / sp::mem<FuzzerCreateInfo, unsigned int,
+                            &FuzzerCreateInfo::symcc_freq>;
 };
 using MutationPaths = decltype(Order::rng && Order::input &&
                                Order::max_length && Order::mutation_history);
 
 /**
  * Execute Hierarflow node L alone
- * 
+ *
  * @tparm L the node type
  * @tparm Input input value type
  * @param data input value
@@ -141,7 +167,7 @@ void run_hierarflow(Input &data) {
 
 /**
  * Connect two nodes of L by ||, then execute it
- * 
+ *
  * @tparm L the node type
  * @tparm Input input value type
  * @param data input value
@@ -165,7 +191,7 @@ void run_hierarflow_logical_or(Input &data) {
 
 /**
  * Connect two nodes of L by <<, then execute it
- * 
+ *
  * @tparm L the node type
  * @tparm Input input value type
  * @param data input value
@@ -187,8 +213,9 @@ void run_hierarflow_shift_left(Input &data) {
 }
 /**
  * run mutator once without HierarFlow
- * 
- * @tparm Func callable type with four arguments that represents RNG, input value, max input value length, mutation history
+ *
+ * @tparm Func callable type with four arguments that represents RNG, input
+ * value, max input value length, mutation history
  * @tparm Input input value type
  * @param the mutator to call
  * @param data input value
@@ -201,8 +228,9 @@ void run_direct(Func func, Input &data) {
 }
 /**
  * run mutator twice without HierarFlow
- * 
- * @tparm Func callable type with four arguments that represents RNG, input value, max input value length, mutation history
+ *
+ * @tparm Func callable type with four arguments that represents RNG, input
+ * value, max input value length, mutation history
  * @tparm Input input value type
  * @param the mutator to call
  * @param data input value

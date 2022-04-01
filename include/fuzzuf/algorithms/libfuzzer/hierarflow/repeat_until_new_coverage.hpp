@@ -71,7 +71,7 @@ public:
             if (exec_result.added_to_corpus)
               break_ = true;
 
-            if (state.config.reduce_depth && !exec_result.found_unique_features)
+            if (state.create_info.config.reduce_depth && !exec_result.found_unique_features)
               break_ = true;
           },
           std::forward<Args>(args)...);

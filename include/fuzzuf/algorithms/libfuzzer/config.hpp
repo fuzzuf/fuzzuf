@@ -1,7 +1,7 @@
 /*
  * fuzzuf
  * Copyright (C) 2021 Ricerca Security
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -140,12 +140,11 @@ auto toString(std::string &dest, const Config &value, std::size_t indent_count,
 
 struct FuzzerCreateInfo {
   FuzzerCreateInfo()
-    : input_dir("./input"),
-      output_dir("./output"),
-      // This is a temporary implementation. Change the implementation
-      // properly if the value need to be specified from user side.
-      cpu_core_count(Util::GetCpuCore()),
-      cpu_aff(Util::BindCpu(cpu_core_count, cpuid_to_bind)) {}
+      : input_dir("./input"), output_dir("./output"),
+        // This is a temporary implementation. Change the implementation
+        // properly if the value need to be specified from user side.
+        cpu_core_count(Util::GetCpuCore()),
+        cpu_aff(Util::BindCpu(cpu_core_count, cpuid_to_bind)) {}
   FUZZUF_SETTER(input_dir)
   FUZZUF_SETTER(output_dir)
   FUZZUF_SETTER(dictionaries)
@@ -217,20 +216,24 @@ struct FuzzerCreateInfo {
   /**
    * Max mutation retry count
    *
-   * Since mutation may fail for exceeding max length, empty dictionary or other reasons, libFuzzer try to retry mutation until the input is actually mutated or retry count exceeds this value.
+   * Since mutation may fail for exceeding max length, empty dictionary or other
+   * reasons, libFuzzer try to retry mutation until the input is actually
+   * mutated or retry count exceeds this value.
    */
   unsigned int mutation_depth = 5u;
 
   /**
    * Max local loop count
-   * libFuzzer applies mutate-execute-feedback flow multiple times until new feature is detected or loop count exceeds this value.
+   * libFuzzer applies mutate-execute-feedback flow multiple times until new
+   * feature is detected or loop count exceeds this value.
    */
   unsigned int max_mutation_retry_count = 20u;
 
   /**
-   * Maximum number of applied mutations for one input value that is not stored in corpus.
-   * Note that this value doesn't limit actual local loop count, but just used to detect over mutated input value.
-   * Typically, this value need to be equal or higher than max_mutation_retry_count.
+   * Maximum number of applied mutations for one input value that is not stored
+   * in corpus. Note that this value doesn't limit actual local loop count, but
+   * just used to detect over mutated input value. Typically, this value need to
+   * be equal or higher than max_mutation_retry_count.
    */
   std::uint8_t max_mutation_factor = 20u;
 
@@ -306,13 +309,15 @@ struct FuzzerCreateInfo {
   bool use_afl_coverage = true;
 
   /**
-   * On entropic mode, even if distribution updating is not required, it is updated with a probability of 1/n. 
+   * On entropic mode, even if distribution updating is not required, it is
+   * updated with a probability of 1/n.
    */
   std::size_t sparse_energy_updates = 100u;
 
   /**
    * If true, only crashed execution is recorded to solutions.
-   * Otherwise, all execution results added to corupus are recorded to solutions.
+   * Otherwise, all execution results added to corupus are recorded to
+   * solutions.
    */
   bool crashed_only = true;
 
@@ -413,6 +418,17 @@ struct FuzzerCreateInfo {
    * false: accept all input files
    */
   bool check_input_sha1 = false;
+
+  std::size_t target_offset = 0u;
+  std::size_t target_count = 0u;
+  std::size_t symcc_target_offset = 0u;
+  std::size_t symcc_target_count = 0u;
+
+  /**
+    * If 0, SymCC is never executed.
+    * Otherwise, SymCC is executed if recent n local loop blocks didn't change the corpus.
+   */
+  unsigned int symcc_freq = 1u;
 };
 
 auto toString(std::string &dest, const FuzzerCreateInfo &value,

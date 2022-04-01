@@ -1,7 +1,7 @@
 /*
  * fuzzuf
  * Copyright (C) 2021 Ricerca Security
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -17,16 +17,16 @@
  */
 #define BOOST_TEST_MODULE algorithms.nezha.output_hash2
 #define BOOST_TEST_DYN_LINK
-#include "fuzzuf/algorithms/nezha/create.hpp"
-#include "fuzzuf/algorithms/nezha/hierarflow.hpp"
-#include "fuzzuf/algorithms/nezha/state.hpp"
-#include "fuzzuf/algorithms/nezha/test_utils.hpp"
 #include "fuzzuf/algorithms/libfuzzer/calc_max_length.hpp"
 #include "fuzzuf/algorithms/libfuzzer/corpus/add_to_initial_exec_input_set.hpp"
 #include "fuzzuf/algorithms/libfuzzer/hierarflow.hpp"
 #include "fuzzuf/algorithms/libfuzzer/mutation.hpp"
 #include "fuzzuf/algorithms/libfuzzer/select_seed.hpp"
 #include "fuzzuf/algorithms/libfuzzer/test_utils.hpp"
+#include "fuzzuf/algorithms/nezha/create.hpp"
+#include "fuzzuf/algorithms/nezha/hierarflow.hpp"
+#include "fuzzuf/algorithms/nezha/state.hpp"
+#include "fuzzuf/algorithms/nezha/test_utils.hpp"
 #include "fuzzuf/executor/native_linux_executor.hpp"
 #include "fuzzuf/hierarflow/hierarflow_intermediates.hpp"
 #include "fuzzuf/utils/filesystem.hpp"
@@ -96,11 +96,41 @@ BOOST_AUTO_TEST_CASE(HierarFlowOutputHash) {
               std::vector<fs::path>{TEST_DICTIONARY_DIR "/csv.dict"});
 
   lf::test::Variables libfuzzer_variables;
-  libfuzzer_variables.state.config = create_info.config;
+  libfuzzer_variables.state.create_info = create_info;
   libfuzzer_variables.rng.seed(create_info.seed);
   ne::test::Variables nezha_variables;
 
   BOOST_TEST_CHECKPOINT("after init state");
+
+  {
+    const auto output_file_path = create_info.output_dir / "result";
+    const auto path_to_write_seed = create_info.output_dir / "cur_input";
+    std::vector<LibFuzzerExecutorInterface> executor;
+    executor.push_back(
+        std::shared_ptr<NativeLinuxExecutor>(new NativeLinuxExecutor(
+            {FUZZUF_FUZZTOYS_DIR "/fuzz_toys-csv", output_file_path.string()},
+            create_info.exec_timelimit_ms, create_info.exec_memlimit,
+            create_info.forksrv, path_to_write_seed, create_info.afl_shm_size,
+            create_info.bb_shm_size, true)));
+    executor.push_back(
+        std::shared_ptr<NativeLinuxExecutor>(new NativeLinuxExecutor(
+            {FUZZUF_FUZZTOYS_DIR "/fuzz_toys-csv", output_file_path.string()},
+            create_info.exec_timelimit_ms, create_info.exec_memlimit,
+            create_info.forksrv, path_to_write_seed, create_info.afl_shm_size,
+            create_info.bb_shm_size, true)));
+    executor.push_back(std::shared_ptr<NativeLinuxExecutor>(
+        new NativeLinuxExecutor({FUZZUF_FUZZTOYS_DIR "/fuzz_toys-csv_small",
+                                 output_file_path.string()},
+                                create_info.exec_timelimit_ms,
+                                create_info.exec_memlimit, create_info.forksrv,
+                                path_to_write_seed, create_info.afl_shm_size,
+                                create_info.bb_shm_size, true)));
+    libfuzzer_variables.executor = std::move(executor);
+  }
+  create_info.target_count = libfuzzer_variables.executor.size();
+
+  BOOST_TEST_CHECKPOINT("after init executor");
+  BOOST_CHECK_EQUAL(libfuzzer_variables.executor.size(), 3);
 
   ExecInputSet initial_input;
   lf::corpus::addToInitialExecInputSet(initial_input,
@@ -114,11 +144,6 @@ BOOST_AUTO_TEST_CASE(HierarFlowOutputHash) {
       create_info.len_control ? 4u : create_info.max_input_length;
 
   auto root = ne::create<ne::test::Func, ne::test::Order>(
-      std::vector<fs::path>{
-          FUZZUF_FUZZTOYS_DIR "/fuzz_toys-csv_small",
-          FUZZUF_FUZZTOYS_DIR "/fuzz_toys-csv_small",
-          FUZZUF_FUZZTOYS_DIR "/fuzz_toys-csv",
-      },
       create_info, true, initial_input,
       [](std::string &&m) { std::cout << m << std::flush; });
 
@@ -131,22 +156,32 @@ BOOST_AUTO_TEST_CASE(HierarFlowOutputHash) {
   ett.dump([](std::string &&m) { std::cout << m << std::flush; });
 
   BOOST_TEST_CHECKPOINT("after execution");
+
   {
-    namespace tt = boost::test_tools;
     const auto output_file_path = create_info.output_dir / "result";
     const auto path_to_write_seed = create_info.output_dir / "cur_input";
-    std::shared_ptr<NativeLinuxExecutor> nle1(new NativeLinuxExecutor(
-        {FUZZUF_FUZZTOYS_DIR "/fuzz_toys-csv_small", output_file_path.string()},
-        create_info.exec_timelimit_ms, create_info.exec_memlimit,
-        create_info.forksrv, path_to_write_seed, create_info.afl_shm_size,
-        create_info.bb_shm_size, true));
-    auto executor1 = std::make_unique<LibFuzzerExecutorInterface>(std::move(nle1));
-    std::shared_ptr<NativeLinuxExecutor> nle2(new NativeLinuxExecutor(
-        {FUZZUF_FUZZTOYS_DIR "/fuzz_toys-csv", output_file_path.string()},
-        create_info.exec_timelimit_ms, create_info.exec_memlimit,
-        create_info.forksrv, path_to_write_seed, create_info.afl_shm_size,
-        create_info.bb_shm_size, true));
-    auto executor2 = std::make_unique<LibFuzzerExecutorInterface>(std::move(nle2));
+    std::vector<LibFuzzerExecutorInterface> executor;
+    executor.push_back(std::shared_ptr<NativeLinuxExecutor>(
+        new NativeLinuxExecutor({FUZZUF_FUZZTOYS_DIR "/fuzz_toys-csv_small",
+                                 output_file_path.string()},
+                                create_info.exec_timelimit_ms,
+                                create_info.exec_memlimit, create_info.forksrv,
+                                path_to_write_seed, create_info.afl_shm_size,
+                                create_info.bb_shm_size, true)));
+    executor.push_back(
+        std::shared_ptr<NativeLinuxExecutor>(new NativeLinuxExecutor(
+            {FUZZUF_FUZZTOYS_DIR "/fuzz_toys-csv", output_file_path.string()},
+            create_info.exec_timelimit_ms, create_info.exec_memlimit,
+            create_info.forksrv, path_to_write_seed, create_info.afl_shm_size,
+            create_info.bb_shm_size, true)));
+    libfuzzer_variables.executor = std::move(executor);
+  }
+
+  BOOST_TEST_CHECKPOINT("after init executor for output");
+  BOOST_CHECK_EQUAL(libfuzzer_variables.executor.size(), 2);
+
+  {
+    namespace tt = boost::test_tools;
     std::size_t solution_count = 0u;
     ne::known_outputs_t known;
     for (const auto &filename :
@@ -167,7 +202,7 @@ BOOST_AUTO_TEST_CASE(HierarFlowOutputHash) {
             std::vector<std::uint8_t> output;
             std::vector<std::uint8_t> coverage;
             lf::executor::Execute(input, output, coverage, input_info,
-                                  *executor1, true);
+                                  libfuzzer_variables.executor, 0u, true);
             hash.push_back(ne::output_hash()(output));
           }
           std::string output2;
@@ -176,7 +211,7 @@ BOOST_AUTO_TEST_CASE(HierarFlowOutputHash) {
             std::vector<std::uint8_t> output;
             std::vector<std::uint8_t> coverage;
             lf::executor::Execute(input, output, coverage, input_info,
-                                  *executor2, true);
+                                  libfuzzer_variables.executor, 1u, true);
             hash.push_back(ne::output_hash()(output));
           }
           // tuple of outputs is unique

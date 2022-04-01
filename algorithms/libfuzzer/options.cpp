@@ -1,7 +1,7 @@
 /*
  * fuzzuf
  * Copyright (C) 2021 Ricerca Security
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -40,6 +40,17 @@ auto createOptions(Options &dest)
       "target",
       po::value<std::vector<std::string>>(&dest.raw_targets)->multitoken(),
       "Mandatory option. Path to the target executable.")(
+      "symcc_target",
+      po::value<std::vector<std::string>>(&dest.raw_symcc_targets)
+          ->multitoken(),
+      "Path to the target executable compiled by SymCC.")(
+      "symcc_freq",
+      po::value<unsigned int>(&dest.create_info.symcc_freq),
+      "SymCC execution frequency."
+      "If 0, SymCC is never executed."
+      "Otherwise, SymCC is executed if recent n local loop blocks didn't change the corpus."
+      "Default 1."
+      )(
       "input",
       po::value<std::vector<std::string>>(&dest.input_dir)->multitoken(),
       "Provide a dictionary of input keywords; see Dictionaries."
@@ -263,7 +274,7 @@ auto postProcess(
   for (auto &v : dest.raw_targets) {
     DEBUG("[*] dest.raw_targets[] = %s", v.c_str());
   }
-  
+
   if (dest.create_info.verbosity >= 1U) {
     dest.create_info.config.debug = true;
   }
@@ -305,6 +316,12 @@ auto postProcess(
   }
   std::copy(dest.raw_targets.begin(), dest.raw_targets.end(),
             std::back_inserter(dest.targets));
+  std::copy(dest.raw_symcc_targets.begin(), dest.raw_symcc_targets.end(),
+            std::back_inserter(dest.targets));
+  dest.create_info.target_offset = 0u;
+  dest.create_info.target_count = dest.raw_targets.size();
+  dest.create_info.symcc_target_offset = dest.raw_targets.size();
+  dest.create_info.symcc_target_count = dest.raw_symcc_targets.size();
   std::copy(dest.dicts.begin(), dest.dicts.end(),
             std::back_inserter(dest.create_info.dictionaries));
 

@@ -111,18 +111,21 @@ BOOST_AUTO_TEST_CASE(HierarFlowExecute) {
     namespace tt = boost::test_tools;
     const auto output_file_path = create_info.output_dir / "result";
     const auto path_to_write_seed = create_info.output_dir / "cur_input";
-    std::shared_ptr<NativeLinuxExecutor> nle1(new NativeLinuxExecutor(
+    std::vector< LibFuzzerExecutorInterface > executor;
+    executor.push_back(
+      std::shared_ptr<NativeLinuxExecutor>(new NativeLinuxExecutor(
         {FUZZUF_FUZZTOYS_DIR "/fuzz_toys-csv_small", output_file_path.string()},
         create_info.exec_timelimit_ms, create_info.exec_memlimit,
         create_info.forksrv, path_to_write_seed, create_info.afl_shm_size,
-        create_info.bb_shm_size, true));
-    auto executor1 = std::make_unique<LibFuzzerExecutorInterface>(std::move(nle1));
-    std::shared_ptr<NativeLinuxExecutor> nle2(new NativeLinuxExecutor(
+        create_info.bb_shm_size, true))
+    );
+    executor.push_back(
+      std::shared_ptr<NativeLinuxExecutor>(new NativeLinuxExecutor(
         {FUZZUF_FUZZTOYS_DIR "/fuzz_toys-csv", output_file_path.string()},
         create_info.exec_timelimit_ms, create_info.exec_memlimit,
         create_info.forksrv, path_to_write_seed, create_info.afl_shm_size,
-        create_info.bb_shm_size, true));
-    auto executor2 = std::make_unique<LibFuzzerExecutorInterface>(std::move(nle2));
+        create_info.bb_shm_size, true))
+    );
     std::size_t solution_count = 0u;
     ne::known_outputs_t known;
     for (const auto &filename :
@@ -143,7 +146,7 @@ BOOST_AUTO_TEST_CASE(HierarFlowExecute) {
             std::vector<std::uint8_t> output;
             std::vector<std::uint8_t> coverage;
             lf::executor::Execute(input, output, coverage, input_info,
-                                  *executor1, true);
+                                  executor, 0u, true);
             hash.push_back(ne::output_hash()(output));
           }
           {
@@ -151,7 +154,7 @@ BOOST_AUTO_TEST_CASE(HierarFlowExecute) {
             std::vector<std::uint8_t> output;
             std::vector<std::uint8_t> coverage;
             lf::executor::Execute(input, output, coverage, input_info,
-                                  *executor2, true);
+                                  executor, 1u, true);
             hash.push_back(ne::output_hash()(output));
           }
           // each targets output different message to stdout

@@ -218,3 +218,36 @@ if( ENABLE_CLANG_TIDY )
 endif()
 add_test( NAME "algorithms.libfuzzer.initialize" COMMAND test-algorithms-libfuzzer-initialize )
 
+if( FUZZTOYS_SYMCC_DIR )
+add_executable( test-algorithms-libfuzzer-symcc symcc.cpp )
+target_link_libraries(
+  test-algorithms-libfuzzer-symcc
+  test-common
+  fuzzuf
+  ${FUZZUF_LIBRARIES}
+  Boost::unit_test_framework
+)
+target_include_directories(
+  test-algorithms-libfuzzer-symcc
+  PRIVATE
+  ${FUZZUF_INCLUDE_DIRS}
+  ${CMAKE_SOURCE_DIR}/test/common
+)
+set_target_properties(
+  test-algorithms-libfuzzer-symcc
+  PROPERTIES COMPILE_FLAGS "${ADDITIONAL_COMPILE_FLAGS_STR}"
+)
+set_target_properties(
+  test-algorithms-libfuzzer-symcc
+  PROPERTIES LINK_FLAGS "${ADDITIONAL_COMPILE_FLAGS_STR}"
+)
+if( ENABLE_CLANG_TIDY )
+  set_target_properties(
+    test-algorithms-libfuzzer-symcc
+    PROPERTIES
+    CXX_CLANG_TIDY "${CLANG_TIDY};${CLANG_TIDY_CONFIG_FOR_TEST}"
+  )
+endif()
+add_test( NAME "algorithms.libfuzzer.symcc" COMMAND test-algorithms-libfuzzer-symcc )
+endif()
+

@@ -34,4 +34,5 @@
 // NOTE: FUZZUF_PT_PROXY_EXECUTABLE is for testing purpose only. Do not use in the Fuzzuf core implementation.
 #define FUZZUF_PT_PROXY_EXECUTABLE "${PT_PROXY_EXECUTABLE}"
 #define FUZZUF_FUZZTOYS_DIR "${FUZZTOYS_DIR}"
+#define FUZZUF_FUZZTOYS_SYMCC_DIR "${FUZZTOYS_SYMCC_DIR}"
 #cmakedefine FLC_FOUND

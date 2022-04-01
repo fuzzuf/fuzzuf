@@ -1,7 +1,7 @@
 /*
  * fuzzuf
  * Copyright (C) 2021 Ricerca Security
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -39,47 +39,23 @@ namespace fuzzuf::algorithm::libfuzzer {
  * @tparam F Function type to define what arguments passes through this node.
  * @tparam Path Struct path to define which value to to use.
  */
-template <typename F, typename Executor, typename Path> struct Execute {};
-template <typename R, typename... Args, typename Executor, typename Path>
-struct Execute<R(Args...), Executor, Path>
-    : public HierarFlowRoutine<R(Args...), R(Args...)> {
-public:
-  FUZZUF_ALGORITHM_LIBFUZZER_HIERARFLOW_STANDARD_TYPEDEFS
-  /**
-   * Constructor
-   * @param executor Executor to execute target program
-   * @param use_afl_coverage If true, the node acquires coverage using
-   * GetAFLFeedback. Otherwise, the node acquires coverage using GetBBFeedback.
-   */
-  Execute(std::unique_ptr<Executor> &&executor_, bool use_afl_coverage_)
-      : executor(std::move(executor_)), use_afl_coverage(use_afl_coverage_) {
-    assert(executor);
-  }
-  /**
-   * This callable is called on HierarFlow execution
-   * @param args Arguments
-   * @return direction of next node
-   */
-  callee_ref_t operator()(Args... args) {
-    FUZZUF_ALGORITHM_LIBFUZZER_HIERARFLOW_CHECKPOINT("execute", enter)
-    Path()(
-        [&](auto &&...sorted) {
-          executor::Execute(sorted..., *executor, use_afl_coverage);
-        },
-        std::forward<Args>(args)...);
-    FUZZUF_ALGORITHM_LIBFUZZER_HIERARFLOW_STANDARD_END(execute)
-  }
-
-private:
-  std::unique_ptr<Executor> executor;
-  bool use_afl_coverage;
-};
+FUZZUF_ALGORITHM_LIBFUZZER_HIERARFLOW_SIMPLE_FUNCTION(Execute,
+                                                      executor::Execute)
 namespace standard_order {
 template <typename T>
 using ExecuteStdArgOrderT =
-    decltype(T::input && T::output && T::coverage && T::exec_result);
-template <typename F, typename Executor, typename Ord>
-using Execute = libfuzzer::Execute<F, Executor, ExecuteStdArgOrderT<Ord>>;
+    decltype(T::input && T::output && T::coverage && T::exec_result &&
+             T::executors && T::executor_index && T::use_afl_coverage);
+template <typename F, typename Ord>
+using Execute = libfuzzer::Execute<F, ExecuteStdArgOrderT<Ord>>;
+
+template <typename T>
+using ExecuteSymCCStdArgOrderT =
+    decltype(T::input && T::output && T::symcc_out && T::exec_result &&
+             T::executors && T::symcc_target_offset);
+template <typename F, typename Ord>
+using ExecuteSymCC = libfuzzer::Execute<F, ExecuteSymCCStdArgOrderT<Ord>>;
+
 } // namespace standard_order
 
 } // namespace fuzzuf::algorithm::libfuzzer

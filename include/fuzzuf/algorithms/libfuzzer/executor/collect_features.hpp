@@ -71,13 +71,13 @@ auto CollectFeatures(State &state, Corpus &corpus, Range &range,
   const auto size = utils::range::rangeSize(range);
   feature::CollectFeatures(state, cov, module_offset, [&](auto f) -> void {
     if (feature::AddFeature(state, corpus, f, static_cast<std::uint32_t>(size),
-                            state.config.shrink))
+                            state.create_info.config.shrink))
       unique_feature_set_temp.push_back(f);
 
-    if (state.config.entropic.enabled)
+    if (state.create_info.config.entropic.enabled)
       feature::UpdateFeatureFrequency(state, exec_result, f);
 
-    if (state.config.reduce_inputs && !exec_result.never_reduce)
+    if (state.create_info.config.reduce_inputs && !exec_result.never_reduce)
       if (std::binary_search(exec_result.unique_feature_set.begin(),
                              exec_result.unique_feature_set.end(), f))
         ++found_unique_features_of_input_info;

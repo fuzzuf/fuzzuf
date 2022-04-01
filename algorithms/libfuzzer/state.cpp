@@ -29,7 +29,7 @@ auto toString(std::string &dest, const State &value, std::size_t indent_count,
   utils::make_indent(dest, indent_count, indent);
   dest += "State\n";
   ++indent_count;
-  toString(dest, value.config, indent_count, "  ");
+  toString(dest, value.create_info, indent_count, "  ");
   FUZZUF_ALGORITHMS_LIBFUZZER_DUMP_MEMBER(rare_features)
   FUZZUF_ALGORITHMS_LIBFUZZER_DUMP_MEMBER(freq_of_most_abundant_rare_feature)
   FUZZUF_ALGORITHMS_LIBFUZZER_DUMP_MEMBER(global_feature_freqs)

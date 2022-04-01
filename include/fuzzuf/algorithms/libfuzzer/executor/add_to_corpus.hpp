@@ -114,7 +114,7 @@ auto AddToCorpus(State &state, Corpus &corpus, Range &range,
                                      existing->unique_feature_set.end(),
                                      exec_result.unique_feature_set.begin(),
                                      exec_result.unique_feature_set.end()))) {
-      if (state.config.feature_debug) {
+      if (state.create_info.config.feature_debug) {
         std::string message("Replace: ");
         utils::toString(message, exec_result.input_size);
         message += " => ";

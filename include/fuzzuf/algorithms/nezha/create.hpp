@@ -1,7 +1,7 @@
 /*
  * fuzzuf
  * Copyright (C) 2021 Ricerca Security
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -21,10 +21,10 @@
  */
 #ifndef FUZZUF_INCLUDE_ALGORITHMS_NEZHA_CREATE_HPP
 #define FUZZUF_INCLUDE_ALGORITHMS_NEZHA_CREATE_HPP
+#include "fuzzuf/algorithms/libfuzzer/create.hpp"
 #include "fuzzuf/algorithms/nezha/config.hpp"
 #include "fuzzuf/algorithms/nezha/hierarflow.hpp"
 #include "fuzzuf/algorithms/nezha/state.hpp"
-#include "fuzzuf/algorithms/libfuzzer/create.hpp"
 #include "fuzzuf/hierarflow/hierarflow_intermediates.hpp"
 #include <config.h>
 
@@ -35,14 +35,16 @@ namespace fuzzuf::algorithm::nezha {
  * * Execute specified target and retrive execution result
  * * Calculate features using execution result
  * * Add to corpus if the execution result is valuable
- * * Append value that represent whether the execution result was added to corpus to traces
+ * * Append value that represent whether the execution result was added to
+ * corpus to traces
  * * Append hash value of standard output to outputs
  * @tparam F Input function type of HierarFlow node
  * @tparam Ord Type to specify how to retrive values from the arguments.
  * @tparam Sink Type of the callable with one string argument
- * @param target_path Path of the target executable
  * @param create_info Parameters on building the fuzzer
- * @param use_output If true, standard output of the execution is treated as the output of  execution. Otherwise, status code is treated as the output of execution.
+ * @param use_output If true, standard output of the execution is treated as the
+ * output of  execution. Otherwise, status code is treated as the output of
+ * execution.
  * @param force_add_to_corpus If true, the execution result is added to the
  * corpus regardless of features. Otherwise, the execution result is added to
  * the corpus if the execution found novel features.
@@ -56,8 +58,7 @@ namespace fuzzuf::algorithm::nezha {
  * @return root node of the HierarFlow
  */
 template <typename F, typename Ord, typename Sink>
-auto CreateRunSingleTarget(const fs::path &target_path,
-                           const FuzzerCreateInfo &create_info, bool use_output,
+auto CreateRunSingleTarget(const FuzzerCreateInfo &create_info, bool use_output,
                            bool force_add_to_corpus, bool may_delete_file,
                            bool persistent, bool strict_match, size_t i,
                            const Sink &sink) {
@@ -67,18 +68,7 @@ auto CreateRunSingleTarget(const fs::path &target_path,
   auto create_local_coverage =
       hf::CreateNode<lf::Clear<F, decltype(Ord::coverage)>>();
 
-  const auto output_file_path = create_info.output_dir / "result";
-  const auto path_to_write_seed = create_info.output_dir / "cur_input";
-
-  std::shared_ptr<NativeLinuxExecutor> nle(new NativeLinuxExecutor(
-      {target_path.string(), output_file_path.string()},
-      create_info.exec_timelimit_ms, create_info.exec_memlimit,
-      create_info.forksrv, path_to_write_seed, create_info.afl_shm_size,
-      create_info.bb_shm_size, true));
-  auto executor = std::make_unique<LibFuzzerExecutorInterface>(std::move(nle));
-  auto execute =
-      hf::CreateNode<lf::standard_order::Execute<F, LibFuzzerExecutorInterface, Ord>>(
-          std::move(executor), create_info.use_afl_coverage);
+  auto execute = hf::CreateNode<lf::standard_order::Execute<F, Ord>>();
   auto collect_features =
       hf::CreateNode<standard_order::CollectFeatures<F, Ord>>(
           i * (create_info.use_afl_coverage ? create_info.afl_shm_size
@@ -100,32 +90,39 @@ auto CreateRunSingleTarget(const fs::path &target_path,
 
   auto nop2 = hf::CreateNode<lf::Proxy<F>>();
 
-  auto gather_trace_ = hf::CreateNode<lf::DynamicAppend<F, decltype( Ord::added_to_corpus && Ord::trace )>>();
+  auto gather_trace_ = hf::CreateNode<
+      lf::DynamicAppend<F, decltype(Ord::added_to_corpus && Ord::trace)>>();
 
   auto gather_output_ =
-      (use_output) ? hf::CreateNode<standard_order::GatherOutput<F, Ord>>()
-                   : hf::CreateNode<lf::DynamicAppend<F, decltype( Ord::single_status && Ord::status)>>();
+      (use_output)
+          ? hf::CreateNode<standard_order::GatherOutput<F, Ord>>()
+          : hf::CreateNode<lf::DynamicAppend<F, decltype(Ord::single_status &&
+                                                         Ord::status)>>();
 
   auto assign_last_corpus_update_run = hf::CreateNode<lf::DynamicAssign<
       F, decltype(Ord::count && Ord::last_corpus_update_run)>>();
 
-  nop1 << (create_local_coverage << execute << collect_features
-                                  << add_to_corpus ||
-           new_cov << (update_dict || print ||
-                        assign_last_corpus_update_run) ||
+  auto set_executor =
+      hf::CreateNode<lf::StaticAssign<F, decltype(Ord::executor_index)>>(i);
+
+  nop1 << (create_local_coverage << set_executor << execute << collect_features
+                                 << add_to_corpus ||
+           new_cov << (update_dict || print || assign_last_corpus_update_run) ||
            gather_trace_ << gather_output_);
   return nop1;
 }
 
 /**
  * Build following flow using HierarFlow
- * * For each target executables, run everything defined at CreateRunSingleTarget
+ * * For each target executables, run everything defined at
+ * CreateRunSingleTarget
  * @tparam F Input function type of HierarFlow node
  * @tparam Ord Type to specify how to retrive values from the arguments.
  * @tparam Sink Type of the callable with one string argument
- * @param target_path Vector of paths of the target executable
  * @param create_info Parameters on building the fuzzer
- * @param use_output If true, standard output of the execution is treated as the output of  execution. Otherwise, status code is treated as the output of execution.
+ * @param use_output If true, standard output of the execution is treated as the
+ * output of  execution. Otherwise, status code is treated as the output of
+ * execution.
  * @param force_add_to_corpus If true, the execution result is added to the
  * corpus regardless of features. Otherwise, the execution result is added to
  * the corpus if the execution found novel features.
@@ -139,8 +136,7 @@ auto CreateRunSingleTarget(const fs::path &target_path,
  * @return root node of the HierarFlow
  */
 template <typename F, typename Ord, typename Sink>
-auto CreateRunTargets(const std::vector<fs::path> &target_path,
-                      const FuzzerCreateInfo &create_info, bool use_output,
+auto CreateRunTargets(const FuzzerCreateInfo &create_info, bool use_output,
                       bool force_add_to_corpus, bool may_delete_file,
                       bool persistent, bool strict_match, const Sink &sink) {
   namespace lf = fuzzuf::algorithm::libfuzzer;
@@ -149,13 +145,12 @@ auto CreateRunTargets(const std::vector<fs::path> &target_path,
 
   auto run = hf::CreateNode<lf::Proxy<F>>();
 
-  size_t i = 0u;
-  for (auto &p : target_path) {
+  for (std::size_t i = create_info.target_offset;
+       i != create_info.target_offset + create_info.target_count; ++i) {
     auto single = CreateRunSingleTarget<F, Ord>(
-        p, create_info, use_output, force_add_to_corpus, may_delete_file,
+        create_info, use_output, force_add_to_corpus, may_delete_file,
         persistent, strict_match, i, sink);
     run << single;
-    ++i;
   }
 
   return run;
@@ -169,15 +164,15 @@ auto CreateRunTargets(const std::vector<fs::path> &target_path,
  * @tparam F Input function type of HierarFlow node
  * @tparam Ord Type to specify how to retrive values from the arguments.
  * @tparam Sink Type of the callable with one string argument
- * @param target_path Vector of paths of the target executable
  * @param create_info Parameters on building the fuzzer
- * @param use_output If true, standard output of the execution is treated as the output of  execution. Otherwise, status code is treated as the output of execution.
+ * @param use_output If true, standard output of the execution is treated as the
+ * output of  execution. Otherwise, status code is treated as the output of
+ * execution.
  * @param sink Callback function with one string argument to output messages.
  * @return root node of the HierarFlow
  */
 template <typename F, typename Ord, typename Sink>
-auto createRunone(const std::vector<fs::path> &target_path,
-                  const FuzzerCreateInfo &create_info, bool use_output,
+auto createRunone(const FuzzerCreateInfo &create_info, bool use_output,
                   const Sink &sink) {
   namespace lf = fuzzuf::algorithm::libfuzzer;
   namespace hf = fuzzuf::hierarflow;
@@ -247,8 +242,9 @@ auto createRunone(const std::vector<fs::path> &target_path,
           : hf::CreateNode<lf::Proxy<F>>();
 
   /*
-   * Due to current clang-format rule, following graph definition is formatted in unexpected form.
-   * The rule need to be changed to preserve indentation of graph definition.
+   * Due to current clang-format rule, following graph definition is formatted
+   * in unexpected form. The rule need to be changed to preserve indentation of
+   * graph definition.
    */
   nop4 << (select_crossover || select_input ||
            local_loop << (create_history || create_dict_entry ||
@@ -256,9 +252,9 @@ auto createRunone(const std::vector<fs::path> &target_path,
                               << lf::createMutator<F, Ord>(create_info) ||
                           increment_mutations_count || create_outputs ||
                           create_trace ||
-                          CreateRunTargets<F, Ord>(target_path, create_info,
-                                                   use_output, false, true,
-                                                   false, true, sink) ||
+                          CreateRunTargets<F, Ord>(create_info, use_output,
+                                                   false, true, false, true,
+                                                   sink) ||
                           add_to_solution) ||
            increment_counter || update_distribution || update_max_length);
   return nop4;
@@ -269,15 +265,13 @@ auto createRunone(const std::vector<fs::path> &target_path,
  * @tparam F Input function type of HierarFlow node
  * @tparam Ord Type to specify how to retrive values from the arguments.
  * @tparam Sink Type of the callable with one string argument
- * @param target_path Vector of paths of the target executable
  * @param create_info Parameters on building the fuzzer
  * @param initial_inputs ExecInputSet that contains initial inputs
  * @param sink Callback function with one string argument to output messages.
  * @return root node of the HierarFlow
  */
 template <typename F, typename Ord, typename Sink>
-auto create(const std::vector<fs::path> &target_path,
-            const libfuzzer::FuzzerCreateInfo &create_info, bool use_output,
+auto create(const libfuzzer::FuzzerCreateInfo &create_info, bool use_output,
             ExecInputSet &initial_inputs, const Sink &sink) {
   namespace lf = fuzzuf::algorithm::libfuzzer;
   namespace hf = fuzzuf::hierarflow;
@@ -295,10 +289,9 @@ auto create(const std::vector<fs::path> &target_path,
                 "state\n", 1, "  ", sink)
           : hf::CreateNode<lf::Proxy<F>>();
 
-  nop1 << (lf::createInitialize<F, Ord>(target_path[0], create_info,
-                                        initial_inputs, true, sink) ||
-           global_loop << createRunone<F, Ord>(target_path, create_info,
-                                                use_output, sink) ||
+  nop1 << (lf::createInitialize<F, Ord>(create_info, initial_inputs, true,
+                                        sink) ||
+           global_loop << createRunone<F, Ord>(create_info, use_output, sink) ||
            dump_state);
   return nop1;
 }

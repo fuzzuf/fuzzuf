@@ -1,7 +1,7 @@
 /*
  * fuzzuf
  * Copyright (C) 2021 Ricerca Security
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -56,6 +56,7 @@ public:
   virtual void ReceiveStopSignal(void) {}
   bool ShouldEnd() override { return end_; }
   const FuzzerCreateInfo &get_create_info() const { return create_info; }
+  const auto &GetVariables() const { return vars; }
 
 private:
   FuzzerCreateInfo create_info;

@@ -30,6 +30,7 @@
 #include "fuzzuf/feedback/exit_status_feedback.hpp"
 #include "fuzzuf/feedback/inplace_memory_feedback.hpp"
 #include "fuzzuf/utils/common.hpp"
+#include "fuzzuf/utils/vfs/local_filesystem.hpp" 
 
 namespace fuzzuf::executor {
 
@@ -62,9 +63,9 @@ public:
   {}
 
   LibFuzzerExecutorInterface(const LibFuzzerExecutorInterface&) = delete;
-  LibFuzzerExecutorInterface(LibFuzzerExecutorInterface&&) = delete;
+  LibFuzzerExecutorInterface(LibFuzzerExecutorInterface&&) = default;
   LibFuzzerExecutorInterface &operator=(const LibFuzzerExecutorInterface&) = delete;
-  LibFuzzerExecutorInterface &operator=(LibFuzzerExecutorInterface&&) = delete;
+  LibFuzzerExecutorInterface &operator=(LibFuzzerExecutorInterface&&) = default;
   LibFuzzerExecutorInterface() = delete;
 
  /// @brief Executes the executor with given inputs.
@@ -104,6 +105,10 @@ public:
   fuzzuf::executor::output_t MoveStdErr() {
     return _container->MoveStdErr();
   }
+  
+  fuzzuf::utils::vfs::LocalFilesystem &Filesystem() const {
+    return _container->Filesystem();
+  }
 
 private:
   class DynContainerBase {
@@ -115,6 +120,7 @@ private:
     virtual ExitStatusFeedback GetExitStatusFeedback() = 0;
     virtual fuzzuf::executor::output_t MoveStdOut() = 0;
     virtual fuzzuf::executor::output_t MoveStdErr() = 0;
+    virtual fuzzuf::utils::vfs::LocalFilesystem &Filesystem() const = 0;
   };
 
   template<class T>
@@ -145,6 +151,10 @@ private:
 
     fuzzuf::executor::output_t MoveStdErr() {
       return _executor->MoveStdErr();
+    }
+    
+    fuzzuf::utils::vfs::LocalFilesystem &Filesystem() const override {
+      return _executor->Filesystem();
     }
 
   private:
