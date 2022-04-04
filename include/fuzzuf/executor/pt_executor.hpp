@@ -17,7 +17,7 @@
  */
 #pragma once
 
-#include "fuzzuf/executor/proxy_executor.hpp"
+#include "fuzzuf/executor/base_proxy_executor.hpp"
 #include "fuzzuf/coverage/afl_pt_path_cov_attacher.hpp"
 #include "fuzzuf/coverage/afl_pt_path_fav_attacher.hpp"
 
@@ -30,7 +30,7 @@
 // The PTrix implementation introduces pt_fav_bits to calculate top_rated[].
 // From the above reasons, we should consider renaming trace_bits so that fuzzers can distinguish the shared memory semantics.
 // https://github.com/junxzm1990/afl-pt/blob/master/afl-2.42b/pt-fuzz-fast.c#L1226-#L1229
-class PTExecutor : public ProxyExecutor {
+class PTExecutor : public BaseProxyExecutor {
 public:
     // shm_size is fixed in PTrix pt-proxy-fast.
     static constexpr u32 PATH_SHM_SIZE = (1U << 16);
@@ -50,7 +50,6 @@ public:
         bool record_stdout_and_err = false
     );
 
-    InplaceMemoryFeedback GetAFLFeedback() = delete;
     InplaceMemoryFeedback GetPathFeedback();
     InplaceMemoryFeedback GetFavFeedback();
 

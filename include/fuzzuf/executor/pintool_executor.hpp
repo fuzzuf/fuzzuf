@@ -17,9 +17,9 @@
  */
 #pragma once
 
-#include "fuzzuf/executor/proxy_executor.hpp"
+#include "fuzzuf/executor/base_proxy_executor.hpp"
 
-class PinToolExecutor : public ProxyExecutor {
+class PinToolExecutor : public BaseProxyExecutor {
 public:
 
     PinToolExecutor(  
