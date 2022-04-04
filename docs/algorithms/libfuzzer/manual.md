@@ -3,7 +3,7 @@
 ## Usage
 
 ```
-$ fuzzuf libfuzzer -- [options]
+$ fuzzuf libfuzzer [options]
 ```
 
 libFuzzer is an AFL like fuzzing algorithm that discover inputs causing target crashes.
@@ -11,7 +11,7 @@ libFuzzer is an AFL like fuzzing algorithm that discover inputs causing target c
 The following command executes the target 10000 times.
 
 ```
-$ fuzzuf libfuzzer -- -target=/usr/bin/foo -runs=10000
+$ fuzzuf libfuzzer -target=/usr/bin/foo -runs=10000
 ```
 
 This command uses the default input strings as initial inputs.
@@ -19,7 +19,7 @@ This command uses the default input strings as initial inputs.
 If initial inputs or dictionaries are available, specify the path by following options.
 
 ```
-$ fuzzuf libfuzzer -- -target=/usr/bin/foo -runs=10000 -input=/path/to/inputs -dict=/path/to/dictionary
+$ fuzzuf libfuzzer -target=/usr/bin/foo -runs=10000 -input=/path/to/inputs -dict=/path/to/dictionary
 ```
 
 One file in the input directory is loaded as one initial input data.
@@ -31,13 +31,13 @@ See also [AFL dictionary format description](https://github.com/google/afl/blob/
 It is also possible to load inputs and dictionaries from multiple directories.
 
 ```
-$ fuzzuf libfuzzer -- -target=/usr/bin/foo -runs=10000 -input=/path/to/first_inputs -input=/path/to/second_inputs
+$ fuzzuf libfuzzer -target=/usr/bin/foo -runs=10000 -input=/path/to/first_inputs -input=/path/to/second_inputs
 ```
 
 Default output directory is /tmp/fuzzuf-out\_dir/crash-\<process specific UUID\>. The output directory can be changed by -exact\_artifact\_path=\<path\>
 
 ```
-$ fuzzuf libfuzzer -- -target=/usr/bin/foo -runs=10000 -exact\_artifact\_path=/path/to/output
+$ fuzzuf libfuzzer -target=/usr/bin/foo -runs=10000 -exact\_artifact\_path=/path/to/output
 ```
 
 ## Options
