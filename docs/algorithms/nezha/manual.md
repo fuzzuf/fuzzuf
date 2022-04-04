@@ -3,7 +3,7 @@
 ## Usage
 
 ```
-$ fuzzuf nezha -- [options]
+$ fuzzuf nezha [options]
 ```
 
 Nezha is a differential fuzzer that executes multiple targets with the same input, and finds input that causes a different result for each target.
@@ -13,7 +13,7 @@ Since, Nezha compares two targets, the option must specify at least two targets.
 The following command runs each targets 10000 times.
 
 ```
-$ fuzzuf nezha -- -target=/path/to/first_executable -target=/path/to/second_executable -runs=10000
+$ fuzzuf nezha -target=/path/to/first_executable -target=/path/to/second_executable -runs=10000
 ```
 
 This command uses the default input strings as initial inputs.
@@ -21,7 +21,7 @@ This command uses the default input strings as initial inputs.
 If initial inputs or dictionaries are available, specify the path by following options.
 
 ```
-$ fuzzuf nezha -- -target=/path/to/first_executable -target=/path/to/second_executable -runs=10000 -input=/path/to/inputs -dict=/path/to/dictionary
+$ fuzzuf nezha -target=/path/to/first_executable -target=/path/to/second_executable -runs=10000 -input=/path/to/inputs -dict=/path/to/dictionary
 ```
 
 One file in the input directory is loaded as one initial input data.
@@ -32,13 +32,13 @@ See also [AFL dictionary format description](https://github.com/google/afl/blob/
 It is also possible to load inputs and dictionaries from multiple directories.
 
 ```
-$ fuzzuf nezha -- -target=/path/to/first_executable -target=/path/to/second_executable -runs=10000 -input=/path/to/first_inputs -input=/path/to/second_inputs
+$ fuzzuf nezha -target=/path/to/first_executable -target=/path/to/second_executable -runs=10000 -input=/path/to/first_inputs -input=/path/to/second_inputs
 ```
 
 Default output directory is /tmp/fuzzuf-out\_dir/crash-\<process specific UUID\>. The output directory can be changed by -exact\_artifact\_path=\<path\>
 
 ```
-$ fuzzuf nezha -- -target=/path/to/first_executable -target=/path/to/second_executable -runs=10000 -exact\_artifact\_path=/path/to/output
+$ fuzzuf nezha -target=/path/to/first_executable -target=/path/to/second_executable -runs=10000 -exact\_artifact\_path=/path/to/output
 ```
 
 ## Options
