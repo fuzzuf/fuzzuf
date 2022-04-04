@@ -23,6 +23,12 @@ if( "${CMAKE_SYSTEM_PROCESSOR}" STREQUAL "x86_64" )
       pt-proxy-fast
       HINTS ${AFL_ROOT}/
     )
+  elseif( DEFINED PT_MODE_ROOT )
+    find_program(
+      PT_PROXY_EXECUTABLE
+      pt-proxy-fast
+      HINTS ${PT_MODE_ROOT}/pt_proxy/
+    )
   elseif( DEFINED PT_PROXY_ROOT )
     find_program(
       PT_PROXY_EXECUTABLE

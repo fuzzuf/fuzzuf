@@ -63,6 +63,7 @@ subdirs(
   proxy_executor
   qemu_executor
   coresight_executor
+  pt_executor
 )
 
 if(PIN_FOUND)
