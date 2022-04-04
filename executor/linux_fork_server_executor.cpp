@@ -128,36 +128,6 @@ void LinuxForkServerExecutor::TerminateForkServer() {
     put_channel.TerminateForkServer();
 }
 
-namespace detail {
-    template< typename Dest >
-    bool read_chunk( Dest &dest, int fd ) {
-        std::size_t cur_size = dest.size();
-        dest.resize(
-            cur_size + fuzzuf::executor::output_block_size
-        );
-        auto read_stat = read(
-            fd,
-            std::next( dest.data(), cur_size ),
-            fuzzuf::executor::output_block_size
-        );
-        if( read_stat < 0 ) {
-            dest.resize(cur_size); // reset dest, whatever the error is
-
-            int e = errno;
-            if( e == EAGAIN || e == EWOULDBLOCK )
-                return false;
-            else if( !( e == EINTR ) )
-                throw fuzzuf::utils::errno_to_system_error(
-                    e,
-                    "read from child process failed during the execution"
-                );
-        }
-	else
-            dest.resize( cur_size + read_stat );
-        return read_stat != 0;
-    }
-}
-
 /**
  * Precondition:
  *  - input_fd has a file descriptor that is set by LinuxForkServerExecutor::SetupIO()
@@ -186,12 +156,6 @@ void LinuxForkServerExecutor::Run(const u8 *buf, u32 len, u32 timeout_ms) {
     // Aliases
     ResetSharedMemories();
 
-    // TODO: 標準入出力の記録はフェーズ3で
-    // if (record_stdout_and_err) {
-    //     stdout_buffer.clear();
-    //     stderr_buffer.clear();
-    // }
-
     WriteTestInputToFile(buf, len);
 
     //#if 0
@@ -201,12 +165,6 @@ void LinuxForkServerExecutor::Run(const u8 *buf, u32 len, u32 timeout_ms) {
     std::for_each( cargv.begin(), cargv.end(), []( const char* v ) { DEBUG("%s ", v); } );
     DEBUG("\n")
     //#endif
-
-    // TODO: 標準入出力の記録はフェーズ3で
-    // std::array< int, 2u > stdout_fd{ 0, 0 };
-    // std::array< int, 2u > stderr_fd{ 0, 0 };
-    // constexpr std::size_t read_size = 8u;
-    // boost::container::static_vector< std::uint8_t, read_size > read_buffer;
 
     last_exit_reason = PUTExitReasonType::FAULT_NONE;
     last_signal = 0;
@@ -221,12 +179,6 @@ void LinuxForkServerExecutor::Run(const u8 *buf, u32 len, u32 timeout_ms) {
        compiler below this point. Past this location, trace_bits[] behave
        very normally and do not have to be treated as volatile. */
     MEM_BARRIER();
-
-    // TODO: フェーズ3で考える。たぶんこのコードは消える
-    // if (record_stdout_and_err) {
-    //     while( detail::read_chunk( stdout_buffer, fork_server_stdout_fd ) );
-    //     while( detail::read_chunk( stderr_buffer, fork_server_stderr_fd ) );
-    // }
 
     DEBUG("Response { error=%d, exit_status=%d, signal_number=%d }\n", 
         response.error,
@@ -294,10 +246,26 @@ InplaceMemoryFeedback LinuxForkServerExecutor::GetBBFeedback() {
 }
 
 InplaceMemoryFeedback LinuxForkServerExecutor::GetStdOut() {
+    std::vector stdout_buffer;
+    if (record_stdout_and_err) {
+        std::string path = Util::StrPrintf("/dev/shm/fuzzuf-cc.forkserver.pid-%d.stdout", getpid());
+        int fd = Utils::OpenFile(path, O_RDONLY);
+        Util::ReadFileAll(fd, stdout_buffer);
+        Util::CloseFile(fd);
+        // ファイルを消してもいいかも
+    }
     return InplaceMemoryFeedback( stdout_buffer.data(), stdout_buffer.size(), lock);
 }
 
 InplaceMemoryFeedback LinuxForkServerExecutor::GetStdErr() {
+    std::vector stderr_buffer;
+    if (record_stdout_and_err) {
+        std::string path = Util::StrPrintf("/dev/shm/fuzzuf-cc.forkserver.pid-%d.stderr", getpid());
+        int fd = Utils::OpenFile(path, O_RDONLY);
+        Util::ReadFileAll(fd, stdout_buffer);
+        Util::CloseFile(fd);
+        // ファイルを消してもいいかも
+    }
     return InplaceMemoryFeedback( stderr_buffer.data(), stderr_buffer.size(), lock);
 }
 

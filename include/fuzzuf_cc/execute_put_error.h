@@ -1,9 +1,11 @@
 // FIXME: fuzzuf-cc をビルド＆インストールするとこのヘッダファイルがfuzzufで認識されるようにしたい
 
 // FIXME: 一時的な定義。Protocol buffer使って
-enum ExecutePUTError {
+typedef enum {
     None = 0,
-    DaemonAlreadyExit,
+    DaemonAlreadyExitError,
     DaemonBusyError,
     SpawnPUTError,
-};
+    UnknownPUTStateError,
+    NoResponseError,
+} ExecutePUTError;

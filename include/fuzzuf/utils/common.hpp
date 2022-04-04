@@ -150,10 +150,13 @@ void CreateDir(std::string path);
 int OpenFile(std::string path, int flag);
 int OpenFile(std::string path, int flag, mode_t mode);
 
+size_t GetFileSize(int fd);
+
 ssize_t read_n(int fd, void *buf, size_t n, bool original_behaviour);
 ssize_t write_n(int fd, const void *buf, size_t n);
 ssize_t ReadFile(int fd, void *buf, u32 len, bool original_behaviour = true);
 u32 ReadFileTimed(int fd, void *buf, u32 len, u32 timeout_ms);
+ssize_t ReadFileAll(int fd, std::vector buf);
 
 ssize_t WriteFile(int fd, const void *buf, u32 len);
 void WriteFileStr(int fd, std::string str);

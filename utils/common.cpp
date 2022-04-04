@@ -131,6 +131,12 @@ int OpenFile(std::string path, int flag, mode_t mode) {
   return fd;
 }
 
+size_t GetFileSize(int fd) {
+  off_t size = SeekFile(fd, 0, SEEK_END);
+  SeekFile(fd, 0, SEEK_SET);
+  return size;
+}
+
 /*
     since read/write sometimes reads/writes less bytes than specified by the 3rd
    argument 'n', it's safe to wrap read/write so that they should read/write
@@ -190,6 +196,13 @@ ssize_t WriteFile(int fd, const void *buf, u32 len) {
     throw FileError(StrPrintf("Failed to write exact len bytes: fd=%d, len=%d, nbytes=%d", fd, len, nbytes));
   }
   return nbytes;
+}
+
+ssize_t ReadFileAll(int fd, std::vector buf) {
+  size_t size = GetFileSize(fd);
+  
+  buf.resize(size);
+  return ReadFile(fd, buf.data(), size);
 }
 
 // 時間制限付きReadFile

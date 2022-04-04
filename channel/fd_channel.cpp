@@ -55,7 +55,6 @@ ExecutePUTAPIResponse FdChannel::ExecutePUT() {
 
     DEBUG("Response { error=%d, exit_code=%d, signal_number=%d }", 
         response.error, response.exit_code, response.signal_number);
-    // TODO: fork_server_stdout_fd, fork_server_stderr_fd からのデータ読み取り（フェーズ3預かり）
     assert(response.error == ExecutePUTError::None);
 
     return response;
