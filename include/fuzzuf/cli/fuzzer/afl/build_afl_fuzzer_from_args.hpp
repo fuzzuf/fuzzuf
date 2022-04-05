@@ -50,11 +50,16 @@ namespace fuzzuf::cli::fuzzer::afl {
 
 // Fuzzer specific help
 // TODO: Provide better help message
-static void usage(po::options_description &desc) {
-    std::cout << "Help:" << std::endl;
-    std::cout << desc << std::endl;
-    exit(1);
-}
+[[noreturn]] void usage(const po::options_description &desc);
+
+template <class TFuzzer, class TAFLFuzzer, class TExecutor>
+std::unique_ptr<TFuzzer> BuildFuzzer(
+    const char *prog_name,
+    const boost::program_options::options_description &option_description,
+    const AFLFuzzerOptions &afl_options,
+    const std::vector< std::string > &pargs,
+    const GlobalFuzzerOptions &global_options
+);
 
 }
 
@@ -100,6 +105,23 @@ std::unique_ptr<TFuzzer> BuildAFLFuzzerFromArgs(
     if (global_options.help) {
         fuzzuf::cli::fuzzer::afl::usage(fuzzer_args.global_options_description);
     }
+    return fuzzuf::cli::fuzzer::afl::BuildFuzzer<
+        TFuzzer, TAFLFuzzer, TExecutor
+    >(
+        fuzzer_args.argv[ 0 ],
+        fuzzer_args.global_options_description,
+        afl_options, pargs, global_options
+    );
+}
+namespace fuzzuf::cli::fuzzer::afl {
+template <class TFuzzer, class TAFLFuzzer, class TExecutor>
+std::unique_ptr<TFuzzer> BuildFuzzer(
+    const char *prog_name,
+    const boost::program_options::options_description &option_description,
+    const AFLFuzzerOptions &afl_options,
+    const std::vector< std::string > &pargs,
+    const GlobalFuzzerOptions &global_options
+) {
 
     using fuzzuf::algorithm::afl::option::AFLTag;
     using fuzzuf::algorithm::afl::option::GetMemLimit;
@@ -107,7 +129,7 @@ std::unique_ptr<TFuzzer> BuildAFLFuzzerFromArgs(
     u32 mem_limit = global_options.exec_memlimit.value_or(GetMemLimit<AFLTag>());
     if (afl_options.frida_mode) {
         setenv("__AFL_DEFER_FORKSRV", "1", 1);
-        fs::path frida_bin = fs::path(fuzzer_args.argv[0]).parent_path() / "afl-frida-trace.so";
+        fs::path frida_bin = fs::path(prog_name).parent_path() / "afl-frida-trace.so";
         setenv("LD_PRELOAD", frida_bin.c_str(), 1);
 
         if (mem_limit > 0) {
@@ -129,7 +151,7 @@ std::unique_ptr<TFuzzer> BuildAFLFuzzerFromArgs(
     } catch (const exceptions::cli_error &e) {
         std::cerr << "[!] " << e.what() << std::endl;
         std::cerr << "\tat " << e.file << ":" << e.line << std::endl;
-        fuzzuf::cli::fuzzer::afl::usage(fuzzer_args.global_options_description);
+        fuzzuf::cli::fuzzer::afl::usage(option_description);
     } 
 
     // Trace level log
@@ -246,4 +268,5 @@ std::unique_ptr<TFuzzer> BuildAFLFuzzerFromArgs(
                     new TAFLFuzzer(std::move(state))
                 )
             );
+}
 }
