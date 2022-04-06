@@ -86,8 +86,8 @@ public:
         // which fd should be recorded. For example, by passing std::vector<int>{1, 2} to this class,
         // we would tell that we would like to record stdout and stderr.
         bool record_stdout_and_err = false,
-	std::vector< std::string > &&environment_variables_ = {},
-	std::vector< fs::path > &&allowed_path_ = {}
+	    std::vector< std::string > &&environment_variables_ = {},
+	    std::vector< fs::path > &&allowed_path_ = {}
     );
     ~NativeLinuxExecutor();
 

@@ -63,7 +63,8 @@ LinuxForkServerExecutor::LinuxForkServerExecutor(
     u32 afl_shm_size,
     u32  bb_shm_size,
     bool record_stdout_and_err,
-    std::vector< std::string > &&environment_variables_
+    std::vector< std::string > &&environment_variables_,
+    std::vector< fs::path > &&allowed_path_
 ) :
     Executor( argv, exec_timelimit_ms, exec_memlimit, path_to_write_input.string() ),
     afl_edge_coverage(afl_shm_size),
@@ -72,10 +73,16 @@ LinuxForkServerExecutor::LinuxForkServerExecutor(
     // cargv and stdin_mode are initialized at SetCArgvAndDecideInputMode
     last_timeout_ms( exec_timelimit_ms ),
     record_stdout_and_err( record_stdout_and_err ),
+    filesystem( std::move( allowed_path_ ) ),
     put_channel() // TODO: Make channel configurable outside of executor
 {
     SetCArgvAndDecideInputMode();
-    OpenExecutorDependantFiles();
+    if (stdin_mode) {
+        auto path = Util::StrPrintf("/dev/shm/fuzzuf-cc.forkserver.executor_id-%d.stdin", getpid());
+        input_fd = Util::OpenFile(path, O_RDWR | O_CREAT | O_CLOEXEC, 0600);
+    } else {
+        input_fd = Util::OpenFile(path_to_write_input, O_RDWR | O_CREAT | O_CLOEXEC, 0600);
+    }
 
     // Allocate shared memory on initialization of Executor
     // It is sufficient if each LinuxForkServerExecutor::Run() can refer the memory

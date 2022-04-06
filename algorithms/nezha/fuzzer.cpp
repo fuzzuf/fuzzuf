@@ -25,6 +25,7 @@
 #include "fuzzuf/algorithms/nezha/create.hpp"
 #include "fuzzuf/cli/fuzzer_args.hpp"
 #include "fuzzuf/cli/global_fuzzer_options.hpp"
+#include "fuzzuf/executor/linux_fork_server_executor.hpp"
 #include <boost/program_options.hpp>
 #include <cstdint>
 #include <fstream>
@@ -72,12 +73,23 @@ NezhaFuzzer::NezhaFuzzer(const FuzzerArgs &fuzzer_args,
   const auto output_file_path = create_info.output_dir / "result";
   const auto path_to_write_seed = create_info.output_dir / "cur_input";
   for (const auto &target_path : opts.targets) {
-    libfuzzer_variables.executors.push_back(
-        std::shared_ptr<NativeLinuxExecutor>(new NativeLinuxExecutor(
-            {target_path.string(), output_file_path.string()},
-            create_info.exec_timelimit_ms, create_info.exec_memlimit,
-            create_info.forksrv, path_to_write_seed, create_info.afl_shm_size,
-            create_info.bb_shm_size, true)));
+    // if (global.executor == fuzzuf::cli::ExecutorKind::NATIVE) {
+      libfuzzer_variables.executors.push_back(
+          std::shared_ptr<NativeLinuxExecutor>(new NativeLinuxExecutor(
+              {target_path.string(), output_file_path.string()},
+              create_info.exec_timelimit_ms, create_info.exec_memlimit,
+              create_info.forksrv, path_to_write_seed, create_info.afl_shm_size,
+              create_info.bb_shm_size, true)));
+    // } else if (global.executor == fuzzuf::cli::ExecutorKind::FORKSERVER) {
+      // libfuzzer_variables.executors.push_back(
+      //     std::shared_ptr<LinuxForkServerExecutor>(new LinuxForkServerExecutor(
+      //         {target_path.string(), output_file_path.string()},
+      //         create_info.exec_timelimit_ms, create_info.exec_memlimit,
+      //         path_to_write_seed, create_info.afl_shm_size,
+      //         create_info.bb_shm_size, true)));
+    // } else {
+    //   EXIT("Unsupported executor: `%s`", global.executor.c_str());
+    // }
   }
 
   libfuzzer_variables.begin_date = std::chrono::system_clock::now();

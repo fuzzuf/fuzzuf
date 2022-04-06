@@ -27,6 +27,8 @@
 #include "fuzzuf/exceptions.hpp"
 #include "fuzzuf/executor/executor.hpp"
 #include "fuzzuf/utils/common.hpp"
+#include "fuzzuf/utils/filesystem.hpp"
+#include "fuzzuf/utils/vfs/local_filesystem.hpp"
 #include "fuzzuf/coverage/afl_edge_cov_attacher.hpp"
 #include "fuzzuf/coverage/fuzzuf_bb_cov_attacher.hpp"
 #include "fuzzuf/feedback/inplace_memory_feedback.hpp"
@@ -67,7 +69,8 @@ public:
         // which fd should be recorded. For example, by passing std::vector<int>{1, 2} to this class,
         // we would tell that we would like to record stdout and stderr.
         bool record_stdout_and_err = false,
-	std::vector< std::string > &&environment_variables_ = {}
+	    std::vector< std::string > &&environment_variables_ = {},
+	    std::vector< fs::path > &&allowed_path_ = {}
     );
     ~LinuxForkServerExecutor();
 
@@ -109,6 +112,11 @@ public:
     fuzzuf::executor::output_t MoveStdOut();
     // InplaceMemoryFeedback made of GetStdErr before calling this function becomes invalid after Run()
     fuzzuf::executor::output_t MoveStdErr();
+
+    fuzzuf::utils::vfs::LocalFilesystem &Filesystem() {
+      return filesystem;
+    }
+
 private:
     /**
      * Take snapshot of environment variables.
@@ -147,6 +155,8 @@ private:
      * raw_environment_variables should be rebuilt if environment_variables is modified.
      */
     std::vector< const char* > raw_environment_variables;
+
+    fuzzuf::utils::vfs::LocalFilesystem filesystem;
     
     FdChannel put_channel;
 };

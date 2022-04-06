@@ -21,12 +21,17 @@
  */
 #include "fuzzuf/utils/load_inputs.hpp"
 #include "fuzzuf/utils/sha1.hpp"
+#include "fuzzuf/logger/logger.hpp"
 #include <fcntl.h>
 #include <iostream>
 
 namespace fuzzuf::utils {
 auto LoadInputs(const fs::path &dir, bool check_sha1)
     -> std::vector<utils::mapped_file_t> {
+  if (!fs::is_directory(dir)) {
+    ERROR("LoadInputs: Path is not directory: dir=%s", dir.c_str());
+  }
+
   std::vector<utils::mapped_file_t> inputs;
   for (const auto &p : fs::recursive_directory_iterator(dir)) {
     if (fs::is_regular_file(p)) {
