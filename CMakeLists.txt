@@ -410,7 +410,10 @@ set(
   cli/command_line_args.cpp
   cli/create_fuzzer_instance_from_argv.cpp
   cli/fuzzer_builder_register.cpp
+  cli/fuzzers/afl/build_afl_fuzzer_from_args.cpp
   cli/fuzzers/afl/register_afl_fuzzer.cpp
+  cli/fuzzers/afl_symcc/build_from_args.cpp
+  cli/fuzzers/afl_symcc/register_afl_symcc_fuzzer.cpp
   cli/fuzzers/aflfast/register_aflfast_fuzzer.cpp
   cli/fuzzers/die/register_die_fuzzer.cpp
   cli/fuzzers/ijon/register_ijon_fuzzer.cpp

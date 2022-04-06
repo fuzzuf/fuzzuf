@@ -1,7 +1,7 @@
 /*
  * fuzzuf
  * Copyright (C) 2021 Ricerca Security
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -15,29 +15,27 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see http://www.gnu.org/licenses/.
  */
-#pragma once
-#include "fuzzuf/cli/command_line_args.hpp"
-#include "fuzzuf/exceptions.hpp"
-#include "fuzzuf/utils/common.hpp"
+#ifndef FUZZUF_INCLUDE_CLI_FUZZER_AFL_SYMCC_BUILD_AFL_SYMCC_FUZZER_FROM_ARGS_HPP
+#define FUZZUF_INCLUDE_CLI_FUZZER_AFL_SYMCC_BUILD_AFL_SYMCC_FUZZER_FROM_ARGS_HPP
+#include "fuzzuf/cli/fuzzer_args.hpp"
+#include "fuzzuf/cli/global_fuzzer_options.hpp"
+#include "fuzzuf/cli/put_args.hpp"
+#include "fuzzuf/fuzzer/fuzzer.hpp"
+#include <cstddef>
+#include <memory>
+#include <string>
 
-struct PutArgs {
-    std::vector<std::string> args;
-    int argc;
-
-    PutArgs(std::vector<std::string> args) :
-        args(args),
-        argc(args.size())
-        {}
-
-    void Check() {
-        if (args.size() == 0) {
-            throw exceptions::cli_error(Util::StrPrintf("Command line of PUT is not specified"), __FILE__, __LINE__);
-        }
-    }
-
-    std::vector<std::string>& Args() {
-        return this->args;
-    }
+namespace fuzzuf::cli::fuzzer::afl_symcc {
+struct SymCCOptions {
+  std::size_t symcc_freq = 1u;
+  std::string target_path;
 };
 
+// Used only for CLI
+std::unique_ptr<Fuzzer>
+BuildFromArgs(const FuzzerArgs &fuzzer_args,
+              const GlobalFuzzerOptions &global_options);
 
+} // namespace fuzzuf::cli::fuzzer::afl_symcc
+
+#endif
