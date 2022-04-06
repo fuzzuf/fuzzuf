@@ -70,6 +70,7 @@ LinuxForkServerExecutor::LinuxForkServerExecutor(
     fuzzuf_bb_coverage(bb_shm_size),
 
     // cargv and stdin_mode are initialized at SetCArgvAndDecideInputMode
+    last_timeout_ms( exec_timelimit_ms ),
     record_stdout_and_err( record_stdout_and_err ),
     put_channel() // TODO: Make channel configurable outside of executor
 {
@@ -83,6 +84,13 @@ LinuxForkServerExecutor::LinuxForkServerExecutor(
     CreateJoinedEnvironmentVariables( std::move( environment_variables_ ) );
 
     put_channel.SetupForkServer((char* const*) cargv.data());
+    put_channel.SetPUTExecutionTimeout(exec_timelimit_ms * 1000);
+    if (stdin_mode) {
+        put_channel.ReadStdin();
+    }
+    if (record_stdout_and_err) {
+        put_channel.SaveStdoutStderr();
+    }
 }
 
 /**
@@ -149,10 +157,16 @@ void LinuxForkServerExecutor::Run(const u8 *buf, u32 len, u32 timeout_ms) {
         usleep(100);
     }
 
-    // if timeout_ms is 0, then we use exec_timelimit_ms;
-    if (timeout_ms == 0) timeout_ms = exec_timelimit_ms;
-    // TODO: タイムアウト設定をPUTに反映
-
+    if (timeout_ms == 0) {
+        // if timeout_ms is 0, then we use exec_timelimit_ms;
+        timeout_ms = exec_timelimit_ms;
+    }
+    if (timeout_ms != last_timeout_ms) {
+        // Update timeout
+        put_channel.SetPUTExecutionTimeout(timeout_ms * 1000);
+        last_timeout_ms = timeout_ms;
+    }
+    
     // Aliases
     ResetSharedMemories();
 
@@ -200,7 +214,7 @@ void LinuxForkServerExecutor::Run(const u8 *buf, u32 len, u32 timeout_ms) {
         last_signal = response.signal_number;
 
         if (child_timed_out && last_signal == SIGKILL) {
-            DEBUG("PUT Execution Timeout");
+            DEBUG("Reached PUT execution timeout");
             last_exit_reason = PUTExitReasonType::FAULT_TMOUT;
         } else {
             last_exit_reason = PUTExitReasonType::FAULT_CRASH;
@@ -246,10 +260,9 @@ InplaceMemoryFeedback LinuxForkServerExecutor::GetBBFeedback() {
 }
 
 InplaceMemoryFeedback LinuxForkServerExecutor::GetStdOut() {
-    std::vector stdout_buffer;
     if (record_stdout_and_err) {
-        std::string path = Util::StrPrintf("/dev/shm/fuzzuf-cc.forkserver.pid-%d.stdout", getpid());
-        int fd = Utils::OpenFile(path, O_RDONLY);
+        std::string path = Util::StrPrintf("/dev/shm/fuzzuf-cc.forkserver.executor_id-%d.stdout", getpid());
+        int fd = Util::OpenFile(path, O_RDONLY);
         Util::ReadFileAll(fd, stdout_buffer);
         Util::CloseFile(fd);
         // ファイルを消してもいいかも
@@ -258,10 +271,9 @@ InplaceMemoryFeedback LinuxForkServerExecutor::GetStdOut() {
 }
 
 InplaceMemoryFeedback LinuxForkServerExecutor::GetStdErr() {
-    std::vector stderr_buffer;
     if (record_stdout_and_err) {
-        std::string path = Util::StrPrintf("/dev/shm/fuzzuf-cc.forkserver.pid-%d.stderr", getpid());
-        int fd = Utils::OpenFile(path, O_RDONLY);
+        std::string path = Util::StrPrintf("/dev/shm/fuzzuf-cc.forkserver.executor_id-%d.stderr", getpid());
+        int fd = Util::OpenFile(path, O_RDONLY);
         Util::ReadFileAll(fd, stdout_buffer);
         Util::CloseFile(fd);
         // ファイルを消してもいいかも

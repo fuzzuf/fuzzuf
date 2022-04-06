@@ -198,7 +198,7 @@ ssize_t WriteFile(int fd, const void *buf, u32 len) {
   return nbytes;
 }
 
-ssize_t ReadFileAll(int fd, std::vector buf) {
+ssize_t ReadFileAll(int fd, fuzzuf::executor::output_t buf) {
   size_t size = GetFileSize(fd);
   
   buf.resize(size);

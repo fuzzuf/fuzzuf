@@ -28,7 +28,6 @@ struct ChildState {
   int exec_errno;
 };
 
-using output_t = std::vector< std::uint8_t >;
 constexpr std::size_t output_block_size = 512u;
 }
 

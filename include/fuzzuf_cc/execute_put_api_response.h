@@ -3,7 +3,7 @@
 
 // FIXME: 一時的な定義。Protocol buffer使って
 typedef struct {
-    enum ExecutePUTError error;
+    ExecutePUTError error;
     int32_t exit_code;
     int32_t signal_number;
 } ExecutePUTAPIResponse;

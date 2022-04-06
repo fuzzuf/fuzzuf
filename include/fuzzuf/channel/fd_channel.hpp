@@ -15,7 +15,9 @@ public:
     ~FdChannel();
 
     // PUT API
-    // TODO: これは暫定。フェーズ3で標準入出力の record 機能の実現のために、Execute開始と終了待ちを別々に扱う可能性あり。
+    void SetPUTExecutionTimeout(uint64_t timeout_us);
+    void ReadStdin();
+    void SaveStdoutStderr();
     ExecutePUTAPIResponse ExecutePUT();
     void SetupForkServer(char *const pargv[]);
     void TerminateForkServer();
@@ -24,7 +26,9 @@ private:
     ssize_t Send(void *buf, size_t size, const char* comment = "");
     ssize_t Recv(void *buf, size_t size, const char* comment = "");
 
+    void AttachToServer(uint64_t executor_id);
     std::optional<pid_t> WaitForkServerStart();
+    std::optional<pid_t> DoHandShake(uint64_t executor_id);
 
     // TODO: fuzzuf-cc がPUTに付加した情報をもとに設定したいな
     // afl-gcc を使い回す都合で、本家とバッチングしない値を使う

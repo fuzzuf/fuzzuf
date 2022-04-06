@@ -116,10 +116,12 @@ private:
      * @param extra Executor specific environment variables those are set only on the child process of this executor.
      */ 
     void CreateJoinedEnvironmentVariables( std::vector< std::string > &&extra );
+
+    u32 last_timeout_ms;
     PUTExitReasonType last_exit_reason;
     u8 last_signal;    
-    // fuzzuf::executor::output_t stdout_buffer;
-    // fuzzuf::executor::output_t stderr_buffer;
+    fuzzuf::executor::output_t stdout_buffer;
+    fuzzuf::executor::output_t stderr_buffer;
     // int fork_server_stdout_fd = -1;
     // int fork_server_stderr_fd = -1;
     // int fork_server_epoll_fd = -1;
@@ -146,6 +148,5 @@ private:
      */
     std::vector< const char* > raw_environment_variables;
     
-    // ZeroMqChannel put_channel;
     FdChannel put_channel;
 };
