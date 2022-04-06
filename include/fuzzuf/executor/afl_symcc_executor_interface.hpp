@@ -61,6 +61,11 @@ public:
   void Run(const u8 *buf, u32 len, u32 timeout_ms = 0) {
     _container->Run(buf, len, timeout_ms);
   }
+  /**
+   * Get filesystem context from the executor.
+   * @return filesystem context to access directories associated with the
+   * executor.
+   */
   fuzzuf::utils::vfs::LocalFilesystem &Filesystem() const {
     return _container->Filesystem();
   }

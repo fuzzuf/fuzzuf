@@ -57,7 +57,7 @@ struct AFLFuzzerTemplate : public afl::AFLFuzzerTemplate<State> {
    */
   auto AddToQueue(const unsigned char *buf, std::uint32_t len) const {
     const auto fn = Util::StrPrintf(
-        "%s/queue/id:%06u,symcc",
+        "%s/queue/id:%06u,op:symcc",
         afl::AFLFuzzerTemplate<State>::state->setting->out_dir.c_str(),
         afl::AFLFuzzerTemplate<State>::state->queued_paths);
     return afl::AFLFuzzerTemplate<State>::state->AddToQueue(fn, buf, len,
@@ -70,9 +70,11 @@ struct AFLFuzzerTemplate : public afl::AFLFuzzerTemplate<State> {
   auto GetInput() const {
     const auto fn =
         afl::AFLFuzzerTemplate<State>::state
-            ->case_queue[afl::AFLFuzzerTemplate<State>::state->current_entry %
-                         afl::AFLFuzzerTemplate<State>::state->case_queue
-                             .size()]
+            ->case_queue
+                [(afl::AFLFuzzerTemplate<State>::state->current_entry +
+                  afl::AFLFuzzerTemplate<State>::state->case_queue.size() -
+                  1u) %
+                 afl::AFLFuzzerTemplate<State>::state->case_queue.size()]
             ->input->GetPath();
     return utils::map_file(fs::absolute(fs::path(fn)).string(), O_RDONLY, true);
   }

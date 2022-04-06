@@ -62,30 +62,25 @@ BuildFromArgs(const FuzzerArgs &fuzzer_args,
     symcc_args[0] = symcc_options.target_path;
   const auto symcc_dir =
       fs::absolute(fs::path(global_options.out_dir) / "symcc");
-  return std::unique_ptr<fuzzuf::algorithm::afl_symcc::AFLSymCCFuzzer>(
-      new fuzzuf::algorithm::afl_symcc::AFLSymCCFuzzer(
-          fuzzuf::cli::fuzzer::afl::BuildFuzzer<
-              fuzzuf::algorithm::afl_symcc::AFLFuzzerTemplate<
-                  fuzzuf::algorithm::afl::AFLState>,
-              fuzzuf::algorithm::afl_symcc::AFLFuzzerTemplate<
-                  fuzzuf::algorithm::afl::AFLState>,
-              fuzzuf::executor::AFLExecutorInterface>(fuzzer_args.argv[0],
-                                                      fuzzer_desc, afl_options,
-                                                      pargs, global_options),
-          std::move(symcc_options),
-          std::shared_ptr<fuzzuf::executor::AFLSymCCExecutorInterface>(
-              new fuzzuf::executor::AFLSymCCExecutorInterface(
-                  std::shared_ptr<NativeLinuxExecutor>(new NativeLinuxExecutor(
-                      std::move(symcc_args),
-                      global_options.exec_timelimit_ms.value_or(
-                          fuzzuf::algorithm::afl::option::GetExecTimeout<
-                              fuzzuf::algorithm::afl::option::AFLTag>()),
-                      global_options.exec_memlimit.value_or(
-                          fuzzuf::algorithm::afl::option::GetMemLimit<
-                              fuzzuf::algorithm::afl::option::AFLTag>()),
-                      false, fs::path(global_options.out_dir) / "cur_input", 0,
-                      0, false, {"SYMCC_OUTPUT_DIR=" + symcc_dir.string()},
-                      {symcc_dir}))))));
+  namespace as = algorithm::afl_symcc;
+  namespace afl = algorithm::afl;
+  return std::unique_ptr<as::AFLSymCCFuzzer>(new as::AFLSymCCFuzzer(
+      cli::fuzzer::afl::BuildFuzzer<as::AFLFuzzerTemplate<afl::AFLState>,
+                                    as::AFLFuzzerTemplate<afl::AFLState>,
+                                    executor::AFLExecutorInterface>(
+          fuzzer_args.argv[0], fuzzer_desc, afl_options, pargs, global_options),
+      std::move(symcc_options),
+      std::shared_ptr<executor::AFLSymCCExecutorInterface>(
+          new executor::AFLSymCCExecutorInterface(
+              std::shared_ptr<NativeLinuxExecutor>(new NativeLinuxExecutor(
+                  std::move(symcc_args),
+                  global_options.exec_timelimit_ms.value_or(
+                      afl::option::GetExecTimeout<afl::option::AFLTag>()),
+                  global_options.exec_memlimit.value_or(
+                      afl::option::GetMemLimit<afl::option::AFLTag>()),
+                  false, fs::path(global_options.out_dir) / "cur_input", 0, 0,
+                  false, {"SYMCC_OUTPUT_DIR=" + symcc_dir.string()},
+                  {symcc_dir}))))));
 }
 
 } // namespace fuzzuf::cli::fuzzer::afl_symcc
