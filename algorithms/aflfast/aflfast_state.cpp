@@ -320,7 +320,7 @@ void AFLFastState::ShowStats(void) {
     /* Now, for the visuals... */
     bool term_too_small = false;
     if (clear_screen) {
-        MSG(TERM_CLEAR CURSOR_HIDE);
+        MSG(TERM_CLEAR);
         clear_screen = false;
 
         term_too_small = afl::CheckTermSize();

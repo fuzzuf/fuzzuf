@@ -209,7 +209,7 @@ extern RunLevel runlevel;
 #define EXIT(...) do { \
     std::string temp; \
     FUZZUF_FORMAT( temp, __VA_ARGS__ ) \
-    MSG(bSTOP RESET_G1 CURSOR_SHOW cRST cLRD "\n[-] PROGRAM ABORT : " cBRI); \
+    MSG(bSTOP RESET_G1 cRST cLRD "\n[-] PROGRAM ABORT : " cBRI); \
     std::puts(temp.c_str()); \
     MSG(cLRD "\n         Location : " cRST "%s(), %s:%u\n\n", \
          __FUNCTION__, __FILE__, __LINE__); \
@@ -223,7 +223,7 @@ extern RunLevel runlevel;
 #define ABORT(...) do { \
     std::string temp; \
     FUZZUF_FORMAT( temp, __VA_ARGS__ ) \
-    MSG(bSTOP RESET_G1 CURSOR_SHOW cRST cLRD "\n[-] PROGRAM ABORT : " cBRI); \
+    MSG(bSTOP RESET_G1 cRST cLRD "\n[-] PROGRAM ABORT : " cBRI); \
     std::puts(temp.c_str()); \
     MSG(cLRD "\n    Stop location : " cRST "%s(), %s:%u\n\n", \
          __FUNCTION__, __FILE__, __LINE__); \
@@ -238,7 +238,7 @@ extern RunLevel runlevel;
     fflush(stdout); \
     std::string temp; \
     FUZZUF_FORMAT( temp, __VA_ARGS__ ) \
-    MSG(bSTOP RESET_G1 CURSOR_SHOW cRST cLRD "\n[-]  SYSTEM ERROR : " cBRI); \
+    MSG(bSTOP RESET_G1 cRST cLRD "\n[-]  SYSTEM ERROR : " cBRI); \
     std::puts(temp.c_str()); \
     MSG(cLRD "\n    Stop location : " cRST "%s(), %s:%u\n", \
          __FUNCTION__, __FILE__, __LINE__); \
