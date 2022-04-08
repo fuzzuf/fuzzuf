@@ -26,6 +26,7 @@
 #include "fuzzuf/exec_input/exec_input.hpp"
 #include "fuzzuf/algorithms/afl/afl_dict_data.hpp"
 #include "fuzzuf/algorithms/afl/afl_util.hpp"
+#include "fuzzuf/optimizer/optimizer.hpp"
 
 // Responsibility:
 //  - An instance generates fuzzes an arbitrary number of times according to the specified algorithm
@@ -88,6 +89,7 @@ public:
     using AFLDictData = fuzzuf::algorithm::afl::dictionary::AFLDictData;
     /**
      * @fn Havoc
+     * TODO: update docs for CaseDistrib
      * @tparam CaseDistrib the type of the probability distribution of selecting mutation operators.
      * It should be `u32(const std::vector<AFLDictData>&, const std::vector<AFLDictData>&)` .
      * @tparam CustomCases the type of the function that represents custom cases in havoc.
@@ -120,7 +122,7 @@ public:
             u32 stacking, 
             const std::vector<AFLDictData>& extras, 
             const std::vector<AFLDictData>& a_extras,
-            CaseDistrib case_distrib,
+            Optimizer<HavocCase> &mutop_optimizer,
             CustomCases custom_cases
          );
 
@@ -232,7 +234,7 @@ void Mutator<Tag>::Havoc(
     u32 stacking,
     const std::vector<AFLDictData>& extras,
     const std::vector<AFLDictData>& a_extras,
-    CaseDistrib case_distrib,
+    Optimizer<HavocCase> &mutop_optimizer,
     CustomCases custom_cases
 ) {
     using namespace fuzzuf::algorithm;
@@ -265,8 +267,11 @@ void Mutator<Tag>::Havoc(
         return afl::util::UR(limit, rand_fd);
     };
 
+    mutop_optimizer.store.set("ExtrasKey", &extras);
+    mutop_optimizer.store.set("AutoExtrasKey", &a_extras);
+
     for (std::size_t i = 0; i < stacking; i++) {
-        u32 r = case_distrib(extras, a_extras);
+        u32 r = mutop_optimizer.CalcValue();
         switch (r) {
         case FLIP1:
             /* Flip a single bit somewhere. Spooky! */

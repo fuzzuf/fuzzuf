@@ -189,6 +189,36 @@ std::string DescribeTimeDelta(u64 cur_ms, u64 event_ms) {
 
 // FIXME: is there any better way than this?
 
+HavocCase AFLMutOpOptimizer::CalcValue() {
+    const auto extras = store.get<std::vector<dictionary::AFLDictData>>("ExtraKey");
+    const auto a_extras = store.get<std::vector<dictionary::AFLDictData>>("AutoExtraKey");
+
+    // Static part: the following part doesn't run after a fuzzing campaign starts.
+
+    constexpr std::array<double, NUM_CASE> weight_set[2][2] = {
+        { AFLGetCaseWeights(false, false), AFLGetCaseWeights(false, true) },
+        { AFLGetCaseWeights(true,  false), AFLGetCaseWeights(true,  true) }
+    };
+
+    using fuzzuf::utils::random::WalkerDiscreteDistribution;
+    WalkerDiscreteDistribution<u32> dists[2][2] = {
+      { WalkerDiscreteDistribution<u32>(weight_set[0][0].cbegin(),
+                                        weight_set[0][0].cend()),
+        WalkerDiscreteDistribution<u32>(weight_set[0][1].cbegin(),
+                                        weight_set[0][1].cend()) },
+      { WalkerDiscreteDistribution<u32>(weight_set[1][0].cbegin(),
+                                        weight_set[1][0].cend()),
+        WalkerDiscreteDistribution<u32>(weight_set[1][1].cbegin(),
+                                        weight_set[1][1].cend()) }
+    };
+
+    // Dynamic part: the following part runs during a fuzzing campaign
+
+    bool has_extras  = !extras.empty();
+    bool has_aextras = !a_extras.empty();
+    return static_cast<HavocCase>(dists[has_extras][has_aextras]());
+}
+
 u32 AFLHavocCaseDistrib(
     const std::vector<dictionary::AFLDictData>& extras, 
     const std::vector<dictionary::AFLDictData>& a_extras

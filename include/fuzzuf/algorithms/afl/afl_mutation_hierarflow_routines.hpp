@@ -27,6 +27,8 @@
 #include "fuzzuf/hierarflow/hierarflow_node.hpp"
 #include "fuzzuf/hierarflow/hierarflow_intermediates.hpp"
 
+#include "fuzzuf/optimizer/optimizer.hpp"
+
 namespace fuzzuf::algorithm::afl::routine::mutation {
 
 template<class State>
@@ -475,10 +477,10 @@ public:
     HavocBaseTemplate(State &state);
     virtual ~HavocBaseTemplate() {}
 
-    template<typename CaseDistrib, typename CustomCases>
+    template<typename CustomCases>
     bool DoHavoc(
         AFLMutatorTemplate<State>& mutator,
-        CaseDistrib case_distrib,
+        Optimizer<HavocCase> &mutop_optimizer,
         CustomCases custom_cases,
         const std::string &stage_name,
         const std::string &stage_short,

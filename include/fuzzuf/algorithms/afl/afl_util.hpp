@@ -23,6 +23,7 @@
 #include "fuzzuf/algorithms/afl/afl_option.hpp"
 #include "fuzzuf/algorithms/afl/afl_dict_data.hpp"
 #include "fuzzuf/algorithms/afl/count_classes.hpp"
+#include "fuzzuf/optimizer/optimizer.hpp"
 
 namespace fuzzuf::algorithm::afl::util {
     
