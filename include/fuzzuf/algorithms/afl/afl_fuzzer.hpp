@@ -23,6 +23,7 @@
 #include "fuzzuf/utils/common.hpp"
 #include "fuzzuf/fuzzer/fuzzer.hpp"
 #include "fuzzuf/algorithms/afl/afl_state.hpp"
+#include "fuzzuf/optimizer/optimizer.hpp"
 
 #include "fuzzuf/hierarflow/hierarflow_routine.hpp"
 #include "fuzzuf/hierarflow/hierarflow_node.hpp"
