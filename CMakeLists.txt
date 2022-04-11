@@ -351,6 +351,7 @@ set(
   logger/logger.cpp
   logger/log_file_logger.cpp
   logger/stdout_logger.cpp
+  optimizer/keys.cpp
   optimizer/store.cpp
   python/pyfeedback.cpp
   python/pyseed.cpp
