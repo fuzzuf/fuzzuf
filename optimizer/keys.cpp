@@ -17,6 +17,7 @@
  */
 
 #include "fuzzuf/optimizer/store.hpp"
+#include "fuzzuf/algorithms/afl/afl_dict_data.hpp"
 
 namespace fuzzuf::optimizer::keys {
 
