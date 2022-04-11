@@ -15,7 +15,9 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see http://www.gnu.org/licenses/.
  */
-#pragma once
+
+#ifndef FUZZUF_INCLUDE_OPTIMIZER_OPTIMIZER_HPP
+#define FUZZUF_INCLUDE_OPTIMIZER_OPTIMIZER_HPP
 
 #include "fuzzuf/optimizer/store.hpp"
 
@@ -23,15 +25,10 @@
 #include <string>
 #include <unordered_map>
 
-
-class OptimizerSet {};
-
 template<typename T>
 class Optimizer {
 private:
     std::function<T()> logic;
-protected:
-    static Store store;
 public:
     Optimizer();
     Optimizer(std::function<T()>);
@@ -40,4 +37,17 @@ public:
     virtual T CalcValue();
 };
 
-#include "fuzzuf/optimizer/templates/optimizer.hpp"
+template<typename T>
+Optimizer<T>::Optimizer() {}
+
+template<typename T>
+Optimizer<T>::Optimizer(std::function<T()> f)
+    : logic(f) {}
+
+template<typename T>
+T Optimizer<T>::CalcValue() {
+    return logic();
+}
+
+#endif
+
