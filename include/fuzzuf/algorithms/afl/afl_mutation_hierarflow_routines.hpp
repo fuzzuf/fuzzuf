@@ -480,7 +480,7 @@ public:
     template<typename CustomCases>
     bool DoHavoc(
         AFLMutatorTemplate<State>& mutator,
-        Optimizer<u32> &mutop_optimizer,
+        optimizer::Optimizer<u32> &mutop_optimizer,
         CustomCases custom_cases,
         const std::string &stage_name,
         const std::string &stage_short,

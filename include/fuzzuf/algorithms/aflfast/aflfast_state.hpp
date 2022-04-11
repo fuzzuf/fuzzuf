@@ -15,20 +15,25 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see http://www.gnu.org/licenses/.
  */
-#pragma once
 
+#ifndef FUZZUF_INCLUDE_ALGORITHM_AFLFAST_AFLFAST_STATE_HPP
+#define FUZZUF_INCLUDE_ALGORITHM_AFLFAST_AFLFAST_STATE_HPP
+
+#include <memory>
+
+#include "fuzzuf/optimizer/optimizer.hpp"
 #include "fuzzuf/algorithms/afl/afl_state.hpp"
 #include "fuzzuf/algorithms/aflfast/aflfast_testcase.hpp"
 #include "fuzzuf/algorithms/aflfast/aflfast_option.hpp"
 #include "fuzzuf/algorithms/aflfast/aflfast_setting.hpp"
-
 
 namespace fuzzuf::algorithm::aflfast {
 
 struct AFLFastState : public afl::AFLStateTemplate<AFLFastTestcase> {
     explicit AFLFastState(
         std::shared_ptr<const AFLFastSetting> setting,
-        std::shared_ptr<executor::AFLExecutorInterface> executor
+        std::shared_ptr<executor::AFLExecutorInterface> executor,
+        std::unique_ptr<optimizer::Optimizer<u32>>&& mutop_optimizer
     );
 
     std::shared_ptr<AFLFastTestcase> AddToQueue(
@@ -59,3 +64,5 @@ struct AFLFastState : public afl::AFLStateTemplate<AFLFastTestcase> {
 };
 
 } // namespace fuzzuf::algorithm::aflfast
+
+#endif

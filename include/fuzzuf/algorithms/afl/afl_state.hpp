@@ -15,7 +15,9 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see http://www.gnu.org/licenses/.
  */
-#pragma once
+
+#ifndef FUZZUF_INCLUDE_ALGORITHMS_AFL_AFL_STATE_HPP
+#define FUZZUF_INCLUDE_ALGORITHMS_AFL_AFL_STATE_HPP
 
 #include <vector>
 #include <string>
@@ -27,6 +29,7 @@
 #include "fuzzuf/executor/afl_executor_interface.hpp"
 #include "fuzzuf/feedback/inplace_memory_feedback.hpp"
 #include "fuzzuf/feedback/exit_status_feedback.hpp"
+#include "fuzzuf/optimizer/optimizer.hpp"
 #include "fuzzuf/algorithms/afl/afl_option.hpp"
 #include "fuzzuf/algorithms/afl/afl_testcase.hpp"
 #include "fuzzuf/algorithms/afl/afl_setting.hpp"
@@ -53,8 +56,11 @@ struct AFLStateTemplate {
     using OwnTestcase = Testcase;
     using Tag = typename Testcase::Tag;
 
-    // FIXME: how to support other executors?
-    explicit AFLStateTemplate(std::shared_ptr<const AFLSetting> setting, std::shared_ptr<executor::AFLExecutorInterface> executor);
+    explicit AFLStateTemplate(
+        std::shared_ptr<const AFLSetting> setting,
+        std::shared_ptr<executor::AFLExecutorInterface> executor
+        std::unique_ptr<optimizer::Optimizer<u32>>&& mutop_optimizer
+    );
     virtual ~AFLStateTemplate();
 
     AFLStateTemplate( const AFLStateTemplate& ) = delete;
@@ -323,6 +329,8 @@ struct AFLStateTemplate {
     /* Automatically selected extras    */
     std::vector<AFLDictData> a_extras;
 
+    std::unique_ptr<optimizer::Optimizer<u32>> mutop_optimizer;
+
 private:
     bool should_construct_auto_dict;
 };
@@ -332,3 +340,5 @@ using AFLState = AFLStateTemplate<AFLTestcase>;
 } // namespace fuzzuf::algorithm::afl
 
 #include "fuzzuf/algorithms/afl/templates/afl_state.hpp"
+
+#endif

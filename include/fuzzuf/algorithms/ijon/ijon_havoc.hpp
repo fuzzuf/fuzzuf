@@ -37,7 +37,7 @@ void IJONCustomCases(
     const std::vector<afl::dictionary::AFLDictData>& a_extras
 );
 
-class IJONHavocCaseDistrib : public Optimizer<u32> {
+class IJONHavocCaseDistrib : public optimizer::Optimizer<u32> {
 public:
     IJONHavocCaseDistrib();
     ~IJONHavocCaseDistrib();
