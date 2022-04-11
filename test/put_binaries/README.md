@@ -28,6 +28,12 @@ test/instrument以下のREADMEに記載があるため、そちらを参照。
 このwrapperに相当するのがcommand\_wrapperである。
 ソースコードはこのディレクトリのcommand\_wrapper.cpp。
 
+# cat 
+[cat](https://github.com/RICSecLab/fuzzuf-cc-private/tree/phase-3/put/cat) is sample PUT of fuzzuf-cc and built by fuzzuf-cc.
+cat is used to check normallity of LinuxForkServerExecutor (refined fork server mode).
+
+(TODO: fuzzuf-cc正式リリース後にリンク修正)
+
 # quickjs/qjs
 [QuickJS](https://bellard.org/quickjs/) compiled by afl-gcc for testing JavaScript fuzzers such as DIE.
 

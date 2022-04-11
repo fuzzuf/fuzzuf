@@ -27,16 +27,17 @@
 #include "fuzzuf/algorithms/afl/afl_option.hpp"
 #include "fuzzuf/exceptions.hpp"
 #include "fuzzuf/executor/executor.hpp"
-#include "fuzzuf/utils/workspace.hpp"
-#include "fuzzuf/utils/common.hpp"
-#include "fuzzuf/utils/which.hpp"
-#include "fuzzuf/utils/is_executable.hpp"
-#include "fuzzuf/utils/interprocess_shared_object.hpp"
-#include "fuzzuf/utils/errno_to_system_error.hpp"
-#include "fuzzuf/feedback/inplace_memory_feedback.hpp"
 #include "fuzzuf/feedback/exit_status_feedback.hpp"
+#include "fuzzuf/feedback/inplace_memory_feedback.hpp"
 #include "fuzzuf/feedback/put_exit_reason_type.hpp"
 #include "fuzzuf/logger/logger.hpp"
+#include "fuzzuf/utils/common.hpp"
+#include "fuzzuf/utils/errno_to_system_error.hpp"
+#include "fuzzuf/utils/hex_dump.hpp"
+#include "fuzzuf/utils/interprocess_shared_object.hpp"
+#include "fuzzuf/utils/is_executable.hpp"
+#include "fuzzuf/utils/which.hpp"
+#include "fuzzuf/utils/workspace.hpp"
 
 /**
  * Precondition:
@@ -271,8 +272,9 @@ InplaceMemoryFeedback LinuxForkServerExecutor::GetStdOut() {
         std::string path = Util::StrPrintf("/dev/shm/fuzzuf-cc.forkserver.executor_id-%d.stdout", getpid());
         int fd = Util::OpenFile(path, O_RDONLY);
         Util::ReadFileAll(fd, stdout_buffer);
+        assert(stdout_buffer.size() > 0);
         Util::CloseFile(fd);
-        // ファイルを消してもいいかも
+        // Deleting file `path` might be good
     }
     return InplaceMemoryFeedback( stdout_buffer.data(), stdout_buffer.size(), lock);
 }
@@ -281,9 +283,9 @@ InplaceMemoryFeedback LinuxForkServerExecutor::GetStdErr() {
     if (record_stdout_and_err) {
         std::string path = Util::StrPrintf("/dev/shm/fuzzuf-cc.forkserver.executor_id-%d.stderr", getpid());
         int fd = Util::OpenFile(path, O_RDONLY);
-        Util::ReadFileAll(fd, stdout_buffer);
+        Util::ReadFileAll(fd, stderr_buffer);
         Util::CloseFile(fd);
-        // ファイルを消してもいいかも
+        // Deleting file `path` might be good
     }
     return InplaceMemoryFeedback( stderr_buffer.data(), stderr_buffer.size(), lock);
 }
@@ -404,9 +406,11 @@ void LinuxForkServerExecutor::CreateJoinedEnvironmentVariables(
 }
 
 fuzzuf::executor::output_t LinuxForkServerExecutor::MoveStdOut() {
+    GetStdOut();
     return std::move( stdout_buffer );
 }
 
 fuzzuf::executor::output_t LinuxForkServerExecutor::MoveStdErr() {
+    GetStdErr();
     return std::move( stderr_buffer );
 }
