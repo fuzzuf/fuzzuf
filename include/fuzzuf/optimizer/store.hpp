@@ -1,4 +1,23 @@
-#pragma once
+/*
+ * fuzzuf
+ * Copyright (C) 2021 Ricerca Security
+ * 
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see http://www.gnu.org/licenses/.
+ */
+
+#ifndef FUZZUF_INCLUDE_OPTIMIZER_STORE_HPP
+#define FUZZUF_INCLUDE_OPTIMIZER_STORE_HPP
 
 #include <unordered_map>
 #include <any>
@@ -8,28 +27,26 @@
 
 class Store {
 public:
-    Store();
     ~Store();
 
-    template<typename T>
-    T get(std::string key);
+    static Store& GetInstance();
 
     template<typename T>
-    void set(std::string key, T val);
+    T Get(std::string key);
 
-    bool exists(std::string key);
+    template<typename T>
+    void Set(std::string key, T val);
+
+    bool Exists(std::string key);
 
 private:
-    static Store instance;
+    Store();
+
     std::unordered_map<std::string, std::any> data;
 };
 
-
-Store::Store() {};
-Store::~Store() {};
-
 template<typename T>
-T Store::get(std::string key) {
+T Store::Get(std::string key) {
     try {
         return std::any_cast<T>(data[key]);
     }
@@ -39,10 +56,8 @@ T Store::get(std::string key) {
 }
 
 template<typename T>
-void Store::set(std::string key, T val) {
+void Store::Set(std::string key, T val) {
     data[key] = val;
 }
 
-bool Store::exists(std::string key) {
-    return data.find(key) != data.end();
-}
+#endif
