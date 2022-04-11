@@ -15,18 +15,21 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see http://www.gnu.org/licenses/.
  */
-#pragma once
+
+#ifndef FUZZUF_INCLUDE_MUTATOR_MUTATOR_HPP
+#define FUZZUF_INCLUDE_MUTATOR_MUTATOR_HPP
 
 #include <cassert>
 #include <random>
+#include <variant>
 
 #include "fuzzuf/algorithms/afl/afl_option.hpp"
 #include "fuzzuf/utils/common.hpp"
 #include "fuzzuf/mutator/havoc_case.hpp"
+#include "fuzzuf/mutator/mutop_optimizer.hpp"
 #include "fuzzuf/exec_input/exec_input.hpp"
 #include "fuzzuf/algorithms/afl/afl_dict_data.hpp"
 #include "fuzzuf/algorithms/afl/afl_util.hpp"
-#include "fuzzuf/optimizer/optimizer.hpp"
 
 // Responsibility:
 //  - An instance generates fuzzes an arbitrary number of times according to the specified algorithm
@@ -122,7 +125,7 @@ public:
             u32 stacking, 
             const std::vector<AFLDictData>& extras, 
             const std::vector<AFLDictData>& a_extras,
-            Optimizer<HavocCase> &mutop_optimizer,
+            MutopOptimizer &mutop_optimizer,
             CustomCases custom_cases
          );
 
@@ -234,7 +237,7 @@ void Mutator<Tag>::Havoc(
     u32 stacking,
     const std::vector<AFLDictData>& extras,
     const std::vector<AFLDictData>& a_extras,
-    Optimizer<HavocCase> &mutop_optimizer,
+    MutopOptimizer &mutop_optimizer,
     CustomCases custom_cases
 ) {
     using namespace fuzzuf::algorithm;
@@ -267,12 +270,18 @@ void Mutator<Tag>::Havoc(
         return afl::util::UR(limit, rand_fd);
     };
 
-    mutop_optimizer.store.set("ExtrasKey", &extras);
-    mutop_optimizer.store.set("AutoExtrasKey", &a_extras);
+    optimizer::Store::GetInstance().Set(optimizer::keys::Extras, &extras);
+    optimizer::Store::GetInstance().Set(optimizer::keys::AutoExtras, &a_extras);
 
     for (std::size_t i = 0; i < stacking; i++) {
-        u32 r = mutop_optimizer.CalcValue();
-        switch (r) {
+        std::variant<HavocCase, u32> val = mutop_optimizer.CalcValue();
+
+        if (std::holds_alternative<u32>(val)) {
+            custom_cases(val.get<u32>(), outbuf, len, extras, a_extras);
+            continue;
+        }
+
+        switch (val.get<HavocCase>()) {
         case FLIP1:
             /* Flip a single bit somewhere. Spooky! */
             FlipBit(UR(len << 3), 1);
@@ -603,13 +612,10 @@ void Mutator<Tag>::Havoc(
 
         // FIXME: implement this case later
         // case SPLICE:
-
-        default: 
-            custom_cases(r, outbuf, len, extras, a_extras);
-            break;
-
         }
     }
 }
 
 #include "fuzzuf/mutator/templates/mutator.hpp"
+
+#endif

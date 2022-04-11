@@ -54,11 +54,6 @@ void SimplifyTrace(UInt *mem, u32 map_size);
 
 constexpr std::array<double, NUM_CASE> AFLGetCaseWeights(bool has_extras, bool has_aextras);
 
-u32 AFLHavocCaseDistrib(
-    const std::vector<dictionary::AFLDictData>& extras,
-    const std::vector<dictionary::AFLDictData>& a_extras
-);
-
 } // namespace fuzzuf::algorithm::afl::util
 
 // Define template functions

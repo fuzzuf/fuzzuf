@@ -281,6 +281,7 @@ include(CPack)
 set(
   FUZZUF_SOURCES
   algorithms/afl/afl_dict_data.cpp
+  algorithms/afl/afl_havoc_case_distrib.cpp
   algorithms/afl/afl_setting.cpp
   algorithms/afl/afl_testcase.cpp
   algorithms/afl/afl_util.cpp
