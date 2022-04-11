@@ -36,7 +36,7 @@ struct DIEState : public afl::AFLStateTemplate<DIETestcase> {
   explicit DIEState(
     std::shared_ptr<const DIESetting> setting,
     std::shared_ptr<executor::AFLExecutorInterface> executor
-  ) : AFLStateTemplate<DIETestcase>(setting, executor),
+  ) : AFLStateTemplate<DIETestcase>(setting, executor, nullptr),
       setting(setting) {};
 
   /* Override these methods to prevent mistakes during development */

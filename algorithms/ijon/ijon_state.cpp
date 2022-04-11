@@ -22,7 +22,8 @@ namespace fuzzuf::algorithm::ijon {
 
 IJONState::IJONState(
     std::shared_ptr<const afl::AFLSetting> setting,
-    std::shared_ptr<executor::AFLExecutorInterface> executor
+    std::shared_ptr<executor::AFLExecutorInterface> executor,
+    std::unique_ptr<optimizer::Optimizer<u32>>&& mutop_optimizer
 ) : 
     afl::AFLStateTemplate<IJONTestcase>(setting, executor) {}
 

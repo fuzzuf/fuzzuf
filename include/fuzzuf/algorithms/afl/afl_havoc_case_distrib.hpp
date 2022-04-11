@@ -16,8 +16,8 @@
  * along with this program.  If not, see http://www.gnu.org/licenses/.
  */
 
-#ifndef FUZZUF_INCLUDE_ALGORITHMS_AFL_HAVOC_CASE_DISTRIB_HPP
-#define FUZZUF_INCLUDE_ALGORITHMS_AFL_HAVOC_CASE_DISTRIB_HPP
+#ifndef FUZZUF_INCLUDE_ALGORITHMS_AFL_AFL_HAVOC_CASE_DISTRIB_HPP
+#define FUZZUF_INCLUDE_ALGORITHMS_AFL_AFL_HAVOC_CASE_DISTRIB_HPP
 
 #include <variant>
 
@@ -27,7 +27,7 @@
 
 namespace fuzzuf::algorithm::afl::optimizer {
 
-class AFLHavocCaseDistrib : public Optimizer<u32> {
+class AFLHavocCaseDistrib : public optimizer::Optimizer<u32> {
 public:
     AFLHavocCaseDistrib();
     ~AFLHavocCaseDistrib();

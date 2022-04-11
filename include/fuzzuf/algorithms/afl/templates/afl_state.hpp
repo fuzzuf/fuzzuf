@@ -43,7 +43,8 @@ namespace fuzzuf::algorithm::afl {
 template<class Testcase>
 AFLStateTemplate<Testcase>::AFLStateTemplate(
     std::shared_ptr<const AFLSetting> setting,
-    std::shared_ptr<executor::AFLExecutorInterface> executor
+    std::shared_ptr<executor::AFLExecutorInterface> executor,
+    std::unique_ptr<optimizer::Optimizer<u32>>&& _mutop_optimizer
 )
     : setting( setting ),
       executor( executor ),
@@ -53,6 +54,7 @@ AFLStateTemplate<Testcase>::AFLStateTemplate(
       // the value need to be specified from user side.
       cpu_core_count(Util::GetCpuCore()),
       cpu_aff(Util::BindCpu(cpu_core_count, setting->cpuid_to_bind)),
+      mutop_optimizer(std::move(_mutop_optimizer)),
       should_construct_auto_dict(false)
 {
     if (in_bitmap.empty()) virgin_bits.assign(option::GetMapSize<Tag>(), 255);

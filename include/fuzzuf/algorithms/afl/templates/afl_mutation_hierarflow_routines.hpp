@@ -386,7 +386,7 @@ template<class State>
 template<typename CaseDistrib, typename CustomCases>
 bool HavocBaseTemplate<State>::DoHavoc(
     AFLMutatorTemplate<State>& mutator,
-    Optimizer<u32> &mutop_optimizer,
+    optimizer::Optimizer<u32> &mutop_optimizer,
     CustomCases custom_cases,
     const std::string &stage_name,
     const std::string &stage_short,
@@ -464,7 +464,7 @@ AFLMutCalleeRef<State> HavocTemplate<State>::operator()(
 
     if (this->DoHavoc(
                 mutator,
-                state.mutop_optimizer,
+                *state.mutop_optimizer,
                 [](int, u8*&, u32&, const std::vector<AFLDictData>&, const std::vector<AFLDictData>&){},
                 "havoc", "havoc",
                 state.orig_perf, stage_max_multiplier,
@@ -531,7 +531,7 @@ AFLMutCalleeRef<State> SplicingTemplate<State>::operator()(
         using afl::dictionary::AFLDictData;
 
         if (this->DoHavoc(mutator,
-                    state.mutop_optimizer,
+                    *state.mutop_optimizer,
                     [](int, u8*&, u32&, const std::vector<AFLDictData>&, const std::vector<AFLDictData>&){},
                     Util::StrPrintf("splice %u", splice_cycle),
                     "splice",

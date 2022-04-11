@@ -125,7 +125,7 @@ public:
             u32 stacking, 
             const std::vector<AFLDictData>& extras, 
             const std::vector<AFLDictData>& a_extras,
-            Optimizer<u32> &mutop_optimizer,
+            optimizer::Optimizer<u32> &mutop_optimizer,
             CustomCases custom_cases
          );
 
@@ -237,7 +237,7 @@ void Mutator<Tag>::Havoc(
     u32 stacking,
     const std::vector<AFLDictData>& extras,
     const std::vector<AFLDictData>& a_extras,
-    Optimizer<u32> &mutop_optimizer,
+    optimizer::Optimizer<u32> &mutop_optimizer,
     CustomCases custom_cases
 ) {
     using namespace fuzzuf::algorithm;

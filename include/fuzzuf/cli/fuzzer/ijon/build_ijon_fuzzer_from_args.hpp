@@ -16,8 +16,8 @@
  * along with this program.  If not, see http://www.gnu.org/licenses/.
  */
 
-#ifndef FUZZUF_INCLUDE_CLI_IJON_BUILD_VUZZER_FROM_ARGS_HPP
-#define FUZZUF_INCLUDE_CLI_IJON_BUILD_VUZZER_FROM_ARGS_HPP
+#ifndef FUZZUF_INCLUDE_CLI_IJON_BUILD_IJON_FROM_ARGS_HPP
+#define FUZZUF_INCLUDE_CLI_IJON_BUILD_IJON_FROM_ARGS_HPP
 
 #include <boost/program_options.hpp>
 
@@ -26,6 +26,7 @@
 #include "fuzzuf/utils/optparser.hpp"
 #include "fuzzuf/utils/workspace.hpp"
 #include "fuzzuf/algorithms/ijon/ijon_option.hpp"
+#include "fuzzuf/algorithms/ijon/ijon_havoc.hpp"
 #include "fuzzuf/algorithms/ijon/shared_data.hpp"
 #include "fuzzuf/algorithms/ijon/ijon_state.hpp"
 #include "fuzzuf/executor/native_linux_executor.hpp"
@@ -151,9 +152,17 @@ std::unique_ptr<TFuzzer> BuildIJONFuzzerFromArgs(
         EXIT("Unsupported executor: '%s'", global_options.executor.c_str());
     }
 
+    auto mutop_optimizer = std::unique_ptr<Optimizer<u32>>(
+                                new ijon::havoc::IJONHavocCaseDistrib()
+                           );
+
     // Create IJONState
     using fuzzuf::algorithm::ijon::IJONState;
-    auto state = std::make_unique<IJONState>(setting, executor);
+    auto state = std::make_unique<IJONState>(
+                    setting,
+                    executor,
+                    std::move(mutop_optimizer)
+                 );
 
     return std::unique_ptr<TFuzzer>(
                 dynamic_cast<TFuzzer *>(
