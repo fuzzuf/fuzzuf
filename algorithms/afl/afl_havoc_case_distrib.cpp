@@ -42,7 +42,7 @@ AFLHavocCaseDistrib::~AFLHavocCaseDistrib() {}
 // so we don't want to initialize them more than once. 
 // This is why the following functions use constexpr and are a little bit hard to read.
 
-std::variant<HavocCase, u32> AFLHavocCaseDistrib::CalcValue() {
+u32 AFLHavocCaseDistrib::CalcValue() {
     const auto& extras = store.GetRef<optimizer::keys::Extras>();
     const auto& a_extras = store.GetRef<optimizer::keys::AutoExtras>();
 
