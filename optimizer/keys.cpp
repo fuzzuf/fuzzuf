@@ -21,7 +21,7 @@
 
 namespace fuzzuf::optimizer::keys {
 
-StoreKey<std::vector<afl::dictionary::AFLDictData>> Extras     { "extras" };
-StoreKey<std::vector<afl::dictionary::AFLDictData>> AutoExtras { "aextras" };
+StoreKey<const std::vector<afl::dictionary::AFLDictData>&> Extras     { "extras" };
+StoreKey<const std::vector<afl::dictionary::AFLDictData>&> AutoExtras { "aextras" };
 
 } // namespace fuzzuf::optimizer::keys
