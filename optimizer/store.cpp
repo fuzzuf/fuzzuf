@@ -17,6 +17,8 @@
  */
 #include "fuzzuf/optimizer/store.cpp"
 
+namespace fuzzuf::optimizer {
+
 Store::Store() {}
 Store::~Store() {}
 
@@ -25,6 +27,4 @@ Store& Store::GetInstance() {
   return store;
 }
 
-bool Store::Exists(std::string key) {
-    return data.find(key) != data.end();
-}
+} // namespace fuzzuf::optimizer
