@@ -125,7 +125,7 @@ public:
             u32 stacking, 
             const std::vector<AFLDictData>& extras, 
             const std::vector<AFLDictData>& a_extras,
-            MutopOptimizer &mutop_optimizer,
+            Optimizer<u32> &mutop_optimizer,
             CustomCases custom_cases
          );
 
@@ -237,7 +237,7 @@ void Mutator<Tag>::Havoc(
     u32 stacking,
     const std::vector<AFLDictData>& extras,
     const std::vector<AFLDictData>& a_extras,
-    MutopOptimizer &mutop_optimizer,
+    Optimizer<u32> &mutop_optimizer,
     CustomCases custom_cases
 ) {
     using namespace fuzzuf::algorithm;
@@ -274,14 +274,9 @@ void Mutator<Tag>::Havoc(
     optimizer::Store::GetInstance().Set(optimizer::keys::AutoExtras, &a_extras);
 
     for (std::size_t i = 0; i < stacking; i++) {
-        std::variant<HavocCase, u32> val = mutop_optimizer.CalcValue();
+        u32 r = mutop_optimizer.CalcValue();
 
-        if (std::holds_alternative<u32>(val)) {
-            custom_cases(val.get<u32>(), outbuf, len, extras, a_extras);
-            continue;
-        }
-
-        switch (val.get<HavocCase>()) {
+        switch (r) {
         case FLIP1:
             /* Flip a single bit somewhere. Spooky! */
             FlipBit(UR(len << 3), 1);
@@ -612,6 +607,11 @@ void Mutator<Tag>::Havoc(
 
         // FIXME: implement this case later
         // case SPLICE:
+
+
+        default:
+            custom_cases(r, outbuf, len, extras, a_extras);
+            break;
         }
     }
 }

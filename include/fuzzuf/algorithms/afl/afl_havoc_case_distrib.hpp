@@ -23,17 +23,16 @@
 
 #include "fuzzuf/utils/common.hpp"
 #include "fuzzuf/mutator/havoc_case.hpp"
-#include "fuzzuf/mutator/mutop_optimizer.hpp"
 #include "fuzzuf/optimizer/optimizer.hpp"
 
 namespace fuzzuf::algorithm::afl::optimizer {
 
-class AFLHavocCaseDistrib : public MutopOptimizer {
+class AFLHavocCaseDistrib : public Optimizer<u32> {
 public:
     AFLHavocCaseDistrib();
     ~AFLHavocCaseDistrib();
 
-    std::variant<HavocCase, u32> CalcValue() override;
+    u32 CalcValue() override;
 }
 
 } // namespace fuzzuf::algorithm::afl::optimizer

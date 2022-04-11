@@ -386,7 +386,7 @@ template<class State>
 template<typename CaseDistrib, typename CustomCases>
 bool HavocBaseTemplate<State>::DoHavoc(
     AFLMutatorTemplate<State>& mutator,
-    MutopOptimizer &mutop_optimizer,
+    Optimizer<u32> &mutop_optimizer,
     CustomCases custom_cases,
     const std::string &stage_name,
     const std::string &stage_short,
@@ -460,7 +460,6 @@ AFLMutCalleeRef<State> HavocTemplate<State>::operator()(
     if (state.doing_det) stage_max_multiplier = option::GetHavocCyclesInit(state);
     else stage_max_multiplier = option::GetHavocCycles(state);
 
-    using afl::util::AFLMutOpOptimizer;
     using afl::dictionary::AFLDictData;
 
     if (this->DoHavoc(

@@ -70,16 +70,15 @@ static constexpr std::array<double, IJON_NUM_CASE> IJONGetCaseWeights(bool has_e
     return ret;
 }
 
+IJONHavocCaseDistrib::IJONHavocCaseDistrib {}
+IJONHavocCaseDistrib::~IJONHavocCaseDistrib {}
+
 /**
- * @fn IJONHavocCaseDistrib
+ * @fn
  * This function represents the probability distributions of mutation operators in the havoc mutation of IJON.
  * Depending on whether IJON has a dictionary for a PUT, the function employs different distributions.
  */
-u32 IJONHavocCaseDistrib(
-    const std::vector<afl::dictionary::AFLDictData>& extras, 
-    const std::vector<afl::dictionary::AFLDictData>& a_extras
-) {
-    
+u32 IJONHavocCaseDistrib::CalcValue() {
     // FIXME: replace this engine with our pRNG later to avoid being flooded with pRNGs.
     static std::random_device seed_gen;
     static std::mt19937 engine(seed_gen());
@@ -102,6 +101,9 @@ u32 IJONHavocCaseDistrib(
 
     // Dynamic part: the following part runs during a fuzzing campaign
 
+    const auto& extras = store.GetRef<optimizer::keys::Extras>();
+    const auto& a_extras = store.GetRef<optimizer::keys::AutoExtras>();
+    
     bool has_extras  = !extras.empty();
     bool has_aextras = !a_extras.empty();
     return dists[has_extras][has_aextras](engine);
