@@ -81,7 +81,7 @@ MaxHavoc::MaxHavoc(IJONState &state) : HavocBase(state) {}
 IJONMutCalleeRef MaxHavoc::operator()(IJONMutator& mutator) {
     if (DoHavoc(
               mutator,
-              havoc::IJONHavocCaseDistrib,
+              *state.mutop_optimizer,
               havoc::IJONCustomCases,
               "ijon-max", "ijon-max",
               state.orig_perf,
