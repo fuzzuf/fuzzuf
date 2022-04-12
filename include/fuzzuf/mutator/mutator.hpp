@@ -26,6 +26,8 @@
 #include "fuzzuf/algorithms/afl/afl_option.hpp"
 #include "fuzzuf/utils/common.hpp"
 #include "fuzzuf/mutator/havoc_case.hpp"
+#include "fuzzuf/optimizer/store.hpp"
+#include "fuzzuf/optimizer/keys.hpp"
 #include "fuzzuf/exec_input/exec_input.hpp"
 #include "fuzzuf/algorithms/afl/afl_dict_data.hpp"
 #include "fuzzuf/algorithms/afl/afl_util.hpp"
@@ -269,8 +271,9 @@ void Mutator<Tag>::Havoc(
         return afl::util::UR(limit, rand_fd);
     };
 
-    optimizer::Store::GetInstance().Set(optimizer::keys::Extras, &extras);
-    optimizer::Store::GetInstance().Set(optimizer::keys::AutoExtras, &a_extras);
+    using AFLDictRef = NullableRef<const std::vector<fuzzuf::algorithm::afl::dictionary::AFLDictData>>;
+    fuzzuf::optimizer::Store::GetInstance().Set(fuzzuf::optimizer::keys::Extras, AFLDictRef(extras));
+    fuzzuf::optimizer::Store::GetInstance().Set(fuzzuf::optimizer::keys::AutoExtras, AFLDictRef(a_extras));
 
     for (std::size_t i = 0; i < stacking; i++) {
         u32 r = mutop_optimizer.CalcValue();

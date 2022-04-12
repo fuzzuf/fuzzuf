@@ -19,7 +19,10 @@
 #include "fuzzuf/algorithms/ijon/ijon_havoc.hpp"
 
 #include <random>
+
 #include "fuzzuf/mutator/havoc_case.hpp"
+#include "fuzzuf/optimizer/store.hpp"
+#include "fuzzuf/optimizer/keys.hpp"
 #include "fuzzuf/algorithms/afl/afl_util.hpp"
 #include "fuzzuf/algorithms/ijon/ijon_option.hpp"
 

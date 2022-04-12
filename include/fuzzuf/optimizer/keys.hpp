@@ -16,12 +16,22 @@
  * along with this program.  If not, see http://www.gnu.org/licenses/.
  */
 
+#ifndef FUZZUF_INCLUDE_OPTIMIZER_KEYS_HPP
+#define FUZZUF_INCLUDE_OPTIMIZER_KEYS_HPP
+
+#include "fuzzuf/utils/common.hpp"
 #include "fuzzuf/optimizer/store.hpp"
 #include "fuzzuf/algorithms/afl/afl_dict_data.hpp"
 
 namespace fuzzuf::optimizer::keys {
 
-StoreKey<const std::vector<afl::dictionary::AFLDictData>&> Extras     { "extras" };
-StoreKey<const std::vector<afl::dictionary::AFLDictData>&> AutoExtras { "aextras" };
+namespace { 
+    using AFLDictRef = NullableRef<const std::vector<algorithm::afl::dictionary::AFLDictData>>;
+}
+
+const StoreKey<AFLDictRef> Extras     { "extras" };
+const StoreKey<AFLDictRef> AutoExtras { "aextras" };
 
 } // namespace fuzzuf::optimizer::keys
+
+#endif

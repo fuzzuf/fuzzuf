@@ -19,8 +19,11 @@
 #include "fuzzuf/algorithms/afl/afl_havoc_case_distrib.hpp"
 
 #include "fuzzuf/utils/random.hpp"
+#include "fuzzuf/optimizer/store.hpp"
+#include "fuzzuf/optimizer/keys.hpp"
+#include "fuzzuf/algorithms/afl/afl_util.hpp"
 
-namespace fuzzuf::algorithm::afl::optimizer {
+namespace fuzzuf::algorithm::afl {
 
 AFLHavocCaseDistrib::AFLHavocCaseDistrib() {}
 
@@ -43,8 +46,8 @@ AFLHavocCaseDistrib::~AFLHavocCaseDistrib() {}
 // This is why the following functions use constexpr and are a little bit hard to read.
 
 u32 AFLHavocCaseDistrib::CalcValue() {
-    const auto& extras = store.GetRef<optimizer::keys::Extras>();
-    const auto& a_extras = store.GetRef<optimizer::keys::AutoExtras>();
+    const auto& extras = optimizer::Store::GetInstance().Get(optimizer::keys::Extras).value().get();
+    const auto& a_extras = optimizer::Store::GetInstance().Get(optimizer::keys::AutoExtras).value().get();
 
     // Static part: the following part doesn't run after a fuzzing campaign starts.
 
@@ -73,4 +76,4 @@ u32 AFLHavocCaseDistrib::CalcValue() {
     return static_cast<HavocCase>(dists[has_extras][has_aextras]());
 }
 
-} // namespace fuzzuf::algorithm::afl::optimizer
+} // namespace fuzzuf::algorithm::afl
