@@ -25,7 +25,7 @@
 #include "fuzzuf/mutator/havoc_case.hpp"
 #include "fuzzuf/optimizer/optimizer.hpp"
 
-namespace fuzzuf::algorithm::afl::optimizer {
+namespace fuzzuf::algorithm::afl {
 
 class AFLHavocCaseDistrib : public optimizer::Optimizer<u32> {
 public:
@@ -33,8 +33,8 @@ public:
     ~AFLHavocCaseDistrib();
 
     u32 CalcValue() override;
-}
+};
 
-} // namespace fuzzuf::algorithm::afl::optimizer
+} // namespace fuzzuf::algorithm::afl
 
 #endif
