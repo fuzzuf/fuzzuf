@@ -24,6 +24,8 @@
 #ifndef FUZZUF_INCLUDE_CLI_VUZZER_BUILD_VUZZER_FROM_ARGS_HPP
 #define FUZZUF_INCLUDE_CLI_VUZZER_BUILD_VUZZER_FROM_ARGS_HPP
 
+#include <boost/program_options.hpp>
+
 #include "config.h"
 #include "fuzzuf/cli/put_args.hpp"
 #include "fuzzuf/exceptions.hpp"
@@ -37,14 +39,14 @@
 
 namespace fuzzuf::cli::fuzzer::vuzzer {
 
+namespace po = boost::program_options;
+
 // Fuzzer specific help
 // TODO: Provide better help message
 static void usage(po::options_description &desc) {
     std::cout << "Help:" << std::endl;
     std::cout << desc << std::endl;
     exit(1);
-}
-
 }
 
 using fuzzuf::algorithm::vuzzer::VUzzer;
@@ -202,5 +204,7 @@ std::unique_ptr<TFuzzer> BuildVUzzerFromArgs(FuzzerArgs &fuzzer_args, GlobalFuzz
             )
         );
 }
+
+} // namespace fuzzuf::cli::fuzzer::vuzzer
 
 #endif

@@ -19,4 +19,8 @@
 #include "fuzzuf/cli/fuzzer_builder_register.hpp"
 #include "fuzzuf/cli/fuzzer/vuzzer/build_vuzzer_from_args.hpp"
 
+namespace fuzzuf::cli::fuzzer::vuzzer {
+
 static FuzzerBuilderRegister global_vuzzer_register("vuzzer", BuildVUzzerFromArgs<Fuzzer, VUzzer>);
+
+} // namespace fuzzuf::cli::fuzzer::vuzzer
