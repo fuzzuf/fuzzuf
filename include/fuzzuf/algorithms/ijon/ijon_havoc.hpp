@@ -24,11 +24,6 @@
 
 namespace fuzzuf::algorithm::ijon::havoc {
 
-u32 IJONHavocCaseDistrib(
-    const std::vector<afl::dictionary::AFLDictData>& extras,
-    const std::vector<afl::dictionary::AFLDictData>& a_extras
-);
-
 void IJONCustomCases(
     u32 case_idx,
     u8*& outbuf,
@@ -43,7 +38,7 @@ public:
     ~IJONHavocCaseDistrib();
 
     u32 CalcValue() override;
-}
+};
 
 } // namespace fuzzuf::algorithm::ijon::havoc
 

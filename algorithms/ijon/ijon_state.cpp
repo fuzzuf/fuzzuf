@@ -25,7 +25,7 @@ IJONState::IJONState(
     std::shared_ptr<executor::AFLExecutorInterface> executor,
     std::unique_ptr<optimizer::Optimizer<u32>>&& mutop_optimizer
 ) : 
-    afl::AFLStateTemplate<IJONTestcase>(setting, executor) {}
+    afl::AFLStateTemplate<IJONTestcase>(setting, executor, std::move(mutop_optimizer)) {}
 
 IJONState::~IJONState() {}
 
