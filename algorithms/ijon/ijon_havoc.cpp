@@ -73,8 +73,8 @@ static constexpr std::array<double, IJON_NUM_CASE> IJONGetCaseWeights(bool has_e
     return ret;
 }
 
-IJONHavocCaseDistrib::IJONHavocCaseDistrib {}
-IJONHavocCaseDistrib::~IJONHavocCaseDistrib {}
+IJONHavocCaseDistrib::IJONHavocCaseDistrib() {}
+IJONHavocCaseDistrib::~IJONHavocCaseDistrib() {}
 
 /**
  * @fn
@@ -104,8 +104,8 @@ u32 IJONHavocCaseDistrib::CalcValue() {
 
     // Dynamic part: the following part runs during a fuzzing campaign
 
-    const auto& extras = store.GetRef<optimizer::keys::Extras>();
-    const auto& a_extras = store.GetRef<optimizer::keys::AutoExtras>();
+    const auto& extras = optimizer::Store::GetInstance().Get(optimizer::keys::Extras).value().get();
+    const auto& a_extras = optimizer::Store::GetInstance().Get(optimizer::keys::AutoExtras).value().get();
     
     bool has_extras  = !extras.empty();
     bool has_aextras = !a_extras.empty();

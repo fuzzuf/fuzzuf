@@ -93,24 +93,25 @@ public:
     using AFLDictData = fuzzuf::algorithm::afl::dictionary::AFLDictData;
     /**
      * @fn Havoc
-     * TODO: update docs for CaseDistrib
-     * @tparam CaseDistrib the type of the probability distribution of selecting mutation operators.
-     * It should be `u32(const std::vector<AFLDictData>&, const std::vector<AFLDictData>&)` .
      * @tparam CustomCases the type of the function that represents custom cases in havoc.
      * It should be `void(u32, u8*&, u32&, const std::vector<AFLDictData>&, const std::vector<AFLDictData>&)`.
      * @param stacking the number of times mutation operators are applied.
      * @param extras the vector of extras (constant strings) that works as a dictionary.
      * @param a_extras the vector of auto extras (automatically generated constant strings).
-     * @note About CaseDistrib and CustomCases.
+     * @param mutop_optimizer (the reference of) the optimizer that selects mutation operators to be applied.
+     * @note About mutop_optimizer and CustomCases.
      * To allow users to customize Havoc, two callable objects are provided.
      *
-     * CaseDistrib should be a callable object that receives 
-     * extras and a_extras as its arguments, 
-     * and should return a constant defined in HavocCase.
+     * mutop_optimizer should be an instance of `fuzzuf::optimizer::Optimizer<u32>`,
+     * and should return integers that describe switch cases of havoc(i.e., a constant defined in HavocCase).
      * This works as a probability distribution with which Havoc decides 
      * which mutation(switch case) to be used.
-     * Note that CaseDistrib MUST NOT return OVERWRITE_WITH_EXTRA and INSERT_EXTRA
-     * if the argument `extras` is empty. If it does, Havoc can cause access violations.
+     * mutop_optimizer is provided with two dictionaries via `fuzzuf::optimizer::Store`: extras and a_extras.
+     * They can be accessed with the keys `optimizer::keys::Extras` and `optimizer::keys::AutoExtras`.
+     * If these dictionaries are available and non-empty, mutop_optimizer can select the mutation operators of
+     * placing keywords picked from the dictionaries.
+     * Note that, conversely, mutop_optimizer MUST NOT return OVERWRITE_WITH_EXTRA and INSERT_EXTRA
+     * if the value extras is empty. If it does, Havoc can cause access violations.
      * The same is true for OVERWRITE_WITH_AEXTRA and INSERT_AEXTRA.
      * 
      * CustomCases is a callable object used to execute your own cases instead of preset cases.
@@ -121,12 +122,12 @@ public:
      * For example, if CaseDistrib returns HavocCase::NUM_CASE+1, 
      * then CustomCases receives HavocCase::NUM_CASE+1 as one of its arguments.
      */
-    template<typename CaseDistrib, typename CustomCases>
+    template<typename CustomCases>
     void Havoc(
             u32 stacking, 
             const std::vector<AFLDictData>& extras, 
             const std::vector<AFLDictData>& a_extras,
-            optimizer::Optimizer<u32> &mutop_optimizer,
+            fuzzuf::optimizer::Optimizer<u32> &mutop_optimizer,
             CustomCases custom_cases
          );
 
@@ -233,12 +234,12 @@ u32 Mutator<Tag>::InterestN(int pos, int idx, int be) {
 }
 
 template<class Tag>
-template<typename CaseDistrib, typename CustomCases>
+template<typename CustomCases>
 void Mutator<Tag>::Havoc(
     u32 stacking,
     const std::vector<AFLDictData>& extras,
     const std::vector<AFLDictData>& a_extras,
-    optimizer::Optimizer<u32> &mutop_optimizer,
+    fuzzuf::optimizer::Optimizer<u32> &mutop_optimizer,
     CustomCases custom_cases
 ) {
     using namespace fuzzuf::algorithm;

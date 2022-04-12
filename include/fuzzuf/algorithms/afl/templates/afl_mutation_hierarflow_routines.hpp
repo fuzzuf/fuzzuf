@@ -383,7 +383,7 @@ HavocBaseTemplate<State>::HavocBaseTemplate(State &state)
 // we extract the "core" of Havoc into another HierarFlowRoutine, HavocBaseTemplate.
 // both Havoc and Splicing will inherit this and use DoHavoc
 template<class State>
-template<typename CaseDistrib, typename CustomCases>
+template<typename CustomCases>
 bool HavocBaseTemplate<State>::DoHavoc(
     AFLMutatorTemplate<State>& mutator,
     optimizer::Optimizer<u32> &mutop_optimizer,
