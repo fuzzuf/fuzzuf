@@ -20,6 +20,7 @@
 #include <random>
 #include "fuzzuf/algorithms/afl/afl_dict_data.hpp"
 #include "fuzzuf/algorithms/afl/afl_util.hpp"
+#include "fuzzuf/algorithms/afl/afl_havoc_case_distrib.hpp"
 #include "fuzzuf/executor/native_linux_executor.hpp"
 #include "fuzzuf/feedback/inplace_memory_feedback.hpp"
 #include "fuzzuf/feedback/exit_status_feedback.hpp"
@@ -123,13 +124,15 @@ NullableRef<HierarFlowCallee<void(u32,u32)>> PyByteFlip::operator()(
 PyHavoc::PyHavoc(PythonState& state) : state(state) {}
 
 NullableRef<HierarFlowCallee<void(u32)>> PyHavoc::operator()(u32 stacking) {
+    using algorithm::afl::AFLHavocCaseDistrib;
+    static AFLHavocCaseDistrib mutop_optimizer;
+
     auto& mutator = *state.mutator;
 
     if (stacking < 1 || 7 < stacking) ERROR("Havoc: 1 <= stack <= 7 must hold.");
     
-    using algorithm::afl::util::AFLHavocCaseDistrib;
     using algorithm::afl::dictionary::AFLDictData;
-    mutator.Havoc(1 << stacking, {}, {}, AFLHavocCaseDistrib, 
+    mutator.Havoc(1 << stacking, {}, {}, mutop_optimizer,
                   [](u32, u8*&, u32&, const std::vector<AFLDictData>&, const std::vector<AFLDictData>&){} );
     CallSuccessors(mutator.GetBuf(), mutator.GetLen());
     return GoToParent();
