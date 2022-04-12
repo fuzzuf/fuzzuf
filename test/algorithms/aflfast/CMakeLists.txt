@@ -3,6 +3,7 @@ target_link_libraries(
   test-aflfast-loop
   test-common
   fuzzuf
+  fuzzuf-cli-lib
   ${FUZZUF_LIBRARIES}
   Boost::unit_test_framework
 )

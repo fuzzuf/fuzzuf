@@ -268,6 +268,7 @@ BOOST_AUTO_TEST_CASE(BuildAFLByParsingGlobalOptionAndPUT) {
 
     using AFLState = fuzzuf::algorithm::afl::AFLState;
     using fuzzuf::executor::AFLExecutorInterface;
+    using fuzzuf::cli::fuzzer::afl::BuildAFLFuzzerFromArgs;
 
     // Parse global options and PUT, and build fuzzer
     auto fuzzer_args = ParseGlobalOptionsForFuzzer(args, options);
@@ -307,6 +308,7 @@ BOOST_AUTO_TEST_CASE(BuildAFLByParsingGlobalOptionAndFuzzerOptionAndPUT) {
 
     using AFLState = fuzzuf::algorithm::afl::AFLState;
     using fuzzuf::executor::AFLExecutorInterface;
+    using fuzzuf::cli::fuzzer::afl::BuildAFLFuzzerFromArgs;
 
     // Parse global options and PUT, and build fuzzer
     auto fuzzer_args = ParseGlobalOptionsForFuzzer(args, options);
@@ -352,6 +354,8 @@ BOOST_AUTO_TEST_CASE(BuildAFLFastByParsingGlobalOptionAndPUT) {
     };
 
     // Parse global options and PUT, and build fuzzer
+    using fuzzuf::cli::fuzzer::aflfast::BuildAFLFastFuzzerFromArgs;
+
     auto fuzzer_args = ParseGlobalOptionsForFuzzer(args, options);
     auto fuzzer = BuildAFLFastFuzzerFromArgs<AFLFuzzerStub<AFLFastState>, AFLFuzzerStub<AFLFastState>, AFLExecutorInterface>(
             fuzzer_args, options
@@ -396,6 +400,8 @@ BOOST_AUTO_TEST_CASE(BuildVUzzerByParsingGlobalOptionAndPUT) {
     };
 
     // Parse global options and PUT, and build fuzzer
+    using fuzzuf::cli::fuzzer::vuzzer::BuildVUzzerFromArgs;
+
     auto fuzzer_args = ParseGlobalOptionsForFuzzer(args, options);
     auto fuzzer = BuildVUzzerFromArgs<VUzzerStub<VUzzerState>, VUzzerStub<VUzzerState>>(
             fuzzer_args, options
