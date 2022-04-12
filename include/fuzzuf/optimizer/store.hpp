@@ -70,24 +70,24 @@ private:
 };
 
 template<typename Type>
-Type Store::Get(const StoreKey<Type>& key);
+Type Store::Get(const StoreKey<Type>& key) {
     // may throw std::bad_any_cast
     return std::any_cast<Type>(data[key.name]);
 }
 
 template<typename Type>
-Type& Store::GetMutRef(const StoreKey<Type>& key);
+Type& Store::GetMutRef(const StoreKey<Type>& key) {
     // may throw std::bad_any_cast
-    return std::any_cast<typename KeyTag::Type&>(data[key.name]);
+    return std::any_cast<Type&>(data[key.name]);
 }
 
 template<typename Type>
-void Store::Set(const StoreKey<Type>& key, Type val);
+void Store::Set(const StoreKey<Type>& key, Type val) {
     data[key.name] = val;
 }
 
 template<typename Type>
-bool Store::Exists(const StoreKey<Type>& key);
+bool Store::Exists(const StoreKey<Type>& key) {
     return data.find(key.name) != data.end();
 }
 
