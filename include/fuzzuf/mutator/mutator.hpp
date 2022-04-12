@@ -26,7 +26,6 @@
 #include "fuzzuf/algorithms/afl/afl_option.hpp"
 #include "fuzzuf/utils/common.hpp"
 #include "fuzzuf/mutator/havoc_case.hpp"
-#include "fuzzuf/mutator/mutop_optimizer.hpp"
 #include "fuzzuf/exec_input/exec_input.hpp"
 #include "fuzzuf/algorithms/afl/afl_dict_data.hpp"
 #include "fuzzuf/algorithms/afl/afl_util.hpp"
