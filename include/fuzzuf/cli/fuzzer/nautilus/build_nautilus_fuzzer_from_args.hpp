@@ -24,6 +24,8 @@
 #define FUZZUF_INCLUDE_CLI_FUZZER_NAUTILUS_BUILD_NAUTILUS_FUZZER_FROM_ARGS_HPP
 
 #include <iostream>
+#include <boost/program_options.hpp>
+
 #include "fuzzuf/algorithms/afl/afl_option.hpp"
 #include "fuzzuf/algorithms/nautilus/fuzzer/option.hpp"
 #include "fuzzuf/algorithms/nautilus/fuzzer/setting.hpp"
@@ -38,8 +40,9 @@
 #include "fuzzuf/utils/filesystem.hpp"
 #include "fuzzuf/utils/optparser.hpp"
 
-
 namespace fuzzuf::cli::fuzzer::nautilus {
+
+namespace po = boost::program_options;
 
 // Fuzzer specific help
 // TODO: Provide better help message
@@ -47,8 +50,6 @@ static void usage(po::options_description &desc) {
     std::cout << "Help:" << std::endl;
     std::cout << desc << std::endl;
     exit(1);
-}
-
 }
 
 using fuzzuf::algorithm::nautilus::fuzzer::NautilusFuzzer;
@@ -261,5 +262,7 @@ std::unique_ptr<TFuzzer> BuildNautilusFuzzerFromArgs(
     )
   );
 }
+
+} // namespace fuzzuf::cli::fuzzer::nautilus
 
 #endif

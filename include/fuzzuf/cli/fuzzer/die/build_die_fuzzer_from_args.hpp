@@ -23,6 +23,8 @@
 #pragma once
 
 #include <iostream>
+#include <boost/program_options.hpp>
+
 #include "fuzzuf/algorithms/die/die_option.hpp"
 #include "fuzzuf/algorithms/die/die_setting.hpp"
 #include "fuzzuf/algorithms/die/die_state.hpp"
@@ -40,14 +42,14 @@
 
 namespace fuzzuf::cli::fuzzer::die {
 
+namespace po = boost::program_options;
+
 // Fuzzer specific help
 // TODO: Provide better help message
 static void usage(po::options_description &desc) {
     std::cout << "Help:" << std::endl;
     std::cout << desc << std::endl;
     exit(1);
-}
-
 }
 
 using fuzzuf::algorithm::die::DIEFuzzer;
@@ -249,3 +251,5 @@ std::unique_ptr<TFuzzer> BuildDIEFuzzerFromArgs(FuzzerArgs &fuzzer_args,
     )
   );
 }
+
+} // namespace fuzzuf::cli::fuzzer::die

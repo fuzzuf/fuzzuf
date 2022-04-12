@@ -23,6 +23,7 @@
 #include "fuzzuf/exceptions.hpp"
 #include "fuzzuf/utils/optparser.hpp"
 #include "fuzzuf/utils/workspace.hpp"
+#include "fuzzuf/optimizer/optimizer.hpp"
 #include "fuzzuf/algorithms/afl/afl_havoc_case_distrib.hpp"
 #include "fuzzuf/algorithms/afl/afl_option.hpp"
 #include "fuzzuf/algorithms/afl/afl_setting.hpp"
@@ -33,6 +34,8 @@
 #include "fuzzuf/executor/coresight_executor.hpp"
 #endif
 #include <boost/program_options.hpp>
+
+namespace fuzzuf::cli::fuzzer::afl {
 
 namespace po = boost::program_options;
 
@@ -49,8 +52,6 @@ struct AFLFuzzerOptions {
         {};
 };
 
-namespace fuzzuf::cli::fuzzer::afl {
-
 // Fuzzer specific help
 // TODO: Provide better help message
 [[noreturn]] void usage(const po::options_description &desc);
@@ -63,8 +64,6 @@ std::unique_ptr<TFuzzer> BuildFuzzer(
     const std::vector< std::string > &pargs,
     const GlobalFuzzerOptions &global_options
 );
-
-}
 
 // Used only for CLI
 template <class TFuzzer, class TAFLFuzzer, class TExecutor>
@@ -251,8 +250,8 @@ std::unique_ptr<TFuzzer> BuildFuzzer(
         EXIT("Unsupported executor: '%s'", global_options.executor.c_str());
     }
 
-    auto mutop_optimizer = std::unique_ptr<Optimizer<u32>>(
-                                new afl::optimizer::AFLHavocCaseDistrib()
+    auto mutop_optimizer = std::unique_ptr<optimizer::Optimizer<u32>>(
+                                new algorithm::afl::AFLHavocCaseDistrib()
                            );
 
     // Create AFLState
@@ -280,5 +279,7 @@ std::unique_ptr<TFuzzer> BuildFuzzer(
                 )
             );
 }
+
+} // namespace fuzzuf::cli::fuzzer::afl
 
 #endif
