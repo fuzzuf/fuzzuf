@@ -88,10 +88,10 @@ void FdChannel::SaveStdoutStderr() {
 
 void FdChannel::AttachToServer(uint64_t executor_id) {
     if (write(forksrv_write_fd, &executor_id, sizeof(executor_id)) < (ssize_t) sizeof(executor_id)) {
-        perror("[!] [Bench] Failed to attach to server");
+        perror("[!] [FdChannel] Failed to attach to server");
         exit(1);
     }
-    fprintf(stderr, "[*] [Bench] Requested server to attach: executor_id=%lu\n", executor_id);
+    fprintf(stderr, "[*] [FdChannel] Requested server to attach: executor_id=%lu\n", executor_id);
 }
 
 std::optional<pid_t> FdChannel::WaitForkServerStart() {
@@ -102,7 +102,7 @@ std::optional<pid_t> FdChannel::WaitForkServerStart() {
         MSG(cLRD "[-] " cRST "    %s\n", e.what());
         return std::nullopt;
     }
-    DEBUG("Forkserver started: pid=%d\n", forksrv_pid);
+    DEBUG("[FdChannel] Forkserver started: pid=%d\n", forksrv_pid);
     return forksrv_pid;
 }
 
@@ -154,6 +154,9 @@ void FdChannel::SetupForkServer(char *const pargv[]) {
         fcntl(stderr_fd, F_SETFD, O_CLOEXEC);
         dup2(null_fd, STDOUT_FILENO);
         dup2(null_fd, STDERR_FILENO);
+
+        // Disable AFL's forkserver
+        setenv("__AFL_DEFER_FORKSRV", "1", 1);
 
         execv(pargv[0], pargv);
 

@@ -85,6 +85,7 @@ BOOST_AUTO_TEST_CASE(LinuxForkServerExecutorVariableShm) {
         std::string s = "stdout: " + input;
         fuzzuf::executor::output_t answer(s.begin(), s.end());
         auto stdout = executor.MoveStdOut();
+        std::cout << std::string(stdout.begin(), stdout.end()) << std::endl;
         BOOST_CHECK_EQUAL_COLLECTIONS(
           stdout.begin(), stdout.end(),
           answer.begin(), answer.end()
@@ -94,6 +95,7 @@ BOOST_AUTO_TEST_CASE(LinuxForkServerExecutorVariableShm) {
         std::string s = "stderr: " + input;
         fuzzuf::executor::output_t answer(s.begin(), s.end());
         auto stderr = executor.MoveStdErr();
+        std::cout << std::string(stderr.begin(), stderr.end()) << std::endl;
         BOOST_CHECK_EQUAL_COLLECTIONS(
           stderr.begin(), stderr.end(),
           answer.begin(), answer.end()

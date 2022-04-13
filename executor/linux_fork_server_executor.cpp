@@ -78,6 +78,9 @@ LinuxForkServerExecutor::LinuxForkServerExecutor(
     put_channel() // TODO: Make channel configurable outside of executor
 {
     SetCArgvAndDecideInputMode();
+
+    // NOTE: The following code should be implemented in Executor::OpenExecutorDependantFiles()
+    //      But, currently LinuxForkServerExecutor is not major executor. So we cannot do that.
     if (stdin_mode) {
         auto path = Util::StrPrintf("/dev/shm/fuzzuf-cc.forkserver.executor_id-%d.stdin", getpid());
         input_fd = Util::OpenFile(path, O_RDWR | O_CREAT | O_CLOEXEC, 0600);
@@ -91,6 +94,7 @@ LinuxForkServerExecutor::LinuxForkServerExecutor(
     SetupEnvironmentVariablesForTarget();
     CreateJoinedEnvironmentVariables( std::move( environment_variables_ ) );
 
+    // Configure PUT runtime settings
     put_channel.SetupForkServer((char* const*) cargv.data());
     put_channel.SetPUTExecutionTimeout(exec_timelimit_ms * 1000);
     if (stdin_mode) {
