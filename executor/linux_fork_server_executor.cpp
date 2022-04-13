@@ -85,7 +85,7 @@ LinuxForkServerExecutor::LinuxForkServerExecutor(
         auto path = Util::StrPrintf("/dev/shm/fuzzuf-cc.forkserver.executor_id-%d.stdin", getpid());
         input_fd = Util::OpenFile(path, O_RDWR | O_CREAT | O_CLOEXEC, 0600);
     } else {
-        input_fd = Util::OpenFile(path_to_write_input, O_RDWR | O_CREAT | O_CLOEXEC, 0600);
+        input_fd = Util::OpenFile(path_to_write_input.string(), O_RDWR | O_CREAT | O_CLOEXEC, 0600);
     }
 
     // Allocate shared memory on initialization of Executor
