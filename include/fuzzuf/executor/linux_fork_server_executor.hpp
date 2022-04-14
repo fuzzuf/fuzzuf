@@ -130,12 +130,6 @@ private:
     u8 last_signal;    
     fuzzuf::executor::output_t stdout_buffer;
     fuzzuf::executor::output_t stderr_buffer;
-    // int fork_server_stdout_fd = -1;
-    // int fork_server_stderr_fd = -1;
-    // int fork_server_epoll_fd = -1;
-    // epoll_event fork_server_stdout_event;
-    // epoll_event fork_server_stderr_event;
-    // epoll_event fork_server_read_event;
 
     bool record_stdout_and_err;
 
