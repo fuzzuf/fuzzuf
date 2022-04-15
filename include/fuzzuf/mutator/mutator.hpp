@@ -276,6 +276,9 @@ void Mutator<Tag>::Havoc(
     fuzzuf::optimizer::Store::GetInstance().Set(fuzzuf::optimizer::keys::Extras, AFLDictRef(extras));
     fuzzuf::optimizer::Store::GetInstance().Set(fuzzuf::optimizer::keys::AutoExtras, AFLDictRef(a_extras));
 
+    auto selected_case_histogram = fuzzuf::optimizer::Store::GetInstance().Get(fuzzuf::optimizer::keys::SelectedCaseHistogram);
+    selected_case_histogram.fill(0);
+
     for (std::size_t i = 0; i < stacking; i++) {
         u32 r = mutop_optimizer.CalcValue();
 
@@ -283,6 +286,7 @@ void Mutator<Tag>::Havoc(
         case FLIP1:
             /* Flip a single bit somewhere. Spooky! */
             FlipBit(UR(len << 3), 1);
+            selected_case_histogram[r] += 1;
             break;
 
         case FLIP2:
@@ -298,16 +302,19 @@ void Mutator<Tag>::Havoc(
             // please let us know.
 
             FlipBit(UR((len << 3) - 1), 2);
+            selected_case_histogram[r] += 1;
             break;
 
         case FLIP4:
             /* for MOpt */
             FlipBit(UR((len << 3) - 3), 4);
+            selected_case_histogram[r] += 1;
             break;
 
         case FLIP8:
             /* for MOpt */
             FlipByte(UR(len), 1);
+            selected_case_histogram[r] += 1;
             break;
 
         case FLIP16:
@@ -316,6 +323,7 @@ void Mutator<Tag>::Havoc(
             if (len < 2) break;
 
             FlipByte(UR(len-1), 2);
+            selected_case_histogram[r] += 1;
             break;
 
         case FLIP32:
@@ -324,11 +332,13 @@ void Mutator<Tag>::Havoc(
             if (len < 4) break;
 
             FlipByte(UR(len-3), 4);
+            selected_case_histogram[r] += 1;
             break;
 
         case INT8:
             /* Set byte to interesting value. */
             InterestN<u8>(UR(len), UR(interesting_8.size()), false);
+            selected_case_histogram[r] += 1;
             break;
 
         case INT16_LE: [[fallthrough]];
@@ -339,6 +349,7 @@ void Mutator<Tag>::Havoc(
             if (len < 2) break;
 
             InterestN<u16>(UR(len - 1), UR(interesting_16.size()), r == INT16_BE);
+            selected_case_histogram[r] += 1;
             break;
 
         case INT32_LE: [[fallthrough]];
@@ -349,16 +360,19 @@ void Mutator<Tag>::Havoc(
             if (len < 4) break;
 
             InterestN<u32>(UR(len - 3), UR(interesting_32.size()), r == INT32_BE);
+            selected_case_histogram[r] += 1;
             break;
 
         case SUB8:
             /* Randomly subtract from byte. */
             SubN<u8>(UR(len), 1 + UR(GetArithMax<Tag>()), false);
+            selected_case_histogram[r] += 1;
             break;
 
         case ADD8:
             /* Randomly add to byte. */
             AddN<u8>(UR(len), 1 + UR(GetArithMax<Tag>()), false);
+            selected_case_histogram[r] += 1;
             break;
 
         case SUB16_LE: [[fallthrough]];
@@ -369,6 +383,7 @@ void Mutator<Tag>::Havoc(
             if (len < 2) break;
 
             SubN<u16>(UR(len - 1), 1 + UR(GetArithMax<Tag>()), r == SUB16_BE);
+            selected_case_histogram[r] += 1;
             break;
 
         case ADD16_LE: [[fallthrough]];
@@ -379,6 +394,7 @@ void Mutator<Tag>::Havoc(
             if (len < 2) break;
 
             AddN<u16>(UR(len - 1), 1 + UR(GetArithMax<Tag>()), r == ADD16_BE);
+            selected_case_histogram[r] += 1;
             break;
 
         case SUB32_LE: [[fallthrough]];
@@ -389,6 +405,7 @@ void Mutator<Tag>::Havoc(
             if (len < 4) break;
 
             SubN<u32>(UR(len - 3), 1 + UR(GetArithMax<Tag>()), r == SUB32_BE);
+            selected_case_histogram[r] += 1;
             break;
 
         case ADD32_LE: [[fallthrough]];
@@ -399,6 +416,7 @@ void Mutator<Tag>::Havoc(
             if (len < 4) break;
 
             AddN<u32>(UR(len - 3), 1 + UR(GetArithMax<Tag>()), r == ADD32_BE);
+            selected_case_histogram[r] += 1;
             break;
 
         case SUBADD8:
@@ -406,6 +424,7 @@ void Mutator<Tag>::Havoc(
 
             SubN<u8>(UR(len), 1 + UR(GetArithMax<Tag>()), false);
             AddN<u8>(UR(len), 1 + UR(GetArithMax<Tag>()), false);
+            selected_case_histogram[r] += 1;
             break;
 
         case SUBADD16:
@@ -423,6 +442,7 @@ void Mutator<Tag>::Havoc(
             /* Randomly add to word, random endian. */
             AddN<u16>(UR(len - 1), 1 + UR(GetArithMax<Tag>()), UR(2));
 
+            selected_case_histogram[r] += 1;
             break;
 
         case SUBADD32:
@@ -436,14 +456,16 @@ void Mutator<Tag>::Havoc(
             /* Randomly add to dword, random endian. */
             AddN<u32>(UR(len - 3), 1 + UR(GetArithMax<Tag>()), UR(2));
 
+            selected_case_histogram[r] += 1;
             break;
 
         case XOR:
           /* Just set a random byte to a random value. Because,
              why not. We use XOR with 1-255 to eliminate the
              possibility of a no-op. */
-             outbuf[UR(len)] ^= 1 + UR(255);
-             break;
+            outbuf[UR(len)] ^= 1 + UR(255);
+            selected_case_histogram[r] += 1;
+            break;
 
         case DELETE_BYTES: {
             /* Delete bytes. We're making this a bit more likely
@@ -460,6 +482,7 @@ void Mutator<Tag>::Havoc(
                      len - del_from - del_len);
             len -= del_len;
 
+            selected_case_histogram[r] += 1;
             break;
         }
 
@@ -486,6 +509,7 @@ void Mutator<Tag>::Havoc(
                 outbuf = new_buf;
                 len += clone_len;
             }
+            selected_case_histogram[r] += 1;
             break;
 
         case INSERT_SAME_BYTE:
@@ -512,6 +536,7 @@ void Mutator<Tag>::Havoc(
                 outbuf = new_buf;
                 len += clone_len;
             }
+            selected_case_histogram[r] += 1;
             break;
 
         case OVERWRITE_WITH_CHUNK: {
@@ -526,6 +551,7 @@ void Mutator<Tag>::Havoc(
             if (likely(copy_from != copy_to))
                 std::memmove(outbuf + copy_to, outbuf + copy_from, copy_len);
 
+            selected_case_histogram[r] += 1;
             break;
         }
 
@@ -540,6 +566,7 @@ void Mutator<Tag>::Havoc(
             // FIXME: why not unroll "UR(2)" also and create a new case?
             std::memset(outbuf + copy_to,
                         UR(2) ? UR(256) : outbuf[UR(len)], copy_len);
+            selected_case_histogram[r] += 1;
             break;
         }
 
@@ -566,6 +593,7 @@ void Mutator<Tag>::Havoc(
             u32 insert_at = UR(len - extra_len + 1);
             std::memcpy(outbuf + insert_at, &extra.data[0], extra_len);
 
+            selected_case_histogram[r] += 1;
             break;
         }
 
@@ -605,6 +633,7 @@ void Mutator<Tag>::Havoc(
             outbuf = new_buf;
             len += extra_len;
 
+            selected_case_histogram[r] += 1;
             break;
         }
 
@@ -614,9 +643,12 @@ void Mutator<Tag>::Havoc(
 
         default:
             custom_cases(r, outbuf, len, extras, a_extras);
+            // selected_case_histogram[r] += 1; // TODO: determine CustomHavocCase
             break;
         }
     }
+
+    fuzzuf::optimizer::Store::GetInstance().Set(fuzzuf::optimizer::keys::SelectedCaseHistogram, selected_case_histogram);
 }
 
 #include "fuzzuf/mutator/templates/mutator.hpp"

@@ -23,6 +23,8 @@
 #include "fuzzuf/optimizer/store.hpp"
 #include "fuzzuf/algorithms/afl/afl_dict_data.hpp"
 
+#include <array>
+
 namespace fuzzuf::optimizer::keys {
 
 namespace { 
@@ -31,6 +33,7 @@ namespace {
 
 const StoreKey<AFLDictRef> Extras     { "extras" };
 const StoreKey<AFLDictRef> AutoExtras { "aextras" };
+const StoreKey<std::array<u32, NUM_CASE>> SelectedCaseHistogram { "selected_case_histogram" };
 
 } // namespace fuzzuf::optimizer::keys
 
