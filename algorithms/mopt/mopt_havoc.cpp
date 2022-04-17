@@ -1,9 +1,11 @@
 #include "fuzzuf/algorithms/mopt/mopt_havoc.hpp"
 #include "fuzzuf/mutator/havoc_case.hpp"
 #include "fuzzuf/optimizer/keys.hpp"
-#include "fuzzuf/logger/logger.hpp"
+
+#include <random>
 
 namespace fuzzuf::algorithm::mopt::havoc {
+
 
 /**
  * @fn
@@ -18,35 +20,23 @@ u32 MOptHavocCaseDistrib::CalcValue() {
     const auto& extras = optimizer::Store::GetInstance().Get(optimizer::keys::Extras).value().get();
     const auto& a_extras = optimizer::Store::GetInstance().Get(optimizer::keys::AutoExtras).value().get();
 
+    bool no_extras = extras.empty();
+    bool no_aextras = a_extras.empty();
 
-    const auto& probability_now = optimizer::Store::GetInstance().Get(optimizer::keys::ProbabilityNow);
-    const auto swarm_now = optimizer::Store::GetInstance().Get(optimizer::keys::SwarmNow);
+    auto weights(mopt->GetCurParticle());
 
-    int operator_number = (extras.size() + a_extras.size()) < 2 ? NUM_CASE - 2 : NUM_CASE;
-
-    double range_sele = (double)probability_now[swarm_now][operator_number - 1];
-    double sele = ((double)(engine() % 10000) * 0.0001 * range_sele);
-
-    int i_puppet, j_puppet = 0;
-
-    for (i_puppet = 0; i_puppet < operator_number; i_puppet++) {
-        if (unlikely(i_puppet == 0)) {
-            if (sele < probability_now[swarm_now][i_puppet]) {
-                break;
-            }
-        }
-        else if (sele < probability_now[swarm_now][i_puppet]) {
-            j_puppet = 1;
-            break;
-        }
+    if (no_extras) {
+        weights[INSERT_EXTRA] = 0;
+        weights[OVERWRITE_WITH_EXTRA] = 0;
+    }
+    if (no_aextras) {
+        weights[INSERT_AEXTRA] = 0;
+        weights[OVERWRITE_WITH_AEXTRA] = 0;
     }
 
-    if ((j_puppet == 1) && (sele < probability_now[swarm_now][i_puppet - 1])
-            || (i_puppet + 1 < NUM_CASE && sele > probability_now[swarm_now][i_puppet + 1])) {
-        ERROR("error select_algorithm (MOptHavocCaseDistrib::CalcValue)");
-    }
+    std::discrete_distribution<double> dists(weights);
 
-    return i_puppet;
+    return dists(engine);
 }
 
 }

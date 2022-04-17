@@ -6,6 +6,9 @@
 #include "fuzzuf/optimizer/optimizer.hpp"
 #include "fuzzuf/optimizer/store.hpp"
 #include "fuzzuf/mutator/havoc_case.hpp"
+#include "fuzzuf/algorithms/mopt/mopt_optimizer.hpp"
+
+#include <memory>
 
 
 namespace fuzzuf::algorithm::mopt::havoc {
@@ -20,7 +23,7 @@ public:
 
     u32 CalcValue() override;
 
-    const u32 SwarmNum = 5;
+    std::shared_ptr<optimizer::MOptOptimizer> mopt;
 };
 
 
@@ -31,8 +34,6 @@ namespace fuzzuf::optimizer::keys {
 
 using MOptHavocCaseDistrib = fuzzuf::algorithm::mopt::havoc::MOptHavocCaseDistrib;
 
-const StoreKey<double[MOptHavocCaseDistrib::SwarmNum][NUM_CASE]> ProbabilityNow {"probability_now"};
-const StoreKey<int> SwarmNow {"swarm_now"};
 
 
 } // namespace fuzzuf::optimizer::keys
