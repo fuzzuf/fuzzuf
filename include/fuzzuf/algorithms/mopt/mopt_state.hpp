@@ -14,8 +14,12 @@ struct MOptState : public afl::AFLStateTemplate<MOptTestcase> {
     explicit MOptState(std::shared_ptr<const afl::AFLSetting> setting, std::shared_ptr<NativeLinuxExecutor> executor);
     ~MOptState();
 
-    int key_puppet = 0;
+    void UpdateSpliceCycles();
+
+    int pacemaker_fuzzing = 0; // originally key_puppet
     int key_module = 0;
+
+    u32 splice_cycles;
 }
 
 } // namespace fuzzuf::algorithm::mopt
