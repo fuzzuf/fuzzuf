@@ -5,6 +5,7 @@
 #include "fuzzuf/hierarflow/hierarflow_routine.hpp"
 #include "fuzzuf/hierarflow/hierarflow_node.hpp"
 #include "fuzzuf/hierarflow/hierarflow_intermediates.hpp"
+#include "fuzzuf/algorithms/mopt/mopt_hierarflow_routines.hpp"
 
 
 namespace fuzzuf::algorithm::mopt {
@@ -14,7 +15,6 @@ MOptFuzzer::MOptFuzzer() {
 }
 
 void MOptFuzzer::BuildFuzzFlow(void) {
-    // TODO: remove
     {
         using namespace afl::routine::other;
         using namespace afl::routine::mutation;
@@ -63,6 +63,13 @@ void MOptFuzzer::BuildFuzzFlow(void) {
         auto construct_auto_dict = CreateNode<ConstructAutoDictTemplate<MOptState>>(*state);
         auto construct_eff_map = CreateNode<ConstructEffMapTemplate<MOptState>>(*state);
 
+        // MOpt-specific nodes
+        using namespace fuzzuf::algorithm::mopt::routine::other::CheckPacemakerThreshold;
+        using namespace fuzzuf::algorithm::mopt::routine::other:UpdateMOptInfo;
+
+        auto check_pacemaker = CreateNode<CheckPacemakerThreshold>(*state, *abandon_node);
+        auto update_mopt = CreateNode<UpdateMOptInfo>(*state);
+
         fuzz_loop << (
                 cull_queue
             || select_seed
@@ -84,44 +91,18 @@ void MOptFuzzer::BuildFuzzFlow(void) {
                 || user_dict_overwrite << execute.HardLink() << normal_update.HardLink()
                 || auto_dict_overwrite << execute.HardLink() << normal_update.HardLink()
                 )
-            || apply_rand_muts << (
+            || check_pacemaker << apply_rand_muts << (
                     havoc << execute.HardLink() << normal_update.HardLink()
                     || splicing << execute.HardLink() << normal_update.HardLink()
                 )
             || abandon_node
+            || update_mopt
         );
-    }
-
-    // Construct fuzz loop for pilot_fuzzing
-    {
-
-    }
-
-    // Construct fuzz loop for core_fuzzing
-    {
-
-    }
-
-    // Construct fuzz loop for pso_updating
-    {
-
     }
 }
 
 void MOptFuzzer::OneLoop(void) {
-    // no implementation for `normal_fuzz_one` as `limit_time_sig` is set to 1 in MOpt mode
-
-    switch(state.key_module) {
-        case 0:
-            pilot_fuzzing();
-            break;
-        case 1:
-            core_fuzzing();
-            break;
-        case 2:
-            pso_updating();
-            break;
-    }
+    fuzz_loop();
 }
 
 } // fuzzuf::algorithm::mopt
