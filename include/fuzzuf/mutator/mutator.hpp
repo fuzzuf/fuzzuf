@@ -276,7 +276,7 @@ void Mutator<Tag>::Havoc(
     fuzzuf::optimizer::Store::GetInstance().Set(fuzzuf::optimizer::keys::Extras, AFLDictRef(extras));
     fuzzuf::optimizer::Store::GetInstance().Set(fuzzuf::optimizer::keys::AutoExtras, AFLDictRef(a_extras));
 
-    auto selected_case_histogram = fuzzuf::optimizer::Store::GetInstance().Get(fuzzuf::optimizer::keys::SelectedCaseHistogram);
+    auto& selected_case_histogram = fuzzuf::optimizer::Store::GetInstance().GetRef(fuzzuf::optimizer::keys::SelectedCaseHistogram);
     selected_case_histogram.fill(0);
 
     for (std::size_t i = 0; i < stacking; i++) {
@@ -647,8 +647,6 @@ void Mutator<Tag>::Havoc(
             break;
         }
     }
-
-    fuzzuf::optimizer::Store::GetInstance().Set(fuzzuf::optimizer::keys::SelectedCaseHistogram, selected_case_histogram);
 }
 
 #include "fuzzuf/mutator/templates/mutator.hpp"
