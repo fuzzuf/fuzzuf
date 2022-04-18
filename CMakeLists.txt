@@ -307,6 +307,11 @@ set(
   algorithms/libfuzzer/trace.cpp
   algorithms/libfuzzer/utils.cpp
   algorithms/libfuzzer/config.cpp
+  algorithms/mopt/mopt_fuzzer.cpp
+  algorithms/mopt/mopt_havoc.cpp
+  algorithms/mopt/mopt_hierarflow_routines.cpp
+  algorithms/mopt/mopt_optimizer.cpp
+  algorithms/mopt/mopt_state.cpp
   algorithms/nautilus/fuzzer/fuzzer.cpp
   algorithms/nautilus/fuzzer/mutation_hierarflow_routines.cpp
   algorithms/nautilus/fuzzer/other_hierarflow_routines.cpp
