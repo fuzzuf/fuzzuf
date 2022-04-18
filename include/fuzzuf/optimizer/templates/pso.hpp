@@ -31,7 +31,7 @@ template<size_t Demention, size_t ParticleNum>
 void
 PSO<Demention, ParticleNum>::Init() {
     for (auto& p : swarm) {
-        for (auto& pos : p.position) pos = GetRandom(min_position, max_position);
+        for (auto& pos : p.position) pos = fuzzuf::utils::random::Random<double>(min_position, max_position);
         p.velocity.fill(0);
     }
 
@@ -90,8 +90,8 @@ PSO<Demention, ParticleNum>::UpdateVelocities() {
 
     for (size_t i = 0; i < Demention; i++) {
         double v = w * p.velocity[i]
-                            + c1 * GetRandom(0, 1) * (p.best_position[i] - p.position[i])
-                            + c2 * GetRandom(0, 1) * (best_position[i] - p.position[i]);
+                            + c1 * fuzzuf::utils::random::Random<double>(0, 1) * (p.best_position[i] - p.position[i])
+                            + c2 * fuzzuf::utils::random::Random<double>(0, 1) * (best_position[i] - p.position[i]);
         v = std::min(v, max_velocity);
         v = std::max(v, min_velocity);
 
@@ -131,16 +131,5 @@ PSO<Demention, ParticleNum>::UpdateGlobalBest() {
         }
     }
 }
-
-template<size_t Demention, size_t ParticleNum>
-inline double
-PSO<Demention, ParticleNum>::GetRandom(double min, double max) {
-    static std::random_device seed_gen;
-    static std::mt19937 engine(seed_gen);
-
-    return (max - min) * engine() / std::mt19937::max() + min;
-}
-
-
 
 } // namespace fuzzuf::optimizer

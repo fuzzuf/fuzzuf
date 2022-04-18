@@ -44,7 +44,6 @@ private:
     void UpdateVelocities();
     void UpdateLocalBest();
     void UpdateGlobalBest();
-    double GetRandom(double, double);
 
     size_t idx = 0;
     u64 time = 0;
