@@ -17,7 +17,7 @@ MOptState::MOptState(
 }
 
 void MOptState::UpdateSpliceCycles() {
-    splice_cycles = fuzzuf::utils::random::Random<u32>(option::GetSpliceCyclesLow(), option::GetSpliceCyclesUp());
+    splice_cycles_limit = fuzzuf::utils::random::Random<u32>(option::GetSpliceCyclesLow(), option::GetSpliceCyclesUp());
 }
 
 }

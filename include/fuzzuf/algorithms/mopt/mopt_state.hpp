@@ -7,6 +7,7 @@
 #include "fuzzuf/algorithms/afl/afl_state.hpp"
 #include "fuzzuf/algorithms/mopt/mopt_option.hpp"
 #include "fuzzuf/algorithms/mopt/mopt_testcase.hpp"
+#include "fuzzuf/algorithms/mopt/mopt_optimizer.hpp"
 
 namespace fuzzuf::algorithm::mopt {
 
@@ -16,10 +17,12 @@ struct MOptState : public afl::AFLStateTemplate<MOptTestcase> {
 
     void UpdateSpliceCycles();
 
-    int pacemaker_fuzzing = 0; // originally key_puppet
-    int key_module = 0;
+    bool pacemaker_mode = false; // key_puppet: (0: false, 1: true)
+    bool core_mode = true; // key_module: (0: pilot, 1: core)
 
-    u32 splice_cycles;
+    u32 splice_cycles_limit = 0;
+
+    std::unique_ptr<fuzzuf::optimizer::MOptOptimizer> mopt;
 }
 
 } // namespace fuzzuf::algorithm::mopt
