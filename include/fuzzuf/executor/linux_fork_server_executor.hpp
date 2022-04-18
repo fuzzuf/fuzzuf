@@ -27,6 +27,8 @@
 #include "fuzzuf/exceptions.hpp"
 #include "fuzzuf/executor/executor.hpp"
 #include "fuzzuf/utils/common.hpp"
+#include "fuzzuf/utils/filesystem.hpp"
+#include "fuzzuf/utils/vfs/local_filesystem.hpp"
 #include "fuzzuf/coverage/afl_edge_cov_attacher.hpp"
 #include "fuzzuf/coverage/fuzzuf_bb_cov_attacher.hpp"
 #include "fuzzuf/feedback/inplace_memory_feedback.hpp"
@@ -67,7 +69,8 @@ public:
         // which fd should be recorded. For example, by passing std::vector<int>{1, 2} to this class,
         // we would tell that we would like to record stdout and stderr.
         bool record_stdout_and_err = false,
-	std::vector< std::string > &&environment_variables_ = {}
+        std::vector< std::string > &&environment_variables_ = {},
+        std::vector< fs::path > &&allowed_path_ = {}
     );
     ~LinuxForkServerExecutor();
 
@@ -109,6 +112,11 @@ public:
     fuzzuf::executor::output_t MoveStdOut();
     // InplaceMemoryFeedback made of GetStdErr before calling this function becomes invalid after Run()
     fuzzuf::executor::output_t MoveStdErr();
+
+    fuzzuf::utils::vfs::LocalFilesystem &Filesystem() {
+      return filesystem;
+    }
+
 private:
     /**
      * Take snapshot of environment variables.
@@ -116,16 +124,12 @@ private:
      * @param extra Executor specific environment variables those are set only on the child process of this executor.
      */ 
     void CreateJoinedEnvironmentVariables( std::vector< std::string > &&extra );
+
+    u32 last_timeout_ms;
     PUTExitReasonType last_exit_reason;
     u8 last_signal;    
     fuzzuf::executor::output_t stdout_buffer;
     fuzzuf::executor::output_t stderr_buffer;
-    int fork_server_stdout_fd = -1;
-    int fork_server_stderr_fd = -1;
-    int fork_server_epoll_fd = -1;
-    epoll_event fork_server_stdout_event;
-    epoll_event fork_server_stderr_event;
-    epoll_event fork_server_read_event;
 
     bool record_stdout_and_err;
 
@@ -145,7 +149,8 @@ private:
      * raw_environment_variables should be rebuilt if environment_variables is modified.
      */
     std::vector< const char* > raw_environment_variables;
+
+    fuzzuf::utils::vfs::LocalFilesystem filesystem;
     
-    // ZeroMqChannel put_channel;
     FdChannel put_channel;
 };

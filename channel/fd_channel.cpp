@@ -2,6 +2,7 @@
 #include "fuzzuf/logger/logger.hpp"
 #include "fuzzuf/utils/common.hpp"
 #include "fuzzuf/utils/errno_to_system_error.hpp"
+#include "fuzzuf_cc/fork_server_api.h"
 
 #include <signal.h>
 #include <stdarg.h>
@@ -48,20 +49,51 @@ ssize_t FdChannel::Recv(void *buf, size_t size, const char* comment) {
 // FIXME: fuzzuf-ccは4バイト以上読み取れなかったら forkserver プロセスが終了する実装になっています。
 //  そのとき、FdChannelはforkserverは生きていると思っていて、APIの返答を待つ。これはまずい。
 ExecutePUTAPIResponse FdChannel::ExecutePUT() {
-    Send((void *) "ExecutePUT", 10, __func__);
+    ForkServerAPI command = ExecutePUTCommand;
+    Send((void *) &command, sizeof(command), __func__);
 
     ExecutePUTAPIResponse response;
     Recv((void *) &response, sizeof(response), __func__);
 
     DEBUG("Response { error=%d, exit_code=%d, signal_number=%d }", 
         response.error, response.exit_code, response.signal_number);
-    // TODO: fork_server_stdout_fd, fork_server_stderr_fd からのデータ読み取り（フェーズ3預かり）
     assert(response.error == ExecutePUTError::None);
 
     return response;
 }
 
-// Helper function to assure forkserver is up
+// PUT API
+// If timeout_us is 0, then time limit is unlimited. 
+void FdChannel::SetPUTExecutionTimeout(uint64_t timeout_us /* [us] */) {
+    DEBUG("SetPUTExecutionTimeout: timeout_us=%ld", timeout_us);
+    ForkServerAPI command = SetPUTExecutionTimeoutCommand;
+    Send((void *) &command, sizeof(command), __func__);
+    Send(&timeout_us, sizeof(timeout_us), "PUTExecutionTimeoutValue");
+    // NOTE: No response
+}
+
+// PUT API
+void FdChannel::ReadStdin() {
+    ForkServerAPI command = ReadStdinCommand;
+    Send((void *) &command, sizeof(command), __func__);
+    // NOTE: No response
+}
+
+// PUT API
+void FdChannel::SaveStdoutStderr() {
+    ForkServerAPI command = SaveStdoutStderrCommand;
+    Send((void *) &command, sizeof(command), __func__);
+    // NOTE: No response
+}
+
+void FdChannel::AttachToServer(uint64_t executor_id) {
+    if (write(forksrv_write_fd, &executor_id, sizeof(executor_id)) < (ssize_t) sizeof(executor_id)) {
+        perror("[!] [FdChannel] Failed to attach to server");
+        exit(1);
+    }
+    fprintf(stderr, "[*] [FdChannel] Requested server to attach: executor_id=%lu\n", executor_id);
+}
+
 std::optional<pid_t> FdChannel::WaitForkServerStart() {
     pid_t forksrv_pid = 0;
     try {
@@ -70,8 +102,14 @@ std::optional<pid_t> FdChannel::WaitForkServerStart() {
         MSG(cLRD "[-] " cRST "    %s\n", e.what());
         return std::nullopt;
     }
-    DEBUG("Forkserver started: pid=%d\n", forksrv_pid);
+    DEBUG("[FdChannel] Forkserver started: pid=%d\n", forksrv_pid);
     return forksrv_pid;
+}
+
+// Helper function to assure forkserver is up
+std::optional<pid_t> FdChannel::DoHandShake(uint64_t executor_id) {
+    AttachToServer(executor_id);
+    return WaitForkServerStart();
 }
 
 // PUT API
@@ -137,7 +175,7 @@ void FdChannel::SetupForkServer(char *const pargv[]) {
     //  - (2) No instrumentation and no output
     //  - (3) Not instrumented, no output or immediate termination
     //  - (4) It's not instrumented and it outputs something (which is received during the handshake).
-    if (WaitForkServerStart() != forksrv_pid) {
+    if (DoHandShake((uint64_t) getpid()) != forksrv_pid) {
         // If case (2) and (3) occurs, then WaitForkServerStart() returns std::nullopt
         // If case (4) occurs, then return value won't be equal to forksrv_pid
 
@@ -177,16 +215,6 @@ void FdChannel::SetupForkServer(char *const pargv[]) {
  *      - Furthermore, invalidate the value of forksrv_pid(fail-safe)
  */
 void FdChannel::TerminateForkServer() {
-    // if (fork_server_stdout_fd != -1) {
-    //     close( fork_server_stdout_fd );
-    //     fork_server_stdout_fd = -1;
-    // }
-    
-    // if (fork_server_stderr_fd != -1) {
-    //     close( fork_server_stderr_fd );
-    //     fork_server_stderr_fd = -1;
-    // }
-
     if (forksrv_write_fd > 0) {
         close(forksrv_write_fd);
         forksrv_write_fd = -1;

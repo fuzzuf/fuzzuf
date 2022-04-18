@@ -27,16 +27,17 @@
 #include "fuzzuf/algorithms/afl/afl_option.hpp"
 #include "fuzzuf/exceptions.hpp"
 #include "fuzzuf/executor/executor.hpp"
-#include "fuzzuf/utils/workspace.hpp"
-#include "fuzzuf/utils/common.hpp"
-#include "fuzzuf/utils/which.hpp"
-#include "fuzzuf/utils/is_executable.hpp"
-#include "fuzzuf/utils/interprocess_shared_object.hpp"
-#include "fuzzuf/utils/errno_to_system_error.hpp"
-#include "fuzzuf/feedback/inplace_memory_feedback.hpp"
 #include "fuzzuf/feedback/exit_status_feedback.hpp"
+#include "fuzzuf/feedback/inplace_memory_feedback.hpp"
 #include "fuzzuf/feedback/put_exit_reason_type.hpp"
 #include "fuzzuf/logger/logger.hpp"
+#include "fuzzuf/utils/common.hpp"
+#include "fuzzuf/utils/errno_to_system_error.hpp"
+#include "fuzzuf/utils/hex_dump.hpp"
+#include "fuzzuf/utils/interprocess_shared_object.hpp"
+#include "fuzzuf/utils/is_executable.hpp"
+#include "fuzzuf/utils/which.hpp"
+#include "fuzzuf/utils/workspace.hpp"
 
 /**
  * Precondition:
@@ -63,18 +64,29 @@ LinuxForkServerExecutor::LinuxForkServerExecutor(
     u32 afl_shm_size,
     u32  bb_shm_size,
     bool record_stdout_and_err,
-    std::vector< std::string > &&environment_variables_
+    std::vector< std::string > &&environment_variables_,
+    std::vector< fs::path > &&allowed_path_
 ) :
     Executor( argv, exec_timelimit_ms, exec_memlimit, path_to_write_input.string() ),
     afl_edge_coverage(afl_shm_size),
     fuzzuf_bb_coverage(bb_shm_size),
 
     // cargv and stdin_mode are initialized at SetCArgvAndDecideInputMode
+    last_timeout_ms( exec_timelimit_ms ),
     record_stdout_and_err( record_stdout_and_err ),
+    filesystem( std::move( allowed_path_ ) ),
     put_channel() // TODO: Make channel configurable outside of executor
 {
     SetCArgvAndDecideInputMode();
-    OpenExecutorDependantFiles();
+
+    // NOTE: The following code should be implemented in Executor::OpenExecutorDependantFiles()
+    //      But, currently LinuxForkServerExecutor is not major executor. So we cannot do that.
+    if (stdin_mode) {
+        auto path = Util::StrPrintf("/dev/shm/fuzzuf-cc.forkserver.executor_id-%d.stdin", getpid());
+        input_fd = Util::OpenFile(path, O_RDWR | O_CREAT | O_CLOEXEC, 0600);
+    } else {
+        input_fd = Util::OpenFile(path_to_write_input.string(), O_RDWR | O_CREAT | O_CLOEXEC, 0600);
+    }
 
     // Allocate shared memory on initialization of Executor
     // It is sufficient if each LinuxForkServerExecutor::Run() can refer the memory
@@ -82,7 +94,15 @@ LinuxForkServerExecutor::LinuxForkServerExecutor(
     SetupEnvironmentVariablesForTarget();
     CreateJoinedEnvironmentVariables( std::move( environment_variables_ ) );
 
+    // Configure PUT runtime settings
     put_channel.SetupForkServer((char* const*) cargv.data());
+    put_channel.SetPUTExecutionTimeout(exec_timelimit_ms * 1000);
+    if (stdin_mode) {
+        put_channel.ReadStdin();
+    }
+    if (record_stdout_and_err) {
+        put_channel.SaveStdoutStderr();
+    }
 }
 
 /**
@@ -128,36 +148,6 @@ void LinuxForkServerExecutor::TerminateForkServer() {
     put_channel.TerminateForkServer();
 }
 
-namespace detail {
-    template< typename Dest >
-    bool read_chunk( Dest &dest, int fd ) {
-        std::size_t cur_size = dest.size();
-        dest.resize(
-            cur_size + fuzzuf::executor::output_block_size
-        );
-        auto read_stat = read(
-            fd,
-            std::next( dest.data(), cur_size ),
-            fuzzuf::executor::output_block_size
-        );
-        if( read_stat < 0 ) {
-            dest.resize(cur_size); // reset dest, whatever the error is
-
-            int e = errno;
-            if( e == EAGAIN || e == EWOULDBLOCK )
-                return false;
-            else if( !( e == EINTR ) )
-                throw fuzzuf::utils::errno_to_system_error(
-                    e,
-                    "read from child process failed during the execution"
-                );
-        }
-	else
-            dest.resize( cur_size + read_stat );
-        return read_stat != 0;
-    }
-}
-
 /**
  * Precondition:
  *  - input_fd has a file descriptor that is set by LinuxForkServerExecutor::SetupIO()
@@ -179,18 +169,18 @@ void LinuxForkServerExecutor::Run(const u8 *buf, u32 len, u32 timeout_ms) {
         usleep(100);
     }
 
-    // if timeout_ms is 0, then we use exec_timelimit_ms;
-    if (timeout_ms == 0) timeout_ms = exec_timelimit_ms;
-    // TODO: タイムアウト設定をPUTに反映
-
+    if (timeout_ms == 0) {
+        // if timeout_ms is 0, then we use exec_timelimit_ms;
+        timeout_ms = exec_timelimit_ms;
+    }
+    if (timeout_ms != last_timeout_ms) {
+        // Update timeout
+        put_channel.SetPUTExecutionTimeout(timeout_ms * 1000);
+        last_timeout_ms = timeout_ms;
+    }
+    
     // Aliases
     ResetSharedMemories();
-
-    // TODO: 標準入出力の記録はフェーズ3で
-    // if (record_stdout_and_err) {
-    //     stdout_buffer.clear();
-    //     stderr_buffer.clear();
-    // }
 
     WriteTestInputToFile(buf, len);
 
@@ -201,12 +191,6 @@ void LinuxForkServerExecutor::Run(const u8 *buf, u32 len, u32 timeout_ms) {
     std::for_each( cargv.begin(), cargv.end(), []( const char* v ) { DEBUG("%s ", v); } );
     DEBUG("\n")
     //#endif
-
-    // TODO: 標準入出力の記録はフェーズ3で
-    // std::array< int, 2u > stdout_fd{ 0, 0 };
-    // std::array< int, 2u > stderr_fd{ 0, 0 };
-    // constexpr std::size_t read_size = 8u;
-    // boost::container::static_vector< std::uint8_t, read_size > read_buffer;
 
     last_exit_reason = PUTExitReasonType::FAULT_NONE;
     last_signal = 0;
@@ -221,12 +205,6 @@ void LinuxForkServerExecutor::Run(const u8 *buf, u32 len, u32 timeout_ms) {
        compiler below this point. Past this location, trace_bits[] behave
        very normally and do not have to be treated as volatile. */
     MEM_BARRIER();
-
-    // TODO: フェーズ3で考える。たぶんこのコードは消える
-    // if (record_stdout_and_err) {
-    //     while( detail::read_chunk( stdout_buffer, fork_server_stdout_fd ) );
-    //     while( detail::read_chunk( stderr_buffer, fork_server_stderr_fd ) );
-    // }
 
     DEBUG("Response { error=%d, exit_status=%d, signal_number=%d }\n", 
         response.error,
@@ -248,7 +226,7 @@ void LinuxForkServerExecutor::Run(const u8 *buf, u32 len, u32 timeout_ms) {
         last_signal = response.signal_number;
 
         if (child_timed_out && last_signal == SIGKILL) {
-            DEBUG("PUT Execution Timeout");
+            DEBUG("Reached PUT execution timeout");
             last_exit_reason = PUTExitReasonType::FAULT_TMOUT;
         } else {
             last_exit_reason = PUTExitReasonType::FAULT_CRASH;
@@ -294,10 +272,25 @@ InplaceMemoryFeedback LinuxForkServerExecutor::GetBBFeedback() {
 }
 
 InplaceMemoryFeedback LinuxForkServerExecutor::GetStdOut() {
+    if (record_stdout_and_err) {
+        std::string path = Util::StrPrintf("/dev/shm/fuzzuf-cc.forkserver.executor_id-%d.stdout", getpid());
+        int fd = Util::OpenFile(path, O_RDONLY);
+        Util::ReadFileAll(fd, stdout_buffer);
+        assert(stdout_buffer.size() > 0);
+        Util::CloseFile(fd);
+        // Deleting file `path` might be good
+    }
     return InplaceMemoryFeedback( stdout_buffer.data(), stdout_buffer.size(), lock);
 }
 
 InplaceMemoryFeedback LinuxForkServerExecutor::GetStdErr() {
+    if (record_stdout_and_err) {
+        std::string path = Util::StrPrintf("/dev/shm/fuzzuf-cc.forkserver.executor_id-%d.stderr", getpid());
+        int fd = Util::OpenFile(path, O_RDONLY);
+        Util::ReadFileAll(fd, stderr_buffer);
+        Util::CloseFile(fd);
+        // Deleting file `path` might be good
+    }
     return InplaceMemoryFeedback( stderr_buffer.data(), stderr_buffer.size(), lock);
 }
 
@@ -417,9 +410,11 @@ void LinuxForkServerExecutor::CreateJoinedEnvironmentVariables(
 }
 
 fuzzuf::executor::output_t LinuxForkServerExecutor::MoveStdOut() {
+    GetStdOut();
     return std::move( stdout_buffer );
 }
 
 fuzzuf::executor::output_t LinuxForkServerExecutor::MoveStdErr() {
+    GetStdErr();
     return std::move( stderr_buffer );
 }

@@ -131,6 +131,14 @@ int OpenFile(std::string path, int flag, mode_t mode) {
   return fd;
 }
 
+ssize_t GetFileSize(int fd) {
+  struct stat stbuf;
+  if (fstat(fd, &stbuf) == -1) {
+    return -1;
+  }
+  return stbuf.st_size;
+}
+
 /*
     since read/write sometimes reads/writes less bytes than specified by the 3rd
    argument 'n', it's safe to wrap read/write so that they should read/write
@@ -190,6 +198,17 @@ ssize_t WriteFile(int fd, const void *buf, u32 len) {
     throw FileError(StrPrintf("Failed to write exact len bytes: fd=%d, len=%d, nbytes=%d", fd, len, nbytes));
   }
   return nbytes;
+}
+
+ssize_t ReadFileAll(int fd, fuzzuf::executor::output_t &buf) {
+  ssize_t size = GetFileSize(fd);
+  if (size < 0) {
+    throw FileError(StrPrintf("Failed to get file size: fd=%d", fd));
+  }
+  
+  buf.resize(size);
+  assert(buf.size() == (size_t) size);
+  return ReadFile(fd, buf.data(), size, true);
 }
 
 // 時間制限付きReadFile
