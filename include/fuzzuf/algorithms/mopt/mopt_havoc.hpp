@@ -13,12 +13,12 @@
 
 namespace fuzzuf::algorithm::mopt::havoc {
 
-
-
+MOptHavocCaseDistrib::MOptHavocCaseDistrib();
+MOptHavocCaseDistrib::~MOptHavocCaseDistrib();
 
 class MOptHavocCaseDistrib : public optimizer::Optimizer<u32> {
 public:
-    MOptHavocCaseDistrib();
+    MOptHavocCaseDistrib(optimizer::MOptOptimizer);
     ~MOptHavocCaseDistrib();
 
     u32 CalcValue() override;
