@@ -155,9 +155,6 @@ void FdChannel::SetupForkServer(char *const pargv[]) {
         dup2(null_fd, STDOUT_FILENO);
         dup2(null_fd, STDERR_FILENO);
 
-        // Disable AFL's forkserver
-        setenv("__AFL_DEFER_FORKSRV", "1", 1);
-
         execv(pargv[0], pargv);
 
         /* Execution failed */
