@@ -155,7 +155,7 @@ void CreateDir(std::string path);
 int OpenFile(std::string path, int flag);
 int OpenFile(std::string path, int flag, mode_t mode);
 
-size_t GetFileSize(int fd);
+ssize_t GetFileSize(int fd);
 
 ssize_t read_n(int fd, void *buf, size_t n, bool original_behaviour);
 ssize_t write_n(int fd, const void *buf, size_t n);

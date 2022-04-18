@@ -131,10 +131,12 @@ int OpenFile(std::string path, int flag, mode_t mode) {
   return fd;
 }
 
-size_t GetFileSize(int fd) {
-  off_t size = SeekFile(fd, 0, SEEK_END);
-  SeekFile(fd, 0, SEEK_SET);
-  return size;
+ssize_t GetFileSize(int fd) {
+  struct stat stbuf;
+  if (fstat(fd, &stbuf) == -1) {
+    return -1;
+  }
+  return stbuf.st_size;
 }
 
 /*
@@ -199,10 +201,13 @@ ssize_t WriteFile(int fd, const void *buf, u32 len) {
 }
 
 ssize_t ReadFileAll(int fd, fuzzuf::executor::output_t &buf) {
-  size_t size = GetFileSize(fd);
+  ssize_t size = GetFileSize(fd);
+  if (size < 0) {
+    throw FileError(StrPrintf("Failed to get file size: fd=%d", fd));
+  }
   
   buf.resize(size);
-  assert(buf.size() == size);
+  assert(buf.size() == (size_t) size);
   return ReadFile(fd, buf.data(), size, true);
 }
 
