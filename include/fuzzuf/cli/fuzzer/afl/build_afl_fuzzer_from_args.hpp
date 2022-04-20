@@ -115,7 +115,7 @@ std::unique_ptr<TFuzzer> BuildAFLFuzzerFromArgs(
         afl_options, pargs, global_options
     );
 }
-namespace fuzzuf::cli::fuzzer::afl {
+
 template <class TFuzzer, class TAFLFuzzer, class TExecutor>
 std::unique_ptr<TFuzzer> BuildFuzzer(
     const char *prog_name,
@@ -125,8 +125,8 @@ std::unique_ptr<TFuzzer> BuildFuzzer(
     const GlobalFuzzerOptions &global_options
 ) {
 
-    using fuzzuf::algorithm::afl::option::AFLTag;
-    using fuzzuf::algorithm::afl::option::GetMemLimit;
+    using algorithm::afl::option::AFLTag;
+    using algorithm::afl::option::GetMemLimit;
 
     u32 mem_limit = global_options.exec_memlimit.value_or(GetMemLimit<AFLTag>());
     if (afl_options.frida_mode) {
