@@ -19,14 +19,10 @@
 #ifndef FUZZUF_INCLUDE_ALGORITHM_IJON_IJON_HAVOC_HPP
 #define FUZZUF_INCLUDE_ALGORITHM_IJON_IJON_HAVOC_HPP
 
+#include "fuzzuf/optimizer/optimizer.hpp"
 #include "fuzzuf/algorithms/afl/afl_dict_data.hpp"
 
 namespace fuzzuf::algorithm::ijon::havoc {
-
-u32 IJONHavocCaseDistrib(
-    const std::vector<afl::dictionary::AFLDictData>& extras,
-    const std::vector<afl::dictionary::AFLDictData>& a_extras
-);
 
 void IJONCustomCases(
     u32 case_idx,
@@ -35,6 +31,14 @@ void IJONCustomCases(
     const std::vector<afl::dictionary::AFLDictData>& extras,
     const std::vector<afl::dictionary::AFLDictData>& a_extras
 );
+
+class IJONHavocCaseDistrib : public optimizer::Optimizer<u32> {
+public:
+    IJONHavocCaseDistrib();
+    ~IJONHavocCaseDistrib();
+
+    u32 CalcValue() override;
+};
 
 } // namespace fuzzuf::algorithm::ijon::havoc
 

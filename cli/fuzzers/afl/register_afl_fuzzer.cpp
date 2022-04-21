@@ -21,12 +21,15 @@
 #include "fuzzuf/executor/afl_executor_interface.hpp"
 #include <boost/program_options.hpp>
 
-namespace fuzzuf::algorithm::afl {
+namespace fuzzuf::cli::fuzzer::afl {
 
 // builder_map.insert is called before main function if the below is declared as a global variable and linked as an
 // object file.
 // Conversely, if AFL cannot be built in a certain environment, do not compile it into an object file to prevent AFL
 // from being registered by accident.
-static FuzzerBuilderRegister global_afl_register("afl", BuildAFLFuzzerFromArgs<Fuzzer, AFLFuzzer, executor::AFLExecutorInterface>);
+static FuzzerBuilderRegister global_afl_register(
+      "afl",
+      BuildAFLFuzzerFromArgs<Fuzzer, algorithm::afl::AFLFuzzer, executor::AFLExecutorInterface>
+);
 
-} // namespace fuzzuf::algorithm::afl
+} // namespace fuzzuf::cli::fuzzer::afl

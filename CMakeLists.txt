@@ -281,6 +281,7 @@ include(CPack)
 set(
   FUZZUF_SOURCES
   algorithms/afl/afl_dict_data.cpp
+  algorithms/afl/afl_havoc_case_distrib.cpp
   algorithms/afl/afl_setting.cpp
   algorithms/afl/afl_testcase.cpp
   algorithms/afl/afl_util.cpp
@@ -351,6 +352,7 @@ set(
   logger/logger.cpp
   logger/log_file_logger.cpp
   logger/stdout_logger.cpp
+  optimizer/store.cpp
   python/pyfeedback.cpp
   python/pyseed.cpp
   python/python_fuzzer.cpp

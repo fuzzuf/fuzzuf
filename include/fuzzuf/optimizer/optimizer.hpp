@@ -15,18 +15,21 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see http://www.gnu.org/licenses/.
  */
-/**
- * @file register_die_fuzzer.cpp
- * @brief Register CLI option for DIE
- * @author Ricerca Security <fuzzuf-dev@ricsec.co.jp>
- */
-#include "fuzzuf/algorithms/die/die_fuzzer.hpp"
-#include "fuzzuf/cli/fuzzer_builder_register.hpp"
-#include "fuzzuf/cli/fuzzer/die/build_die_fuzzer_from_args.hpp"
-#include "fuzzuf/executor/afl_executor_interface.hpp"
 
-namespace fuzzuf::cli::fuzzer::die {
+#ifndef FUZZUF_INCLUDE_OPTIMIZER_OPTIMIZER_HPP
+#define FUZZUF_INCLUDE_OPTIMIZER_OPTIMIZER_HPP
 
-static FuzzerBuilderRegister global_die_register("die", BuildDIEFuzzerFromArgs<Fuzzer, DIEFuzzer, executor::AFLExecutorInterface>);
+namespace fuzzuf::optimizer {
 
-} // namespace fuzzuf::cli::fuzzer::die
+template<typename T>
+class Optimizer {
+public:
+    Optimizer() {}
+    ~Optimizer() {}
+
+    virtual T CalcValue() = 0;
+};
+
+} // fuzzuf::optimizer
+
+#endif

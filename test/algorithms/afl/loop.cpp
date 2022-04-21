@@ -22,10 +22,9 @@
 #include <iostream>
 #include <random>
 
-#include "fuzzuf/algorithms/afl/afl_fuzzer.hpp"
-#include "fuzzuf/executor/native_linux_executor.hpp"
 #include "fuzzuf/utils/filesystem.hpp"
 #include "fuzzuf/utils/workspace.hpp"
+#include "fuzzuf/cli/create_fuzzer_instance_from_argv.hpp"
 #include "move_to_program_location.hpp"
 
 // to test both fork server mode and non fork server mode, we specify forksrv
@@ -53,42 +52,17 @@ static void AFLLoop(bool forksrv) {
   auto input_dir = put_dir / "seeds";
   auto output_dir = root_dir / "output";
 
-  // Create fuzzer instance
-  // FIXME: we can use BuildAFLFuzzerFromArgs after it supports forksrv as an
-  // option
-  using namespace fuzzuf::algorithm::afl;
-  using fuzzuf::executor::AFLExecutorInterface;
-  using option::AFLTag;
+  auto input_dir_opt  =  "--in_dir=" +  input_dir.string();
+  auto output_dir_opt = "--out_dir=" + output_dir.string();
+  const char *forksrv_opt = forksrv ? "--forksrv=1" : "--forksrv=0";
 
-  std::shared_ptr<AFLSetting> setting(new AFLSetting(
-      {"../../put_binaries/libjpeg/libjpeg_turbo_fuzzer", "@@"},
-      input_dir.native(), output_dir.native(), option::GetExecTimeout<AFLTag>(),
-      option::GetMemLimit<AFLTag>(), forksrv, false, /* dumb_mode*/
-      Util::CPUID_BIND_WHICHEVER));
-
-  // NativeLinuxExecutor needs the directory specified by "out_dir" to be
-  // already set up so we need to create the directory first, and then
-  // initialize Executor
-  SetupDirs(setting->out_dir.string());
-
-  // Create NativeLinuxExecutor
-  auto nle = std::make_shared<NativeLinuxExecutor>(
-      setting->argv, setting->exec_timelimit_ms, setting->exec_memlimit,
-      setting->forksrv, setting->out_dir / option::GetDefaultOutfile<AFLTag>(),
-      option::GetMapSize<AFLTag>(), // afl_shm_size
-      0                             // bb_shm_size
-      );
-
-  auto executor = std::make_shared<AFLExecutorInterface>(std::move(nle));
-
-  // Create AFLState
-  auto state = std::make_unique<AFLState>(setting, executor);
-
-  AFLFuzzer fuzzer(std::move(state));
+  const char *argv[] = {"fuzzuf", "afl", input_dir_opt.c_str(), output_dir_opt.c_str(), forksrv_opt, "../../put_binaries/libjpeg/libjpeg_turbo_fuzzer", "@@", nullptr};
+  int argc = static_cast<int>(sizeof(argv) / sizeof(const char *)) - 1; // subtract 1 for nullptr
+  auto fuzzer = fuzzuf::cli::CreateFuzzerInstanceFromArgv(argc, argv);
 
   for (int i = 0; i < 1; i++) {
     std::cout << "the " << i << "-th iteration starts" << std::endl;
-    fuzzer.OneLoop();
+    fuzzer->OneLoop();
   }
 }
 

@@ -23,11 +23,24 @@
 #include "fuzzuf/exec_input/on_memory_exec_input.hpp"
 #include "fuzzuf/exec_input/exec_input_set.hpp"
 #include "fuzzuf/mutator/mutator.hpp"
+#include "fuzzuf/optimizer/optimizer.hpp"
 #include "fuzzuf/utils/hex_dump.hpp"
 
 // Mutator needs "Tag" which represents what algorithm is going to use Mutator.
 // We just prepare a temporary Tag.
 struct TestTag {};
+
+// This class just returns a constant that is passed during construction.
+// Instances of this class is used as mutop_optimizer in Havoc
+// to test the probability distribution of selecting mutation operators
+class ConstantMutopSelector : public fuzzuf::optimizer::Optimizer<u32> {
+public:
+    ConstantMutopSelector(u32 ret) : ret(ret) {}
+    u32 CalcValue() override { return ret; }
+
+private:
+    u32 ret;
+};
 
 // Check if Mutator::Havoc crashes or causes any access violations.
 // At the same time, this test makes sure that all the switch cases
@@ -60,10 +73,7 @@ BOOST_AUTO_TEST_CASE(MutatorHavoc) {
         auto mutator = Mutator<TestTag>(*input);
 
         // Create the i-th distribution.
-        auto case_dist = [i](
-                              const std::vector<AFLDictData>&,
-                              const std::vector<AFLDictData>&
-                          ) { return i; };
+        auto case_dist = ConstantMutopSelector(i);
 
         auto custom_cases = [](u32, u8*, u32, const std::vector<AFLDictData>&, const std::vector<AFLDictData>&) {
              BOOST_CHECK( false ); // this should be never called
@@ -82,10 +92,7 @@ BOOST_AUTO_TEST_CASE(MutatorHavoc) {
     auto mutator = Mutator<TestTag>(*input);
 
     // Create a distribution that always returns NUM_CASE.
-    auto case_dist = [](
-                          const std::vector<AFLDictData>&,
-                          const std::vector<AFLDictData>&
-                      ) { return NUM_CASE; };
+    auto case_dist = ConstantMutopSelector(NUM_CASE);
 
     bool passed_custom_cases = false;
     auto custom_cases = [&passed_custom_cases](

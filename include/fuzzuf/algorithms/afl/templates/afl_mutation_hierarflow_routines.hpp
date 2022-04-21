@@ -23,6 +23,8 @@
 #include "fuzzuf/algorithms/afl/afl_mutator.hpp"
 #include "fuzzuf/algorithms/afl/afl_util.hpp"
 
+#include "fuzzuf/optimizer/optimizer.hpp"
+
 namespace fuzzuf::algorithm::afl::routine::mutation {
 
 template<class State>
@@ -381,10 +383,10 @@ HavocBaseTemplate<State>::HavocBaseTemplate(State &state)
 // we extract the "core" of Havoc into another HierarFlowRoutine, HavocBaseTemplate.
 // both Havoc and Splicing will inherit this and use DoHavoc
 template<class State>
-template<typename CaseDistrib, typename CustomCases>
+template<typename CustomCases>
 bool HavocBaseTemplate<State>::DoHavoc(
     AFLMutatorTemplate<State>& mutator,
-    CaseDistrib case_distrib,
+    optimizer::Optimizer<u32> &mutop_optimizer,
     CustomCases custom_cases,
     const std::string &stage_name,
     const std::string &stage_short,
@@ -414,7 +416,7 @@ bool HavocBaseTemplate<State>::DoHavoc(
         u32 use_stacking = 1 << (1 + UR(option::GetHavocStackPow2(state), state.rand_fd));
 
         state.stage_cur_val = use_stacking;
-        mutator.Havoc(use_stacking, state.extras, state.a_extras, case_distrib, custom_cases);
+        mutator.Havoc(use_stacking, state.extras, state.a_extras, mutop_optimizer, custom_cases);
 
         if (this->CallSuccessors(mutator.GetBuf(), mutator.GetLen())) return true;
 
@@ -458,12 +460,11 @@ AFLMutCalleeRef<State> HavocTemplate<State>::operator()(
     if (state.doing_det) stage_max_multiplier = option::GetHavocCyclesInit(state);
     else stage_max_multiplier = option::GetHavocCycles(state);
 
-    using afl::util::AFLHavocCaseDistrib;
     using afl::dictionary::AFLDictData;
 
     if (this->DoHavoc(
                 mutator,
-                AFLHavocCaseDistrib,
+                *state.mutop_optimizer,
                 [](int, u8*&, u32&, const std::vector<AFLDictData>&, const std::vector<AFLDictData>&){},
                 "havoc", "havoc",
                 state.orig_perf, stage_max_multiplier,
@@ -527,11 +528,10 @@ AFLMutCalleeRef<State> SplicingTemplate<State>::operator()(
             continue;
         }
 
-        using afl::util::AFLHavocCaseDistrib;
         using afl::dictionary::AFLDictData;
 
         if (this->DoHavoc(mutator,
-                    AFLHavocCaseDistrib,
+                    *state.mutop_optimizer,
                     [](int, u8*&, u32&, const std::vector<AFLDictData>&, const std::vector<AFLDictData>&){},
                     Util::StrPrintf("splice %u", splice_cycle),
                     "splice",

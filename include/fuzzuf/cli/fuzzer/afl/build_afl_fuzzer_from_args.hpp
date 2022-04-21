@@ -15,12 +15,16 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see http://www.gnu.org/licenses/.
  */
-#pragma once
+
+#ifndef FUZZUF_INCLUDE_CLI_FUZZER_AFL_BUILD_AFL_FROM_ARGS_HPP
+#define FUZZUF_INCLUDE_CLI_FUZZER_AFL_BUILD_AFL_FROM_ARGS_HPP
 
 #include "fuzzuf/cli/put_args.hpp"
 #include "fuzzuf/exceptions.hpp"
 #include "fuzzuf/utils/optparser.hpp"
 #include "fuzzuf/utils/workspace.hpp"
+#include "fuzzuf/optimizer/optimizer.hpp"
+#include "fuzzuf/algorithms/afl/afl_havoc_case_distrib.hpp"
 #include "fuzzuf/algorithms/afl/afl_option.hpp"
 #include "fuzzuf/algorithms/afl/afl_setting.hpp"
 #include "fuzzuf/algorithms/afl/afl_state.hpp"
@@ -30,6 +34,8 @@
 #include "fuzzuf/executor/coresight_executor.hpp"
 #endif
 #include <boost/program_options.hpp>
+
+namespace fuzzuf::cli::fuzzer::afl {
 
 namespace po = boost::program_options;
 
@@ -46,8 +52,6 @@ struct AFLFuzzerOptions {
         {};
 };
 
-namespace fuzzuf::cli::fuzzer::afl {
-
 // Fuzzer specific help
 // TODO: Provide better help message
 [[noreturn]] void usage(const po::options_description &desc);
@@ -60,8 +64,6 @@ std::unique_ptr<TFuzzer> BuildFuzzer(
     const std::vector< std::string > &pargs,
     const GlobalFuzzerOptions &global_options
 );
-
-}
 
 // Used only for CLI
 template <class TFuzzer, class TAFLFuzzer, class TExecutor>
@@ -113,7 +115,7 @@ std::unique_ptr<TFuzzer> BuildAFLFuzzerFromArgs(
         afl_options, pargs, global_options
     );
 }
-namespace fuzzuf::cli::fuzzer::afl {
+
 template <class TFuzzer, class TAFLFuzzer, class TExecutor>
 std::unique_ptr<TFuzzer> BuildFuzzer(
     const char *prog_name,
@@ -123,8 +125,8 @@ std::unique_ptr<TFuzzer> BuildFuzzer(
     const GlobalFuzzerOptions &global_options
 ) {
 
-    using fuzzuf::algorithm::afl::option::AFLTag;
-    using fuzzuf::algorithm::afl::option::GetMemLimit;
+    using algorithm::afl::option::AFLTag;
+    using algorithm::afl::option::GetMemLimit;
 
     u32 mem_limit = global_options.exec_memlimit.value_or(GetMemLimit<AFLTag>());
     if (afl_options.frida_mode) {
@@ -248,9 +250,17 @@ std::unique_ptr<TFuzzer> BuildFuzzer(
         EXIT("Unsupported executor: '%s'", global_options.executor.c_str());
     }
 
+    auto mutop_optimizer = std::unique_ptr<optimizer::Optimizer<u32>>(
+                                new algorithm::afl::AFLHavocCaseDistrib()
+                           );
+
     // Create AFLState
     using fuzzuf::algorithm::afl::AFLState;
-    auto state = std::make_unique<AFLState>(setting, executor);
+    auto state = std::make_unique<AFLState>(
+                    setting,
+                    executor,
+                    std::move(mutop_optimizer)
+                 );
 
     // Load dictionary
     if(afl_options.dict_file != ""){
@@ -269,4 +279,7 @@ std::unique_ptr<TFuzzer> BuildFuzzer(
                 )
             );
 }
-}
+
+} // namespace fuzzuf::cli::fuzzer::afl
+
+#endif

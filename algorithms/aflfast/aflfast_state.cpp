@@ -25,8 +25,14 @@ namespace fuzzuf::algorithm::aflfast {
 // FIXME: check if we are initializing all the members that need to be initialized
 AFLFastState::AFLFastState(
     std::shared_ptr<const AFLFastSetting> setting,
-    std::shared_ptr<executor::AFLExecutorInterface> executor
-) : AFLStateTemplate<AFLFastTestcase>(setting, executor),
+    std::shared_ptr<executor::AFLExecutorInterface> executor,
+    std::unique_ptr<optimizer::Optimizer<u32>>&& mutop_optimizer
+) : 
+    AFLStateTemplate<AFLFastTestcase>(
+        setting,
+        executor,
+        std::move(mutop_optimizer)
+    ),
     setting(setting) {}
 
 std::shared_ptr<AFLFastTestcase> AFLFastState::AddToQueue(

@@ -15,12 +15,16 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see http://www.gnu.org/licenses/.
  */
-#pragma once
+
+#ifndef FUZZUF_INCLUDE_CLI_FUZZER_AFLFAST_BUILD_AFLFAST_FROM_ARGS_HPP
+#define FUZZUF_INCLUDE_CLI_FUZZER_AFLFAST_BUILD_AFLFAST_FROM_ARGS_HPP
 
 #include "fuzzuf/cli/put_args.hpp"
 #include "fuzzuf/exceptions.hpp"
 #include "fuzzuf/utils/optparser.hpp"
 #include "fuzzuf/utils/workspace.hpp"
+#include "fuzzuf/optimizer/optimizer.hpp"
+#include "fuzzuf/algorithms/afl/afl_havoc_case_distrib.hpp"
 #include "fuzzuf/algorithms/aflfast/aflfast_option.hpp"
 #include "fuzzuf/algorithms/aflfast/aflfast_setting.hpp"
 #include "fuzzuf/algorithms/aflfast/aflfast_state.hpp"
@@ -30,6 +34,8 @@
 #include "fuzzuf/executor/coresight_executor.hpp"
 #endif
 #include <boost/program_options.hpp>
+
+namespace fuzzuf::cli::fuzzer::aflfast {
 
 namespace po = boost::program_options;
 
@@ -44,8 +50,6 @@ struct AFLFastFuzzerOptions {
         {};
 };
 
-namespace fuzzuf::cli::fuzzer::aflfast {
-
 // Fuzzer specific help
 // TODO: Provide better help message
 static void usage(po::options_description &desc) {
@@ -53,9 +57,6 @@ static void usage(po::options_description &desc) {
     std::cout << desc << std::endl;
     exit(1);
 }
-
-}
-
 
 // Used only for CLI
 template <class TFuzzer, class TAFLFuzzer, class TExecutor>
@@ -212,9 +213,17 @@ std::unique_ptr<TFuzzer> BuildAFLFastFuzzerFromArgs(
         EXIT("Unsupported executor: '%s'", global_options.executor.c_str());
     }
 
+    auto mutop_optimizer = std::unique_ptr<optimizer::Optimizer<u32>>(
+                                new algorithm::afl::AFLHavocCaseDistrib()
+                           );
+
     // Create AFLFastState
     using fuzzuf::algorithm::aflfast::AFLFastState;
-    auto state = std::make_unique<AFLFastState>(setting, executor);
+    auto state = std::make_unique<AFLFastState>(
+                    setting,
+                    executor,
+                    std::move(mutop_optimizer)
+                 );
 
     return std::unique_ptr<TFuzzer>(
                 dynamic_cast<TFuzzer *>(
@@ -222,3 +231,7 @@ std::unique_ptr<TFuzzer> BuildAFLFastFuzzerFromArgs(
                 )
             );
 }
+
+} // namespace fuzzuf::cli::fuzzer::aflfast
+
+#endif

@@ -17,7 +17,7 @@ BuildFromArgs(const FuzzerArgs &fuzzer_args,
   pargs_desc.add("fuzzer", 1);
   pargs_desc.add("pargs", -1);
 
-  AFLFuzzerOptions afl_options;
+  afl::AFLFuzzerOptions afl_options;
   SymCCOptions symcc_options;
   po::options_description fuzzer_desc("AFL options");
   std::vector<std::string> pargs;
