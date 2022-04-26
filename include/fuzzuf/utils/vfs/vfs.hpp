@@ -25,6 +25,7 @@
 #include "fuzzuf/utils/map_file.hpp"
 #include <fcntl.h>
 #include <fstream>
+#include <optional>
 #ifndef HAS_CXX_STD_FILESYSTEM
 #include <chrono>
 #endif
