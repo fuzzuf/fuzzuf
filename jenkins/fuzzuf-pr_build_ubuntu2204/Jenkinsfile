@@ -1,0 +1,31 @@
+@Library('atla') _
+def dist_info = get_dist_info()[ get_dist_name( "${JOB_NAME}" ) ]
+pipeline {
+  agent{
+    docker {
+      image dist_info[ 'images' ][ 'flc' ]
+      args '--tmpfs /tmp'
+    }
+  }
+  options {
+    ansiColor('gnome-terminal')
+  }
+  stages {
+    stage('Build') {
+      steps {
+        atla_checkout2( "${GIT_URL}", "${sha1}", true )
+        sh "mount"
+        cmakeBuild buildDir: 'build', cmakeArgs: '-DENABLE_ADDRSAN=ON -DENABLE_LEAKSAN=ON -DENABLE_UBSAN=ON -DENABLE_HEAVY_TEST=OFF -DPIN_ROOT=/opt/pin/3.7  -DENABLE_NODE_TRACER=OFF', buildType: 'Release', installation: 'InSearchPath', steps: [[args: '-j4 all'],[args: 'test ARGS="-V"']]
+      }
+    }
+  }
+  post { 
+    success {
+      atla_notify_build_result( 'fuzzuf', 'Ubuntu 22.04でのビルド', true )
+    }
+    unsuccessful {
+      atla_notify_build_result( 'fuzzuf', 'Ubuntu 22.04でのビルド', false )
+    }
+  }
+}
+
