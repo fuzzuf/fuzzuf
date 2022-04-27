@@ -33,6 +33,7 @@
 #include "fuzzuf/algorithms/ijon/shared_data.hpp"
 #include "fuzzuf/algorithms/ijon/ijon_state.hpp"
 #include "fuzzuf/executor/native_linux_executor.hpp"
+#include "fuzzuf/executor/linux_fork_server_executor.hpp"
 
 namespace fuzzuf::cli::fuzzer::ijon {
 
@@ -152,6 +153,20 @@ std::unique_ptr<TFuzzer> BuildIJONFuzzerFromArgs(
                             0 // bb_shm_size
                         );
         executor = std::make_shared<TExecutor>(std::move(nle));
+        break;
+    }
+
+    case ExecutorKind::FORKSERVER: {
+        using algorithm::ijon::SharedData;
+        auto lfe = std::make_shared<LinuxForkServerExecutor>(
+                            setting->argv,
+                            setting->exec_timelimit_ms,
+                            setting->exec_memlimit,
+                            setting->out_dir / GetDefaultOutfile<IJONTag>(),
+                            sizeof(SharedData), // afl_shm_size
+                            0 // bb_shm_size
+                        );
+        executor = std::make_shared<TExecutor>(std::move(lfe));
         break;
     }
 
