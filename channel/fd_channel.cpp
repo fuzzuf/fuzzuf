@@ -74,6 +74,7 @@ void FdChannel::SetPUTExecutionTimeout(uint64_t timeout_us /* [us] */) {
 
 // PUT API
 void FdChannel::ReadStdin() {
+    DEBUG("ReadStdin: Enabled");
     ForkServerAPI command = ReadStdinCommand;
     Send((void *) &command, sizeof(command), __func__);
     // NOTE: No response
@@ -81,6 +82,7 @@ void FdChannel::ReadStdin() {
 
 // PUT API
 void FdChannel::SaveStdoutStderr() {
+    DEBUG("SaveStdoutStderr: Enabled");
     ForkServerAPI command = SaveStdoutStderrCommand;
     Send((void *) &command, sizeof(command), __func__);
     // NOTE: No response
