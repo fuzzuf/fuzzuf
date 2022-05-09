@@ -25,7 +25,6 @@
 #include "fuzzuf/logger/log_file_logger.hpp"
 #include "fuzzuf/logger/logger.hpp"
 #include "fuzzuf/logger/stdout_logger.hpp"
-#include "fuzzuf/utils/check_crash_handling.hpp"
 
 namespace fuzzuf::cli {
 
@@ -61,8 +60,6 @@ std::unique_ptr<Fuzzer> CreateFuzzerInstanceFromArgv(int argc,
         "Unsupported logger: " + to_string(global_options.logger), __FILE__,
         __LINE__);
   }
-
-  utils::CheckCrashHandling();
 
   // Prepare a fuzzer specified by the command line as it states
   return FuzzerBuilderRegister::Get(global_options.fuzzer)(fuzzer_args,

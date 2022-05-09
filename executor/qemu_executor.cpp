@@ -16,6 +16,7 @@
  * along with this program.  If not, see http://www.gnu.org/licenses/.
  */
 #include "fuzzuf/executor/qemu_executor.hpp"
+#include "fuzzuf/utils/check_crash_handling.hpp"
 
 /**
  * Precondition:
@@ -32,6 +33,7 @@ QEMUExecutor::QEMUExecutor(
 ) : ProxyExecutor ( proxy_path, std::vector<std::string>(), argv, exec_timelimit_ms, exec_memlimit, forksrv,
                     path_to_write_input, QEMUExecutor::QEMU_SHM_SIZE, record_stdout_and_err )
 {
+    fuzzuf::utils::CheckCrashHandling();
     ProxyExecutor::SetCArgvAndDecideInputMode();
     ProxyExecutor::Initilize();
 }

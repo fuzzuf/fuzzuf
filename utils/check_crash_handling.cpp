@@ -1,11 +1,20 @@
+#include "fuzzuf/utils/check_crash_handling.hpp"
+
+#include <atomic>
 #include <boost/scope_exit.hpp>
 #include <cstdlib>
-#include <fuzzuf/logger/logger.hpp>
-#include <fuzzuf/utils/check_crash_handling.hpp>
+
+#include "fuzzuf/logger/logger.hpp"
 
 namespace fuzzuf::utils {
+namespace {
+std::atomic<bool> crash_handling_is_checked(false);
+}
 
 void CheckCrashHandling() {
+  bool expected = false;
+  if (!crash_handling_is_checked.compare_exchange_strong(expected, true))
+    return;
 #ifdef __APPLE__
 
 #if !TARGET_OS_IPHONE
