@@ -1,7 +1,7 @@
 /*
  * fuzzuf
  * Copyright (C) 2021 Ricerca Security
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -17,41 +17,42 @@
  */
 #include "fuzzuf/executor/pintool_executor.hpp"
 
-PinToolExecutor::PinToolExecutor(  
-    const fs::path &proxy_path,
-    const std::vector<std::string> &pargv,
-    const std::vector<std::string> &argv,
-    u32 exec_timelimit_ms,
-    u64 exec_memlimit,
-    const fs::path &path_to_write_input
-) :
-    BaseProxyExecutor ( proxy_path, pargv, argv, exec_timelimit_ms, exec_memlimit, path_to_write_input )
-{    
-    SetCArgvAndDecideInputMode();
-    BaseProxyExecutor::Initilize();
+#include "fuzzuf/utils/check_crash_handling.hpp"
+
+PinToolExecutor::PinToolExecutor(const fs::path &proxy_path,
+                                 const std::vector<std::string> &pargv,
+                                 const std::vector<std::string> &argv,
+                                 u32 exec_timelimit_ms, u64 exec_memlimit,
+                                 const fs::path &path_to_write_input)
+    : BaseProxyExecutor(proxy_path, pargv, argv, exec_timelimit_ms,
+                        exec_memlimit, path_to_write_input) {
+  fuzzuf::utils::CheckCrashHandling();
+
+  SetCArgvAndDecideInputMode();
+  BaseProxyExecutor::Initilize();
 }
 
 void PinToolExecutor::SetCArgvAndDecideInputMode() {
-    assert(!argv.empty());
-    
-    stdin_mode = true; // if we find @@, then assign false to stdin_mode
+  assert(!argv.empty());
 
-    cargv.emplace_back(proxy_path.c_str());
-    cargv.emplace_back("-t");
+  stdin_mode = true;  // if we find @@, then assign false to stdin_mode
 
-    for (const auto& v : pargv ) {
-        cargv.emplace_back(v.c_str());
+  cargv.emplace_back(proxy_path.c_str());
+  cargv.emplace_back("-t");
+
+  for (const auto &v : pargv) {
+    cargv.emplace_back(v.c_str());
+  }
+
+  cargv.emplace_back("--");
+
+  for (const auto &v : argv) {
+    if (v == "@@") {
+      stdin_mode = false;
+      cargv.emplace_back(path_str_to_write_input.c_str());
+    } else {
+      cargv.emplace_back(v.c_str());
     }
-    
-    cargv.emplace_back("--");
-
-    for (const auto& v : argv ) {
-        if ( v == "@@" ) {
-            stdin_mode = false;
-            cargv.emplace_back(path_str_to_write_input.c_str());
-        } else {
-            cargv.emplace_back(v.c_str());
-        }
-    }
-    cargv.emplace_back(nullptr);
+  }
+  cargv.emplace_back(nullptr);
 }
