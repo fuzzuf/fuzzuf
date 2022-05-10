@@ -80,17 +80,17 @@ BOOST_AUTO_TEST_CASE(NativeLinuxExecutorNativeRun) {
   // 標準入力と同じ内容がファイルに保存されたことを確認する
   BOOST_CHECK(fs::exists(output_file_path));
   BOOST_CHECK_EQUAL(fs::file_size(output_file_path), input.length());
-  int output_file = Util::OpenFile(output_file_path.native(), O_RDONLY);
+  int output_file = fuzzuf::utils::OpenFile(output_file_path.native(), O_RDONLY);
   BOOST_CHECK_LE(input.length(), INPUT_LENGTH);
   char output_file_buf[INPUT_LENGTH];
   BOOST_CHECK_GT(output_file, -1);
-  Util::ReadFile(output_file, static_cast<void *>(output_file_buf),
+  fuzzuf::utils::ReadFile(output_file, static_cast<void *>(output_file_buf),
                  input.length());
   BOOST_CHECK_EQUAL(strncmp(output_file_buf,
                             reinterpret_cast<const char *>(input.c_str()),
                             input.length()),
                     0);
-  Util::CloseFile(output_file);
+  fuzzuf::utils::CloseFile(output_file);
 
   auto stdout_buffer_feedback = executor.GetStdOut();
   stdout_buffer_feedback.ShowMemoryToFunc([](const u8 *ptr, u32 len) {

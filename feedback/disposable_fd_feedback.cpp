@@ -39,13 +39,13 @@ DisposableFdFeedback& DisposableFdFeedback::operator=(
 }
 
 void DisposableFdFeedback::Read(void *buf, u32 len) {
-    Util::ReadFile(fd, buf, len);
+    fuzzuf::utils::ReadFile(fd, buf, len);
 }
 
 u32 DisposableFdFeedback::ReadTimed(void *buf, u32 len, u32 timeout_ms) {
-    return Util::ReadFileTimed(fd, buf, len, timeout_ms);
+    return fuzzuf::utils::ReadFileTimed(fd, buf, len, timeout_ms);
 }
 
 void DisposableFdFeedback::Write(void *buf, u32 len) {
-    Util::WriteFile(fd, buf, len);
+    fuzzuf::utils::WriteFile(fd, buf, len);
 }

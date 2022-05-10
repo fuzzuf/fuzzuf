@@ -84,7 +84,7 @@ BOOST_AUTO_TEST_CASE(DIELoop) {
       option::GetMemLimit<DIETag>(),
       true,  // forksrv
       false, // dump_mode
-      Util::CPUID_BIND_WHICHEVER,
+      fuzzuf::utils::CPUID_BIND_WHICHEVER,
       "../../../tools/die/DIE",      // die_dir
       "python3", "node",             // cmd_py, cmd_node
       path_put.string(), "",         // d8_path, d8_flags

@@ -84,12 +84,12 @@ VUzzerMutCalleeRef Mutate::operator()(void) {
             mutator2.TaintBasedChange();
 
             /* Save new seeds in pending_queue */
-            std::string fn = Util::StrPrintf("%s/queue/id:%06u",
+            std::string fn = fuzzuf::utils::StrPrintf("%s/queue/id:%06u",
                                             state.setting->out_dir.c_str(),
                                             state.queued_paths);
             state.AddToQueue(state.pending_queue, fn, mutator1.GetBuf(), mutator1.GetLen());
 
-            fn = Util::StrPrintf("%s/queue/id:%06u",
+            fn = fuzzuf::utils::StrPrintf("%s/queue/id:%06u",
                                 state.setting->out_dir.c_str(),
                                 state.queued_paths);
             state.AddToQueue(state.pending_queue, fn, mutator2.GetBuf(), mutator2.GetLen());
@@ -111,7 +111,7 @@ VUzzerMutCalleeRef Mutate::operator()(void) {
             }
 
             /* Save a new seed in pending_queue */
-            std::string fn = Util::StrPrintf("%s/queue/id:%06u,crossover",
+            std::string fn = fuzzuf::utils::StrPrintf("%s/queue/id:%06u,crossover",
                                             state.setting->out_dir.c_str(),
                                             state.queued_paths);
             state.AddToQueue(state.pending_queue, fn, mutator1.GetBuf(), mutator1.GetLen());
@@ -124,7 +124,7 @@ VUzzerMutCalleeRef Mutate::operator()(void) {
             }
 
             /* Save a new seed in pending_queue */
-            fn = Util::StrPrintf("%s/queue/id:%06u,crossover",
+            fn = fuzzuf::utils::StrPrintf("%s/queue/id:%06u,crossover",
                                 state.setting->out_dir.c_str(),
                                 state.queued_paths);
             state.AddToQueue(state.pending_queue, fn, mutator2.GetBuf(), mutator2.GetLen());

@@ -133,7 +133,7 @@ void NautilusFuzzer::CheckPathExistence() {
   // NOTE: this check might be unnecessary as NativeLinuxExecutor would die
   if (!fs::exists(setting->args[0])) {
     throw exceptions::invalid_file(
-      Util::StrPrintf("Target binary does not exist!\nGiven path: %s",
+      fuzzuf::utils::StrPrintf("Target binary does not exist!\nGiven path: %s",
                       setting->args[0].c_str()),
       __FILE__, __LINE__
     );
@@ -143,7 +143,7 @@ void NautilusFuzzer::CheckPathExistence() {
   if (!fs::exists(setting->path_to_workdir)
       || !fs::is_directory(setting->path_to_workdir)) {
     throw exceptions::invalid_file(
-      Util::StrPrintf("Specified working directory does not exist!\n"
+      fuzzuf::utils::StrPrintf("Specified working directory does not exist!\n"
                       "Given path: %s",
                       setting->path_to_workdir.c_str()),
       __FILE__, __LINE__
@@ -153,7 +153,7 @@ void NautilusFuzzer::CheckPathExistence() {
   /* Check grammar file path */
   if (!fs::exists(setting->path_to_grammar)) {
     throw exceptions::invalid_file(
-      Util::StrPrintf("Grammar does not exist!\n"
+      fuzzuf::utils::StrPrintf("Grammar does not exist!\n"
                       "Given path: %s",
                       setting->path_to_grammar.c_str()),
       __FILE__, __LINE__
@@ -166,7 +166,7 @@ void NautilusFuzzer::CheckPathExistence() {
     fs::path dir = setting->path_to_workdir / f;
     if (!fs::exists(dir) || !fs::is_directory(dir)) {
       throw exceptions::execution_failure(
-        Util::StrPrintf("Output directory does not exist: %s", dir.c_str()),
+        fuzzuf::utils::StrPrintf("Output directory does not exist: %s", dir.c_str()),
         __FILE__, __LINE__
       );
     }

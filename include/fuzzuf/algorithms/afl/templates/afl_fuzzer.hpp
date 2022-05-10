@@ -29,7 +29,7 @@ AFLFuzzerTemplate<State>::AFLFuzzerTemplate(
 ) :
     state(std::move(state_ref))
 {
-    state->start_time = Util::GetCurTimeMs();
+    state->start_time = fuzzuf::utils::GetCurTimeMs();
 
     BuildFuzzFlow();
 

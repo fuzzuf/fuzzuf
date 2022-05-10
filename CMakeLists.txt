@@ -360,6 +360,7 @@ set(
   python/python_setting.cpp
   python/python_state.cpp
   python/python_testcase.cpp
+  utils/check_crash_handling.cpp
   utils/common.cpp
   utils/create_empty_file.cpp
   utils/errno_to_system_error.cpp

@@ -533,7 +533,7 @@ AFLMutCalleeRef<State> SplicingTemplate<State>::operator()(
         if (this->DoHavoc(mutator,
                     *state.mutop_optimizer,
                     [](int, u8*&, u32&, const std::vector<AFLDictData>&, const std::vector<AFLDictData>&){},
-                    Util::StrPrintf("splice %u", splice_cycle),
+                    fuzzuf::utils::StrPrintf("splice %u", splice_cycle),
                     "splice",
                     state.orig_perf, option::GetSpliceHavoc(state),
                     option::STAGE_SPLICE)) {

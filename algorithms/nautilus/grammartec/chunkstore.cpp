@@ -64,21 +64,21 @@ void ChunkStore::AddTree(Tree& tree, Context& ctx) {
       }
 
       /* Save tree to file */
-      std::string filepath = Util::StrPrintf(
+      std::string filepath = fuzzuf::utils::StrPrintf(
         "%s/chunks/chunk_%09ld",
         _work_dir.c_str(), _number_of_chunks++
       );
-      int fd = Util::OpenFile(filepath,
+      int fd = fuzzuf::utils::OpenFile(filepath,
                               O_WRONLY | O_CREAT | O_TRUNC,
                               S_IWUSR | S_IRUSR); // 0600
       if (fd == -1) {
         throw exceptions::unable_to_create_file(
-          Util::StrPrintf("Cannot save tree: %s", filepath.c_str()),
+          fuzzuf::utils::StrPrintf("Cannot save tree: %s", filepath.c_str()),
           __FILE__, __LINE__
         );
       }
-      Util::WriteFile(fd, buffer.data(), buffer.size());
-      Util::CloseFile(fd);
+      fuzzuf::utils::WriteFile(fd, buffer.data(), buffer.size());
+      fuzzuf::utils::CloseFile(fd);
 
       contains_new_chunk = true;
     }

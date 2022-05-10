@@ -49,11 +49,11 @@ AFLStateTemplate<Testcase>::AFLStateTemplate(
     : setting( setting ),
       executor( executor ),
       input_set(),
-      rand_fd( Util::OpenFile("/dev/urandom", O_RDONLY | O_CLOEXEC) ),
+      rand_fd( fuzzuf::utils::OpenFile("/dev/urandom", O_RDONLY | O_CLOEXEC) ),
       // This is a temporary implementation. Change the implementation properly if
       // the value need to be specified from user side.
-      cpu_core_count(Util::GetCpuCore()),
-      cpu_aff(Util::BindCpu(cpu_core_count, setting->cpuid_to_bind)),
+      cpu_core_count(fuzzuf::utils::GetCpuCore()),
+      cpu_aff(fuzzuf::utils::BindCpu(cpu_core_count, setting->cpuid_to_bind)),
       mutop_optimizer(std::move(_mutop_optimizer)),
       should_construct_auto_dict(false)
 {
@@ -76,7 +76,7 @@ AFLStateTemplate<Testcase>::AFLStateTemplate(
 template<class Testcase>
 AFLStateTemplate<Testcase>::~AFLStateTemplate() {
     if (rand_fd != -1) {
-        Util::CloseFile(rand_fd);
+        fuzzuf::utils::CloseFile(rand_fd);
         rand_fd = -1;
     }
 
@@ -163,7 +163,7 @@ PUTExitReasonType AFLStateTemplate<Testcase>::CalibrateCaseWithFeedDestroyed(
     }
 
     bool var_detected = false;
-    u64 start_us = Util::GetCurTimeUs();
+    u64 start_us = fuzzuf::utils::GetCurTimeUs();
     u64 stop_us;
     for (stage_cur=0; stage_cur < stage_max; stage_cur++) {
 
@@ -221,7 +221,7 @@ PUTExitReasonType AFLStateTemplate<Testcase>::CalibrateCaseWithFeedDestroyed(
         }
     }
 
-    stop_us = Util::GetCurTimeUs();
+    stop_us = fuzzuf::utils::GetCurTimeUs();
 
     total_cal_us += stop_us - start_us;
     total_cal_cycles += stage_max;
@@ -257,7 +257,7 @@ abort_calibration:
     /* Mark variable paths. */
 
     if (var_detected) {
-        var_byte_count = Util::CountBytes(&var_bytes[0], var_bytes.size());
+        var_byte_count = fuzzuf::utils::CountBytes(&var_bytes[0], var_bytes.size());
         if (!testcase.var_behavior) {
             MarkAsVariable(testcase);
             queued_variable++;
@@ -300,7 +300,7 @@ std::shared_ptr<Testcase> AFLStateTemplate<Testcase>::AddToQueue(
     queued_paths++;
     pending_not_fuzzed++;
     cycles_wo_finds = 0;
-    last_path_time = Util::GetCurTimeMs();
+    last_path_time = fuzzuf::utils::GetCurTimeMs();
 
     return testcase;
 }
@@ -392,13 +392,13 @@ bool AFLStateTemplate<Testcase>::SaveIfInteresting(
         }
 
         if (!setting->simple_files) {
-            fn = Util::StrPrintf("%s/queue/id:%06u,%s",
+            fn = fuzzuf::utils::StrPrintf("%s/queue/id:%06u,%s",
                                     setting->out_dir.c_str(),
                                     queued_paths,
                                     routine::update::DescribeOp(*this, hnb).c_str()
                                 );
         } else {
-            fn = Util::StrPrintf("%s/queue/id_%06u",
+            fn = fuzzuf::utils::StrPrintf("%s/queue/id_%06u",
                                     setting->out_dir.c_str(),
                                     queued_paths
                                 );
@@ -498,20 +498,20 @@ bool AFLStateTemplate<Testcase>::SaveIfInteresting(
         }
 
         if (!setting->simple_files) {
-            fn = Util::StrPrintf("%s/hangs/id:%06llu,%s",
+            fn = fuzzuf::utils::StrPrintf("%s/hangs/id:%06llu,%s",
                                     setting->out_dir.c_str(),
                                     unique_hangs,
                                     routine::update::DescribeOp(*this, 0).c_str()
                                 );
         } else {
-            fn = Util::StrPrintf("%s/hangs/id_%06llu",
+            fn = fuzzuf::utils::StrPrintf("%s/hangs/id_%06llu",
                                     setting->out_dir.c_str(),
                                     unique_hangs
                                 );
         }
 
         unique_hangs++;
-        last_hang_time = Util::GetCurTimeMs();
+        last_hang_time = fuzzuf::utils::GetCurTimeMs();
         break;
 
     case PUTExitReasonType::FAULT_CRASH:
@@ -561,14 +561,14 @@ keep_as_crash:
 #endif
 
         if (!setting->simple_files) {
-            fn = Util::StrPrintf("%s/crashes/id:%06llu,sig:%02u,%s",
+            fn = fuzzuf::utils::StrPrintf("%s/crashes/id:%06llu,sig:%02u,%s",
                                     setting->out_dir.c_str(),
                                     unique_crashes,
                                     exit_status.signal,
                                     routine::update::DescribeOp(*this, 0).c_str()
                                 );
         } else {
-            fn = Util::StrPrintf("%s/hangs/id_%06llu_%02u",
+            fn = fuzzuf::utils::StrPrintf("%s/hangs/id_%06llu_%02u",
                                     setting->out_dir.c_str(),
                                     unique_crashes,
                                     exit_status.signal
@@ -577,7 +577,7 @@ keep_as_crash:
 
         unique_crashes++;
 
-        last_crash_time = Util::GetCurTimeMs();
+        last_crash_time = fuzzuf::utils::GetCurTimeMs();
         last_crash_execs = total_execs;
 
         break;
@@ -592,9 +592,9 @@ keep_as_crash:
     /* If we're here, we apparently want to save the crash or hang
        test case, too. */
 
-    int fd = Util::OpenFile(fn, O_WRONLY | O_CREAT | O_EXCL, 0600);
-    Util::WriteFile(fd, buf, len);
-    Util::CloseFile(fd);
+    int fd = fuzzuf::utils::OpenFile(fn, O_WRONLY | O_CREAT | O_EXCL, 0600);
+    fuzzuf::utils::WriteFile(fd, buf, len);
+    fuzzuf::utils::CloseFile(fd);
 
     return keeping;
 }
@@ -731,11 +731,11 @@ void AFLStateTemplate<Testcase>::MarkAsDetDone(Testcase &testcase) {
     const auto& input = *testcase.input;
 
     std::string fn = input.GetPath().filename().string();
-    fn = Util::StrPrintf("%s/queue/.state/deterministic_done/%s",
+    fn = fuzzuf::utils::StrPrintf("%s/queue/.state/deterministic_done/%s",
             setting->out_dir.c_str(), fn.c_str());
 
-    int fd = Util::OpenFile(fn, O_WRONLY | O_CREAT | O_EXCL, 0600);
-    Util::CloseFile(fd);
+    int fd = fuzzuf::utils::OpenFile(fn, O_WRONLY | O_CREAT | O_EXCL, 0600);
+    fuzzuf::utils::CloseFile(fd);
 
     testcase.passed_det = true;
 }
@@ -745,13 +745,13 @@ void AFLStateTemplate<Testcase>::MarkAsVariable(Testcase &testcase) {
     const auto& input = *testcase.input;
 
     std::string fn = input.GetPath().filename().string();
-    std::string ldest = Util::StrPrintf("../../%s", fn.c_str());
-    fn = Util::StrPrintf("%s/queue/.state/variable_behavior/%s",
+    std::string ldest = fuzzuf::utils::StrPrintf("../../%s", fn.c_str());
+    fn = fuzzuf::utils::StrPrintf("%s/queue/.state/variable_behavior/%s",
             setting->out_dir.c_str(), fn.c_str());
 
     if (symlink(ldest.c_str(), fn.c_str()) == -1) {
-        int fd = Util::OpenFile(fn, O_WRONLY | O_CREAT | O_EXCL, 0600);
-        Util::CloseFile(fd);
+        int fd = fuzzuf::utils::OpenFile(fn, O_WRONLY | O_CREAT | O_EXCL, 0600);
+        fuzzuf::utils::CloseFile(fd);
     }
 
     testcase.var_behavior = true;
@@ -766,12 +766,12 @@ void AFLStateTemplate<Testcase>::MarkAsRedundant(Testcase &testcase, bool val) {
     testcase.fs_redundant = val;
 
     std::string fn = input.GetPath().filename().string();
-    fn = Util::StrPrintf("%s/queue/.state/redundant_edges/%s",
+    fn = fuzzuf::utils::StrPrintf("%s/queue/.state/redundant_edges/%s",
             setting->out_dir.c_str(), fn.c_str());
 
     if (val) {
-        int fd = Util::OpenFile(fn, O_WRONLY | O_CREAT | O_EXCL, 0600);
-        Util::CloseFile(fd);
+        int fd = fuzzuf::utils::OpenFile(fn, O_WRONLY | O_CREAT | O_EXCL, 0600);
+        fuzzuf::utils::CloseFile(fd);
     } else {
         if (unlink(fn.c_str())) ERROR("Unable to remove '%s'", fn.c_str());
     }
@@ -828,7 +828,7 @@ static double GetRunnableProcesses(State &state) {
 template<class Testcase>
 void AFLStateTemplate<Testcase>::WriteStatsFile(double bitmap_cvg, double stability, double eps) {
     auto fn = setting->out_dir / "fuzzer_stats";
-    int fd = Util::OpenFile(fn.string(), O_WRONLY | O_CREAT | O_TRUNC, 0600);
+    int fd = fuzzuf::utils::OpenFile(fn.string(), O_WRONLY | O_CREAT | O_TRUNC, 0600);
     if (fd < 0) ERROR("Unable to create '%s'", fn.c_str());
 
     FILE* f = fdopen(fd, "w");
@@ -876,7 +876,7 @@ void AFLStateTemplate<Testcase>::WriteStatsFile(double bitmap_cvg, double stabil
                "target_mode       : %s%s%s%s%s%s%s\n"
                "command_line      : %s\n"
                "slowest_exec_ms   : %llu\n",
-               start_time / 1000, Util::GetCurTimeMs() / 1000, getpid(),
+               start_time / 1000, fuzzuf::utils::GetCurTimeMs() / 1000, getpid(),
                queue_cycle ? (queue_cycle - 1) : 0, total_execs, eps,
                queued_paths, queued_favored, queued_discovered, queued_imported,
                max_depth, current_entry, pending_favored, pending_not_fuzzed,
@@ -924,13 +924,13 @@ void AFLStateTemplate<Testcase>::SaveAuto(void) {
     for (u32 i=0; i<lim; i++) {
         auto fn =   setting->out_dir
                   / "queue/.state/auto_extras"
-                  / Util::StrPrintf("auto_%06u", i);
+                  / fuzzuf::utils::StrPrintf("auto_%06u", i);
 
-        int fd = Util::OpenFile(fn.string(), O_WRONLY | O_CREAT | O_TRUNC, 0600);
+        int fd = fuzzuf::utils::OpenFile(fn.string(), O_WRONLY | O_CREAT | O_TRUNC, 0600);
         if (fd < 0) ERROR("Unable to create '%s'", fn.c_str());
 
-        Util::WriteFile(fd, &a_extras[i].data[0], a_extras[i].data.size());
-        Util::CloseFile(fd);
+        fuzzuf::utils::WriteFile(fd, &a_extras[i].data[0], a_extras[i].data.size());
+        fuzzuf::utils::CloseFile(fd);
     }
 }
 
@@ -945,23 +945,23 @@ void AFLStateTemplate<Testcase>::WriteBitmap(void) {
 
     auto fn = setting->out_dir  / "fuzz_bitmap";
 
-    int fd = Util::OpenFile(fn.string(), O_WRONLY | O_CREAT | O_TRUNC, 0600);
+    int fd = fuzzuf::utils::OpenFile(fn.string(), O_WRONLY | O_CREAT | O_TRUNC, 0600);
     if (fd < 0) ERROR("Unable to create '%s'", fn.c_str());
 
-    Util::WriteFile(fd, virgin_bits.data(), option::GetMapSize<Tag>());
-    Util::CloseFile(fd);
+    fuzzuf::utils::WriteFile(fd, virgin_bits.data(), option::GetMapSize<Tag>());
+    fuzzuf::utils::CloseFile(fd);
 }
 
 /* Read bitmap from file. This is for the -B option again. */
 
 template<class Testcase>
 void AFLStateTemplate<Testcase>::ReadBitmap(fs::path fname) {
-    int fd = Util::OpenFile(fname.string(), O_RDONLY);
+    int fd = fuzzuf::utils::OpenFile(fname.string(), O_RDONLY);
     if (fd < 0) ERROR("Unable to open '%s'", fname.c_str());
 
     virgin_bits.resize(option::GetMapSize<Tag>());
-    Util::ReadFile(fd, virgin_bits.data(), option::GetMapSize<Tag>());
-    Util::CloseFile(fd);
+    fuzzuf::utils::ReadFile(fd, virgin_bits.data(), option::GetMapSize<Tag>());
+    fuzzuf::utils::CloseFile(fd);
 }
 
 template<class Testcase>
@@ -989,7 +989,7 @@ void AFLStateTemplate<Testcase>::MaybeUpdatePlotFile(double bitmap_cvg, double e
 
     fprintf(plot_file,
             "%llu, %llu, %u, %u, %u, %u, %0.02f%%, %llu, %llu, %u, %0.02f\n",
-            Util::GetCurTimeMs() / 1000, queue_cycle - 1, current_entry, queued_paths,
+            fuzzuf::utils::GetCurTimeMs() / 1000, queue_cycle - 1, current_entry, queued_paths,
             pending_not_fuzzed, pending_favored, bitmap_cvg, unique_crashes,
             unique_hangs, max_depth, eps); /* ignore errors */
 
@@ -1062,7 +1062,7 @@ void AFLStateTemplate<Testcase>::ReadTestcases(void) {
        the ordering  of test cases would vary somewhat randomly and would be
        difficult to control. */
 
-    int nl_cnt = Util::ScanDirAlpha(in_dir.string(), &nl);
+    int nl_cnt = fuzzuf::utils::ScanDirAlpha(in_dir.string(), &nl);
     if (nl_cnt < 0) {
         MSG("\n" cLRD "[-] " cRST
             "The input directory does not seem to be valid - try again. The fuzzer needs\n"
@@ -1081,8 +1081,8 @@ void AFLStateTemplate<Testcase>::ReadTestcases(void) {
     for (int i=0; i < nl_cnt; i++) {
         struct stat st;
 
-        std::string fn = Util::StrPrintf("%s/%s", in_dir.c_str(), nl[i]->d_name);
-        std::string dfn = Util::StrPrintf("%s/.state/deterministic_done/%s", in_dir.c_str(), nl[i]->d_name);
+        std::string fn = fuzzuf::utils::StrPrintf("%s/%s", in_dir.c_str(), nl[i]->d_name);
+        std::string dfn = fuzzuf::utils::StrPrintf("%s/.state/deterministic_done/%s", in_dir.c_str(), nl[i]->d_name);
 
         bool passed_det = false;
         free(nl[i]); /* not tracked */
@@ -1149,7 +1149,7 @@ void AFLStateTemplate<Testcase>::PivotInputs() {
           && sscanf(rsl.c_str()+3, "%06u", &orig_id) == 1
           && orig_id == id) {
             resuming_fuzz = true;
-            nfn = Util::StrPrintf("%s/queue/%s", setting->out_dir.c_str(), rsl.c_str());
+            nfn = fuzzuf::utils::StrPrintf("%s/queue/%s", setting->out_dir.c_str(), rsl.c_str());
 
             /* Since we're at it, let's also try to find parent and figure out the
                appropriate depth for this entry. */
@@ -1177,12 +1177,12 @@ void AFLStateTemplate<Testcase>::PivotInputs() {
                 if (pos != std::string::npos) pos += 6;
                 else pos = 0;
 
-                nfn = Util::StrPrintf("%s/queue/id:%06u,orig:%s",
+                nfn = fuzzuf::utils::StrPrintf("%s/queue/id:%06u,orig:%s",
                                         setting->out_dir.c_str(),
                                         id,
                                         rsl.c_str() + pos);
             } else {
-                nfn = Util::StrPrintf("%s/queue/id_%06u",
+                nfn = fuzzuf::utils::StrPrintf("%s/queue/id_%06u",
                                         setting->out_dir.c_str(), id);
             }
         }
@@ -1437,7 +1437,7 @@ void AFLStateTemplate<Testcase>::ShowStats(void) {
 
     const u32 MAP_SIZE = GetMapSize<Tag>();
 
-    u64 cur_ms = Util::GetCurTimeMs();
+    u64 cur_ms = fuzzuf::utils::GetCurTimeMs();
 
     /* If not enough time has passed since last UI update, bail out. */
     if (cur_ms - last_ms < 1000 / GetUiTargetHz(*this)) return;
@@ -1469,7 +1469,7 @@ void AFLStateTemplate<Testcase>::ShowStats(void) {
     if (!stats_update_freq) stats_update_freq = 1;
 
     /* Do some bitmap stats. */
-    u32 t_bytes = Util::CountNon255Bytes(&virgin_bits[0], virgin_bits.size());
+    u32 t_bytes = fuzzuf::utils::CountNon255Bytes(&virgin_bits[0], virgin_bits.size());
     double t_byte_ratio = ((double)t_bytes * 100) / MAP_SIZE;
 
     double stab_ratio;
@@ -1503,7 +1503,7 @@ void AFLStateTemplate<Testcase>::ShowStats(void) {
     if (not_on_tty) return;
 
     /* Compute some mildly useful bitmap stats. */
-    u32 t_bits = (MAP_SIZE << 3) - Util::CountBits(&virgin_bits[0], virgin_bits.size());
+    u32 t_bits = (MAP_SIZE << 3) - fuzzuf::utils::CountBits(&virgin_bits[0], virgin_bits.size());
 
     /* Now, for the visuals... */
     bool term_too_small = false;
@@ -1536,7 +1536,7 @@ void AFLStateTemplate<Testcase>::ShowStats(void) {
                         : cYEL "fuzzuf american fuzzy lop";
 
     std::string tmp(banner_pad, ' ');
-    tmp += Util::StrPrintf("%s " cLCY "%s" cLGN " (%s)",
+    tmp += fuzzuf::utils::StrPrintf("%s " cLCY "%s" cLGN " (%s)",
                             fuzzer_name, GetVersion(*this), use_banner.c_str());
     MSG("\n%s\n\n", tmp.c_str());
 
@@ -1632,22 +1632,22 @@ void AFLStateTemplate<Testcase>::ShowStats(void) {
 
     tmp = DescribeInteger(current_entry);
     if (!queue_cur.favored) tmp += '*';
-    tmp += Util::StrPrintf(" (%0.02f%%)", ((double)current_entry * 100) / queued_paths);
+    tmp += fuzzuf::utils::StrPrintf(" (%0.02f%%)", ((double)current_entry * 100) / queued_paths);
 
     MSG(bV bSTOP "  now processing : " cRST "%-17s " bSTG bV bSTOP, tmp.c_str());
 
-    tmp = Util::StrPrintf("%0.02f%% / %0.02f%%",
+    tmp = fuzzuf::utils::StrPrintf("%0.02f%% / %0.02f%%",
                           ((double)queue_cur.bitmap_size) * 100 / MAP_SIZE, t_byte_ratio);
 
     MSG("    map density : %s%-21s " bSTG bV "\n", t_byte_ratio > 70 ? cLRD :
          ((t_bytes < 200 && !setting->dumb_mode) ? cPIN : cRST), tmp.c_str());
 
     tmp = DescribeInteger(cur_skipped_paths);
-    tmp += Util::StrPrintf(" (%0.02f%%)", ((double)cur_skipped_paths * 100) / queued_paths);
+    tmp += fuzzuf::utils::StrPrintf(" (%0.02f%%)", ((double)cur_skipped_paths * 100) / queued_paths);
 
     MSG(bV bSTOP " paths timed out : " cRST "%-17s " bSTG bV, tmp.c_str());
 
-    tmp = Util::StrPrintf("%0.02f bits/tuple", t_bytes ? (((double)t_bits) / t_bytes) : 0);
+    tmp = fuzzuf::utils::StrPrintf("%0.02f bits/tuple", t_bytes ? (((double)t_bits) / t_bytes) : 0);
 
     MSG(bSTOP " count coverage : " cRST "%-21s " bSTG bV "\n", tmp.c_str());
 
@@ -1655,7 +1655,7 @@ void AFLStateTemplate<Testcase>::ShowStats(void) {
          " findings in depth " bSTG bH20 bVL "\n");
 
     tmp = DescribeInteger(queued_favored);
-    tmp += Util::StrPrintf(" (%0.02f%%)", ((double)queued_favored) * 100 / queued_paths);
+    tmp += fuzzuf::utils::StrPrintf(" (%0.02f%%)", ((double)queued_favored) * 100 / queued_paths);
 
     /* Yeah... it's still going on... halp? */
 
@@ -1666,13 +1666,13 @@ void AFLStateTemplate<Testcase>::ShowStats(void) {
         tmp = DescribeInteger(stage_cur) + "/-";
     } else {
         tmp = DescribeInteger(stage_cur) + "/" + DescribeInteger(stage_max);
-        tmp += Util::StrPrintf(" (%0.02f%%)", ((double)stage_cur) * 100 / stage_max);
+        tmp += fuzzuf::utils::StrPrintf(" (%0.02f%%)", ((double)stage_cur) * 100 / stage_max);
     }
 
     MSG(bV bSTOP " stage execs : " cRST "%-21s " bSTG bV bSTOP, tmp.c_str());
 
     tmp = DescribeInteger(queued_with_cov);
-    tmp += Util::StrPrintf(" (%0.02f%%)", ((double)queued_with_cov) * 100 / queued_paths);
+    tmp += fuzzuf::utils::StrPrintf(" (%0.02f%%)", ((double)queued_with_cov) * 100 / queued_paths);
 
     MSG("  new edges on : " cRST "%-22s " bSTG bV "\n", tmp.c_str());
 
@@ -1776,7 +1776,7 @@ void AFLStateTemplate<Testcase>::ShowStats(void) {
 
     MSG(bV bSTOP "       havoc : " cRST "%-37s " bSTG bV bSTOP, tmp.c_str());
 
-    if (t_bytes) tmp = Util::StrPrintf("%0.02f%%", stab_ratio);
+    if (t_bytes) tmp = fuzzuf::utils::StrPrintf("%0.02f%%", stab_ratio);
     else tmp = "n/a";
 
     MSG(" stability : %s%-10s " bSTG bV "\n", (stab_ratio < 85 && var_byte_count > 40)
@@ -1786,7 +1786,7 @@ void AFLStateTemplate<Testcase>::ShowStats(void) {
     if (!bytes_trim_out) {
         tmp = "n/a, ";
     } else {
-        tmp = Util::StrPrintf("%0.02f%%",
+        tmp = fuzzuf::utils::StrPrintf("%0.02f%%",
                 ((double)(bytes_trim_in - bytes_trim_out)) * 100 / bytes_trim_in);
         tmp += "/" + DescribeInteger(trim_execs) + ", ";
     }
@@ -1794,7 +1794,7 @@ void AFLStateTemplate<Testcase>::ShowStats(void) {
     if (!blocks_eff_total) {
         tmp += "n/a";
     } else {
-        tmp += Util::StrPrintf("%0.02f%%",
+        tmp += fuzzuf::utils::StrPrintf("%0.02f%%",
                 ((double)(blocks_eff_total - blocks_eff_select)) * 100 / blocks_eff_total);
     }
 

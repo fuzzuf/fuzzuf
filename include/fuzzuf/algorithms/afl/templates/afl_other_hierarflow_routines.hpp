@@ -265,7 +265,7 @@ static PUTExitReasonType DoTrimCase(
     state.bytes_trim_in += input.GetLen();
 
     /* Select initial chunk len, starting with large steps. */
-    u32 len_p2 = Util::NextP2(input.GetLen());
+    u32 len_p2 = fuzzuf::utils::NextP2(input.GetLen());
 
     u32 remove_len = std::max(
                         len_p2 / option::GetTrimStartSteps(state),
@@ -288,7 +288,7 @@ static PUTExitReasonType DoTrimCase(
     while (remove_len >= end_len) {
         u32 remove_pos = remove_len;
 
-        state.stage_name = Util::StrPrintf(
+        state.stage_name = fuzzuf::utils::StrPrintf(
                               "trim %s/%s",
                               afl::util::DescribeInteger(remove_len).c_str(),
                               afl::util::DescribeInteger(remove_len).c_str()
@@ -340,7 +340,7 @@ static PUTExitReasonType DoTrimCase(
             if (cksum == testcase.exec_cksum) {
                 input.OverwriteKeepingLoaded(std::move(test_buf), test_len);
 
-                len_p2 = Util::NextP2(input.GetLen());
+                len_p2 = fuzzuf::utils::NextP2(input.GetLen());
                 end_len = std::max(
                               len_p2 / option::GetTrimEndSteps(state),
                               option::GetTrimMinBytes(state)

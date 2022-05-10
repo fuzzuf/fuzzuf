@@ -1,7 +1,7 @@
 /*
  * fuzzuf
- * Copyright (C) 2021 Ricerca Security
- * 
+ * Copyright (C) 2022 Ricerca Security
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -15,14 +15,14 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see http://www.gnu.org/licenses/.
  */
+/**
+ * @file check_crash_handling.hpp
+ * @author Ricerca Security <fuzzuf-dev@ricsec.co.jp>
+ */
 
-#define BOOST_TEST_MODULE util.global_counter
-#define BOOST_TEST_DYN_LINK
-#include <boost/test/unit_test.hpp>
-#include "fuzzuf/utils/common.hpp"
-
-BOOST_AUTO_TEST_CASE(UtilGlobalCounter) {
-  auto x = fuzzuf::utils::GlobalCounter();
-  auto y = fuzzuf::utils::GlobalCounter();
-  BOOST_CHECK( x != y );
+#ifndef FUZZUF_INCLUDE_UTILS_CHECK_CRASH_HANDLING_HPP
+#define FUZZUF_INCLUDE_UTILS_CHECK_CRASH_HANDLING_HPP
+namespace fuzzuf::utils {
+void CheckCrashHandling();
 }
+#endif

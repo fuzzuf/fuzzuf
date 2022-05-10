@@ -173,7 +173,7 @@ std::unique_ptr<TFuzzer> BuildDIEFuzzerFromArgs(FuzzerArgs &fuzzer_args,
     global_options.exec_memlimit.value_or(GetMemLimit<DIETag>()),
     /* forksrv */   true,
     /* dumb_mode */ false,
-    Util::CPUID_BIND_WHICHEVER,
+    fuzzuf::utils::CPUID_BIND_WHICHEVER,
     die_options.die_dir, // vvv DIE vvv
     die_options.cmd_py,
     die_options.cmd_node,

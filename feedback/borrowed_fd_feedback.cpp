@@ -43,15 +43,15 @@ BorrowedFdFeedback& BorrowedFdFeedback::operator=(BorrowedFdFeedback&& orig) {
 }
 
 void BorrowedFdFeedback::Read(void *buf, u32 len) {
-    Util::ReadFile(fd, buf, len);
+    fuzzuf::utils::ReadFile(fd, buf, len);
 }
 
 u32 BorrowedFdFeedback::ReadTimed(void *buf, u32 len, u32 timeout_ms) {
-    return Util::ReadFileTimed(fd, buf, len, timeout_ms);
+    return fuzzuf::utils::ReadFileTimed(fd, buf, len, timeout_ms);
 }
 
 void BorrowedFdFeedback::Write(void *buf, u32 len) {
-    Util::WriteFile(fd, buf, len);
+    fuzzuf::utils::WriteFile(fd, buf, len);
 }
 
 // This is static method

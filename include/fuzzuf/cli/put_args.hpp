@@ -31,7 +31,7 @@ struct PutArgs {
 
     void Check() {
         if (args.size() == 0) {
-            throw exceptions::cli_error(Util::StrPrintf("Command line of PUT is not specified"), __FILE__, __LINE__);
+            throw exceptions::cli_error(fuzzuf::utils::StrPrintf("Command line of PUT is not specified"), __FILE__, __LINE__);
         }
     }
 

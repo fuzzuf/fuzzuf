@@ -143,8 +143,8 @@ struct FuzzerCreateInfo {
       : input_dir("./input"), output_dir("./output"),
         // This is a temporary implementation. Change the implementation
         // properly if the value need to be specified from user side.
-        cpu_core_count(Util::GetCpuCore()),
-        cpu_aff(Util::BindCpu(cpu_core_count, cpuid_to_bind)) {}
+        cpu_core_count(fuzzuf::utils::GetCpuCore()),
+        cpu_aff(fuzzuf::utils::BindCpu(cpu_core_count, cpuid_to_bind)) {}
   FUZZUF_SETTER(input_dir)
   FUZZUF_SETTER(output_dir)
   FUZZUF_SETTER(dictionaries)
@@ -290,7 +290,7 @@ struct FuzzerCreateInfo {
   /**
    * cpuid restriction to execute the target
    */
-  int cpuid_to_bind = Util::CPUID_DO_NOT_BIND;
+  int cpuid_to_bind = fuzzuf::utils::CPUID_DO_NOT_BIND;
 
   /**
    * CPU core count
@@ -300,7 +300,7 @@ struct FuzzerCreateInfo {
   /**
    * Selected CPU core
    */
-  int cpu_aff = Util::CPUID_DO_NOT_BIND;
+  int cpu_aff = fuzzuf::utils::CPUID_DO_NOT_BIND;
 
   /**
    * If true, feature is calculated using AFL compatible coverage

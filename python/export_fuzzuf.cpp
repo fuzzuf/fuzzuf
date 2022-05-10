@@ -45,7 +45,7 @@ PYBIND11_PLUGIN(fuzzuf) {
       .def("get_buf", &PySeed::GetBuf)
       .def("get_feedback", &PySeed::GetFeedback)
       .def("__repr__", [](const PySeed &self) {
-        return Util::StrPrintf("Seed(id=%ld, ...)", self.GetID());
+        return fuzzuf::utils::StrPrintf("Seed(id=%ld, ...)", self.GetID());
       });
 
   // 後方互換性のためPython側の"get_trace"という古い名前はget_bb_traceにしない（一旦）
@@ -79,9 +79,9 @@ PYBIND11_PLUGIN(fuzzuf) {
       .def("add_seed", &PythonFuzzer::AddSeed)
       .def("get_seed_ids", &PythonFuzzer::GetSeedIDs)
       .def("__repr__", [](const PythonFuzzer & /*f*/) { return "Fuzzer()"; });
-  f.def("init_logger", &Util::init_logger);
+  f.def("init_logger", &fuzzuf::utils::init_logger);
   f.def("log", [](const std::string &tag, const std::string &data) -> bool {
-    return Util::log(std::string(tag), std::string(data)) ==
+    return fuzzuf::utils::log(std::string(tag), std::string(data)) ==
            fuzzuf::status_t::OK;
   });
 #if !((PYBIND11_VERSION_MAJOR == 2 && PYBIND11_VERSION_MINOR >= 2) ||          \

@@ -38,7 +38,7 @@ BOOST_AUTO_TEST_CASE(UtilMinimizeBits) {
   const std::vector< std::uint8_t > expected{
     0xbf, 0x7b, 0xff, 0xac, 0x67, 0xdf, 0x0, 0xff
   };
-  Util::MinimizeBits( result.data(), data.data(), data.size() );
+  fuzzuf::utils::MinimizeBits( result.data(), data.data(), data.size() );
   for( auto v: result )
   std::cout << std::hex << "0x" << uint32_t( v ) << ", " << std::flush;
   BOOST_TEST( ( result == expected ), tt::per_element() );

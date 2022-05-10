@@ -113,7 +113,7 @@ static void StoreMaxInput(IJONState &state, u32 idx, const u8 *data, u32 len) {
     state.all_inputs[idx]->OverwriteThenUnload(data, len);
  
     fs::path copy_fn = 
-          state.max_dir / Util::StrPrintf("finding_%lu_%lu", 
+          state.max_dir / fuzzuf::utils::StrPrintf("finding_%lu_%lu", 
                                             state.num_updates,
                                             time(NULL));
 
@@ -156,7 +156,7 @@ IJONUpdCalleeRef UpdateMax::operator()(
 
                 state.max_map[i] = shared->afl_max[i];
                 StdoutLogger::Println(
-                    Util::StrPrintf("updated maxmap %d: %lx (len: %ld)", 
+                    fuzzuf::utils::StrPrintf("updated maxmap %d: %lx (len: %ld)", 
                                     i, state.max_map[i], len)
                 );
             } else if (
@@ -166,7 +166,7 @@ IJONUpdCalleeRef UpdateMax::operator()(
             ) {
                 need_update = true;
                 StdoutLogger::Println(
-                    Util::StrPrintf("minimized maxmap %d: %lx (len: %ld)", 
+                    fuzzuf::utils::StrPrintf("minimized maxmap %d: %lx (len: %ld)", 
                                     i, state.max_map[i], len)
                 );
             }

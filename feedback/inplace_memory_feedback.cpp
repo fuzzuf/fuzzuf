@@ -63,11 +63,11 @@ PersistentMemoryFeedback InplaceMemoryFeedback::ConvertToPersistent() const {
 u32 InplaceMemoryFeedback::CalcCksum32() const {
     using fuzzuf::algorithm::afl::option::GetHashConst;
     using fuzzuf::algorithm::afl::option::AFLTag;
-    return Util::Hash32(mem, len, GetHashConst<AFLTag>());
+    return fuzzuf::utils::Hash32(mem, len, GetHashConst<AFLTag>());
 }
 
 u32 InplaceMemoryFeedback::CountNonZeroBytes() const {
-    return Util::CountBytes(mem, len);
+    return fuzzuf::utils::CountBytes(mem, len);
 }
 
 void InplaceMemoryFeedback::ShowMemoryToFunc(

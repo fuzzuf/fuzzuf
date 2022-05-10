@@ -141,13 +141,13 @@ VUzzerMidCalleeRef ExecutePUT::operator()(void) {
                 /* VUzzer has found a new crash input:) */
                 state.crash_hashes.insert(crash_hash);
                 /* TODO: File path format */
-                std::string crash_path = Util::StrPrintf("%s/crashes/id:%06llu",
+                std::string crash_path = fuzzuf::utils::StrPrintf("%s/crashes/id:%06llu",
                                                          state.setting->out_dir.c_str(),
                                                          state.unique_crashes);
 
-                int fd = Util::OpenFile(crash_path, O_WRONLY | O_CREAT | O_EXCL, 0600);
-                Util::WriteFile(fd, testcase->input->GetBuf(), testcase->input->GetLen());
-                Util::CloseFile(fd);
+                int fd = fuzzuf::utils::OpenFile(crash_path, O_WRONLY | O_CREAT | O_EXCL, 0600);
+                fuzzuf::utils::WriteFile(fd, testcase->input->GetBuf(), testcase->input->GetLen());
+                fuzzuf::utils::CloseFile(fd);
                 state.unique_crashes++;
             }
             /* TODO: Implement STOPONCRASH mode */

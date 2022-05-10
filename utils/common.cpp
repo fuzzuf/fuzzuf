@@ -59,7 +59,7 @@ namespace filesystem = boost::filesystem;
 
 // FIXME: エラークラス名は FileError じゃなくて IoError or IOError が適切では？
 
-namespace Util {
+namespace fuzzuf::utils {
 
 /**
  * @fn
@@ -458,8 +458,8 @@ std::set<int> GetFreeCpu(int allcpu) {
 /**
  * Bind a CPU core to current process.
  * The cpuid_to_bind argument takes the following possible value:
- *   1. Util::CPUID_DO_NOT_BIND: Do not bind to any CPU core.
- *   2. Util::CPUID BIND_WHICHEVER: Bind to a free CPU core.
+ *   1. fuzzuf::utils::CPUID_DO_NOT_BIND: Do not bind to any CPU core.
+ *   2. fuzzuf::utils::CPUID BIND_WHICHEVER: Bind to a free CPU core.
  *   3. Integer value in [0, cpu_core_count): Bind to the specified CPU core.
  *
  * @note
@@ -481,7 +481,7 @@ int BindCpu(int cpu_core_count, int cpuid_to_bind) {
 
   // If cpuid_to_bind is not CPUID_DO_NOT_BIND,
   // then this function tries to bind this process to a cpu core somehow
-  std::set<int> vacant_cpus = Util::GetFreeCpu(cpu_core_count);
+  std::set<int> vacant_cpus = fuzzuf::utils::GetFreeCpu(cpu_core_count);
 
   if (cpuid_to_bind == CPUID_BIND_WHICHEVER) {
     // this means "don't care which cpu core, but should bind"
@@ -913,4 +913,4 @@ fuzzuf::status_t log(std::string &&, nlohmann::json &&) {
 }
 
 #endif
-}; // namespace Util
+}; // namespace fuzzuf::utils

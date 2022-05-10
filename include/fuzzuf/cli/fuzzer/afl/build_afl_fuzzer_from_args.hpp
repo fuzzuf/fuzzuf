@@ -176,7 +176,7 @@ std::unique_ptr<TFuzzer> BuildFuzzer(
                         mem_limit,
                         afl_options.forksrv,
                         /* dumb_mode */ false,  // FIXME: add dumb_mode
-                        Util::CPUID_BIND_WHICHEVER
+                        fuzzuf::utils::CPUID_BIND_WHICHEVER
                     );
 
     // NativeLinuxExecutor needs the directory specified by "out_dir" to be already set up

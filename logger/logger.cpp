@@ -27,6 +27,6 @@ std::string to_string(Logger v) {
         case Logger::Flc:
             return "Flc";
         default:
-            throw exceptions::logger_error(Util::StrPrintf("Unknown Logger enum value: %d", v), __FILE__, __LINE__);
+            throw exceptions::logger_error(fuzzuf::utils::StrPrintf("Unknown Logger enum value: %d", v), __FILE__, __LINE__);
     }
 }
