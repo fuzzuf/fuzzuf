@@ -19,7 +19,6 @@
 #include "fuzzuf/algorithms/ijon/ijon_fuzzer.hpp"
 #include "fuzzuf/cli/fuzzer_builder_register.hpp"
 #include "fuzzuf/cli/fuzzer/ijon/build_ijon_fuzzer_from_args.hpp"
-#include "fuzzuf/executor/afl_executor_interface.hpp"
 
 namespace fuzzuf::cli::fuzzer::ijon {
 
@@ -27,6 +26,6 @@ namespace fuzzuf::cli::fuzzer::ijon {
 // object file.
 // Conversely, if IJON cannot be built in a certain environment, do not compile it into an object file to prevent IJON
 // from being registered by accident.
-static FuzzerBuilderRegister global_ijon_register("ijon", BuildIJONFuzzerFromArgs<Fuzzer, algorithm::ijon::IJONFuzzer, executor::AFLExecutorInterface>);
+static FuzzerBuilderRegister global_ijon_register("ijon", BuildIJONFuzzerFromArgs<Fuzzer, algorithm::ijon::IJONFuzzer>);
 
 } // namespace fuzzuf::cli::fuzzer::ijon

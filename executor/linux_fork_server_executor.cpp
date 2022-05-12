@@ -68,13 +68,16 @@
 LinuxForkServerExecutor::LinuxForkServerExecutor(
     const std::vector<std::string> &argv, u32 exec_timelimit_ms,
     u64 exec_memlimit, const fs::path &path_to_write_input, u32 afl_shm_size,
-    u32 bb_shm_size, bool record_stdout_and_err,
+    u32 bb_shm_size,
+    u32 extra_shm_size,
+    bool record_stdout_and_err,
     std::vector<std::string> &&environment_variables_,
     std::vector<fs::path> &&allowed_path_)
     : Executor(argv, exec_timelimit_ms, exec_memlimit,
                path_to_write_input.string()),
       afl_edge_coverage(afl_shm_size),
       fuzzuf_bb_coverage(bb_shm_size),
+      extra_feedback(extra_shm_size),
 
       // cargv and stdin_mode are initialized at SetCArgvAndDecideInputMode
       last_timeout_ms(exec_timelimit_ms),
@@ -280,6 +283,10 @@ u32 LinuxForkServerExecutor::GetBBMapSize() {
   return fuzzuf_bb_coverage.GetMapSize();
 }
 
+u32 LinuxForkServerExecutor::GetExtraFeedbackMapSize() {
+    return extra_feedback.GetMapSize();
+}
+
 int LinuxForkServerExecutor::GetAFLShmID() {
   return afl_edge_coverage.GetShmID();
 }
@@ -288,12 +295,20 @@ int LinuxForkServerExecutor::GetBBShmID() {
   return fuzzuf_bb_coverage.GetShmID();
 }
 
+int LinuxForkServerExecutor::GetExtraFeedbackShmID() {
+    return extra_feedback.GetShmID();
+}
+
 InplaceMemoryFeedback LinuxForkServerExecutor::GetAFLFeedback() {
   return afl_edge_coverage.GetFeedback();
 }
 
 InplaceMemoryFeedback LinuxForkServerExecutor::GetBBFeedback() {
   return fuzzuf_bb_coverage.GetFeedback();
+}
+
+InplaceMemoryFeedback LinuxForkServerExecutor::GetExtraFeedback() {
+    return extra_feedback.GetFeedback();
 }
 
 InplaceMemoryFeedback LinuxForkServerExecutor::GetStdOut() {
@@ -329,7 +344,8 @@ ExitStatusFeedback LinuxForkServerExecutor::GetExitStatusFeedback() {
 
 bool LinuxForkServerExecutor::IsFeedbackLocked() {
   return (lock.use_count() > 1) || (afl_edge_coverage.GetLockUseCount() > 1) ||
-         (fuzzuf_bb_coverage.GetLockUseCount() > 1);
+         (fuzzuf_bb_coverage.GetLockUseCount() > 1) ||
+	 (extra_feedback.GetLockUseCount() > 1);
 }
 
 // Initialize shared memory group that the PUT writes the coverage.
@@ -338,6 +354,7 @@ bool LinuxForkServerExecutor::IsFeedbackLocked() {
 void LinuxForkServerExecutor::SetupSharedMemories() {
   afl_edge_coverage.Setup();
   fuzzuf_bb_coverage.Setup();
+  extra_feedback.Setup();
 }
 
 // Since shared memory is reused, it is initialized every time before passed to
@@ -345,12 +362,14 @@ void LinuxForkServerExecutor::SetupSharedMemories() {
 void LinuxForkServerExecutor::ResetSharedMemories() {
   afl_edge_coverage.Reset();
   fuzzuf_bb_coverage.Reset();
+  extra_feedback.Reset();
 }
 
 // Delete SharedMemory when the Executor is deleted
 void LinuxForkServerExecutor::EraseSharedMemories() {
   afl_edge_coverage.Erase();
   fuzzuf_bb_coverage.Erase();
+  extra_feedback.Erase();
 }
 
 // Since PUT that is instrumented using afl-clang-fast or fuzzuf-cc
@@ -365,6 +384,7 @@ void LinuxForkServerExecutor::SetupEnvironmentVariablesForTarget() {
   // Pass the id of shared memory to PUT.
   afl_edge_coverage.SetupEnvironmentVariable();
   fuzzuf_bb_coverage.SetupEnvironmentVariable();
+  // NOTE: Call extra_feedback.SetupEnvironmentVariable(...) from XXXExecutorInterface
 
   /* This should improve performance a bit, since it stops the linker from
       doing extra work post-fork(). */

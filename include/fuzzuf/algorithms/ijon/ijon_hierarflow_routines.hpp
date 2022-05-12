@@ -107,13 +107,13 @@ using IJONUpdOutputType = afl::routine::update::AFLUpdOutputType;
  * @struct
  * A HierarFlowRoutine for IJON that updates the internal state of IJON.
  */
-struct UpdateMax
+struct IJONUpdate
     : public HierarFlowRoutine<
         IJONUpdInputType,
         IJONUpdOutputType
     > {
 public:
-    UpdateMax(IJONState &state);
+    IJONUpdate(IJONState &state);
 
     IJONUpdCalleeRef operator()(
         const u8*, u32, InplaceMemoryFeedback&, ExitStatusFeedback&);

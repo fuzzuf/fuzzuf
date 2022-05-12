@@ -19,10 +19,6 @@
 #ifndef FUZZUF_INCLUDE_ALGORITHM_IJON_IJON_FUZZER_HPP
 #define FUZZUF_INCLUDE_ALGORITHM_IJON_IJON_FUZZER_HPP
 
-#include <vector>
-#include <string>
-
-#include "fuzzuf/utils/common.hpp"
 #include "fuzzuf/hierarflow/hierarflow_node.hpp"
 #include "fuzzuf/algorithms/afl/afl_fuzzer.hpp"
 #include "fuzzuf/algorithms/ijon/ijon_state.hpp"

@@ -28,6 +28,7 @@
 #include "fuzzuf/algorithms/afl/afl_option.hpp"
 #include "fuzzuf/algorithms/afl/afl_setting.hpp"
 #include "fuzzuf/algorithms/afl/afl_state.hpp"
+#include "fuzzuf/executor/linux_fork_server_executor.hpp"
 #include "fuzzuf/executor/native_linux_executor.hpp"
 #include "fuzzuf/executor/qemu_executor.hpp"
 #ifdef __aarch64__
@@ -210,7 +211,8 @@ std::unique_ptr<TFuzzer> BuildFuzzer(
                             setting->exec_memlimit,
                             setting->out_dir / GetDefaultOutfile<AFLTag>(),
                             GetMapSize<AFLTag>(), // afl_shm_size
-                            0 // bb_shm_size
+                            0, // bb_shm_size
+                            0 // extra_shm_size
                         );
         executor = std::make_shared<TExecutor>(std::move(lfe));
         break;
