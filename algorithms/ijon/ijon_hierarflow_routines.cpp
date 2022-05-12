@@ -100,7 +100,7 @@ namespace update {
 
 using IJONUpdCalleeRef = afl::routine::update::AFLUpdCalleeRef;
 
-UpdateMax::UpdateMax(IJONState &state) : state(state) {}
+IJONUpdate::IJONUpdate(IJONState &state) : state(state) {}
 
 static void StoreMaxInput(IJONState &state, u32 idx, const u8 *data, u32 len) {
     // NOTE: is it no problem to overwrite/unload `all_inputs[idx]`, 
@@ -125,7 +125,7 @@ static void StoreMaxInput(IJONState &state, u32 idx, const u8 *data, u32 len) {
  * Corresponding code of original IJON implementation:
  * https://github.com/RUB-SysSec/ijon/blob/4cb8ae04d/afl-ijon-min.c#L68-L83
  */
-IJONUpdCalleeRef UpdateMax::operator()(
+IJONUpdCalleeRef IJONUpdate::operator()(
     const u8 *buf,
     u32 len,
     InplaceMemoryFeedback& inp_feed,

@@ -31,6 +31,7 @@
 #include "fuzzuf/utils/vfs/local_filesystem.hpp"
 #include "fuzzuf/coverage/afl_edge_cov_attacher.hpp"
 #include "fuzzuf/coverage/fuzzuf_bb_cov_attacher.hpp"
+#include "fuzzuf/coverage/shm_cov_attacher.hpp"
 #include "fuzzuf/feedback/inplace_memory_feedback.hpp"
 #include "fuzzuf/feedback/exit_status_feedback.hpp"
 #include "fuzzuf/channel/fd_channel.hpp"
@@ -53,6 +54,7 @@ public:
 
     AFLEdgeCovAttacher afl_edge_coverage;
     FuzzufBBCovAttacher fuzzuf_bb_coverage;
+    ShmCovAttacher extra_feedback;
 
     LinuxForkServerExecutor(  
         const std::vector<std::string> &argv,
@@ -61,6 +63,7 @@ public:
         const fs::path &path_to_write_input,
         u32 afl_shm_size,
         u32  bb_shm_size,
+        u32 extra_shm_size = 0,
         // FIXME: The below is a temporary flag to avoid a big performance issue.
         // The issue appears when we save the outputs of stdout/stderr to buffers
         // in every execution of a PUT, which isn't required in most fuzzers.
@@ -88,11 +91,14 @@ public:
     // Environment-specific methods
     u32 GetAFLMapSize();
     u32 GetBBMapSize();
+    u32 GetExtraFeedbackMapSize();
     int GetAFLShmID();
     int GetBBShmID();
+    int GetExtraFeedbackShmID();
 
     InplaceMemoryFeedback GetAFLFeedback();
     InplaceMemoryFeedback GetBBFeedback();
+    InplaceMemoryFeedback GetExtraFeedback();
     InplaceMemoryFeedback GetStdOut();
     InplaceMemoryFeedback GetStdErr();
     ExitStatusFeedback GetExitStatusFeedback();

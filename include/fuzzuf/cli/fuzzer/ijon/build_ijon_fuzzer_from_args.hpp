@@ -57,7 +57,7 @@ static void usage(po::options_description &desc) {
 }
 
 // Used only for CLI
-template <class TFuzzer, class TIJONFuzzer, class TExecutor>
+template <class TFuzzer, class TIJONFuzzer>
 std::unique_ptr<TFuzzer> BuildIJONFuzzerFromArgs(
     FuzzerArgs &fuzzer_args, 
     GlobalFuzzerOptions &global_options
@@ -133,25 +133,10 @@ std::unique_ptr<TFuzzer> BuildIJONFuzzerFromArgs(
 
     using fuzzuf::algorithm::afl::option::GetDefaultOutfile;
     using fuzzuf::cli::ExecutorKind;
+    using fuzzuf::executor::IJONExecutorInterface;
 
-    std::shared_ptr<TExecutor> executor;
+    std::shared_ptr<IJONExecutorInterface> executor;
     switch (global_options.executor) {
-    case ExecutorKind::NATIVE: {
-        using algorithm::ijon::SharedData;
-        // Create NativeLinuxExecutor
-        auto nle = std::make_shared<NativeLinuxExecutor>(
-                            setting->argv,
-                            setting->exec_timelimit_ms,
-                            setting->exec_memlimit,
-                            setting->forksrv,
-                            setting->out_dir / GetDefaultOutfile<IJONTag>(),
-                            sizeof(SharedData), // afl_shm_size
-                            0 // bb_shm_size
-                        );
-        executor = std::make_shared<TExecutor>(std::move(nle));
-        break;
-    }
-
     case ExecutorKind::FORKSERVER: {
         using algorithm::ijon::SharedData;
         auto lfe = std::make_shared<LinuxForkServerExecutor>(
@@ -162,7 +147,7 @@ std::unique_ptr<TFuzzer> BuildIJONFuzzerFromArgs(
                             sizeof(SharedData), // afl_shm_size
                             0 // bb_shm_size
                         );
-        executor = std::make_shared<TExecutor>(std::move(lfe));
+        executor = std::make_shared<IJONExecutorInterface>(std::move(lfe));
         break;
     }
 

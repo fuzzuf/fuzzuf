@@ -22,7 +22,6 @@
 #include "fuzzuf/utils/common.hpp"
 #include "fuzzuf/logger/logger.hpp"
 #include "fuzzuf/utils/filesystem.hpp"
-#include "fuzzuf/executor/linux_fork_server_executor.hpp"
 
 namespace fuzzuf::cli {
 

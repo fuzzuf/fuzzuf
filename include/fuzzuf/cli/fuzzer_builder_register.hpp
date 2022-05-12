@@ -19,7 +19,6 @@
 
 #include <map>
 #include "fuzzuf/cli/fuzzer_builder.hpp"
-#include "fuzzuf/cli/fuzzer/afl/build_afl_fuzzer_from_args.hpp"
 
 using BuilderMap = std::map<std::string, FuzzerBuilder>;
 

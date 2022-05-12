@@ -30,7 +30,7 @@
 #include "fuzzuf/algorithms/ijon/ijon_state.hpp"
 #include "fuzzuf/algorithms/ijon/shared_data.hpp"
 #include "fuzzuf/cli/create_fuzzer_instance_from_argv.hpp"
-#include "fuzzuf/executor/afl_executor_interface.hpp"
+#include "fuzzuf/executor/ijon_executor_interface.hpp"
 #include "fuzzuf/executor/linux_fork_server_executor.hpp"
 #include "fuzzuf/feedback/inplace_memory_feedback.hpp"
 #include "fuzzuf/optimizer/optimizer.hpp"
@@ -84,31 +84,45 @@ static void IJONLoop(/* bool forksrv */) {
                       Util::CPUID_BIND_WHICHEVER
                   );
   SetupDirs(setting->out_dir.string());
-  auto executor = std::make_shared<fuzzuf::executor::AFLExecutorInterface>(
+  auto executor = std::make_shared<fuzzuf::executor::IJONExecutorInterface>(
       std::make_shared<LinuxForkServerExecutor>(
         setting->argv,
         setting->exec_timelimit_ms,
         setting->exec_memlimit,
         setting->out_dir / GetDefaultOutfile<IJONTag>(),
         sizeof(ijon::SharedData), // afl_shm_size
-        0 // bb_shm_size
+        0, // bb_shm_size
+        sizeof(ijon::SharedData)
       )
   );
 
   // One shot execution
   executor->Run((u8 *) "AAAABBBB", 8);
-  InplaceMemoryFeedback feedback = executor->GetAFLFeedback();
+  InplaceMemoryFeedback feedback = executor->GetIJONFeedback();
   feedback.ShowMemoryToFunc(
     [](const u8* shared_data, u32 /* map_size */) {
-      // Check if afl_max is not blank
-      auto count = Util::CountBytes(
-        (u8 *) ((ijon::SharedData *) shared_data)->afl_max,
-        sizeof(u64) * ijon::option::GetMaxMapSize<ijon::option::IJONTag>()
-      );
-      std::cout << "[*] afl_max has " << count << " non-zero bytes" << std::endl;
-      BOOST_CHECK_NE(count, 0);
+      {
+        // Check if ijon_area is not blank
+        auto count = Util::CountBytes(
+          (u8 *) ((ijon::SharedData *) shared_data)->afl_area,
+          afl::option::GetMapSize<ijon::option::IJONTag>()
+        );
+        std::cout << "[*] afl_area has " << count << " non-zero bytes" << std::endl;
+        BOOST_CHECK_NE(count, 0);
+      }
+
+      {
+        // Check if afl_max is not blank
+        auto count = Util::CountBytes(
+          (u8 *) ((ijon::SharedData *) shared_data)->afl_max,
+          sizeof(u64) * ijon::option::GetMaxMapSize<ijon::option::IJONTag>()
+        );
+        std::cout << "[*] afl_max has " << count << " non-zero bytes" << std::endl;
+        BOOST_CHECK_NE(count, 0);
+      }
     }
   );
+  exit(1);
 
   auto mutop_optimizer = std::unique_ptr<fuzzuf::optimizer::Optimizer<u32>>(
                             new ijon::havoc::IJONHavocCaseDistrib()

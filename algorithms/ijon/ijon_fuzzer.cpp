@@ -63,7 +63,7 @@ void IJONFuzzer::BuildFuzzFlow() {
         using namespace afl::routine::update;
     
         using routine::other::PrintAflIsSelected;
-        using routine::update::UpdateMax;
+        using routine::update::IJONUpdate;
 
         using hierarflow::CreateNode;
         using hierarflow::CreateDummyParent;
@@ -108,7 +108,7 @@ void IJONFuzzer::BuildFuzzFlow() {
         // updates corresponding to mutations
         auto normal_update = CreateNode<NormalUpdateTemplate<IJONState>>(*state);
         // IJON's update should be executed even in AFL's flow
-        auto update_max = CreateNode<UpdateMax>(*state); 
+        auto ijon_update = CreateNode<IJONUpdate>(*state); 
         auto construct_auto_dict = CreateNode<ConstructAutoDictTemplate<IJONState>>(*state);
         auto construct_eff_map = CreateNode<ConstructEffMapTemplate<IJONState>>(*state);
      
@@ -127,46 +127,46 @@ void IJONFuzzer::BuildFuzzFlow() {
                  bit_flip1 << execute << (
                                      normal_update 
                                   || construct_auto_dict 
-                                  || update_max
+                                  || ijon_update
                               )
               || bit_flip_other << execute.HardLink() << (
                                          normal_update.HardLink() 
-                                      || update_max.HardLink()
+                                      || ijon_update.HardLink()
                                    )
               || byte_flip1 << execute.HardLink() << (
                                          normal_update.HardLink()
                                       || construct_eff_map
-                                      || update_max.HardLink()
+                                      || ijon_update.HardLink()
                                )
               || byte_flip_other << execute.HardLink() << (
                                          normal_update.HardLink()
-                                      || update_max.HardLink()
+                                      || ijon_update.HardLink()
                                     )
               || arith << execute.HardLink() << (
                                          normal_update.HardLink()
-                                      || update_max.HardLink()
+                                      || ijon_update.HardLink()
                                     )
               || interest << execute.HardLink() << (
                                          normal_update.HardLink()
-                                      || update_max.HardLink()
+                                      || ijon_update.HardLink()
                              )
               || user_dict_overwrite << execute.HardLink() << (
                                              normal_update.HardLink()
-                                          || update_max.HardLink()
+                                          || ijon_update.HardLink()
                                         )
               || auto_dict_overwrite << execute.HardLink() << (
                                              normal_update.HardLink()
-                                          || update_max.HardLink()
+                                          || ijon_update.HardLink()
                                         )
              )
            || apply_rand_muts << (
                    havoc << execute.HardLink() << (
                                    normal_update.HardLink()
-                                || update_max.HardLink()
+                                || ijon_update.HardLink()
                             )
                 || splicing << execute.HardLink() << (
                                    normal_update.HardLink()
-                                || update_max.HardLink()
+                                || ijon_update.HardLink()
                                )
               )
            || abandon_node
@@ -208,12 +208,12 @@ void IJONFuzzer::BuildFuzzFlow() {
         
         // updates corresponding to mutations
         auto normal_update = CreateNode<NormalUpdate>(*state);
-        auto update_max = CreateNode<UpdateMax>(*state);
+        auto ijon_update = CreateNode<IJONUpdate>(*state);
 
         ijon_fuzz_loop << (
                cull_queue
             || skip_afl_queue
-            || select_seed << max_havoc << execute << (normal_update || update_max)
+            || select_seed << max_havoc << execute << (normal_update || ijon_update)
         );
     }
 }
