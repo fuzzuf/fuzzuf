@@ -147,6 +147,10 @@ struct VUzzerState {
     std::map<u64, std::map<u32, std::vector<u32>>> taint_cmp_all;
     std::map<u64, std::set<u32>> taint_cmp_offsets;
     std::map<u64, std::set<u32>> taint_lea_offsets;
+    
+    using AFLDictData = afl::dictionary::AFLDictData;
+    /* Extra tokens to fuzz with        */
+    std::vector<AFLDictData> extras;
 };
 
 } //namespace fuzzuf::algorithm::vuzzer

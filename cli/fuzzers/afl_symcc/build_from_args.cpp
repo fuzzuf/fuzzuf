@@ -23,9 +23,9 @@ BuildFromArgs(const FuzzerArgs &fuzzer_args,
   std::vector<std::string> pargs;
   afl_options.forksrv = true;
   fuzzer_desc.add(fuzzer_args.global_options_description)
-      .add_options()("dict_file",
-                     po::value<std::string>(&afl_options.dict_file),
-                     "Load additional dictionary file.")(
+      .add_options()("dict_file,x", 
+          po::value<std::vector<std::string>>(&afl_options.dict_file)->composing(), 
+          "Load additional dictionary file.")(
           "pargs", po::value<std::vector<std::string>>(&pargs),
           "Specify PUT and args for PUT.")(
           "frida",

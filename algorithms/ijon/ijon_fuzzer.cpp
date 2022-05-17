@@ -154,6 +154,10 @@ void IJONFuzzer::BuildFuzzFlow() {
                                              normal_update.HardLink()
                                           || update_max.HardLink()
                                         )
+              || user_dict_insert << execute.HardLink() << (
+			      normal_update.HardLink()
+			      || update_max.HardLink()
+			      )
               || auto_dict_overwrite << execute.HardLink() << (
                                              normal_update.HardLink()
                                           || update_max.HardLink()

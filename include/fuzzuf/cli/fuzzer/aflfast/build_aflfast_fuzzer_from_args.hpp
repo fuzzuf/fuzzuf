@@ -41,6 +41,7 @@ namespace po = boost::program_options;
 
 struct AFLFastFuzzerOptions {
     bool forksrv;                           // Optional
+    std::vector<std::string> dict_file;     // Optional
     bool frida_mode;                        // Optional
 
     // Default values
@@ -76,6 +77,9 @@ std::unique_ptr<TFuzzer> BuildAFLFastFuzzerFromArgs(
         ("forksrv", 
             po::value<bool>(&aflfast_options.forksrv)->default_value(aflfast_options.forksrv), 
             "Enable/disable fork server mode. default is true.")
+        ("dict_file,x", 
+            po::value<std::vector<std::string>>(&aflfast_options.dict_file)->composing(), 
+            "Load additional dictionary file.")
         // If you want to add fuzzer specific options, add options here
         ("pargs", 
             po::value<std::vector<std::string>>(&pargs), 
@@ -224,6 +228,18 @@ std::unique_ptr<TFuzzer> BuildAFLFastFuzzerFromArgs(
                     executor,
                     std::move(mutop_optimizer)
                  );
+    
+    // Load dictionary
+    for(const auto &d: aflfast_options.dict_file){
+        using fuzzuf::algorithm::afl::dictionary::AFLDictData;
+
+        const std::function<void( std::string&& )> f = [](std::string s){
+            ERROR("Dictionary error: %s", s.c_str());     
+        };
+
+        fuzzuf::algorithm::afl::dictionary::load(d, state->extras, false, f);
+    }
+    fuzzuf::algorithm::afl::dictionary::SortDictByLength( state->extras );
 
     return std::unique_ptr<TFuzzer>(
                 dynamic_cast<TFuzzer *>(

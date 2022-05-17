@@ -21,7 +21,7 @@
  * @author Ricerca Security <fuzzuf-dev@ricsec.co.jp>
  */
 #include "fuzzuf/algorithms/vuzzer/vuzzer_mutator.hpp"
-
+#include <array>
 #include <cassert>
 
 #include "fuzzuf/utils/common.hpp"
@@ -33,7 +33,11 @@
 namespace fuzzuf::algorithm::vuzzer {
 
 /* FIXME: Use const/constexpr std::vector instead of */
-const VUzzerMutator::MutFunc VUzzerMutator::mutators[] = {&VUzzerMutator::EliminateRandom, 
+namespace {
+constexpr auto mutators_count_with_dict = 21u;
+constexpr auto mutators_count_without_dict = 19u;
+constexpr auto mutators =
+std::array< VUzzerMutator::MutFunc, mutators_count_with_dict >{&VUzzerMutator::EliminateRandom, 
                                                           &VUzzerMutator::ChangeBytes,
                                                           &VUzzerMutator::ChangeBytes,                                                          
                                                           &VUzzerMutator::AddRandom,
@@ -51,8 +55,11 @@ const VUzzerMutator::MutFunc VUzzerMutator::mutators[] = {&VUzzerMutator::Elimin
                                                           &VUzzerMutator::ChangeRandomFull,
                                                           &VUzzerMutator::EliminateRandom,
                                                           &VUzzerMutator::AddRandom,
-                                                          &VUzzerMutator::ChangeRandom
+                                                          &VUzzerMutator::ChangeRandom,
+                                                          &VUzzerMutator::OverwriteDictWord,
+                                                          &VUzzerMutator::InsertDictWord
                                                          };
+}
 
 const VUzzerMutator::MutCrossFunc VUzzerMutator::crossovers[] = {&VUzzerMutator::SingleCrossOver,
                                                                  &VUzzerMutator::DoubleCrossOver
@@ -359,13 +366,39 @@ void VUzzerMutator::IntSlide() {
         outbuf = new_buf;
     }
 }
+    
+void VUzzerMutator::OverwriteDictWord() {
+    const auto dict_end = std::partition_point(
+      state.extras.begin(),
+      state.extras.end(),
+      [len=len]( const auto &v ) {
+        return v.data.size() <= len;
+      }
+    );
+    const auto dict_size = std::distance( state.extras.begin(), dict_end );
+    const unsigned int dict_index = rand() % dict_size;
+    const auto &word = state.extras[ dict_index ].data;
+    const auto word_len = word.size();
+    const int start_pos = ( len == word_len ) ? 0 : ( rand() % ( len - word_len ) );
+    Replace( start_pos, word.data(), word.size() );
+}
+void VUzzerMutator::InsertDictWord() {
+    const auto dict_size = std::distance( state.extras.begin(), state.extras.end() );
+    const unsigned int dict_index = rand() % dict_size;
+    const auto &word = state.extras[ dict_index ].data;
+    const int start_pos = rand() % ( len + 1 );
+    Insert( start_pos, word.data(), word.size() );
+}
 
 /**
  * @brief Run mutation methods randomly chosen twice.
  */
 void VUzzerMutator::DoubleFuzz() {
-    DEBUG("DoubleFuzz");    
-    u32 mut_cnt = sizeof(mutators) / sizeof(MutFunc);
+    DEBUG("DoubleFuzz");
+    const auto mut_cnt =
+        state.extras.empty() ?
+	mutators_count_without_dict :
+        mutators_count_with_dict;
     (this->*mutators[rand() % mut_cnt])();
     (this->*mutators[rand() % mut_cnt])();
 }
@@ -557,8 +590,11 @@ VUzzerMutator::DoubleCrossOver(const ExecInput& target) {
  * @brief Run mutation methods randomly chosen
  */
 void VUzzerMutator::MutateRandom() {
-    u32 mut_cnt = sizeof(mutators) / sizeof(MutFunc);    
-    (this->*mutators[rand() % mut_cnt])();    
+    const auto mut_cnt =
+        state.extras.empty() ?
+	mutators_count_without_dict :
+        mutators_count_with_dict;
+    (this->*mutators[rand() % mut_cnt])();
     while (len < 3) { 
         (this->*mutators[rand() % mut_cnt])();
     }

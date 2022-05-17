@@ -15,6 +15,7 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see http://www.gnu.org/licenses/.
  */
+#include <algorithm>
 #include <fuzzuf/utils/afl_dict_parser.hpp>
 #include <fuzzuf/algorithms/afl/afl_dict_data.hpp>
 
@@ -35,6 +36,18 @@ void load(
   const std::function< void( std::string&& ) > &eout
 ) {
   utils::dictionary::LoadAFLDictionary( filename_, dest, strict, eout );
+}
+
+void SortDictByLength(
+  std::vector< AFLDictData > &dict
+) {
+  std::sort(
+    dict.begin(),
+    dict.end(),
+    []( const auto &l, const auto &r ) {
+      return l.data.size() < r.data.size();
+    }
+  );
 }
 
 }
