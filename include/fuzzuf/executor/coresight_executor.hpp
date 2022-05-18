@@ -19,6 +19,7 @@
 
 #include "fuzzuf/executor/proxy_executor.hpp"
 
+namespace fuzzuf::executor {
 // A class for fuzz executions with CoreSight
 class CoreSightExecutor : public ProxyExecutor {
 public:
@@ -34,3 +35,5 @@ public:
         bool record_stdout_and_err
     );
 };
+}
+

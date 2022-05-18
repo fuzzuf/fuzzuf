@@ -42,6 +42,7 @@
 #include "fuzzuf/utils/which.hpp"
 #include "fuzzuf/utils/workspace.hpp"
 
+namespace fuzzuf::executor {
 /**
  * Precondition:
  *   - A file can be created at path path_str_to_write_input.
@@ -444,3 +445,5 @@ fuzzuf::executor::output_t LinuxForkServerExecutor::MoveStdErr() {
   GetStdErr();
   return std::move(stderr_buffer);
 }
+}
+

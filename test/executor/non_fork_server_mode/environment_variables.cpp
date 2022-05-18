@@ -40,7 +40,7 @@ BOOST_AUTO_TEST_CASE(NativeLinuxExecutorWithEnvironmentVariables) {
   auto path_to_write_seed = output_dir / "cur_input";
 
   // Create executor
-  NativeLinuxExecutor executor({TEST_BINARY_DIR "/executor/print_env"}, 1000,
+  fuzzuf::executor::NativeLinuxExecutor executor({TEST_BINARY_DIR "/executor/print_env"}, 1000,
                                10000, false, path_to_write_seed, 0, 0, true,
                                {"FOO=World"});
 
@@ -72,7 +72,7 @@ BOOST_AUTO_TEST_CASE(NativeLinuxExecutorWithoutEnvironmentVariables) {
   auto path_to_write_seed = output_dir / "cur_input";
 
   // Create executor
-  NativeLinuxExecutor executor({TEST_BINARY_DIR "/executor/print_env"}, 1000,
+  fuzzuf::executor::NativeLinuxExecutor executor({TEST_BINARY_DIR "/executor/print_env"}, 1000,
                                10000, false, path_to_write_seed, 0, 0, true);
 
   // Run executor

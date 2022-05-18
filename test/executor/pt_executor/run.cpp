@@ -58,7 +58,7 @@ BOOST_AUTO_TEST_CASE(PTExecutorRun) {
   auto patched_tee_path = "/usr/bin/tee.patched";
 
   auto path_to_write_seed = output_dir / "cur_input";
-  PTExecutor executor(fs::path(FUZZUF_PT_PROXY_EXECUTABLE),
+  fuzzuf::executor::PTExecutor executor(fs::path(FUZZUF_PT_PROXY_EXECUTABLE),
                       {patched_tee_path, output_file_path.native()},
                       1000,
                       10000,

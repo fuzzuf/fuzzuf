@@ -104,7 +104,7 @@ PythonFuzzer::PythonFuzzer(
     // so we need to create the directory first, and then initialize Executor
     fuzzuf::utils::SetupDirs(setting.out_dir.string());
 
-    executor.reset(new NativeLinuxExecutor(
+    executor.reset(new fuzzuf::executor::NativeLinuxExecutor(
                           setting.argv, 
                           setting.exec_timelimit_ms,
                           setting.exec_memlimit,
@@ -139,7 +139,7 @@ void PythonFuzzer::Reset(void) {
 
     state.reset(new PythonState(setting));
 
-    executor.reset(new NativeLinuxExecutor(
+    executor.reset(new fuzzuf::executor::NativeLinuxExecutor(
                           setting.argv, 
                           setting.exec_timelimit_ms,
                           setting.exec_memlimit,

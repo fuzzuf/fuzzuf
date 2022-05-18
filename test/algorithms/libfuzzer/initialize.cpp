@@ -64,8 +64,8 @@ BOOST_AUTO_TEST_CASE(Initialize) {
   BOOST_TEST_CHECKPOINT("before init executor");
   std::vector< LibFuzzerExecutorInterface > executor;
   executor.push_back(
-    std::shared_ptr<NativeLinuxExecutor>(
-      new NativeLinuxExecutor({fuzzuf::utils::which(fs::path("tee")).c_str(),
+    std::shared_ptr<fuzzuf::executor::NativeLinuxExecutor>(
+      new fuzzuf::executor::NativeLinuxExecutor({fuzzuf::utils::which(fs::path("tee")).c_str(),
                                output_file_path.native()},
                               1000, 10000, false, path_to_write_seed, 1000,
                               1000))
@@ -157,8 +157,8 @@ BOOST_AUTO_TEST_CASE(HierarFlowExecute) {
 
   std::vector< LibFuzzerExecutorInterface > executor;
   executor.push_back(
-    std::shared_ptr<NativeLinuxExecutor>(
-      new NativeLinuxExecutor({fuzzuf::utils::which(fs::path("tee")).c_str(),
+    std::shared_ptr<fuzzuf::executor::NativeLinuxExecutor>(
+      new fuzzuf::executor::NativeLinuxExecutor({fuzzuf::utils::which(fs::path("tee")).c_str(),
                                output_file_path.native()},
                               1000, 10000, false, path_to_write_seed, 1000,
                               1000))

@@ -66,7 +66,7 @@ LibFuzzer::LibFuzzer(FuzzerArgs &fuzzer_args, const GlobalFuzzerOptions &global,
     if (i >= create_info.symcc_target_offset &&
         i < create_info.symcc_target_offset + create_info.symcc_target_count) {
       vars.executors.push_back(
-          std::shared_ptr<NativeLinuxExecutor>(new NativeLinuxExecutor(
+          std::shared_ptr<fuzzuf::executor::NativeLinuxExecutor>(new fuzzuf::executor::NativeLinuxExecutor(
               {target_path.string(), output_file_path.string()},
               create_info.exec_timelimit_ms, create_info.exec_memlimit, false,
               path_to_write_seed, create_info.afl_shm_size,
@@ -74,7 +74,7 @@ LibFuzzer::LibFuzzer(FuzzerArgs &fuzzer_args, const GlobalFuzzerOptions &global,
               {"SYMCC_OUTPUT_DIR=" + symcc_dir.string()}, {symcc_dir})));
     } else {
       vars.executors.push_back(
-          std::shared_ptr<NativeLinuxExecutor>(new NativeLinuxExecutor(
+          std::shared_ptr<fuzzuf::executor::NativeLinuxExecutor>(new fuzzuf::executor::NativeLinuxExecutor(
               {target_path.string(), output_file_path.string()},
               create_info.exec_timelimit_ms, create_info.exec_memlimit,
               create_info.forksrv, path_to_write_seed, create_info.afl_shm_size,

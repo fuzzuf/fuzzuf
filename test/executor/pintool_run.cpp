@@ -59,7 +59,7 @@ BOOST_AUTO_TEST_CASE(PinToolExecutorRun) {
 
   // Create executor instance
   auto path_to_write_seed = output_dir / "cur_input";
-  PinToolExecutor executor(FUZZUF_PIN_EXECUTABLE,
+  fuzzuf::executor::PinToolExecutor executor(FUZZUF_PIN_EXECUTABLE,
                            {TEST_BINARY_DIR "/../tools/bbcounts2/bbcounts2.so",
                             "-o", "bb.out", "-libc", "0"},
                            {"/usr/bin/tee", output_file_path.native()}, 0, 0,

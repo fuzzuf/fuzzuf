@@ -137,7 +137,7 @@ std::unique_ptr<TFuzzer> BuildIJONFuzzerFromArgs(
   switch (global_options.executor) {
     case ExecutorKind::FORKSERVER: {
       auto params =
-          LinuxForkServerExecutorParameters()
+          fuzzuf::executor::LinuxForkServerExecutorParameters()
               .set_argv(setting->argv)
               .set_exec_timelimit_ms(setting->exec_timelimit_ms)
               .set_exec_memlimit(setting->exec_memlimit)
@@ -153,8 +153,8 @@ std::unique_ptr<TFuzzer> BuildIJONFuzzerFromArgs(
                   fuzzuf::algorithm::ijon::option::GetMaxMapSize<
                       fuzzuf::algorithm::ijon::option::IJONTag>());
       ijon_max_offset = params.GetIjonMaxOffset();
-      auto lfe = std::shared_ptr<LinuxForkServerExecutor>(
-          new LinuxForkServerExecutor(params.move()));
+      auto lfe = std::shared_ptr<fuzzuf::executor::LinuxForkServerExecutor>(
+          new fuzzuf::executor::LinuxForkServerExecutor(params.move()));
       executor = std::make_shared<IJONExecutorInterface>(std::move(lfe));
       break;
     }

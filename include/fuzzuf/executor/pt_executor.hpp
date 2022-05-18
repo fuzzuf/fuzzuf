@@ -21,6 +21,7 @@
 #include "fuzzuf/coverage/afl_pt_path_cov_attacher.hpp"
 #include "fuzzuf/coverage/afl_pt_path_fav_attacher.hpp"
 
+namespace fuzzuf::executor {
 // A class for fuzz executions with Intel PT
 // NOTE:
 // This executor provides path coverage feedback introduced in PTrix (https://arxiv.org/pdf/1905.10499.pdf).
@@ -60,3 +61,5 @@ public:
     void EraseSharedMemories() override;
     void SetupEnvironmentVariablesForTarget() override;
 };
+}
+

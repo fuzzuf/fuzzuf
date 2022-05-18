@@ -20,6 +20,7 @@
 #include "fuzzuf/logger/logger.hpp"
 #include "fuzzuf/utils/check_crash_handling.hpp"
 
+namespace fuzzuf::executor {
 // NOTE:
 //    - PTExecutor assume it can create a file at `path_to_write_input`.
 PTExecutor::PTExecutor(const fs::path &proxy_path,
@@ -77,4 +78,5 @@ bool PTExecutor::IsFeedbackLocked() {
   return (lock.use_count() > 1) ||
          (afl_pt_path_coverage.GetLockUseCount() > 1) ||
          (afl_pt_path_fav.GetLockUseCount() > 1);
+}
 }

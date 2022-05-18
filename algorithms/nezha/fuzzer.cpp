@@ -73,7 +73,7 @@ NezhaFuzzer::NezhaFuzzer(const FuzzerArgs &fuzzer_args,
   const auto path_to_write_seed = create_info.output_dir / "cur_input";
   for (const auto &target_path : opts.targets) {
     libfuzzer_variables.executors.push_back(
-        std::shared_ptr<NativeLinuxExecutor>(new NativeLinuxExecutor(
+        std::shared_ptr<fuzzuf::executor::NativeLinuxExecutor>(new fuzzuf::executor::NativeLinuxExecutor(
             {target_path.string(), output_file_path.string()},
             create_info.exec_timelimit_ms, create_info.exec_memlimit,
             create_info.forksrv, path_to_write_seed, create_info.afl_shm_size,

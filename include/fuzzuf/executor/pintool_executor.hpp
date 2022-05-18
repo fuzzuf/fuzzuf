@@ -19,6 +19,7 @@
 
 #include "fuzzuf/executor/base_proxy_executor.hpp"
 
+namespace fuzzuf::executor {
 class PinToolExecutor : public BaseProxyExecutor {
 public:
 
@@ -33,3 +34,5 @@ public:
 
     void SetCArgvAndDecideInputMode();
 };
+}
+

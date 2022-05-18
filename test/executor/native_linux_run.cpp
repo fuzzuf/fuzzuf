@@ -67,7 +67,7 @@ BOOST_AUTO_TEST_CASE(NativeLinuxExecutorVariableShm) {
 
   for (u32 afl : checked_sizes) {
     for (u32 bb : checked_sizes) {
-      NativeLinuxExecutor executor({"/usr/bin/tee", output_file_path.native()},
+	fuzzuf::executor::NativeLinuxExecutor executor({"/usr/bin/tee", output_file_path.native()},
                                    1000, 10000, false, path_to_write_seed, afl,
                                    bb);
 

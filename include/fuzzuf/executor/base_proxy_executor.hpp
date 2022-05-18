@@ -32,6 +32,7 @@
 #include "fuzzuf/feedback/exit_status_feedback.hpp"
 #include "fuzzuf/feedback/file_feedback.hpp"
 
+namespace fuzzuf::executor {
 // A class for fuzz execution under Linux environment through proxies (such as QEMU) having fork server.
 //
 // Responsibility:
@@ -154,3 +155,4 @@ private:
     epoll_event fork_server_stderr_event;
     epoll_event fork_server_read_event;
 };
+}

@@ -99,7 +99,7 @@ BOOST_AUTO_TEST_CASE(DIELoop) {
   fuzzuf::utils::SetupDirs(setting->out_dir.string());
 
   // Create NativeLinuxExecutor
-  auto nle = std::make_shared<NativeLinuxExecutor>(
+  auto nle = std::make_shared<fuzzuf::executor::NativeLinuxExecutor>(
     setting->argv,
     setting->exec_timelimit_ms,
     setting->exec_memlimit,

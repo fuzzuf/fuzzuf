@@ -50,7 +50,7 @@ struct VUzzerState {
     using Tag = typename VUzzerTestcase::Tag;
 
     // FIXME: how to support other executors?
-    explicit VUzzerState(std::shared_ptr<const VUzzerSetting> setting, std::shared_ptr<PinToolExecutor> executor, std::shared_ptr<PolyTrackerExecutor> texecutor);
+    explicit VUzzerState(std::shared_ptr<const VUzzerSetting> setting, std::shared_ptr<fuzzuf::executor::PinToolExecutor> executor, std::shared_ptr<fuzzuf::executor::PolyTrackerExecutor> texecutor);
     ~VUzzerState();
 
     VUzzerState( const VUzzerState& ) = delete;
@@ -85,8 +85,8 @@ struct VUzzerState {
     );
 
     std::shared_ptr<const VUzzerSetting> setting;
-    std::shared_ptr<PinToolExecutor> executor;
-    std::shared_ptr<PolyTrackerExecutor> taint_executor;
+    std::shared_ptr<fuzzuf::executor::PinToolExecutor> executor;
+    std::shared_ptr<fuzzuf::executor::PolyTrackerExecutor> taint_executor;
 
     ExecInputSet input_set;
 

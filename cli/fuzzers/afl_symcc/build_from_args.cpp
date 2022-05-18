@@ -72,7 +72,7 @@ BuildFromArgs(const FuzzerArgs &fuzzer_args,
       std::move(symcc_options),
       std::shared_ptr<executor::AFLSymCCExecutorInterface>(
           new executor::AFLSymCCExecutorInterface(
-              std::shared_ptr<NativeLinuxExecutor>(new NativeLinuxExecutor(
+              std::shared_ptr<fuzzuf::executor::NativeLinuxExecutor>(new fuzzuf::executor::NativeLinuxExecutor(
                   std::move(symcc_args),
                   global_options.exec_timelimit_ms.value_or(
                       afl::option::GetExecTimeout<afl::option::AFLTag>()),

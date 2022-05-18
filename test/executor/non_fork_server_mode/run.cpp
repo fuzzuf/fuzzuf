@@ -58,7 +58,7 @@ BOOST_AUTO_TEST_CASE(NativeLinuxExecutorNativeRun) {
   u32 PAGE_SIZE = (u32)val;
 
   auto path_to_write_seed = output_dir / "cur_input";
-  NativeLinuxExecutor executor({fuzzuf::utils::which(fs::path("tee")).c_str(),
+  fuzzuf::executor::NativeLinuxExecutor executor({fuzzuf::utils::which(fs::path("tee")).c_str(),
                                 output_file_path.native()},
                                1000, 10000, false, path_to_write_seed,
                                PAGE_SIZE, PAGE_SIZE,
@@ -155,7 +155,7 @@ BOOST_AUTO_TEST_CASE(NativeLinuxExecutorNativeRunOk) {
   u32 PAGE_SIZE = (u32)val;
 
   auto path_to_write_seed = output_dir / "cur_input";
-  NativeLinuxExecutor executor(
+  fuzzuf::executor::NativeLinuxExecutor executor(
       //{ "/usr/bin/tee", output_file_path.native() },
       {TEST_BINARY_DIR "/executor/ok", output_file_path.native()}, 1000, 10000,
       false, path_to_write_seed, PAGE_SIZE, PAGE_SIZE);
@@ -198,7 +198,7 @@ BOOST_AUTO_TEST_CASE(NativeLinuxExecutorNativeRunFail) {
   u32 PAGE_SIZE = (u32)val;
 
   auto path_to_write_seed = output_dir / "cur_input";
-  NativeLinuxExecutor executor(
+  fuzzuf::executor::NativeLinuxExecutor executor(
       {TEST_BINARY_DIR "/executor/fail", output_file_path.native()}, 1000,
       10000, false, path_to_write_seed, PAGE_SIZE, PAGE_SIZE);
   BOOST_CHECK_EQUAL(executor.stdin_mode, true);
@@ -239,7 +239,7 @@ BOOST_AUTO_TEST_CASE(NativeLinuxExecutorNativeRunTooMuchOutput,
   u32 PAGE_SIZE = (u32)val;
 
   auto path_to_write_seed = output_dir / "cur_input";
-  NativeLinuxExecutor executor(
+  fuzzuf::executor::NativeLinuxExecutor executor(
       {TEST_BINARY_DIR "/executor/too_much_output"}, 1000, 10000, false,
       path_to_write_seed, PAGE_SIZE, PAGE_SIZE,
       true /* record_stdout_and_err */
@@ -283,7 +283,7 @@ BOOST_AUTO_TEST_CASE(NativeLinuxExecutorNativeRunAbort) {
   u32 PAGE_SIZE = (u32)val;
 
   auto path_to_write_seed = output_dir / "cur_input";
-  NativeLinuxExecutor executor(
+  fuzzuf::executor::NativeLinuxExecutor executor(
       {TEST_BINARY_DIR "/executor/abort", output_file_path.native()}, 1000,
       10000, false, path_to_write_seed, PAGE_SIZE, PAGE_SIZE);
   BOOST_CHECK_EQUAL(executor.stdin_mode, true);
@@ -325,7 +325,7 @@ BOOST_AUTO_TEST_CASE(NativeLinuxExecutorNativeRunSegmentationFault) {
   u32 PAGE_SIZE = (u32)val;
 
   auto path_to_write_seed = output_dir / "cur_input";
-  NativeLinuxExecutor executor({TEST_BINARY_DIR "/executor/segmentation_fault",
+  fuzzuf::executor::NativeLinuxExecutor executor({TEST_BINARY_DIR "/executor/segmentation_fault",
                                 output_file_path.native()},
                                1000, 10000, false, path_to_write_seed,
                                PAGE_SIZE, PAGE_SIZE);
@@ -368,7 +368,7 @@ BOOST_AUTO_TEST_CASE(NativeLinuxExecutorNativeRunNeverExit) {
   u32 PAGE_SIZE = (u32)val;
 
   auto path_to_write_seed = output_dir / "cur_input";
-  NativeLinuxExecutor executor(
+  fuzzuf::executor::NativeLinuxExecutor executor(
       {TEST_BINARY_DIR "/executor/never_exit", output_file_path.native()}, 1000,
       10000, false, path_to_write_seed, PAGE_SIZE, PAGE_SIZE);
   BOOST_CHECK_EQUAL(executor.stdin_mode, true);
@@ -410,7 +410,7 @@ BOOST_AUTO_TEST_CASE(NativeLinuxExecutorNativeRunNotExists) {
   u32 PAGE_SIZE = (u32)val;
 
   auto path_to_write_seed = output_dir / "cur_input";
-  NativeLinuxExecutor executor(
+  fuzzuf::executor::NativeLinuxExecutor executor(
       {TEST_BINARY_DIR "/executor/not_exists", output_file_path.native()}, 1000,
       10000, false, path_to_write_seed, PAGE_SIZE, PAGE_SIZE);
   BOOST_CHECK_EQUAL(executor.stdin_mode, true);
@@ -452,7 +452,7 @@ BOOST_AUTO_TEST_CASE(NativeLinuxExecutorNativeRunPermissionDenied) {
   u32 PAGE_SIZE = (u32)val;
 
   auto path_to_write_seed = output_dir / "cur_input";
-  NativeLinuxExecutor executor(
+  fuzzuf::executor::NativeLinuxExecutor executor(
       {TEST_DICTIONARY_DIR "/test.dict", output_file_path.native()}, 1000,
       10000, false, path_to_write_seed, PAGE_SIZE, PAGE_SIZE);
   BOOST_CHECK_EQUAL(executor.stdin_mode, true);
@@ -494,7 +494,7 @@ BOOST_AUTO_TEST_CASE(NativeLinuxExecutorNativeRunNotExecutable) {
   u32 PAGE_SIZE = (u32)val;
 
   auto path_to_write_seed = output_dir / "cur_input";
-  NativeLinuxExecutor executor(
+  fuzzuf::executor::NativeLinuxExecutor executor(
       {TEST_SOURCE_DIR "/executor/not_executable", output_file_path.native()},
       1000, 10000, false, path_to_write_seed, PAGE_SIZE, PAGE_SIZE);
   BOOST_CHECK_EQUAL(executor.stdin_mode, true);

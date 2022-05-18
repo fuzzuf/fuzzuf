@@ -19,6 +19,7 @@
 
 #include "fuzzuf/executor/proxy_executor.hpp"
 
+namespace fuzzuf::executor {
 // A class for fuzz executions with QEMU
 class QEMUExecutor : public ProxyExecutor {
 public:
@@ -36,3 +37,5 @@ public:
         bool record_stdout_and_err = false
     );
 };
+}
+

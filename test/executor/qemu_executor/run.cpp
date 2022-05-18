@@ -55,7 +55,7 @@ BOOST_AUTO_TEST_CASE(QEMUExecutorRun) {
             << std::endl;
 
   auto path_to_write_seed = output_dir / "cur_input";
-  QEMUExecutor executor(fs::path(FUZZUF_QEMU_EXECUTABLE),
+  fuzzuf::executor::QEMUExecutor executor(fs::path(FUZZUF_QEMU_EXECUTABLE),
                         {"/usr/bin/tee", output_file_path.native()}, 1000,
                         10000, true, path_to_write_seed,
                         true /* record_stdout_and_err */

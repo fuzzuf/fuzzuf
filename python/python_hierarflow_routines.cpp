@@ -30,7 +30,7 @@
 
 namespace fuzzuf::bindings::python::routine {
 
-PyExecutePUT::PyExecutePUT(NativeLinuxExecutor& executor) : executor(executor) {}
+PyExecutePUT::PyExecutePUT(fuzzuf::executor::NativeLinuxExecutor& executor) : executor(executor) {}
 
 NullableRef<HierarFlowCallee<PyMutOutputType>> PyExecutePUT::operator()(
     const u8* buf, u32 len

@@ -79,14 +79,14 @@ static void VUzzerLoop() {
   // TODO: support more types of executors
   // FIXME: TEST_BINARY_DIR macro should be used only for test codes. We must
   // define a new macro in config.h.
-  std::shared_ptr<PinToolExecutor> executor(new PinToolExecutor(
+  std::shared_ptr<fuzzuf::executor::PinToolExecutor> executor(new fuzzuf::executor::PinToolExecutor(
       FUZZUF_PIN_EXECUTABLE,
       {TEST_BINARY_DIR "/../tools/bbcounts2/bbcounts2.so", "-o", "bb.out",
        "-libc", "0"},
       setting->argv, setting->exec_timelimit_ms, setting->exec_memlimit,
       setting->out_dir / GetDefaultOutfile()));
 
-  std::shared_ptr<PolyTrackerExecutor> taint_executor(new PolyTrackerExecutor(
+  std::shared_ptr<fuzzuf::executor::PolyTrackerExecutor> taint_executor(new fuzzuf::executor::PolyTrackerExecutor(
       TEST_BINARY_DIR "/../tools/polyexecutor/polyexecutor.py",
       setting->path_to_inst_bin, setting->path_to_taint_db,
       setting->path_to_taint_file, setting->argv, setting->exec_timelimit_ms,

@@ -107,19 +107,19 @@ BOOST_AUTO_TEST_CASE(HierarFlowOutputHash) {
     const auto path_to_write_seed = create_info.output_dir / "cur_input";
     std::vector<LibFuzzerExecutorInterface> executor;
     executor.push_back(
-        std::shared_ptr<NativeLinuxExecutor>(new NativeLinuxExecutor(
+        std::shared_ptr<fuzzuf::executor::NativeLinuxExecutor>(new fuzzuf::executor::NativeLinuxExecutor(
             {FUZZUF_FUZZTOYS_DIR "/fuzz_toys-csv", output_file_path.string()},
             create_info.exec_timelimit_ms, create_info.exec_memlimit,
             create_info.forksrv, path_to_write_seed, create_info.afl_shm_size,
             create_info.bb_shm_size, true)));
     executor.push_back(
-        std::shared_ptr<NativeLinuxExecutor>(new NativeLinuxExecutor(
+        std::shared_ptr<fuzzuf::executor::NativeLinuxExecutor>(new fuzzuf::executor::NativeLinuxExecutor(
             {FUZZUF_FUZZTOYS_DIR "/fuzz_toys-csv", output_file_path.string()},
             create_info.exec_timelimit_ms, create_info.exec_memlimit,
             create_info.forksrv, path_to_write_seed, create_info.afl_shm_size,
             create_info.bb_shm_size, true)));
-    executor.push_back(std::shared_ptr<NativeLinuxExecutor>(
-        new NativeLinuxExecutor({FUZZUF_FUZZTOYS_DIR "/fuzz_toys-csv_small",
+    executor.push_back(std::shared_ptr<fuzzuf::executor::NativeLinuxExecutor>(
+        new fuzzuf::executor::NativeLinuxExecutor({FUZZUF_FUZZTOYS_DIR "/fuzz_toys-csv_small",
                                  output_file_path.string()},
                                 create_info.exec_timelimit_ms,
                                 create_info.exec_memlimit, create_info.forksrv,
@@ -161,15 +161,15 @@ BOOST_AUTO_TEST_CASE(HierarFlowOutputHash) {
     const auto output_file_path = create_info.output_dir / "result";
     const auto path_to_write_seed = create_info.output_dir / "cur_input";
     std::vector<LibFuzzerExecutorInterface> executor;
-    executor.push_back(std::shared_ptr<NativeLinuxExecutor>(
-        new NativeLinuxExecutor({FUZZUF_FUZZTOYS_DIR "/fuzz_toys-csv_small",
+    executor.push_back(std::shared_ptr<fuzzuf::executor::NativeLinuxExecutor>(
+        new fuzzuf::executor::NativeLinuxExecutor({FUZZUF_FUZZTOYS_DIR "/fuzz_toys-csv_small",
                                  output_file_path.string()},
                                 create_info.exec_timelimit_ms,
                                 create_info.exec_memlimit, create_info.forksrv,
                                 path_to_write_seed, create_info.afl_shm_size,
                                 create_info.bb_shm_size, true)));
     executor.push_back(
-        std::shared_ptr<NativeLinuxExecutor>(new NativeLinuxExecutor(
+        std::shared_ptr<fuzzuf::executor::NativeLinuxExecutor>(new fuzzuf::executor::NativeLinuxExecutor(
             {FUZZUF_FUZZTOYS_DIR "/fuzz_toys-csv", output_file_path.string()},
             create_info.exec_timelimit_ms, create_info.exec_memlimit,
             create_info.forksrv, path_to_write_seed, create_info.afl_shm_size,

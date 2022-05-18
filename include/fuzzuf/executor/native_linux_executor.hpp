@@ -33,6 +33,7 @@
 #include "fuzzuf/feedback/inplace_memory_feedback.hpp"
 #include "fuzzuf/feedback/exit_status_feedback.hpp"
 
+namespace fuzzuf::executor {
 // A class for fuzz execution under native Linux environment (i.e. the Linux environment where the fuzzer tracer and the fuzz target are the same)
 //
 // Responsibility:
@@ -173,3 +174,6 @@ private:
     std::vector< const char* > raw_environment_variables;
     fuzzuf::utils::vfs::LocalFilesystem filesystem;
 };
+
+}
+

@@ -55,7 +55,7 @@ BOOST_AUTO_TEST_CASE(CoreSightExecutorRun) {
             << std::endl;
 
   auto path_to_write_seed = output_dir / "cur_input";
-  CoreSightExecutor executor(fs::path(FUZZUF_CS_PROXY_EXECUTABLE),
+  fuzzuf::executor::CoreSightExecutor executor(fs::path(FUZZUF_CS_PROXY_EXECUTABLE),
                              {"/usr/bin/tee", output_file_path.native()}, 1000,
                              10000, true, path_to_write_seed, (1U << 16),
                              true /* record_stdout_and_err */

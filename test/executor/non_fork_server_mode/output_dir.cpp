@@ -45,7 +45,7 @@ BOOST_AUTO_TEST_CASE(RetriveGeneratedFiles) {
   auto output_files_dir = root_dir / "output_files";
 
   // Create executor
-  NativeLinuxExecutor executor(
+  fuzzuf::executor::NativeLinuxExecutor executor(
       {TEST_BINARY_DIR "/executor/generate_outputs"}, 1000, 10000, false,
       path_to_write_seed, 0, 0, true,
       {std::string("OUTPUT_DIR=") + output_files_dir.string()}, {output_files_dir});

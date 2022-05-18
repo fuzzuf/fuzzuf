@@ -92,5 +92,5 @@ private:
 
     // 以下はすべてPythonFuzzer::Reset用にunique_ptrになっている。別にResetがなければ例えばPythonState stateでいい
     std::unique_ptr<PythonState> state; 
-    std::unique_ptr<NativeLinuxExecutor> executor;
+    std::unique_ptr<fuzzuf::executor::NativeLinuxExecutor> executor;
 };

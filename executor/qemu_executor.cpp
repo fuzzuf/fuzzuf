@@ -18,6 +18,7 @@
 #include "fuzzuf/executor/qemu_executor.hpp"
 #include "fuzzuf/utils/check_crash_handling.hpp"
 
+namespace fuzzuf::executor {
 /**
  * Precondition:
  *    - A file can be created at path path_str_to_write_input.
@@ -37,3 +38,5 @@ QEMUExecutor::QEMUExecutor(
     ProxyExecutor::SetCArgvAndDecideInputMode();
     ProxyExecutor::Initilize();
 }
+}
+

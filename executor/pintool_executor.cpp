@@ -19,6 +19,7 @@
 
 #include "fuzzuf/utils/check_crash_handling.hpp"
 
+namespace fuzzuf::executor {
 PinToolExecutor::PinToolExecutor(const fs::path &proxy_path,
                                  const std::vector<std::string> &pargv,
                                  const std::vector<std::string> &argv,
@@ -56,3 +57,5 @@ void PinToolExecutor::SetCArgvAndDecideInputMode() {
   }
   cargv.emplace_back(nullptr);
 }
+}
+

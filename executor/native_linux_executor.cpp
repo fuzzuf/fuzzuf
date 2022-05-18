@@ -41,6 +41,8 @@
 #include "fuzzuf/utils/which.hpp"
 #include "fuzzuf/utils/workspace.hpp"
 
+namespace fuzzuf::executor {
+
 bool NativeLinuxExecutor::has_setup_sighandlers = false;
 
 NativeLinuxExecutor *NativeLinuxExecutor::active_instance = nullptr;
@@ -1033,3 +1035,6 @@ fuzzuf::executor::output_t NativeLinuxExecutor::MoveStdOut() {
 fuzzuf::executor::output_t NativeLinuxExecutor::MoveStdErr() {
   return std::move(stderr_buffer);
 }
+
+}
+

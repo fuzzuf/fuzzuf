@@ -100,7 +100,7 @@ static void NautilusLoop(bool forksrv, size_t iter) {
   using fuzzuf::executor::AFLExecutorInterface;
 
   /* Create NativeLinuxExecutor */
-  auto nle = std::make_shared<NativeLinuxExecutor>(
+  auto nle = std::make_shared<fuzzuf::executor::NativeLinuxExecutor>(
     args,
     setting->exec_timeout_ms,
     setting->exec_memlimit,

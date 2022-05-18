@@ -60,7 +60,7 @@ BOOST_AUTO_TEST_CASE(ProxyExecutorRun) {
   // NOTE: This test use zeroone because it ignores supplied arguments.
   // Be careful if you change the behavior. In addition, because argv
   // cannot be empty, we supply output_file_path as a place holder.
-  ProxyExecutor executor(fs::path(TEST_BINARY_DIR "/put_binaries/zeroone"), {},
+  fuzzuf::executor::ProxyExecutor executor(fs::path(TEST_BINARY_DIR "/put_binaries/zeroone"), {},
                          {output_file_path.native()}, 1000, 10000, true,
                          path_to_write_seed, (1U << 16), true);
   // Initialize executor instance
@@ -155,7 +155,7 @@ BOOST_AUTO_TEST_CASE(ProxyExecutorNativeRunTooMuchOutput,
   // Use command_wrapper as a pseudo forkserver-capable proxy application.
   // We execute too_much_output via command_wrapper.
   // NOTE: Because argv cannot be empty, we supply too_much_output twice.
-  ProxyExecutor executor(
+  fuzzuf::executor::ProxyExecutor executor(
       fs::path(TEST_BINARY_DIR "/put_binaries/command_wrapper"),
       {TEST_BINARY_DIR "/executor/too_much_output"},
       {TEST_BINARY_DIR "/executor/too_much_output"}, 1000, 10000, true,

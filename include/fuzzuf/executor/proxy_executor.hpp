@@ -20,6 +20,7 @@
 #include "fuzzuf/executor/base_proxy_executor.hpp"
 #include "fuzzuf/coverage/afl_edge_cov_attacher.hpp"
 
+namespace fuzzuf::executor {
 // A class for fuzz execution under Linux environment through proxies (such as QEMU) having fork server.
 //
 // Responsibility:
@@ -66,3 +67,5 @@ public:
     virtual void EraseSharedMemories() override;
     virtual void SetupEnvironmentVariablesForTarget() override;
 };
+}
+

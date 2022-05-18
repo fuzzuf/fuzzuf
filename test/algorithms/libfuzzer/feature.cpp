@@ -65,7 +65,7 @@ BOOST_AUTO_TEST_CASE(ExecuteOutput) {
 
   std::vector< LibFuzzerExecutorInterface > executor;
   executor.push_back(
-    std::shared_ptr<NativeLinuxExecutor>(new NativeLinuxExecutor(
+    std::shared_ptr<fuzzuf::executor::NativeLinuxExecutor>(new fuzzuf::executor::NativeLinuxExecutor(
     {fuzzuf::utils::which(fs::path("wc")).c_str(), "-c"}, 1000, 10000, false,
     path_to_write_seed, 65536, 65536, true))
   );
@@ -88,7 +88,7 @@ BOOST_AUTO_TEST_CASE(HierarFlowExecuteOutput) {
 
   std::vector< LibFuzzerExecutorInterface > executor;
   executor.push_back(
-    std::shared_ptr<NativeLinuxExecutor>(new NativeLinuxExecutor(
+    std::shared_ptr<fuzzuf::executor::NativeLinuxExecutor>(new fuzzuf::executor::NativeLinuxExecutor(
       {fuzzuf::utils::which(fs::path("wc")).c_str(), "-c"}, 1000, 10000, false,
       path_to_write_seed, 65536, 65536, true))
   );
@@ -122,7 +122,7 @@ BOOST_AUTO_TEST_CASE(ExecuteStatusSuccess) {
   // NOLINTEND(cppcoreguidelines-pro-type-cstyle-cast,cppcoreguidelines-pro-type-member-init,cppcoreguidelines-special-member-functions,hicpp-explicit-conversions)
   std::vector< LibFuzzerExecutorInterface > executor;
   executor.push_back(
-    std::shared_ptr<NativeLinuxExecutor>(new NativeLinuxExecutor(
+    std::shared_ptr<fuzzuf::executor::NativeLinuxExecutor>(new fuzzuf::executor::NativeLinuxExecutor(
       {TEST_BINARY_DIR "/executor/ok"}, 1000, 10000, false, path_to_write_seed,
       65536, 65536))
   );
@@ -143,7 +143,7 @@ BOOST_AUTO_TEST_CASE(HierarFlowExecuteStatusSuccess) {
 
   std::vector< LibFuzzerExecutorInterface > executor;
   executor.push_back(
-    std::shared_ptr<NativeLinuxExecutor>(new NativeLinuxExecutor(
+    std::shared_ptr<fuzzuf::executor::NativeLinuxExecutor>(new fuzzuf::executor::NativeLinuxExecutor(
       {TEST_BINARY_DIR "/executor/ok"}, 1000, 10000, false, path_to_write_seed,
       65536, 65536))
   );
@@ -171,8 +171,8 @@ BOOST_AUTO_TEST_CASE(ExecuteStatusAbort) {
 
   std::vector< LibFuzzerExecutorInterface > executor;
   executor.push_back(
-    std::shared_ptr<NativeLinuxExecutor>(
-      new NativeLinuxExecutor({TEST_BINARY_DIR "/executor/abort"}, 1000, 10000,
+    std::shared_ptr<fuzzuf::executor::NativeLinuxExecutor>(
+      new fuzzuf::executor::NativeLinuxExecutor({TEST_BINARY_DIR "/executor/abort"}, 1000, 10000,
                               false, path_to_write_seed, 65536, 65536))
   );
 
@@ -194,8 +194,8 @@ BOOST_AUTO_TEST_CASE(HierarFlowExecuteAbort) {
 
   std::vector< LibFuzzerExecutorInterface > executor;
   executor.push_back(
-    std::shared_ptr<NativeLinuxExecutor>(
-      new NativeLinuxExecutor({TEST_BINARY_DIR "/executor/abort"}, 1000, 10000,
+    std::shared_ptr<fuzzuf::executor::NativeLinuxExecutor>(
+      new fuzzuf::executor::NativeLinuxExecutor({TEST_BINARY_DIR "/executor/abort"}, 1000, 10000,
                               false, path_to_write_seed, 65536, 65536))
   );
 
@@ -222,8 +222,8 @@ BOOST_AUTO_TEST_CASE(ExecuteCoverage) {
 
   std::vector< LibFuzzerExecutorInterface > executor;
   executor.push_back(
-    std::shared_ptr<NativeLinuxExecutor>(
-      new NativeLinuxExecutor({FUZZUF_FUZZTOYS_DIR "/fuzz_toys-brainf_ck"},
+    std::shared_ptr<fuzzuf::executor::NativeLinuxExecutor>(
+      new fuzzuf::executor::NativeLinuxExecutor({FUZZUF_FUZZTOYS_DIR "/fuzz_toys-brainf_ck"},
                               1000, 10000, false, path_to_write_seed, 65536,
                               65536))
   );
@@ -246,8 +246,8 @@ BOOST_AUTO_TEST_CASE(HierarFlowExecuteCoverage) {
 
   std::vector< LibFuzzerExecutorInterface > executor;
   executor.push_back(
-    std::shared_ptr<NativeLinuxExecutor>(
-      new NativeLinuxExecutor({FUZZUF_FUZZTOYS_DIR "/fuzz_toys-brainf_ck"},
+    std::shared_ptr<fuzzuf::executor::NativeLinuxExecutor>(
+      new fuzzuf::executor::NativeLinuxExecutor({FUZZUF_FUZZTOYS_DIR "/fuzz_toys-brainf_ck"},
                               1000, 10000, false, path_to_write_seed, 65536,
                               65536))
   );

@@ -58,7 +58,7 @@ BOOST_AUTO_TEST_CASE(NativeLinuxExecutorNativeRun) {
   u32 PAGE_SIZE = (u32)val;
 
   auto path_to_write_seed = output_dir / "cur_input";
-  NativeLinuxExecutor executor(
+  fuzzuf::executor::NativeLinuxExecutor executor(
       {TEST_BINARY_DIR "/put_binaries/command_wrapper", "/bin/cat", "@@"}, 1000,
       10000, true, path_to_write_seed, PAGE_SIZE, PAGE_SIZE,
       true /* record_stdout_and_err */
@@ -137,7 +137,7 @@ BOOST_AUTO_TEST_CASE(NativeLinuxExecutorNativeRunTooMuchOutput,
   u32 PAGE_SIZE = (u32)val;
 
   auto path_to_write_seed = output_dir / "cur_input";
-  NativeLinuxExecutor executor(
+  fuzzuf::executor::NativeLinuxExecutor executor(
       {TEST_BINARY_DIR "/put_binaries/command_wrapper",
        TEST_BINARY_DIR "/executor/too_much_output"},
       1000, 10000, true, path_to_write_seed, PAGE_SIZE, PAGE_SIZE,

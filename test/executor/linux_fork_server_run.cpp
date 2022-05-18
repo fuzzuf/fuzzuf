@@ -68,8 +68,8 @@ BOOST_AUTO_TEST_CASE(LinuxForkServerExecutorVariableShm) {
 
   for (u32 afl : checked_sizes) {
     for (u32 bb : checked_sizes) {
-      LinuxForkServerExecutor executor(
-          LinuxForkServerExecutorParameters()
+      fuzzuf::executor::LinuxForkServerExecutor executor(
+          fuzzuf::executor::LinuxForkServerExecutorParameters()
               .set_argv(
                   std::vector<std::string>{TEST_SOURCE_DIR "/put_binaries/cat"})
               .set_exec_timelimit_ms(1000)

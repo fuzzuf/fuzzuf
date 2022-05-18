@@ -193,7 +193,7 @@ std::unique_ptr<TFuzzer> BuildDIEFuzzerFromArgs(FuzzerArgs &fuzzer_args,
   std::shared_ptr<TExecutor> executor;
   switch (global_options.executor) {
   case ExecutorKind::NATIVE: {
-    auto nle = std::make_shared<NativeLinuxExecutor>(
+    auto nle = std::make_shared<fuzzuf::executor::NativeLinuxExecutor>(
       setting->argv,
       setting->exec_timelimit_ms,
       setting->exec_memlimit,
@@ -208,7 +208,7 @@ std::unique_ptr<TFuzzer> BuildDIEFuzzerFromArgs(FuzzerArgs &fuzzer_args,
 
   case ExecutorKind::QEMU: {
     // NOTE: Assuming GetMapSize<DIETag>() == QEMUExecutor::QEMU_SHM_SIZE
-    auto qe = std::make_shared<QEMUExecutor>(
+    auto qe = std::make_shared<fuzzuf::executor::QEMUExecutor>(
       global_options.proxy_path.value(),
       setting->argv,
       setting->exec_timelimit_ms,
@@ -222,7 +222,7 @@ std::unique_ptr<TFuzzer> BuildDIEFuzzerFromArgs(FuzzerArgs &fuzzer_args,
 
 #ifdef __aarch64__
   case ExecutorKind::CORESIGHT: {
-    auto cse = std::make_shared<CoreSightExecutor>(
+    auto cse = std::make_shared<fuzzuf::executor::CoreSightExecutor>(
       global_options.proxy_path.value(),
       setting->argv,
       setting->exec_timelimit_ms,

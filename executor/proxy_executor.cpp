@@ -17,6 +17,7 @@
  */
 #include "fuzzuf/executor/proxy_executor.hpp"
 
+namespace fuzzuf::executor {
 // Precondition:
 //    - A file can be created at path path_str_to_write_input.
 //    - If fork server mode, proxy specified by proxy_path behave as fork server.
@@ -92,4 +93,5 @@ void ProxyExecutor::SetupEnvironmentVariablesForTarget() {
     afl_edge_coverage.SetupEnvironmentVariable();
 
     BaseProxyExecutor::SetupEnvironmentVariablesForTarget();
+}
 }

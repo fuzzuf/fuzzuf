@@ -44,12 +44,12 @@ struct PyExecutePUT
         PyUpdInputType
       > {
 public:
-    PyExecutePUT(NativeLinuxExecutor &executor);
+    PyExecutePUT(fuzzuf::executor::NativeLinuxExecutor &executor);
 
     NullableRef<HierarFlowCallee<PyMutOutputType>> operator()(const u8*, u32);
 
 private:
-    NativeLinuxExecutor &executor;
+    fuzzuf::executor::NativeLinuxExecutor &executor;
 };
 
 struct PyUpdate

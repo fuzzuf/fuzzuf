@@ -38,6 +38,7 @@
 #include "fuzzuf/utils/setter.hpp"
 #include "fuzzuf/utils/vfs/local_filesystem.hpp"
 
+namespace fuzzuf::executor {
 /**
  * @brief Parameters required to create LinuxForkServerExecutor
  */
@@ -236,3 +237,5 @@ class LinuxForkServerExecutor : public Executor {
 
   FdChannel put_channel;
 };
+}
+

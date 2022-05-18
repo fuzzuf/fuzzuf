@@ -130,7 +130,7 @@ BOOST_AUTO_TEST_CASE(HierarFlowExecute) {
     const auto path_to_write_seed = create_info.output_dir / "cur_input";
     std::vector< LibFuzzerExecutorInterface > executor;
     executor.push_back(
-      std::shared_ptr<NativeLinuxExecutor>(new NativeLinuxExecutor(
+      std::shared_ptr<fuzzuf::executor::NativeLinuxExecutor>(new fuzzuf::executor::NativeLinuxExecutor(
         {FUZZUF_FUZZTOYS_DIR "/fuzz_toys-brainf_ck", output_file_path.string()},
         create_info.exec_timelimit_ms, create_info.exec_memlimit,
         create_info.forksrv, path_to_write_seed, create_info.afl_shm_size,

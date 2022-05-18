@@ -35,7 +35,7 @@
 namespace fuzzuf::algorithm::vuzzer {
 
 // FIXME: check if we are initializing all the members that need to be initialized
-VUzzerState::VUzzerState(std::shared_ptr<const VUzzerSetting> setting, std::shared_ptr<PinToolExecutor> executor, std::shared_ptr<PolyTrackerExecutor> texecutor)
+VUzzerState::VUzzerState(std::shared_ptr<const VUzzerSetting> setting, std::shared_ptr<fuzzuf::executor::PinToolExecutor> executor, std::shared_ptr<fuzzuf::executor::PolyTrackerExecutor> texecutor)
     : setting( setting ), 
       executor( executor ),
       taint_executor( texecutor ),
