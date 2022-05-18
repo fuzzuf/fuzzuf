@@ -379,7 +379,7 @@ void VUzzerMutator::OverwriteDictWord() {
     const unsigned int dict_index = rand() % dict_size;
     const auto &word = state.extras[ dict_index ].data;
     const auto word_len = word.size();
-    const int start_pos = ( len == word_len ) ? 0 : ( rand() % ( len - word_len ) );
+    const int start_pos = rand() % ( len - word_len + 1 );
     Replace( start_pos, word.data(), word.size() );
 }
 void VUzzerMutator::InsertDictWord() {
