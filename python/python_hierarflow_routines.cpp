@@ -59,13 +59,13 @@ NullableRef<HierarFlowCallee<PyUpdInputType>> PyUpdate::operator()(
 
     std::string fn;
     if ( exit_status.exit_reason == PUTExitReasonType::FAULT_TMOUT ) {
-        fn = Util::StrPrintf("%s/hangs/%06u",
+        fn = fuzzuf::utils::StrPrintf("%s/hangs/%06u",
             state.setting.out_dir.c_str(), input->GetID());
     } else if ( exit_status.exit_reason == PUTExitReasonType::FAULT_CRASH ) {
-        fn = Util::StrPrintf("%s/crashes/%06u",
+        fn = fuzzuf::utils::StrPrintf("%s/crashes/%06u",
             state.setting.out_dir.c_str(), input->GetID());
     } else {
-        fn = Util::StrPrintf("%s/queue/id:%06u",
+        fn = fuzzuf::utils::StrPrintf("%s/queue/id:%06u",
             state.setting.out_dir.c_str(), input->GetID());
     }
 

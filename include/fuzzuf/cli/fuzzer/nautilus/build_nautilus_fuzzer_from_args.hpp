@@ -176,7 +176,7 @@ std::unique_ptr<TFuzzer> BuildNautilusFuzzerFromArgs(
       global_options.exec_timelimit_ms.value_or(GetExecTimeout<NautilusTag>()),
       global_options.exec_memlimit.value_or(GetMemLimit<NautilusTag>()),
       forksrv,
-      Util::CPUID_BIND_WHICHEVER,
+      fuzzuf::utils::CPUID_BIND_WHICHEVER,
 
       // TODO: Change here if threading is supported
       GetDefaultNumOfThreads(),
@@ -192,7 +192,7 @@ std::unique_ptr<TFuzzer> BuildNautilusFuzzerFromArgs(
   std::vector<std::string> folders{"signaled", "queue", "timeout", "chunks"};
   for (auto f: folders) {
     fs::create_directories(
-      Util::StrPrintf("%s/%s", setting->path_to_workdir.c_str(), f.c_str()
+      fuzzuf::utils::StrPrintf("%s/%s", setting->path_to_workdir.c_str(), f.c_str()
       )
     );
   }

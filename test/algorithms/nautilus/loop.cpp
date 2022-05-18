@@ -75,7 +75,7 @@ static void NautilusLoop(bool forksrv, size_t iter) {
       fuzzuf::algorithm::afl::option::GetExecTimeout<NautilusTag>(),
       fuzzuf::algorithm::afl::option::GetMemLimit<NautilusTag>(),
       forksrv,
-      Util::CPUID_BIND_WHICHEVER,
+      fuzzuf::utils::CPUID_BIND_WHICHEVER,
 
       GetDefaultNumOfThreads(),
       GetDefaultThreadSize(),
@@ -90,7 +90,7 @@ static void NautilusLoop(bool forksrv, size_t iter) {
   std::vector<std::string> folders{"signaled", "queue", "timeout", "chunks"};
   for (auto f: folders) {
     fs::create_directories(
-      Util::StrPrintf("%s/%s", setting->path_to_workdir.c_str(), f.c_str()
+      fuzzuf::utils::StrPrintf("%s/%s", setting->path_to_workdir.c_str(), f.c_str()
       )
     );
   }

@@ -155,7 +155,7 @@ std::unique_ptr<TFuzzer> BuildAFLFastFuzzerFromArgs(
                         mem_limit,
                         aflfast_options.forksrv,
                         /* dumb_mode */ false,  // FIXME: add dumb_mode
-                        Util::CPUID_BIND_WHICHEVER,
+                        fuzzuf::utils::CPUID_BIND_WHICHEVER,
                         FAST
                     );
 

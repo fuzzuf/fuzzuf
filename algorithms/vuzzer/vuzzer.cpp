@@ -156,12 +156,12 @@ void VUzzer::FillSeeds(VUzzerState &state, u32 size) {
             parents[0]->input->Unload();
             parents[1]->input->Unload();
 
-            std::string fn = Util::StrPrintf("%s/queue/id:%06u",
+            std::string fn = fuzzuf::utils::StrPrintf("%s/queue/id:%06u",
                                             state.setting->out_dir.c_str(),
                                             state.queued_paths);
             state.AddToQueue(state.pending_queue, fn, mutator1.GetBuf(), mutator1.GetLen());
 
-            fn = Util::StrPrintf("%s/queue/id:%06u",
+            fn = fuzzuf::utils::StrPrintf("%s/queue/id:%06u",
                                 state.setting->out_dir.c_str(),
                                 state.queued_paths);
             state.AddToQueue(state.pending_queue, fn, mutator2.GetBuf(), mutator2.GetLen());
@@ -181,7 +181,7 @@ void VUzzer::FillSeeds(VUzzerState &state, u32 size) {
             mutator.MutateRandom();
             mutator.TaintBasedChange();
 
-            std::string fn = Util::StrPrintf("%s/queue/id:%06u",
+            std::string fn = fuzzuf::utils::StrPrintf("%s/queue/id:%06u",
                                             state.setting->out_dir.c_str(),
                                             state.queued_paths);
             state.AddToQueue(state.pending_queue, fn, mutator.GetBuf(), mutator.GetLen());

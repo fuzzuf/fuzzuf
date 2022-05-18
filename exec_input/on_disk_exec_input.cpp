@@ -56,9 +56,9 @@ void OnDiskExecInput::LoadIfNotLoaded(void) {
 void OnDiskExecInput::Load(void) {
     ReallocBufIfLack(fs::file_size(path));
 
-    int fd = Util::OpenFile(path.string(), O_RDONLY);
-    Util::ReadFile(fd, buf.get(), len);
-    Util::CloseFile(fd);
+    int fd = fuzzuf::utils::OpenFile(path.string(), O_RDONLY);
+    fuzzuf::utils::ReadFile(fd, buf.get(), len);
+    fuzzuf::utils::CloseFile(fd);
 }
 
 void OnDiskExecInput::Unload(void) {
@@ -67,13 +67,13 @@ void OnDiskExecInput::Unload(void) {
 
 void OnDiskExecInput::Save(void) {
     if (hardlinked) {
-        Util::DeleteFileOrDirectory(path.string());
+        fuzzuf::utils::DeleteFileOrDirectory(path.string());
         hardlinked = false;
     }
 
-    int fd = Util::OpenFile(path.string(), O_WRONLY | O_CREAT | O_TRUNC, 0600);
-    Util::WriteFile(fd, buf.get(), len);
-    Util::CloseFile(fd);
+    int fd = fuzzuf::utils::OpenFile(path.string(), O_WRONLY | O_CREAT | O_TRUNC, 0600);
+    fuzzuf::utils::WriteFile(fd, buf.get(), len);
+    fuzzuf::utils::CloseFile(fd);
 }
 
 void OnDiskExecInput::OverwriteKeepingLoaded(const u8* new_buf, u32 new_len) {
@@ -94,9 +94,9 @@ void OnDiskExecInput::OverwriteKeepingLoaded(
 void OnDiskExecInput::OverwriteThenUnload(const u8* new_buf, u32 new_len) {
     buf.reset();
 
-    int fd = Util::OpenFile(path.string(), O_WRONLY | O_CREAT | O_TRUNC, 0600);
-    Util::WriteFile(fd, new_buf, new_len);
-    Util::CloseFile(fd);
+    int fd = fuzzuf::utils::OpenFile(path.string(), O_WRONLY | O_CREAT | O_TRUNC, 0600);
+    fuzzuf::utils::WriteFile(fd, new_buf, new_len);
+    fuzzuf::utils::CloseFile(fd);
 }
 
 void OnDiskExecInput::OverwriteThenUnload(
@@ -107,14 +107,14 @@ void OnDiskExecInput::OverwriteThenUnload(
 }
 
 void OnDiskExecInput::LoadByMmap(void) {
-    int fd = Util::OpenFile( path.string(), O_RDONLY );
+    int fd = fuzzuf::utils::OpenFile( path.string(), O_RDONLY );
     auto file_len = fs::file_size(path);
 
     auto raw_buf = static_cast<u8*>(
         mmap( nullptr, file_len, PROT_READ | PROT_WRITE, MAP_PRIVATE, fd, 0)
     );
 
-    Util::CloseFile(fd);
+    fuzzuf::utils::CloseFile(fd);
 
     if (raw_buf == MAP_FAILED) {
         ERROR("Unable to mmap '%s' : %s", path.c_str(), strerror( errno ));
@@ -129,7 +129,7 @@ bool OnDiskExecInput::Link(const fs::path& dest_path) {
 }
 
 void OnDiskExecInput::Copy(const fs::path& dest_path) {
-    Util::CopyFile(path.string(), dest_path.string());
+    fuzzuf::utils::CopyFile(path.string(), dest_path.string());
 }
 
 bool OnDiskExecInput::LinkAndRefer(const fs::path& new_path) {
@@ -141,7 +141,7 @@ bool OnDiskExecInput::LinkAndRefer(const fs::path& new_path) {
 
 void OnDiskExecInput::CopyAndRefer(const fs::path& new_path) {
     // don't want to overwrite the content if new_path is a hardlink
-    Util::DeleteFileOrDirectory(new_path.string());
+    fuzzuf::utils::DeleteFileOrDirectory(new_path.string());
     Copy(new_path);
     path = new_path;
     hardlinked = false;

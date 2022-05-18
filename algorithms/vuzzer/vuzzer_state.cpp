@@ -129,7 +129,7 @@ void VUzzerState::ReadTestcases(void) {
        the ordering  of test cases would vary somewhat randomly and would be
        difficult to control. */
 
-    int nl_cnt = Util::ScanDirAlpha(in_dir.string(), &nl);
+    int nl_cnt = fuzzuf::utils::ScanDirAlpha(in_dir.string(), &nl);
     if (nl_cnt < 0) {
         MSG("\n" cLRD "[-] " cRST
             "The input directory does not seem to be valid - try again. The fuzzer needs\n"
@@ -143,7 +143,7 @@ void VUzzerState::ReadTestcases(void) {
     for (int i=0; i < nl_cnt; i++) {
         struct stat st;
 
-        std::string fn = Util::StrPrintf("%s/%s", in_dir.c_str(), nl[i]->d_name);
+        std::string fn = fuzzuf::utils::StrPrintf("%s/%s", in_dir.c_str(), nl[i]->d_name);
 
         free(nl[i]); /* not tracked */
 

@@ -56,7 +56,7 @@ struct AFLFuzzerTemplate : public afl::AFLFuzzerTemplate<State> {
    * @return inserted value in Testcase
    */
   auto AddToQueue(const unsigned char *buf, std::uint32_t len) const {
-    const auto fn = Util::StrPrintf(
+    const auto fn = fuzzuf::utils::StrPrintf(
         "%s/queue/id:%06u,op:symcc",
         afl::AFLFuzzerTemplate<State>::state->setting->out_dir.c_str(),
         afl::AFLFuzzerTemplate<State>::state->queued_paths);

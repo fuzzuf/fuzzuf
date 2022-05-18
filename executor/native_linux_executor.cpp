@@ -138,12 +138,12 @@ NativeLinuxExecutor::~NativeLinuxExecutor() {
   }
 
   if (input_fd != -1) {
-    Util::CloseFile(input_fd);
+    fuzzuf::utils::CloseFile(input_fd);
     input_fd = -1;
   }
 
   if (null_fd != -1) {
-    Util::CloseFile(null_fd);
+    fuzzuf::utils::CloseFile(null_fd);
     null_fd = -1;
   }
 
@@ -192,12 +192,12 @@ void NativeLinuxExecutor::TerminateForkServer() {
   }
 
   if (forksrv_read_fd != -1) {
-    Util::CloseFile(forksrv_read_fd);
+    fuzzuf::utils::CloseFile(forksrv_read_fd);
     forksrv_read_fd = -1;
   }
 
   if (forksrv_write_fd != -1) {
-    Util::CloseFile(forksrv_write_fd);
+    fuzzuf::utils::CloseFile(forksrv_write_fd);
     forksrv_write_fd = -1;
   }
 
@@ -393,10 +393,10 @@ void NativeLinuxExecutor::Run(const u8 *buf, u32 len, u32 timeout_ms) {
     try {
       // FIXME: When persistent mode is implemented, this tmp must be set to the
       // value that represent if the last execution failed for timeout.
-      Util::WriteFile(forksrv_write_fd, tmp, 4);
+      fuzzuf::utils::WriteFile(forksrv_write_fd, tmp, 4);
 
       read_buffer.resize(4u);
-      Util::ReadFile(forksrv_read_fd, read_buffer.data(), 4u, false);
+      fuzzuf::utils::ReadFile(forksrv_read_fd, read_buffer.data(), 4u, false);
 
       epoll_event event;
       auto left_ms = timeout_ms;
@@ -476,7 +476,7 @@ void NativeLinuxExecutor::Run(const u8 *buf, u32 len, u32 timeout_ms) {
       }
     }
 
-    child_pid = Util::Fork();
+    child_pid = fuzzuf::utils::Fork();
     if (child_pid < 0) ERROR("fork() failed");
 
     if (!child_pid) {
@@ -542,7 +542,7 @@ void NativeLinuxExecutor::Run(const u8 *buf, u32 len, u32 timeout_ms) {
     if (read_buffer.size() < 8u) {
       std::size_t cur_size = read_buffer.size();
       read_buffer.resize(read_size);
-      Util::ReadFile(forksrv_read_fd, std::next(read_buffer.data(), cur_size),
+      fuzzuf::utils::ReadFile(forksrv_read_fd, std::next(read_buffer.data(), cur_size),
                      read_size - cur_size, false);
     }
 
@@ -816,7 +816,7 @@ void NativeLinuxExecutor::SetupEnvironmentVariablesForTarget() {
          0);
 
   setenv("MSAN_OPTIONS",
-         Util::StrPrintf("exit_code=%d:"
+         fuzzuf::utils::StrPrintf("exit_code=%d:"
                          "symbolize=0:"
                          "abort_on_error=1:"
                          "malloc_context_size=0:"
@@ -1000,7 +1000,7 @@ void NativeLinuxExecutor::SetupForkServer() {
   // launched.
   u8 tmp[4];
   u32 time_limit = 10000;
-  u32 res = Util::ReadFileTimed(forksrv_read_fd, &tmp, 4, time_limit);
+  u32 res = fuzzuf::utils::ReadFileTimed(forksrv_read_fd, &tmp, 4, time_limit);
   // FIXME: There are various reason to fail fork server, and as the responses
   // varies and identifiable, it is more decent to classify them.
   if (res == 0 || res > time_limit) {

@@ -52,7 +52,7 @@ void AFLFastState::UpdateBitmapScoreWithRawTrace(
     const u8 *trace_bits,
     u32 map_size
 ) {
-    u64 fuzz_p2 = Util::NextP2(testcase.n_fuzz);
+    u64 fuzz_p2 = fuzzuf::utils::NextP2(testcase.n_fuzz);
     u64 fav_factor = testcase.exec_us * testcase.input->GetLen();
 
     for (u32 i=0; i<map_size; i++) {
@@ -60,7 +60,7 @@ void AFLFastState::UpdateBitmapScoreWithRawTrace(
             if (top_rated[i]) {
                 auto &top_testcase = top_rated[i].value().get();
 
-                u64 top_rated_fuzz_p2 = Util::NextP2(top_testcase.n_fuzz);
+                u64 top_rated_fuzz_p2 = fuzzuf::utils::NextP2(top_testcase.n_fuzz);
                 u64 factor = top_testcase.exec_us * top_testcase.input->GetLen();
 
                 if (fuzz_p2 > top_rated_fuzz_p2) continue;
@@ -218,7 +218,7 @@ u32 AFLFastState::DoCalcScore(AFLFastTestcase &testcase) {
             if (testcase.fuzz_level < 16) {
                 factor = ((u32) (1 << testcase.fuzz_level)) / (fuzz == 0 ? 1 : fuzz);
             } else {
-                factor = option::GetMaxFactor(*this) / (fuzz == 0 ? 1 : Util::NextP2(fuzz));
+                factor = option::GetMaxFactor(*this) / (fuzz == 0 ? 1 : fuzzuf::utils::NextP2(fuzz));
             }
             break;
 
@@ -255,7 +255,7 @@ void AFLFastState::ShowStats(void) {
 
     const u32 MAP_SIZE = GetMapSize<Tag>();
 
-    u64 cur_ms = Util::GetCurTimeMs();
+    u64 cur_ms = fuzzuf::utils::GetCurTimeMs();
 
     /* If not enough time has passed since last UI update, bail out. */
     if (cur_ms - last_ms < 1000 / GetUiTargetHz(*this)) return;
@@ -287,7 +287,7 @@ void AFLFastState::ShowStats(void) {
     if (!stats_update_freq) stats_update_freq = 1;
 
     /* Do some bitmap stats. */
-    u32 t_bytes = Util::CountNon255Bytes(&virgin_bits[0], virgin_bits.size());
+    u32 t_bytes = fuzzuf::utils::CountNon255Bytes(&virgin_bits[0], virgin_bits.size());
     double t_byte_ratio = ((double)t_bytes * 100) / MAP_SIZE;
 
     double stab_ratio;
@@ -321,7 +321,7 @@ void AFLFastState::ShowStats(void) {
     if (not_on_tty) return;
 
     /* Compute some mildly useful bitmap stats. */
-    u32 t_bits = (MAP_SIZE << 3) - Util::CountBits(&virgin_bits[0], virgin_bits.size());
+    u32 t_bits = (MAP_SIZE << 3) - fuzzuf::utils::CountBits(&virgin_bits[0], virgin_bits.size());
 
     /* Now, for the visuals... */
     bool term_too_small = false;
@@ -354,7 +354,7 @@ void AFLFastState::ShowStats(void) {
                         : cYEL "fuzzuf american fuzzy lop (fast)";
 
     std::string tmp(banner_pad, ' ');
-    tmp += Util::StrPrintf("%s " cLCY "%s" cLGN " (%s)",
+    tmp += fuzzuf::utils::StrPrintf("%s " cLCY "%s" cLGN " (%s)",
                             fuzzer_name, GetVersion(*this), use_banner.c_str());
     MSG("\n%s\n\n", tmp.c_str());
 
@@ -450,23 +450,23 @@ void AFLFastState::ShowStats(void) {
 
     tmp = DescribeInteger(current_entry);
     tmp += queue_cur.favored ? "." : "*";
-    tmp += Util::StrPrintf("%d", queue_cur.fuzz_level);
-    tmp += Util::StrPrintf(" (%0.02f%%)", ((double)current_entry * 100) / queued_paths);
+    tmp += fuzzuf::utils::StrPrintf("%d", queue_cur.fuzz_level);
+    tmp += fuzzuf::utils::StrPrintf(" (%0.02f%%)", ((double)current_entry * 100) / queued_paths);
 
     MSG(bV bSTOP "  now processing : " cRST "%-17s " bSTG bV bSTOP, tmp.c_str());
 
-    tmp = Util::StrPrintf("%0.02f%% / %0.02f%%",
+    tmp = fuzzuf::utils::StrPrintf("%0.02f%% / %0.02f%%",
                           ((double)queue_cur.bitmap_size) * 100 / MAP_SIZE, t_byte_ratio);
 
     MSG("    map density : %s%-21s " bSTG bV "\n", t_byte_ratio > 70 ? cLRD :
          ((t_bytes < 200 && !setting->dumb_mode) ? cPIN : cRST), tmp.c_str());
 
     tmp = DescribeInteger(cur_skipped_paths);
-    tmp += Util::StrPrintf(" (%0.02f%%)", ((double)cur_skipped_paths * 100) / queued_paths);
+    tmp += fuzzuf::utils::StrPrintf(" (%0.02f%%)", ((double)cur_skipped_paths * 100) / queued_paths);
 
     MSG(bV bSTOP " paths timed out : " cRST "%-17s " bSTG bV, tmp.c_str());
 
-    tmp = Util::StrPrintf("%0.02f bits/tuple", t_bytes ? (((double)t_bits) / t_bytes) : 0);
+    tmp = fuzzuf::utils::StrPrintf("%0.02f bits/tuple", t_bytes ? (((double)t_bits) / t_bytes) : 0);
 
     MSG(bSTOP " count coverage : " cRST "%-21s " bSTG bV "\n", tmp.c_str());
 
@@ -474,7 +474,7 @@ void AFLFastState::ShowStats(void) {
          " findings in depth " bSTG bH20 bVL "\n");
 
     tmp = DescribeInteger(queued_favored);
-    tmp += Util::StrPrintf(" (%0.02f%%)", ((double)queued_favored) * 100 / queued_paths);
+    tmp += fuzzuf::utils::StrPrintf(" (%0.02f%%)", ((double)queued_favored) * 100 / queued_paths);
 
     /* Yeah... it's still going on... halp? */
 
@@ -485,13 +485,13 @@ void AFLFastState::ShowStats(void) {
         tmp = DescribeInteger(stage_cur) + "/-";
     } else {
         tmp = DescribeInteger(stage_cur) + "/" + DescribeInteger(stage_max);
-        tmp += Util::StrPrintf(" (%0.02f%%)", ((double)stage_cur) * 100 / stage_max);
+        tmp += fuzzuf::utils::StrPrintf(" (%0.02f%%)", ((double)stage_cur) * 100 / stage_max);
     }
 
     MSG(bV bSTOP " stage execs : " cRST "%-21s " bSTG bV bSTOP, tmp.c_str());
 
     tmp = DescribeInteger(queued_with_cov);
-    tmp += Util::StrPrintf(" (%0.02f%%)", ((double)queued_with_cov) * 100 / queued_paths);
+    tmp += fuzzuf::utils::StrPrintf(" (%0.02f%%)", ((double)queued_with_cov) * 100 / queued_paths);
 
     MSG("  new edges on : " cRST "%-22s " bSTG bV "\n", tmp.c_str());
 
@@ -595,7 +595,7 @@ void AFLFastState::ShowStats(void) {
 
     MSG(bV bSTOP "       havoc : " cRST "%-37s " bSTG bV bSTOP, tmp.c_str());
 
-    if (t_bytes) tmp = Util::StrPrintf("%0.02f%%", stab_ratio);
+    if (t_bytes) tmp = fuzzuf::utils::StrPrintf("%0.02f%%", stab_ratio);
     else tmp = "n/a";
 
     MSG(" stability : %s%-10s " bSTG bV "\n", (stab_ratio < 85 && var_byte_count > 40)
@@ -605,7 +605,7 @@ void AFLFastState::ShowStats(void) {
     if (!bytes_trim_out) {
         tmp = "n/a, ";
     } else {
-        tmp = Util::StrPrintf("%0.02f%%",
+        tmp = fuzzuf::utils::StrPrintf("%0.02f%%",
                 ((double)(bytes_trim_in - bytes_trim_out)) * 100 / bytes_trim_in);
         tmp += "/" + DescribeInteger(trim_execs) + ", ";
     }
@@ -613,7 +613,7 @@ void AFLFastState::ShowStats(void) {
     if (!blocks_eff_total) {
         tmp += "n/a";
     } else {
-        tmp += Util::StrPrintf("%0.02f%%",
+        tmp += fuzzuf::utils::StrPrintf("%0.02f%%",
                 ((double)(blocks_eff_total - blocks_eff_select)) * 100 / blocks_eff_total);
     }
 

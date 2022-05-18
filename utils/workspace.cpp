@@ -23,15 +23,15 @@
 void SetupDirs(std::string out_dir) {
     try {
         DEBUG("SetupDir\n");
-        Util::CreateDir(out_dir);
-        Util::CreateDir(out_dir + "/queue");
-        Util::CreateDir(out_dir + "/queue/.state/");
-        Util::CreateDir(out_dir + "/queue/.state/deterministic_done/");
-        Util::CreateDir(out_dir + "/queue/.state/auto_extras/");
-        Util::CreateDir(out_dir + "/queue/.state/redundant_edges/");
-        Util::CreateDir(out_dir + "/queue/.state/variable_behavior/");
-        Util::CreateDir(out_dir + "/crashes");
-        Util::CreateDir(out_dir + "/hangs");
+        fuzzuf::utils::CreateDir(out_dir);
+        fuzzuf::utils::CreateDir(out_dir + "/queue");
+        fuzzuf::utils::CreateDir(out_dir + "/queue/.state/");
+        fuzzuf::utils::CreateDir(out_dir + "/queue/.state/deterministic_done/");
+        fuzzuf::utils::CreateDir(out_dir + "/queue/.state/auto_extras/");
+        fuzzuf::utils::CreateDir(out_dir + "/queue/.state/redundant_edges/");
+        fuzzuf::utils::CreateDir(out_dir + "/queue/.state/variable_behavior/");
+        fuzzuf::utils::CreateDir(out_dir + "/crashes");
+        fuzzuf::utils::CreateDir(out_dir + "/hangs");
         
     } catch( const FileError &e) {
         std::cerr << e.what() << std::endl;

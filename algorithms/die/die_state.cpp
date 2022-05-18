@@ -59,7 +59,7 @@ void DIEState::PivotInputs(void) {
       resuming_fuzz = true;
       /* We don't need to add ".js" here
          because the original file name contains the extension */
-      nfn = Util::StrPrintf("%s/queue/%s",
+      nfn = fuzzuf::utils::StrPrintf("%s/queue/%s",
                             setting->out_dir.c_str(), rsl.c_str());
 
       /* Since we're at it, let's also try to find parent and figure out the
@@ -88,12 +88,12 @@ void DIEState::PivotInputs(void) {
         if (pos != std::string::npos) pos += 6;
         else pos = 0;
 
-        nfn = Util::StrPrintf("%s/queue/id:%06u,orig:%s",
+        nfn = fuzzuf::utils::StrPrintf("%s/queue/id:%06u,orig:%s",
                               setting->out_dir.c_str(),
                               id,
                               rsl.c_str() + pos);
       } else {
-        nfn = Util::StrPrintf("%s/queue/id_%06u",
+        nfn = fuzzuf::utils::StrPrintf("%s/queue/id_%06u",
                               setting->out_dir.c_str(), id);
       }
     }
@@ -162,7 +162,7 @@ std::shared_ptr<DIETestcase> DIEState::AddToQueue(
   queued_paths++;
   pending_not_fuzzed++;
   cycles_wo_finds = 0;
-  last_path_time = Util::GetCurTimeMs();
+  last_path_time = fuzzuf::utils::GetCurTimeMs();
 
   return testcase;
 }
@@ -181,7 +181,7 @@ void DIEState::ReadTestcases(void) {
   fs::path path_esfuzz = path_die / "fuzz/TS/esfuzz.js";
 
   /* Create directory for JS testcase */
-  Util::CreateDir((setting->out_dir / "mutated").string());
+  fuzzuf::utils::CreateDir((setting->out_dir / "mutated").string());
 
   if (!fs::is_directory(path_input)) {
     /* Exit if input path is not a directory */
@@ -259,7 +259,7 @@ void DIEState::ReadTestcases(void) {
            path_typer.string(), // typer.js
            path_js.string(),    // js file
            path_jsi.string()};  // instrumented js file
-    status = Util::ExecuteCommand(cmd);
+    status = fuzzuf::utils::ExecuteCommand(cmd);
 
     if (status != 0) {
       /* Skip if instrumentation failed */
@@ -278,7 +278,7 @@ void DIEState::ReadTestcases(void) {
            setting->d8_flags,   // flags for d8
            path_jsi.string(),   // instrumented js
            path_type.string()}; // path of output type file
-    status = Util::ExecuteCommand(cmd);
+    status = fuzzuf::utils::ExecuteCommand(cmd);
 
     if (status != 0 || !fs::exists(path_type)) {
       /* Skip if profiling failed */
@@ -350,13 +350,13 @@ bool DIEState::SaveIfInteresting(
     }
 
     if (!setting->simple_files) {
-      fn = Util::StrPrintf("%s/queue/id:%06u,%s.js",
+      fn = fuzzuf::utils::StrPrintf("%s/queue/id:%06u,%s.js",
                            setting->out_dir.c_str(),
                            queued_paths,
                            afl::routine::update::DescribeOp(*this, hnb).c_str()
       );
     } else {
-      fn = Util::StrPrintf("%s/queue/id_%06u.js",
+      fn = fuzzuf::utils::StrPrintf("%s/queue/id_%06u.js",
                            setting->out_dir.c_str(),
                            queued_paths
       );
@@ -461,20 +461,20 @@ bool DIEState::SaveIfInteresting(
       }
 
       if (!setting->simple_files) {
-        fn = Util::StrPrintf("%s/hangs/id:%06llu,%s.js",
+        fn = fuzzuf::utils::StrPrintf("%s/hangs/id:%06llu,%s.js",
                              setting->out_dir.c_str(),
                              unique_hangs,
                              afl::routine::update::DescribeOp(*this, 0).c_str()
         );
       } else {
-        fn = Util::StrPrintf("%s/hangs/id_%06llu.js",
+        fn = fuzzuf::utils::StrPrintf("%s/hangs/id_%06llu.js",
                              setting->out_dir.c_str(),
                              unique_hangs
         );
       }
 
       unique_hangs++;
-      last_hang_time = Util::GetCurTimeMs();
+      last_hang_time = fuzzuf::utils::GetCurTimeMs();
       break;
 
     case PUTExitReasonType::FAULT_CRASH:
@@ -524,14 +524,14 @@ bool DIEState::SaveIfInteresting(
 #endif
 
       if (!setting->simple_files) {
-        fn = Util::StrPrintf("%s/crashes/id:%06llu,sig:%02u,%s.js",
+        fn = fuzzuf::utils::StrPrintf("%s/crashes/id:%06llu,sig:%02u,%s.js",
                              setting->out_dir.c_str(),
                              unique_crashes,
                              exit_status.signal,
                              afl::routine::update::DescribeOp(*this, 0).c_str()
         );
       } else {
-        fn = Util::StrPrintf("%s/hangs/id_%06llu_%02u.js",
+        fn = fuzzuf::utils::StrPrintf("%s/hangs/id_%06llu_%02u.js",
                              setting->out_dir.c_str(),
                              unique_crashes,
                              exit_status.signal
@@ -540,7 +540,7 @@ bool DIEState::SaveIfInteresting(
 
       unique_crashes++;
 
-      last_crash_time = Util::GetCurTimeMs();
+      last_crash_time = fuzzuf::utils::GetCurTimeMs();
       last_crash_execs = total_execs;
 
       break;
@@ -556,14 +556,14 @@ bool DIEState::SaveIfInteresting(
      test case, too. */
   int fd;
 
-  fd = Util::OpenFile(fn, O_WRONLY | O_CREAT | O_EXCL, 0600);
-  Util::WriteFile(fd, buf_js, len_js);
-  Util::CloseFile(fd);
+  fd = fuzzuf::utils::OpenFile(fn, O_WRONLY | O_CREAT | O_EXCL, 0600);
+  fuzzuf::utils::WriteFile(fd, buf_js, len_js);
+  fuzzuf::utils::CloseFile(fd);
 
   // Save type file
-  fd = Util::OpenFile(fn + ".t", O_WRONLY | O_CREAT | O_EXCL, 0600);
-  Util::WriteFile(fd, buf_ty, len_ty);
-  Util::CloseFile(fd);
+  fd = fuzzuf::utils::OpenFile(fn + ".t", O_WRONLY | O_CREAT | O_EXCL, 0600);
+  fuzzuf::utils::WriteFile(fd, buf_ty, len_ty);
+  fuzzuf::utils::CloseFile(fd);
 
   return keeping;
 }
@@ -578,7 +578,7 @@ void DIEState::ShowStats(void) {
 
   const u32 MAP_SIZE = GetMapSize<Tag>();
 
-  u64 cur_ms = Util::GetCurTimeMs();
+  u64 cur_ms = fuzzuf::utils::GetCurTimeMs();
 
   /* If not enough time has passed since last UI update, bail out. */
   if (cur_ms - last_ms < 1000 / GetUiTargetHz(*this)) return;
@@ -610,7 +610,7 @@ void DIEState::ShowStats(void) {
   if (!stats_update_freq) stats_update_freq = 1;
 
   /* Do some bitmap stats. */
-  u32 t_bytes = Util::CountNon255Bytes(&virgin_bits[0], virgin_bits.size());
+  u32 t_bytes = fuzzuf::utils::CountNon255Bytes(&virgin_bits[0], virgin_bits.size());
   double t_byte_ratio = ((double)t_bytes * 100) / MAP_SIZE;
 
   double stab_ratio;
@@ -644,7 +644,7 @@ void DIEState::ShowStats(void) {
   if (not_on_tty) return;
 
   /* Compute some mildly useful bitmap stats. */
-  u32 t_bits = (MAP_SIZE << 3) - Util::CountBits(&virgin_bits[0], virgin_bits.size());
+  u32 t_bits = (MAP_SIZE << 3) - fuzzuf::utils::CountBits(&virgin_bits[0], virgin_bits.size());
 
   /* Now, for the visuals... */
   bool term_too_small = false;
@@ -677,7 +677,7 @@ void DIEState::ShowStats(void) {
     : cYEL "fuzzuf american fuzzy lop";
 
   std::string tmp(banner_pad, ' ');
-  tmp += Util::StrPrintf("%s " cLCY "%s" cLGN " (%s)",
+  tmp += fuzzuf::utils::StrPrintf("%s " cLCY "%s" cLGN " (%s)",
                          fuzzer_name, GetVersion(*this), use_banner.c_str());
   MSG("\n%s\n\n", tmp.c_str());
 
@@ -773,22 +773,22 @@ void DIEState::ShowStats(void) {
 
   tmp = DescribeInteger(current_entry);
   if (!queue_cur.favored) tmp += '*';
-  tmp += Util::StrPrintf(" (%0.02f%%)", ((double)current_entry * 100) / queued_paths);
+  tmp += fuzzuf::utils::StrPrintf(" (%0.02f%%)", ((double)current_entry * 100) / queued_paths);
 
   MSG(bV bSTOP "  now processing : " cRST "%-17s " bSTG bV bSTOP, tmp.c_str());
 
-  tmp = Util::StrPrintf("%0.02f%% / %0.02f%%",
+  tmp = fuzzuf::utils::StrPrintf("%0.02f%% / %0.02f%%",
                         ((double)queue_cur.bitmap_size) * 100 / MAP_SIZE, t_byte_ratio);
 
   MSG("    map density : %s%-21s " bSTG bV "\n", t_byte_ratio > 70 ? cLRD :
       ((t_bytes < 200 && !setting->dumb_mode) ? cPIN : cRST), tmp.c_str());
 
   tmp = DescribeInteger(cur_skipped_paths);
-  tmp += Util::StrPrintf(" (%0.02f%%)", ((double)cur_skipped_paths * 100) / queued_paths);
+  tmp += fuzzuf::utils::StrPrintf(" (%0.02f%%)", ((double)cur_skipped_paths * 100) / queued_paths);
 
   MSG(bV bSTOP " paths timed out : " cRST "%-17s " bSTG bV, tmp.c_str());
 
-  tmp = Util::StrPrintf("%0.02f bits/tuple", t_bytes ? (((double)t_bits) / t_bytes) : 0);
+  tmp = fuzzuf::utils::StrPrintf("%0.02f bits/tuple", t_bytes ? (((double)t_bits) / t_bytes) : 0);
 
   MSG(bSTOP " count coverage : " cRST "%-21s " bSTG bV "\n", tmp.c_str());
 
@@ -796,7 +796,7 @@ void DIEState::ShowStats(void) {
       " findings in depth " bSTG bH20 bVL "\n");
 
   tmp = DescribeInteger(queued_favored);
-  tmp += Util::StrPrintf(" (%0.02f%%)", ((double)queued_favored) * 100 / queued_paths);
+  tmp += fuzzuf::utils::StrPrintf(" (%0.02f%%)", ((double)queued_favored) * 100 / queued_paths);
 
   /* Yeah... it's still going on... halp? */
 
@@ -807,13 +807,13 @@ void DIEState::ShowStats(void) {
     tmp = DescribeInteger(stage_cur) + "/-";
   } else {
     tmp = DescribeInteger(stage_cur) + "/" + DescribeInteger(stage_max);
-    tmp += Util::StrPrintf(" (%0.02f%%)", ((double)stage_cur) * 100 / stage_max);
+    tmp += fuzzuf::utils::StrPrintf(" (%0.02f%%)", ((double)stage_cur) * 100 / stage_max);
   }
 
   MSG(bV bSTOP " stage execs : " cRST "%-21s " bSTG bV bSTOP, tmp.c_str());
 
   tmp = DescribeInteger(queued_with_cov);
-  tmp += Util::StrPrintf(" (%0.02f%%)", ((double)queued_with_cov) * 100 / queued_paths);
+  tmp += fuzzuf::utils::StrPrintf(" (%0.02f%%)", ((double)queued_with_cov) * 100 / queued_paths);
 
   MSG("  new edges on : " cRST "%-22s " bSTG bV "\n", tmp.c_str());
 

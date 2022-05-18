@@ -25,10 +25,10 @@
 #include <cryptopp/hex.h>
 #include "fuzzuf/utils/get_hash.hpp"
 std::string GetSHA1HashFromFile(std::string path, u32 len) {
-    int fd = Util::OpenFile(path, O_RDONLY);
+    int fd = fuzzuf::utils::OpenFile(path, O_RDONLY);
     u8 *buf = new u8[len];
-    Util::ReadFile(fd, buf, len);
-    Util::CloseFile(fd);
+    fuzzuf::utils::ReadFile(fd, buf, len);
+    fuzzuf::utils::CloseFile(fd);
 
     CryptoPP::SHA1 sha1;
     std::string hash = "";

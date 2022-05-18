@@ -91,7 +91,7 @@ Mutator<Tag>::Mutator( const ExecInput &input ) :
         temp_len( 0 ),
         splbuf( nullptr ),
         spl_len( 0 ),
-        rand_fd( Util::OpenFile("/dev/urandom", O_RDONLY | O_CLOEXEC) )
+        rand_fd( fuzzuf::utils::OpenFile("/dev/urandom", O_RDONLY | O_CLOEXEC) )
 {
     std::memcpy(outbuf, input.GetBuf(), len);
 }
@@ -102,7 +102,7 @@ Mutator<Tag>::~Mutator() {
     if (tmpbuf) delete[] tmpbuf;
     if (splbuf) delete[] splbuf;
     if (rand_fd != -1) {
-      Util::CloseFile(rand_fd);
+      fuzzuf::utils::CloseFile(rand_fd);
       rand_fd = -1;
     }
 }
@@ -258,7 +258,7 @@ void Mutator<Tag>::RestoreHavoc(void) {
 template<class Tag>
 bool Mutator<Tag>::Splice(const ExecInput& target) {
     auto cmp_len = std::min(len, target.GetLen());
-    auto [f_diff, l_diff] = Util::LocateDiffs(outbuf, target.GetBuf(), cmp_len);
+    auto [f_diff, l_diff] = fuzzuf::utils::LocateDiffs(outbuf, target.GetBuf(), cmp_len);
 
     if (f_diff < 0 || l_diff < 2 || f_diff == l_diff) return false;
 

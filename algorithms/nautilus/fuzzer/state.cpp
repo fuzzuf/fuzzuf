@@ -225,23 +225,23 @@ void NautilusState::RunOn(std::string& code,
       tree_like.UnparseTo(ctx, buffer);
 
       /* Save tree to file */
-      std::string filepath = Util::StrPrintf(
+      std::string filepath = fuzzuf::utils::StrPrintf(
         "%s/timeout/%09ld",
         setting->path_to_workdir.c_str(), execution_count
       );
-      int fd = Util::OpenFile(filepath,
+      int fd = fuzzuf::utils::OpenFile(filepath,
                               O_WRONLY | O_CREAT | O_TRUNC,
                               S_IWUSR | S_IRUSR); // 0600
       if (fd == -1) {
         /* Print testcase because we don't want to lose it */
         std::cout << buffer << std::endl;
         throw exceptions::unable_to_create_file(
-          Util::StrPrintf("Cannot save timeout: %s", filepath.c_str()),
+          fuzzuf::utils::StrPrintf("Cannot save timeout: %s", filepath.c_str()),
           __FILE__, __LINE__
         );
       }
-      Util::WriteFile(fd, buffer.data(), buffer.size());
-      Util::CloseFile(fd);
+      fuzzuf::utils::WriteFile(fd, buffer.data(), buffer.size());
+      fuzzuf::utils::CloseFile(fd);
 
       break;
     }
@@ -266,23 +266,23 @@ void NautilusState::RunOn(std::string& code,
       tree_like.UnparseTo(ctx, buffer);
 
       /* Save tree to file */
-      std::string filepath = Util::StrPrintf(
+      std::string filepath = fuzzuf::utils::StrPrintf(
         "%s/signaled/%d_%09ld",
         setting->path_to_workdir.c_str(), exit_status.signal, execution_count
       );
-      int fd = Util::OpenFile(filepath,
+      int fd = fuzzuf::utils::OpenFile(filepath,
                               O_WRONLY | O_CREAT | O_TRUNC,
                               S_IWUSR | S_IRUSR); // 0600
       if (fd == -1) {
         /* Print testcase because we don't want to lose it */
         std::cout << buffer << std::endl;
         throw exceptions::unable_to_create_file(
-          Util::StrPrintf("Cannot save crash: %s", filepath.c_str()),
+          fuzzuf::utils::StrPrintf("Cannot save crash: %s", filepath.c_str()),
           __FILE__, __LINE__
         );
       }
-      Util::WriteFile(fd, buffer.data(), buffer.size());
-      Util::CloseFile(fd);
+      fuzzuf::utils::WriteFile(fd, buffer.data(), buffer.size());
+      fuzzuf::utils::CloseFile(fd);
 
       break;
     }
@@ -429,21 +429,21 @@ bool NautilusState::Minimize(QueueItem& input,
     input.tree.UnparseTo(ctx, buffer);
 
     /* Save tree to file */
-    std::string filepath = Util::StrPrintf(
+    std::string filepath = fuzzuf::utils::StrPrintf(
       "%s/queue/id:%09ld,er:%d.min",
       setting->path_to_workdir.c_str(), input.id, input.exit_reason
     );
-    int fd = Util::OpenFile(filepath,
+    int fd = fuzzuf::utils::OpenFile(filepath,
                             O_WRONLY | O_CREAT | O_TRUNC,
                             S_IWUSR | S_IRUSR); // 0600
     if (fd == -1) {
       throw exceptions::unable_to_create_file(
-        Util::StrPrintf("Cannot save tree: %s", filepath.c_str()),
+        fuzzuf::utils::StrPrintf("Cannot save tree: %s", filepath.c_str()),
         __FILE__, __LINE__
       );
     }
-    Util::WriteFile(fd, buffer.data(), buffer.size());
-    Util::CloseFile(fd);
+    fuzzuf::utils::WriteFile(fd, buffer.data(), buffer.size());
+    fuzzuf::utils::CloseFile(fd);
 
     return true;
   }

@@ -127,7 +127,7 @@ std::unique_ptr<TFuzzer> BuildIJONFuzzerFromArgs(
                         global_options.exec_memlimit.value_or(GetMemLimit<IJONTag>()),
                         ijon_options.forksrv,
                         /* dumb_mode */ false,  // FIXME: add dumb_mode
-                        Util::CPUID_BIND_WHICHEVER
+                        fuzzuf::utils::CPUID_BIND_WHICHEVER
                     );
 
     // NativeLinuxExecutor needs the directory specified by "out_dir" to be already set up

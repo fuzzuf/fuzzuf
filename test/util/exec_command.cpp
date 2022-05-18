@@ -27,26 +27,26 @@ BOOST_AUTO_TEST_CASE(ExecuteCommand) {
   std::vector<std::string> cmd;
 
   cmd = {};
-  BOOST_CHECK_EQUAL(Util::ExecuteCommand(cmd), -1);
+  BOOST_CHECK_EQUAL(fuzzuf::utils::ExecuteCommand(cmd), -1);
 
   cmd = {"true"};
-  BOOST_CHECK_EQUAL(Util::ExecuteCommand(cmd), 0);
+  BOOST_CHECK_EQUAL(fuzzuf::utils::ExecuteCommand(cmd), 0);
 
   cmd = {"false"};
-  BOOST_CHECK_EQUAL(Util::ExecuteCommand(cmd), 1);
+  BOOST_CHECK_EQUAL(fuzzuf::utils::ExecuteCommand(cmd), 1);
 
   cmd = {"sh", "-c", "sleep 0.1; true"};
-  BOOST_CHECK_EQUAL(Util::ExecuteCommand(cmd), 0);
+  BOOST_CHECK_EQUAL(fuzzuf::utils::ExecuteCommand(cmd), 0);
 
   cmd = {"sh", "-c", "sleep 0.1; false"};
-  BOOST_CHECK_EQUAL(Util::ExecuteCommand(cmd), 1);
+  BOOST_CHECK_EQUAL(fuzzuf::utils::ExecuteCommand(cmd), 1);
 
   cmd = {"sh", "-c", "exit 123"};
-  BOOST_CHECK_EQUAL(Util::ExecuteCommand(cmd), 123);
+  BOOST_CHECK_EQUAL(fuzzuf::utils::ExecuteCommand(cmd), 123);
 
   cmd = {"sh", "-c", "exit 777"}; // WEXITSTATUS(0x309) == 9
-  BOOST_CHECK_EQUAL(Util::ExecuteCommand(cmd), 9);
+  BOOST_CHECK_EQUAL(fuzzuf::utils::ExecuteCommand(cmd), 9);
 
   cmd = {"non-existing_command", "--hello", "world"};
-  BOOST_CHECK_EQUAL(Util::ExecuteCommand(cmd), 1);
+  BOOST_CHECK_EQUAL(fuzzuf::utils::ExecuteCommand(cmd), 1);
 }

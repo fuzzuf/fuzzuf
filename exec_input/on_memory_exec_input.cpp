@@ -65,7 +65,7 @@ void OnMemoryExecInput::OverwriteThenUnload(
 }
 
 void OnMemoryExecInput::SaveToFile(const fs::path& path) {
-    int fd = Util::OpenFile(path.string(), O_WRONLY | O_CREAT, 0600);
-    Util::WriteFile(fd, buf.get(), len);
-    Util::CloseFile(fd);
+    int fd = fuzzuf::utils::OpenFile(path.string(), O_WRONLY | O_CREAT, 0600);
+    fuzzuf::utils::WriteFile(fd, buf.get(), len);
+    fuzzuf::utils::CloseFile(fd);
 }

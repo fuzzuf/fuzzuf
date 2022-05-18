@@ -127,7 +127,7 @@ public:
   FileError(const std::string &what_arg) : std::invalid_argument(what_arg) {}
 };
 
-namespace Util {
+namespace fuzzuf::utils {
 
 /*
 namespace {
@@ -287,6 +287,6 @@ void log(std::string &&tag, nlohmann::json &&message,
  **/
 fuzzuf::status_t log(std::string &&tag, nlohmann::json &&message);
 
-}; // namespace Util
+}; // namespace fuzzuf::utils
 
 #endif

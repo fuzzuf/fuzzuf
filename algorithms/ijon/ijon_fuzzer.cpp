@@ -39,7 +39,7 @@ IJONFuzzer::IJONFuzzer(std::unique_ptr<IJONState>&& moved_state)
     : AFLFuzzerTemplate<IJONState>(std::move(moved_state)) 
 {
     state->max_dir = state->setting->out_dir / "ijon_max";
-    Util::CreateDir(state->max_dir.string());
+    fuzzuf::utils::CreateDir(state->max_dir.string());
 
     for (u32 i=0; i<option::GetMaxMapSize<option::IJONTag>(); i++) {
         state->all_inputs.emplace_back(

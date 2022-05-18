@@ -192,15 +192,15 @@ extern RunLevel runlevel;
 
 #define IS_DEBUG_MODE() (runlevel >= RunLevel::MODE_DEBUG)
 #define DEBUG(...) { \
-    if( runlevel >= RunLevel::MODE_DEBUG || ::Util::has_logger() ) { \
+    if( runlevel >= RunLevel::MODE_DEBUG || ::fuzzuf::utils::has_logger() ) { \
         std::string temp; \
         FUZZUF_FORMAT( temp, __VA_ARGS__ ) \
         if(runlevel >= RunLevel::MODE_DEBUG) {\
             StdoutLogger::Println( temp ); \
             LogFileLogger::Println( temp ); \
         }\
-        if( ::Util::has_logger() ) \
-            ::Util::log( "log.debug.debug", nlohmann::json( {{"message",std::move(temp)},{"file",__FILE__},{"line",__LINE__}} ), []( auto ){} ); \
+        if( ::fuzzuf::utils::has_logger() ) \
+            ::fuzzuf::utils::log( "log.debug.debug", nlohmann::json( {{"message",std::move(temp)},{"file",__FILE__},{"line",__LINE__}} ), []( auto ){} ); \
     }\
 }
 
@@ -213,8 +213,8 @@ extern RunLevel runlevel;
     std::puts(temp.c_str()); \
     MSG(cLRD "\n         Location : " cRST "%s(), %s:%u\n\n", \
          __FUNCTION__, __FILE__, __LINE__); \
-    if( ::Util::has_logger() ) \
-        ::Util::log( "log.error.exit", nlohmann::json( {{"message",std::move(temp)},{"file",__FILE__},{"line",__LINE__}} ) ); \
+    if( ::fuzzuf::utils::has_logger() ) \
+        ::fuzzuf::utils::log( "log.error.exit", nlohmann::json( {{"message",std::move(temp)},{"file",__FILE__},{"line",__LINE__}} ) ); \
     exit(1); \
   } while (0)
 
@@ -227,8 +227,8 @@ extern RunLevel runlevel;
     std::puts(temp.c_str()); \
     MSG(cLRD "\n    Stop location : " cRST "%s(), %s:%u\n\n", \
          __FUNCTION__, __FILE__, __LINE__); \
-    if( ::Util::has_logger() ) \
-        ::Util::log( "log.error.abort", nlohmann::json( {{"message",std::move(temp)},{"file",__FILE__},{"line",__LINE__}} ) ); \
+    if( ::fuzzuf::utils::has_logger() ) \
+        ::fuzzuf::utils::log( "log.error.abort", nlohmann::json( {{"message",std::move(temp)},{"file",__FILE__},{"line",__LINE__}} ) ); \
     abort(); \
   } while (0)
 
@@ -243,7 +243,7 @@ extern RunLevel runlevel;
     MSG(cLRD "\n    Stop location : " cRST "%s(), %s:%u\n", \
          __FUNCTION__, __FILE__, __LINE__); \
     MSG(cLRD "       OS message : " cRST "%s\n", strerror(errno)); \
-    if( ::Util::has_logger() ) \
-        ::Util::log( "log.error.system_error", nlohmann::json( {{"message",std::move(temp)},{"file",__FILE__},{"line",__LINE__},{"errno",errno},{"strerror",std::strerror(errno)}} ) ); \
+    if( ::fuzzuf::utils::has_logger() ) \
+        ::fuzzuf::utils::log( "log.error.system_error", nlohmann::json( {{"message",std::move(temp)},{"file",__FILE__},{"line",__LINE__},{"errno",errno},{"strerror",std::strerror(errno)}} ) ); \
     std::exit(1); \
     }

@@ -33,7 +33,7 @@ void PythonFuzzer::ExecuteInitialSeeds(const fs::path &in_dir) {
 
     DEBUG("Scanning %s\n", in_dir.c_str());
 
-    int dirnum = Util::ScanDirAlpha(in_dir.string(), &namelist);
+    int dirnum = fuzzuf::utils::ScanDirAlpha(in_dir.string(), &namelist);
     if (dirnum < 0) {
       ERROR("Unable to open '%s'", in_dir.c_str());
     }
@@ -41,7 +41,7 @@ void PythonFuzzer::ExecuteInitialSeeds(const fs::path &in_dir) {
     for (int i = 0; i < dirnum; i++) {
         struct stat st;
 
-        std::string fn = Util::StrPrintf("%s/%s", 
+        std::string fn = fuzzuf::utils::StrPrintf("%s/%s", 
                                       in_dir.c_str(), namelist[i]->d_name);
 
         free(namelist[i]); /* not tracked */
@@ -64,9 +64,9 @@ void PythonFuzzer::ExecuteInitialSeeds(const fs::path &in_dir) {
         DEBUG("Attempting dry run with '%s'...\n", fn.c_str());
 
         auto buf = std::make_unique<u8[]>(st.st_size);
-        int fd = Util::OpenFile(fn, O_RDONLY);
-        Util::ReadFile(fd, buf.get(), st.st_size);
-        Util::CloseFile(fd);
+        int fd = fuzzuf::utils::OpenFile(fn, O_RDONLY);
+        fuzzuf::utils::ReadFile(fd, buf.get(), st.st_size);
+        fuzzuf::utils::CloseFile(fd);
         add_seed(buf.get(), st.st_size);
     }
 
@@ -98,7 +98,7 @@ PythonFuzzer::PythonFuzzer(
     using fuzzuf::algorithm::afl::option::GetDefaultOutfile;
     using fuzzuf::algorithm::afl::option::GetMapSize;
 
-    Util::set_segv_handler::get();
+    fuzzuf::utils::set_segv_handler::get();
 
     // Executor needs the directory specified by "out_dir" to be already set up
     // so we need to create the directory first, and then initialize Executor
@@ -134,7 +134,7 @@ void PythonFuzzer::Reset(void) {
 
     executor.reset();
 
-    Util::DeleteFileOrDirectory(setting.out_dir.string());
+    fuzzuf::utils::DeleteFileOrDirectory(setting.out_dir.string());
     SetupDirs(setting.out_dir.string());
 
     state.reset(new PythonState(setting));
@@ -167,7 +167,7 @@ void PythonFuzzer::Release(void) {
     { auto _ = std::move(interest); }
     { auto _ = std::move(add_seed); }
 
-    Util::DeleteFileOrDirectory(setting.out_dir.string());
+    fuzzuf::utils::DeleteFileOrDirectory(setting.out_dir.string());
 }
 
 void PythonFuzzer::BuildFuzzFlow() {

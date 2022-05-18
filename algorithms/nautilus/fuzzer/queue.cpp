@@ -63,21 +63,21 @@ void Queue::Add(Tree&& tree,
   tree.UnparseTo(ctx, buffer);
 
   /* Create file for entry */
-  std::string filepath = Util::StrPrintf(
+  std::string filepath = fuzzuf::utils::StrPrintf(
     "%s/queue/id:%09ld,er:%d",
     _work_dir.c_str(), _current_id, exit_reason
   );
-  int fd = Util::OpenFile(filepath,
+  int fd = fuzzuf::utils::OpenFile(filepath,
                           O_WRONLY | O_CREAT | O_TRUNC,
                           S_IWUSR | S_IRUSR); // 0600
   if (fd == -1) {
     throw exceptions::unable_to_create_file(
-      Util::StrPrintf("Cannot save tree: %s", filepath.c_str()),
+      fuzzuf::utils::StrPrintf("Cannot save tree: %s", filepath.c_str()),
       __FILE__, __LINE__
     );
   }
-  Util::WriteFile(fd, buffer.data(), buffer.size());
-  Util::CloseFile(fd);
+  fuzzuf::utils::WriteFile(fd, buffer.data(), buffer.size());
+  fuzzuf::utils::CloseFile(fd);
 
   /* Add entry to queue */
   auto new_item = std::make_unique<QueueItem>(
@@ -158,8 +158,8 @@ void Queue::Finished(std::unique_ptr<QueueItem> item) {
   }
 
   if (all_zero) {
-    Util::DeleteFileOrDirectory(
-      Util::StrPrintf("%s/outputs/queue/id:%09ld,er:%d",
+    fuzzuf::utils::DeleteFileOrDirectory(
+      fuzzuf::utils::StrPrintf("%s/outputs/queue/id:%09ld,er:%d",
                       _work_dir.c_str(), item->id, item->exit_reason)
     );
     return;

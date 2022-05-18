@@ -67,7 +67,7 @@ BOOST_AUTO_TEST_CASE(PTExecutorRun) {
                       true /* record_stdout_and_err */
   );
   // Explicitly bind CPU core because pt-proxy-fast expects CPU bindings.
-  Util::BindCpu(Util::GetCpuCore(), Util::CPUID_BIND_WHICHEVER);
+  fuzzuf::utils::BindCpu(fuzzuf::utils::GetCpuCore(), fuzzuf::utils::CPUID_BIND_WHICHEVER);
   BOOST_CHECK_EQUAL(executor.stdin_mode, true);
 
   // Invoke PTExecutor::Run()

@@ -23,8 +23,8 @@
 #include "fuzzuf/utils/common.hpp"
 #include "random_data.hpp"
 BOOST_AUTO_TEST_CASE(UtilCountBits) {
-  BOOST_CHECK_EQUAL( ( Util::CountBits( random_data1.data(), random_data1.size() ) ), 262309 );
-  BOOST_CHECK_EQUAL( ( Util::CountBits( random_data2.data(), random_data2.size() ) ), 1892 );
-  BOOST_CHECK_EQUAL( ( Util::CountBits( random_data3.data(), random_data3.size() ) ), 448 );
+  BOOST_CHECK_EQUAL( ( fuzzuf::utils::CountBits( random_data1.data(), random_data1.size() ) ), 262309 );
+  BOOST_CHECK_EQUAL( ( fuzzuf::utils::CountBits( random_data2.data(), random_data2.size() ) ), 1892 );
+  BOOST_CHECK_EQUAL( ( fuzzuf::utils::CountBits( random_data3.data(), random_data3.size() ) ), 448 );
 }
 

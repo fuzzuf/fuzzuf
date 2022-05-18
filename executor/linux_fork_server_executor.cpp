@@ -91,11 +91,11 @@ LinuxForkServerExecutor::LinuxForkServerExecutor(
   //      But, currently LinuxForkServerExecutor is not major executor. So we
   //      cannot do that.
   if (stdin_mode) {
-    auto path = Util::StrPrintf(
+    auto path = fuzzuf::utils::StrPrintf(
         "/dev/shm/fuzzuf-cc.forkserver.executor_id-%d.stdin", getpid());
-    input_fd = Util::OpenFile(path, O_RDWR | O_CREAT | O_CLOEXEC, 0600);
+    input_fd = fuzzuf::utils::OpenFile(path, O_RDWR | O_CREAT | O_CLOEXEC, 0600);
   } else {
-    input_fd = Util::OpenFile(path_to_write_input.string(),
+    input_fd = fuzzuf::utils::OpenFile(path_to_write_input.string(),
                               O_RDWR | O_CREAT | O_CLOEXEC, 0600);
   }
 
@@ -129,12 +129,12 @@ LinuxForkServerExecutor::LinuxForkServerExecutor(
  */
 LinuxForkServerExecutor::~LinuxForkServerExecutor() {
   if (input_fd != -1) {
-    Util::CloseFile(input_fd);
+    fuzzuf::utils::CloseFile(input_fd);
     input_fd = -1;
   }
 
   if (null_fd != -1) {
-    Util::CloseFile(null_fd);
+    fuzzuf::utils::CloseFile(null_fd);
     null_fd = -1;
   }
 
@@ -298,12 +298,12 @@ InplaceMemoryFeedback LinuxForkServerExecutor::GetBBFeedback() {
 
 InplaceMemoryFeedback LinuxForkServerExecutor::GetStdOut() {
   if (record_stdout_and_err) {
-    std::string path = Util::StrPrintf(
+    std::string path = fuzzuf::utils::StrPrintf(
         "/dev/shm/fuzzuf-cc.forkserver.executor_id-%d.stdout", getpid());
-    int fd = Util::OpenFile(path, O_RDONLY);
-    Util::ReadFileAll(fd, stdout_buffer);
+    int fd = fuzzuf::utils::OpenFile(path, O_RDONLY);
+    fuzzuf::utils::ReadFileAll(fd, stdout_buffer);
     assert(stdout_buffer.size() > 0);
-    Util::CloseFile(fd);
+    fuzzuf::utils::CloseFile(fd);
     // Deleting file `path` might be good
   }
   return InplaceMemoryFeedback(stdout_buffer.data(), stdout_buffer.size(),
@@ -312,11 +312,11 @@ InplaceMemoryFeedback LinuxForkServerExecutor::GetStdOut() {
 
 InplaceMemoryFeedback LinuxForkServerExecutor::GetStdErr() {
   if (record_stdout_and_err) {
-    std::string path = Util::StrPrintf(
+    std::string path = fuzzuf::utils::StrPrintf(
         "/dev/shm/fuzzuf-cc.forkserver.executor_id-%d.stderr", getpid());
-    int fd = Util::OpenFile(path, O_RDONLY);
-    Util::ReadFileAll(fd, stderr_buffer);
-    Util::CloseFile(fd);
+    int fd = fuzzuf::utils::OpenFile(path, O_RDONLY);
+    fuzzuf::utils::ReadFileAll(fd, stderr_buffer);
+    fuzzuf::utils::CloseFile(fd);
     // Deleting file `path` might be good
   }
   return InplaceMemoryFeedback(stderr_buffer.data(), stderr_buffer.size(),
@@ -389,7 +389,7 @@ void LinuxForkServerExecutor::SetupEnvironmentVariablesForTarget() {
          0);
 
   setenv("MSAN_OPTIONS",
-         Util::StrPrintf("exit_code=%d:"
+         fuzzuf::utils::StrPrintf("exit_code=%d:"
                          "symbolize=0:"
                          "abort_on_error=1:"
                          "malloc_context_size=0:"

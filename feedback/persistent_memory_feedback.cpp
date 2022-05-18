@@ -62,11 +62,11 @@ PersistentMemoryFeedback& PersistentMemoryFeedback::operator=(PersistentMemoryFe
 u32 PersistentMemoryFeedback::CalcCksum32() const {
     using fuzzuf::algorithm::afl::option::GetHashConst;
     using fuzzuf::algorithm::afl::option::AFLTag;
-    return Util::Hash32(mem.get(), len, GetHashConst<AFLTag>());
+    return fuzzuf::utils::Hash32(mem.get(), len, GetHashConst<AFLTag>());
 }
 
 u32 PersistentMemoryFeedback::CountNonZeroBytes() const {
-    return Util::CountBytes(mem.get(), len);
+    return fuzzuf::utils::CountBytes(mem.get(), len);
 }
 
 // Return mem held by PersistentMemoryFeedback as unordered_map consists of non-zero elements

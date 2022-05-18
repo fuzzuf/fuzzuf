@@ -37,27 +37,27 @@ static std::string DescribeOp(const State &state, u8 hnb) {
     std::string ret;
 
     if (!state.syncing_party.empty()) {
-        ret = Util::StrPrintf("sync:%s,src:%06u",
+        ret = fuzzuf::utils::StrPrintf("sync:%s,src:%06u",
                   state.syncing_party.c_str(), state.syncing_case);
     } else {
-        ret = Util::StrPrintf("src:%06u", state.current_entry);
+        ret = fuzzuf::utils::StrPrintf("src:%06u", state.current_entry);
 
         if (state.splicing_with >= 0) {
-            ret += Util::StrPrintf("+%06u", state.splicing_with);
+            ret += fuzzuf::utils::StrPrintf("+%06u", state.splicing_with);
         }
 
         ret += ",op:" + state.stage_short;
 
         if (state.stage_cur_byte >= 0) {
-            ret += Util::StrPrintf(",pos:%u", state.stage_cur_byte);
+            ret += fuzzuf::utils::StrPrintf(",pos:%u", state.stage_cur_byte);
 
             if (state.stage_val_type != option::STAGE_VAL_NONE) {
-                ret += Util::StrPrintf(",val:%s%+d",
+                ret += fuzzuf::utils::StrPrintf(",val:%s%+d",
                           (state.stage_val_type == option::STAGE_VAL_BE) ? "be:" : "",
                           state.stage_cur_val);
             }
         } else {
-            ret += Util::StrPrintf(",rep:%u", state.stage_cur_val);
+            ret += fuzzuf::utils::StrPrintf(",rep:%u", state.stage_cur_val);
         }
     }
 

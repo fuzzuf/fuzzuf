@@ -22,7 +22,7 @@
 #include "fuzzuf/utils/common.hpp"
 
 BOOST_AUTO_TEST_CASE(UtilGlobalCounter) {
-  auto x = Util::GlobalCounter();
-  auto y = Util::GlobalCounter();
+  auto x = fuzzuf::utils::GlobalCounter();
+  auto y = fuzzuf::utils::GlobalCounter();
   BOOST_CHECK( x != y );
 }

@@ -429,7 +429,7 @@ RuleID Context::GetRandomRuleForNT(const NTermID& nt, size_t max_len) const {
   }
 
   throw exceptions::fuzzuf_runtime_error(
-    Util::StrPrintf("There is no way to derive %s within %d steps",
+    fuzzuf::utils::StrPrintf("There is no way to derive %s within %d steps",
                     _nt_ids_to_name.at(nt).c_str(), max_len),
     __FILE__, __LINE__
   );

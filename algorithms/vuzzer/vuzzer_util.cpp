@@ -47,15 +47,15 @@ void ParseBBWeights(
 
     std::string off_raw, line;
 
-    int off_fd = Util::OpenFile( path.native(), O_RDONLY );
+    int off_fd = fuzzuf::utils::OpenFile( path.native(), O_RDONLY );
 
     struct stat sb{};
 
     fstat(off_fd, &sb);
     off_raw.resize(sb.st_size);
 
-    Util::ReadFile( off_fd, (u8*)(off_raw.data()), sb.st_size);
-    Util::CloseFile(off_fd);
+    fuzzuf::utils::ReadFile( off_fd, (u8*)(off_raw.data()), sb.st_size);
+    fuzzuf::utils::CloseFile(off_fd);
 
     std::stringstream off_stream{off_raw};
 
@@ -92,15 +92,15 @@ void ParseBBCov(
     std::string feed_raw, line;
     fs::path feed_path = inp_feed.feed_path.native();
 
-    int feed_fd = Util::OpenFile( feed_path.native(), O_RDONLY );
+    int feed_fd = fuzzuf::utils::OpenFile( feed_path.native(), O_RDONLY );
 
     struct stat sb{};
 
     fstat(feed_fd, &sb);
     feed_raw.resize(sb.st_size);
 
-    Util::ReadFile( feed_fd, (u8*)(feed_raw.data()), sb.st_size);
-    Util::CloseFile(feed_fd);
+    fuzzuf::utils::ReadFile( feed_fd, (u8*)(feed_raw.data()), sb.st_size);
+    fuzzuf::utils::CloseFile(feed_fd);
 
     std::stringstream feed_stream{feed_raw};
 
@@ -140,15 +140,15 @@ void ParseTaintInfo(
     std::string feed_raw, line;
     fs::path feed_path = inp_feed.feed_path.native();
 
-    int feed_fd = Util::OpenFile( feed_path.native(), O_RDONLY );
+    int feed_fd = fuzzuf::utils::OpenFile( feed_path.native(), O_RDONLY );
 
     struct stat sb{};
 
     fstat(feed_fd, &sb);
     feed_raw.resize(sb.st_size);
 
-    Util::ReadFile( feed_fd, (u8*)(feed_raw.data()), sb.st_size);
-    Util::CloseFile(feed_fd);
+    fuzzuf::utils::ReadFile( feed_fd, (u8*)(feed_raw.data()), sb.st_size);
+    fuzzuf::utils::CloseFile(feed_fd);
 
     std::stringstream feed_stream{feed_raw};
 

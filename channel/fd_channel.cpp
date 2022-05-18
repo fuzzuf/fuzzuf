@@ -24,10 +24,10 @@ FdChannel::~FdChannel() {
 
 // Write exact `size` bytes
 ssize_t FdChannel::Send(void *buf, size_t size, const char* comment) {
-    ssize_t nbytes = Util::write_n(forksrv_write_fd, buf, size);
+    ssize_t nbytes = fuzzuf::utils::write_n(forksrv_write_fd, buf, size);
     if (nbytes < (ssize_t) size) {
         throw fuzzuf::utils::errno_to_system_error(
-            errno, Util::StrPrintf("[FdChannel] Failed to send: %s (Requested %d bytes, Sent %d bytes)", comment, size, nbytes));
+            errno, fuzzuf::utils::StrPrintf("[FdChannel] Failed to send: %s (Requested %d bytes, Sent %d bytes)", comment, size, nbytes));
     }
     return nbytes;
 }
@@ -35,10 +35,10 @@ ssize_t FdChannel::Send(void *buf, size_t size, const char* comment) {
 // Read exact `size` bytes
 // Recieved data to be stored to user allocated pointer `buf`
 ssize_t FdChannel::Recv(void *buf, size_t size, const char* comment) {
-    ssize_t nbytes = Util::read_n(forksrv_read_fd, buf, size, true);
+    ssize_t nbytes = fuzzuf::utils::read_n(forksrv_read_fd, buf, size, true);
     if (nbytes < (ssize_t) size) {
         throw fuzzuf::utils::errno_to_system_error(
-            errno, Util::StrPrintf("[FdChannel] Failed to recieve: %s (Requested %d bytes, Recieved %d bytes)", comment, size, nbytes));
+            errno, fuzzuf::utils::StrPrintf("[FdChannel] Failed to recieve: %s (Requested %d bytes, Recieved %d bytes)", comment, size, nbytes));
     }
     return nbytes;
 }
@@ -147,7 +147,7 @@ void FdChannel::SetupForkServer(char *const pargv[]) {
         DEBUG("[*] [FdChannel] pargv[0]=\"%s\": pid=%d\n", pargv[0], getpid());
 
         // FIXME: 無条件で標準（エラ）出力をクローズ。標準入出力を記録する機能が死んでいるのはフェーズ3で直す
-        int null_fd = Util::OpenFile("/dev/null", O_RDONLY | O_CLOEXEC);
+        int null_fd = fuzzuf::utils::OpenFile("/dev/null", O_RDONLY | O_CLOEXEC);
         int stdout_fd = dup(STDOUT_FILENO);
         int stderr_fd = dup(STDERR_FILENO);
         fcntl(stdout_fd, F_SETFD, O_CLOEXEC);

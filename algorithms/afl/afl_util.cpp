@@ -40,7 +40,7 @@ u32 UR(u32 limit, int rand_fd) {
     static u32 rand_cnt;
     if (rand_fd != -1 && unlikely(!rand_cnt--)) {
         u32 seed[2];
-        Util::ReadFile(rand_fd, &seed, sizeof(seed));
+        fuzzuf::utils::ReadFile(rand_fd, &seed, sizeof(seed));
         srandom(seed[0]);
 
         using option::AFLTag;
@@ -55,7 +55,7 @@ u32 UR(u32 limit, int rand_fd) {
 std::string DescribeInteger(u64 val) {
 #define CHK_FORMAT(_divisor, _limit_mult, _fmt, _cast) do { \
         if (val < (_divisor) * (_limit_mult)) { \
-            return Util::StrPrintf(_fmt, ((_cast)val) / (_divisor)); \
+            return fuzzuf::utils::StrPrintf(_fmt, ((_cast)val) / (_divisor)); \
         } \
     } while (0)
 
@@ -101,11 +101,11 @@ std::string DescribeInteger(u64 val) {
 
 std::string DescribeFloat(double val) {
     if (val < 99.995) {
-        return Util::StrPrintf("%0.02f", val);
+        return fuzzuf::utils::StrPrintf("%0.02f", val);
     }
 
     if (val < 999.95) {
-        return Util::StrPrintf("%0.01f", val);
+        return fuzzuf::utils::StrPrintf("%0.01f", val);
     }
 
     return DescribeInteger((u64)val);
@@ -167,7 +167,7 @@ std::string DescribeTimeDelta(u64 cur_ms, u64 event_ms) {
   t_m = (delta / 1000 / 60) % 60;
   t_s = (delta / 1000) % 60;
 
-  return Util::StrPrintf("%s days, %u hrs, %u min, %u sec", 
+  return fuzzuf::utils::StrPrintf("%s days, %u hrs, %u min, %u sec", 
                             DescribeInteger(t_d).c_str(), t_h, t_m, t_s);
 }
 

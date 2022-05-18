@@ -71,14 +71,14 @@ DIEMutCalleeRef DIEMutate::operator()(
     afl::util::DescribeInteger(mut_cnt), // Number of mutation
     afl::util::DescribeInteger(seed)     // Seed
   };
-  Util::ExecuteCommand(cmd);
+  fuzzuf::utils::ExecuteCommand(cmd);
 
   /* Add generated files to queue */
   for (int n = 0; n < mut_cnt; n++) {
     state.stage_cur++;
 
     /* Create path string of output js and type files */
-    fs::path path_js = Util::StrPrintf("%s/%d.js",
+    fs::path path_js = fuzzuf::utils::StrPrintf("%s/%d.js",
                                        path_mutate.c_str(), n);
     fs::path path_type = path_js.string() + ".t";
 
@@ -95,22 +95,22 @@ DIEMutCalleeRef DIEMutate::operator()(
     }
 
     /* Load JS file */
-    fd = Util::OpenFile(path_js.string(), O_RDONLY);
+    fd = fuzzuf::utils::OpenFile(path_js.string(), O_RDONLY);
     buf_js = static_cast<u8*>(
       mmap(nullptr, len_js, PROT_READ | PROT_WRITE, MAP_PRIVATE, fd, 0)
     );
-    Util::CloseFile(fd);
+    fuzzuf::utils::CloseFile(fd);
 
     if (buf_js == MAP_FAILED) {
       ERROR("Unable to mmap '%s' : %s", path_js.c_str(), strerror(errno));
 	  }
 
     /* Load type file */
-    fd = Util::OpenFile(path_type.string(), O_RDONLY);
+    fd = fuzzuf::utils::OpenFile(path_type.string(), O_RDONLY);
     buf_ty = static_cast<u8*>(
       mmap(nullptr, len_ty, PROT_READ | PROT_WRITE, MAP_PRIVATE, fd, 0)
     );
-    Util::CloseFile(fd);
+    fuzzuf::utils::CloseFile(fd);
 
     if (buf_ty == MAP_FAILED) {
       ERROR("Unable to mmap '%s' : %s", path_type.c_str(), strerror(errno));
