@@ -41,13 +41,12 @@ namespace po = boost::program_options;
 
 struct AFLFuzzerOptions {
     bool forksrv;                           // Optional
-    std::string dict_file;                  // Optional
+    std::vector<std::string> dict_file;     // Optional
     bool frida_mode;                        // Optional
 
     // Default values
     AFLFuzzerOptions() : 
         forksrv(true),
-        dict_file(""),
         frida_mode(false)
         {};
 };
@@ -83,8 +82,8 @@ std::unique_ptr<TFuzzer> BuildAFLFuzzerFromArgs(
         ("forksrv", 
             po::value<bool>(&afl_options.forksrv)->default_value(afl_options.forksrv), 
             "Enable/disable fork server mode. default is true.")
-        ("dict_file", 
-            po::value<std::string>(&afl_options.dict_file), 
+        ("dict_file,x", 
+            po::value<std::vector<std::string>>(&afl_options.dict_file)->composing(), 
             "Load additional dictionary file.")
         ("pargs", 
             po::value<std::vector<std::string>>(&pargs), 
@@ -107,6 +106,7 @@ std::unique_ptr<TFuzzer> BuildAFLFuzzerFromArgs(
     if (global_options.help) {
         fuzzuf::cli::fuzzer::afl::usage(fuzzer_args.global_options_description);
     }
+
     return fuzzuf::cli::fuzzer::afl::BuildFuzzer<
         TFuzzer, TAFLFuzzer, TExecutor
     >(
@@ -263,15 +263,16 @@ std::unique_ptr<TFuzzer> BuildFuzzer(
                  );
 
     // Load dictionary
-    if(afl_options.dict_file != ""){
+    for(const auto &d: afl_options.dict_file){
         using fuzzuf::algorithm::afl::dictionary::AFLDictData;
 
         const std::function<void( std::string&& )> f = [](std::string s){
             ERROR("Dictionary error: %s", s.c_str());     
         };
 
-        fuzzuf::algorithm::afl::dictionary::load(afl_options.dict_file, state->extras, false, f);
+        fuzzuf::algorithm::afl::dictionary::load(d, state->extras, false, f);
     }
+    fuzzuf::algorithm::afl::dictionary::SortDictByLength( state->extras );
 
     return std::unique_ptr<TFuzzer>(
                 dynamic_cast<TFuzzer *>(

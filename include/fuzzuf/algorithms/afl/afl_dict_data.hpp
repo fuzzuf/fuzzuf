@@ -17,6 +17,7 @@
  */
 #pragma once
 
+#include <cstdlib>
 #include <vector>
 #include <string>
 #include <functional>
@@ -51,6 +52,10 @@ void load(
   std::vector< AFLDictData > &dest,
   bool strict,
   const std::function< void( std::string&& ) > &eout
+);
+
+void SortDictByLength(
+  std::vector< AFLDictData > &dict
 );
 
 } // fuzzuf::algorithm::afl::dictionary

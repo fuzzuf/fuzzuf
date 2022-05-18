@@ -58,6 +58,7 @@ struct VUzzerOptions {
     std::string inst_bin;                   // Optional
     std::string taint_db;                   // Optional
     std::string taint_out;                  // Optional
+    std::vector<std::string> dict_file;     // Optional
 
     // Default values
     VUzzerOptions() : 
@@ -82,6 +83,9 @@ std::unique_ptr<TFuzzer> BuildVUzzerFromArgs(FuzzerArgs &fuzzer_args, GlobalFuzz
     po::options_description fuzzer_desc("VUzzer options");
     std::vector<std::string> pargs;
     fuzzer_desc.add_options()
+        ("dict_file,x", 
+            po::value<std::vector<std::string>>(&vuzzer_options.dict_file)->composing(), 
+            "Load additional dictionary file.")
         ("full_dict", 
             po::value<std::string>(&vuzzer_options.full_dict), 
             "Set path to \"full dictionary\". Default is `./full.dict`.")
@@ -197,6 +201,18 @@ std::unique_ptr<TFuzzer> BuildVUzzerFromArgs(FuzzerArgs &fuzzer_args, GlobalFuzz
     using fuzzuf::algorithm::vuzzer::VUzzerState;
 
     auto state = std::make_unique<VUzzerState>(setting, executor, taint_executor);
+    
+    // Load dictionary
+    for(const auto &d: vuzzer_options.dict_file){
+        using fuzzuf::algorithm::afl::dictionary::AFLDictData;
+
+        const std::function<void( std::string&& )> f = [](std::string s){
+            ERROR("Dictionary error: %s", s.c_str());     
+        };
+
+        fuzzuf::algorithm::afl::dictionary::load(d, state->extras, false, f);
+    }
+    fuzzuf::algorithm::afl::dictionary::SortDictByLength( state->extras );
 
     return std::unique_ptr<TFuzzer>(
             dynamic_cast<TFuzzer *>(

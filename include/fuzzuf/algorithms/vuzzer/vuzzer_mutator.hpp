@@ -37,10 +37,10 @@ namespace fuzzuf::algorithm::vuzzer {
 // Hence you must not treat this as Mutator instance
 
 class VUzzerMutator : public Mutator<VUzzerState::Tag> {
+public:
+    using MutFunc = void(VUzzerMutator::*)();
 private:
-    typedef void (VUzzerMutator::*MutFunc)(void);
     typedef std::pair<std::shared_ptr<ExecInput>, std::shared_ptr<ExecInput>> (VUzzerMutator::*MutCrossFunc)(const ExecInput&);
-    static const MutFunc mutators[];
     static const MutCrossFunc crossovers[];
     
     // change at most 0-2 % of the binary with each fuzz
@@ -77,6 +77,8 @@ public:
     void EliminateDoubleNull();
     void TotallyRandom();
     void IntSlide();
+    void OverwriteDictWord();
+    void InsertDictWord();
     void DoubleFuzz();
     void DoubleFullMutate();
 

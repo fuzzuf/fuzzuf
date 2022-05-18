@@ -364,7 +364,9 @@ AFLMutCalleeRef<State> UserDictInsertTemplate<State>::operator()(
         }
 
         /* Copy head */
-        ex_tmp[i] = mutator.GetBuf()[i];
+	if( i != mutator.GetLen() ) {
+            ex_tmp[i] = mutator.GetBuf()[i];
+	}
     }
 
     u64 new_hit_cnt = state.queued_paths + state.unique_crashes;

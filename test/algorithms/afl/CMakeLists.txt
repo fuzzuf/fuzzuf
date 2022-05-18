@@ -62,3 +62,37 @@ endif()
 if( ENABLE_HEAVY_TEST )
 add_test( NAME "afl.loop" COMMAND test-afl-loop )
 endif()
+
+add_executable( test-afl-loop_with_dict loop_with_dict.cpp )
+target_link_libraries(
+  test-afl-loop_with_dict
+  test-common
+  fuzzuf
+  fuzzuf-cli-lib
+  ${FUZZUF_LIBRARIES}
+  Boost::unit_test_framework
+)
+target_include_directories(
+  test-afl-loop_with_dict
+  PRIVATE
+  ${FUZZUF_INCLUDE_DIRS}
+  ${CMAKE_SOURCE_DIR}/test/common
+)
+set_target_properties(
+  test-afl-loop_with_dict
+  PROPERTIES COMPILE_FLAGS "${ADDITIONAL_COMPILE_FLAGS_STR}"
+)
+set_target_properties(
+  test-afl-loop_with_dict
+  PROPERTIES LINK_FLAGS "${ADDITIONAL_COMPILE_FLAGS_STR}"
+)
+if( ENABLE_CLANG_TIDY )
+  set_target_properties(
+    test-afl-loop_with_dict
+    PROPERTIES
+    CXX_CLANG_TIDY "${CLANG_TIDY};${CLANG_TIDY_CONFIG_FOR_TEST}"
+  )
+endif()
+if( ENABLE_HEAVY_TEST )
+add_test( NAME "afl.loop_with_dict" COMMAND test-afl-loop_with_dict )
+endif()
