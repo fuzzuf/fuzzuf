@@ -55,11 +55,11 @@ BOOST_AUTO_TEST_CASE(MutatorMutator) {
     bool result_equal_to_given_fuzz = std::memcmp(mutator.GetBuf(), buf_fuzz, sizeof(buf_fuzz)) == 0;
     if (!result_equal_to_given_fuzz) {
         std::cout << "[!] Expected fuzz:  ";
-        HexDump(stdout, buf_fuzz, sizeof(buf_fuzz), 0);
+	fuzzuf::utils::HexDump(stdout, buf_fuzz, sizeof(buf_fuzz), 0);
     }
     { // 常に表示
         std::cout << "[!] Generated fuzz: ";
-        HexDump(stdout, mutator.GetBuf(), mutator.GetLen(), 0);
+	fuzzuf::utils::HexDump(stdout, mutator.GetBuf(), mutator.GetLen(), 0);
     }
     BOOST_CHECK(result_equal_to_given_fuzz);
     BOOST_CHECK_EQUAL(mutator.GetLen(), sizeof(buf_fuzz));

@@ -184,7 +184,7 @@ std::unique_ptr<TFuzzer> BuildDIEFuzzerFromArgs(FuzzerArgs &fuzzer_args,
   );
 
   /* NativeLinuxExecutor requires output directory */
-  SetupDirs(setting->out_dir.string());
+  fuzzuf::utils::SetupDirs(setting->out_dir.string());
 
   using fuzzuf::algorithm::afl::option::GetDefaultOutfile;
   using fuzzuf::algorithm::afl::option::GetMapSize;

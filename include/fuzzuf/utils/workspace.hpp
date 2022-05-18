@@ -17,4 +17,6 @@
  */
 #pragma once
 
+namespace fuzzuf::utils {
 void SetupDirs(std::string out_dir);
+}

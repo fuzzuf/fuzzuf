@@ -25,6 +25,8 @@
 #include "fuzzuf/utils/common.hpp"
 #include <string>
 
+namespace fuzzuf::utils {
 std::string GetSHA1HashFromFile(std::string path, u32 len);
+}
 
 #endif

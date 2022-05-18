@@ -135,7 +135,7 @@ VUzzerMidCalleeRef ExecutePUT::operator()(void) {
         /* If we encount crash, then triage it. */
         /* TODO: Consider other reasons? */        
         if (exit_status.exit_reason == PUTExitReasonType::FAULT_CRASH) {            
-            std::string crash_hash = GetSHA1HashFromFile(testcase->input->GetPath().native(), testcase->input->GetLen());
+            std::string crash_hash = fuzzuf::utils::GetSHA1HashFromFile(testcase->input->GetPath().native(), testcase->input->GetLen());
             DEBUG("Testcase %s crashed! (%s)\n", testcase->input->GetPath().c_str(), crash_hash.c_str());
             if (state.crash_hashes.find(crash_hash) == state.crash_hashes.end()) { 
                 /* VUzzer has found a new crash input:) */

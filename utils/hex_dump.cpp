@@ -23,6 +23,7 @@
 #include <stdio.h>
 #include <assert.h>
 
+namespace fuzzuf::utils {
 // ファイルポインタ fp で指定されたストリームに、バッファ buf のオフセット offset から len バイトだけHex Dumpしてくれる便利関数
 // offset は16の倍数にしてください。でないとi+jのせいで壊れます
 // FIXME: 暗黙のLinux前提
@@ -39,3 +40,5 @@ void HexDump(FILE* fp, unsigned char* buf, size_t len, size_t offset) {
         fprintf(fp, "\n");
     }
 }
+}
+

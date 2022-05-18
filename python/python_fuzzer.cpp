@@ -102,7 +102,7 @@ PythonFuzzer::PythonFuzzer(
 
     // Executor needs the directory specified by "out_dir" to be already set up
     // so we need to create the directory first, and then initialize Executor
-    SetupDirs(setting.out_dir.string());
+    fuzzuf::utils::SetupDirs(setting.out_dir.string());
 
     executor.reset(new NativeLinuxExecutor(
                           setting.argv, 
@@ -135,7 +135,7 @@ void PythonFuzzer::Reset(void) {
     executor.reset();
 
     fuzzuf::utils::DeleteFileOrDirectory(setting.out_dir.string());
-    SetupDirs(setting.out_dir.string());
+    fuzzuf::utils::SetupDirs(setting.out_dir.string());
 
     state.reset(new PythonState(setting));
 

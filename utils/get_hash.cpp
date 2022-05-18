@@ -24,6 +24,8 @@
 #include <cryptopp/filters.h>
 #include <cryptopp/hex.h>
 #include "fuzzuf/utils/get_hash.hpp"
+
+namespace fuzzuf::utils {
 std::string GetSHA1HashFromFile(std::string path, u32 len) {
     int fd = fuzzuf::utils::OpenFile(path, O_RDONLY);
     u8 *buf = new u8[len];
@@ -37,3 +39,5 @@ std::string GetSHA1HashFromFile(std::string path, u32 len) {
     delete[] buf;
     return hash;
 }
+}
+

@@ -82,7 +82,7 @@ PYBIND11_PLUGIN(fuzzuf) {
   f.def("init_logger", &fuzzuf::utils::init_logger);
   f.def("log", [](const std::string &tag, const std::string &data) -> bool {
     return fuzzuf::utils::log(std::string(tag), std::string(data)) ==
-           fuzzuf::status_t::OK;
+           fuzzuf::utils::status_t::OK;
   });
 #if !((PYBIND11_VERSION_MAJOR == 2 && PYBIND11_VERSION_MINOR >= 2) ||          \
       PYBIND11_VERSION_MAJOR > 2)

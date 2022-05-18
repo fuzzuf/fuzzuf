@@ -23,7 +23,7 @@
 #define FUZZUF_INCLUDE_UTILS_STATUS_HPP
 #include "fuzzuf/utils/enum_cast.hpp"
 #include <iostream>
-namespace fuzzuf {
+namespace fuzzuf::utils {
 /**
  * This enum is intended to express result and roughly reason of failure instead to just result.
  * Since exception doesn't sit well on some programming models like asynchronous I/O, this enum is useful to express the result.

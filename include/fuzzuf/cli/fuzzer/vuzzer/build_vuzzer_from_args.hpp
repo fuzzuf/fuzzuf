@@ -163,7 +163,7 @@ std::unique_ptr<TFuzzer> BuildVUzzerFromArgs(FuzzerArgs &fuzzer_args, GlobalFuzz
 
     // PinToolExecutor needs the directory specified by "out_dir" to be already set up
     // so we need to create the directory first, and then initialize Executor
-    SetupDirs(setting->out_dir.string());
+    fuzzuf::utils::SetupDirs(setting->out_dir.string());
 
     // XXX: VUzzer supports PinToolExecutor/PolyTrackerExecutor only. It does not actually support `native` executor.
     if (global_options.executor != fuzzuf::cli::ExecutorKind::NATIVE) {

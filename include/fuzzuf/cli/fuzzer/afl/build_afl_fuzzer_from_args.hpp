@@ -164,7 +164,7 @@ std::unique_ptr<TFuzzer> BuildFuzzer(
   // NativeLinuxExecutor needs the directory specified by "out_dir" to be
   // already set up so we need to create the directory first, and then
   // initialize Executor
-  SetupDirs(setting->out_dir.string());
+    fuzzuf::utils::SetupDirs(setting->out_dir.string());
 
   using fuzzuf::algorithm::afl::option::GetDefaultOutfile;
   using fuzzuf::algorithm::afl::option::GetMapSize;

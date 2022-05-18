@@ -787,9 +787,9 @@ public:
     fluent->set_tag_prefix(prefix);
     thread.reset(new std::thread([this]() { io_context.run(); }));
   }
-  template <typename T> fuzzuf::status_t write(std::string &&tag, T &&data) {
-    std::shared_ptr<std::promise<fuzzuf::status_t>> p(
-        new std::promise<fuzzuf::status_t>());
+  template <typename T> status_t write(std::string &&tag, T &&data) {
+    std::shared_ptr<std::promise<status_t>> p(
+        new std::promise<status_t>());
     auto f = p->get_future();
     (*fluent)[std::move(tag)]
         << data << flc::commit([p = std::move(p)](auto result) mutable {
@@ -806,13 +806,13 @@ public:
                          << std::endl;
              else
                std::cerr << "global_logger_t::write : 不明" << std::endl;
-             p->set_value(fuzzuf::statusCast<fuzzuf::status_t>(result));
+             p->set_value(fuzzuf::statusCast<status_t>(result));
            });
     return f.get();
   }
   template <typename T>
   void write(std::string &&tag, T &&data,
-             std::function<void(fuzzuf::status_t)> &&cb) {
+             std::function<void(status_t)> &&cb) {
     (*fluent)[std::move(tag)]
         << data << flc::commit([cb = std::move(cb)](auto result) {
              if (result == flc::status_t::OK)
@@ -828,7 +828,7 @@ public:
                          << std::endl;
              else
                std::cerr << "global_logger_t::write : 不明" << std::endl;
-             cb(fuzzuf::statusCast<fuzzuf::status_t>(result));
+             cb(fuzzuf::statusCast<status_t>(result));
            });
   }
   bool is_ready() const { return bool(fluent); }
@@ -857,35 +857,35 @@ void init_logger(const std::string &url) { global_logger_t::get().init(url); }
 bool has_logger() { return global_logger_t::get().is_ready(); }
 
 void log(std::string &&tag, std::string &&message,
-         std::function<void(fuzzuf::status_t)> &&cb) {
+         std::function<void(status_t)> &&cb) {
   if (has_logger())
     global_logger_t::get().write(std::move(tag), std::move(message),
                                  std::move(cb));
   else
-    cb(fuzzuf::status_t::OK);
+    cb(status_t::OK);
 }
 
-fuzzuf::status_t log(std::string &&tag, std::string &&message) {
+status_t log(std::string &&tag, std::string &&message) {
   if (has_logger())
     return global_logger_t::get().write(std::move(tag), std::move(message));
   else
-    return fuzzuf::status_t::OK;
+    return status_t::OK;
 }
 
 void log(std::string &&tag, nlohmann::json &&message,
-         std::function<void(fuzzuf::status_t)> &&cb) {
+         std::function<void(status_t)> &&cb) {
   if (has_logger())
     global_logger_t::get().write(std::move(tag), std::move(message),
                                  std::move(cb));
   else
-    cb(fuzzuf::status_t::OK);
+    cb(status_t::OK);
 }
 
-fuzzuf::status_t log(std::string &&tag, nlohmann::json &&message) {
+status_t log(std::string &&tag, nlohmann::json &&message) {
   if (has_logger())
     return global_logger_t::get().write(std::move(tag), std::move(message));
   else
-    return fuzzuf::status_t::OK;
+    return status_t::OK;
 }
 
 #else
@@ -895,21 +895,21 @@ void init_logger(const std::string &) {}
 bool has_logger() { return false; }
 
 void log(std::string &&, std::string &&,
-         std::function<void(fuzzuf::status_t)> &&cb) {
-  cb(fuzzuf::status_t::OK);
+         std::function<void(status_t)> &&cb) {
+  cb(status_t::OK);
 }
 
-fuzzuf::status_t log(std::string &&, std::string &&) {
-  return fuzzuf::status_t::OK;
+status_t log(std::string &&, std::string &&) {
+  return status_t::OK;
 }
 
 void log(std::string &&, nlohmann::json &&,
-         std::function<void(fuzzuf::status_t)> &&cb) {
-  cb(fuzzuf::status_t::OK);
+         std::function<void(status_t)> &&cb) {
+  cb(status_t::OK);
 }
 
-fuzzuf::status_t log(std::string &&, nlohmann::json &&) {
-  return fuzzuf::status_t::OK;
+status_t log(std::string &&, nlohmann::json &&) {
+  return status_t::OK;
 }
 
 #endif

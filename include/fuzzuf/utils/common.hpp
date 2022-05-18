@@ -250,7 +250,7 @@ bool has_logger();
  * @param cb ログの送信が完了または失敗した際に呼ばれるコールバック
  **/
 void log(std::string &&tag, std::string &&message,
-         std::function<void(fuzzuf::status_t)> &&cb);
+         std::function<void(status_t)> &&cb);
 /**
  * init_loggerで設定された送信先に文字列のログを送る
  * 文字列はそれがJSONとして解釈可能な場合JSONとしてパースしてfluentdに送られる
@@ -263,7 +263,7 @@ void log(std::string &&tag, std::string &&message,
  * @param message ログ
  * @return ログの送信の結果
  **/
-fuzzuf::status_t log(std::string &&tag, std::string &&message);
+status_t log(std::string &&tag, std::string &&message);
 /**
  * init_loggerで設定された送信先にJSONのログを送る
  * ログのタグはfuzzuf.<親プロセスのPID>.<自身のPID>.<tagで指定した値>になる
@@ -274,7 +274,7 @@ fuzzuf::status_t log(std::string &&tag, std::string &&message);
  * @param cb ログの送信が完了または失敗した際に呼ばれるコールバック
  **/
 void log(std::string &&tag, nlohmann::json &&message,
-         std::function<void(fuzzuf::status_t)> &&cb);
+         std::function<void(status_t)> &&cb);
 /**
  * init_loggerで設定された送信先にJSONのログを送る
  * ログのタグはfuzzuf.<親プロセスのPID>.<自身のPID>.<tagで指定した値>になる
@@ -285,7 +285,7 @@ void log(std::string &&tag, nlohmann::json &&message,
  * @param message ログ
  * @return ログの送信の結果
  **/
-fuzzuf::status_t log(std::string &&tag, nlohmann::json &&message);
+status_t log(std::string &&tag, nlohmann::json &&message);
 
 }; // namespace fuzzuf::utils
 

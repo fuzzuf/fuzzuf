@@ -18,6 +18,7 @@
 #include "fuzzuf/utils/common.hpp"
 #include "fuzzuf/logger/logger.hpp"
 
+namespace fuzzuf::utils {
 // FIXME: this should be moved to Algorithms/AFL/?
 
 void SetupDirs(std::string out_dir) {
@@ -38,3 +39,5 @@ void SetupDirs(std::string out_dir) {
         throw;
     }
 }
+}
+

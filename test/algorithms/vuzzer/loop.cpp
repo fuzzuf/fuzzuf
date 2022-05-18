@@ -74,7 +74,7 @@ static void VUzzerLoop() {
   // PinToolExecutor needs the directory specified by "out_dir" to be already
   // set up so we need to create the directory first, and then initialize
   // Executor
-  SetupDirs(setting->out_dir.string());
+  fuzzuf::utils::SetupDirs(setting->out_dir.string());
 
   // TODO: support more types of executors
   // FIXME: TEST_BINARY_DIR macro should be used only for test codes. We must
