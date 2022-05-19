@@ -90,9 +90,9 @@ static void IJONLoop(/* bool forksrv */) {
         setting->exec_timelimit_ms,
         setting->exec_memlimit,
         setting->out_dir / GetDefaultOutfile<IJONTag>(),
-        sizeof(ijon::SharedData), // afl_shm_size
+        afl::option::GetMapSize<ijon::option::IJONTag>(), // afl_shm_size
         0, // bb_shm_size
-        sizeof(ijon::SharedData)
+        sizeof(ijon::SharedData) // extra_shm_size
       )
   );
 

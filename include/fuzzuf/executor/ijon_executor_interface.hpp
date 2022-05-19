@@ -79,6 +79,8 @@ public:
   //   return _container->GetAFLFeedback();
   // }
 
+  // TODO: 環境変数の設定
+
   /// @brief Gets IJON feedback.
   /// @returnIJON feedback.
   InplaceMemoryFeedback GetIJONFeedback() {
