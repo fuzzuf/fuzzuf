@@ -69,7 +69,7 @@ LinuxForkServerExecutor::LinuxForkServerExecutor(
     const std::vector<std::string> &argv, u32 exec_timelimit_ms,
     u64 exec_memlimit, const fs::path &path_to_write_input, u32 afl_shm_size,
     u32 bb_shm_size,
-    u32 extra_shm_size,
+    u32 extra_shm_size, // FIXME: fadisさんへ：サイズと環境変数の両方を教えたいのでなんらかの方法で ShmAttacker を渡すようにしたほうがいいと思っています。ExecutorにIJON独自要素が入らないようにしたいという意図です。
     bool record_stdout_and_err,
     std::vector<std::string> &&environment_variables_,
     std::vector<fs::path> &&allowed_path_)
