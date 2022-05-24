@@ -1,7 +1,7 @@
 /*
  * fuzzuf
  * Copyright (C) 2021 Ricerca Security
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -19,18 +19,18 @@
 #ifndef FUZZUF_INCLUDE_CLI_FUZZER_AFL_BUILD_AFL_FROM_ARGS_HPP
 #define FUZZUF_INCLUDE_CLI_FUZZER_AFL_BUILD_AFL_FROM_ARGS_HPP
 
-#include "fuzzuf/cli/put_args.hpp"
-#include "fuzzuf/exceptions.hpp"
-#include "fuzzuf/utils/optparser.hpp"
-#include "fuzzuf/utils/workspace.hpp"
-#include "fuzzuf/optimizer/optimizer.hpp"
 #include "fuzzuf/algorithms/afl/afl_havoc_case_distrib.hpp"
 #include "fuzzuf/algorithms/afl/afl_option.hpp"
 #include "fuzzuf/algorithms/afl/afl_setting.hpp"
 #include "fuzzuf/algorithms/afl/afl_state.hpp"
+#include "fuzzuf/cli/put_args.hpp"
+#include "fuzzuf/exceptions.hpp"
 #include "fuzzuf/executor/linux_fork_server_executor.hpp"
 #include "fuzzuf/executor/native_linux_executor.hpp"
 #include "fuzzuf/executor/qemu_executor.hpp"
+#include "fuzzuf/optimizer/optimizer.hpp"
+#include "fuzzuf/utils/optparser.hpp"
+#include "fuzzuf/utils/workspace.hpp"
 #ifdef __aarch64__
 #include "fuzzuf/executor/coresight_executor.hpp"
 #endif
@@ -41,15 +41,12 @@ namespace fuzzuf::cli::fuzzer::afl {
 namespace po = boost::program_options;
 
 struct AFLFuzzerOptions {
-    bool forksrv;                           // Optional
-    std::vector<std::string> dict_file;     // Optional
-    bool frida_mode;                        // Optional
+  bool forksrv;                        // Optional
+  std::vector<std::string> dict_file;  // Optional
+  bool frida_mode;                     // Optional
 
-    // Default values
-    AFLFuzzerOptions() : 
-        forksrv(true),
-        frida_mode(false)
-        {};
+  // Default values
+  AFLFuzzerOptions() : forksrv(true), frida_mode(false){};
 };
 
 // Fuzzer specific help
@@ -60,229 +57,198 @@ template <class TFuzzer, class TAFLFuzzer, class TExecutor>
 std::unique_ptr<TFuzzer> BuildFuzzer(
     const char *prog_name,
     const boost::program_options::options_description &option_description,
-    const AFLFuzzerOptions &afl_options,
-    const std::vector< std::string > &pargs,
-    const GlobalFuzzerOptions &global_options
-);
+    const AFLFuzzerOptions &afl_options, const std::vector<std::string> &pargs,
+    const GlobalFuzzerOptions &global_options);
 
 // Used only for CLI
 template <class TFuzzer, class TAFLFuzzer, class TExecutor>
 std::unique_ptr<TFuzzer> BuildAFLFuzzerFromArgs(
-    FuzzerArgs &fuzzer_args, 
-    GlobalFuzzerOptions &global_options
-) {
-    po::positional_options_description pargs_desc;
-    pargs_desc.add("fuzzer", 1);
-    pargs_desc.add("pargs", -1);
+    FuzzerArgs &fuzzer_args, GlobalFuzzerOptions &global_options) {
+  po::positional_options_description pargs_desc;
+  pargs_desc.add("fuzzer", 1);
+  pargs_desc.add("pargs", -1);
 
-    AFLFuzzerOptions afl_options;
+  AFLFuzzerOptions afl_options;
 
-    po::options_description fuzzer_desc("AFL options");
-    std::vector<std::string> pargs;
-    fuzzer_desc.add_options()
-        ("forksrv", 
-            po::value<bool>(&afl_options.forksrv)->default_value(afl_options.forksrv), 
-            "Enable/disable fork server mode. default is true.")
-        ("dict_file,x", 
-            po::value<std::vector<std::string>>(&afl_options.dict_file)->composing(), 
-            "Load additional dictionary file.")
-        ("pargs", 
-            po::value<std::vector<std::string>>(&pargs), 
-            "Specify PUT and args for PUT.")
-        ("frida",
-            po::value<bool>(&afl_options.frida_mode)->default_value(afl_options.frida_mode),
-            "Enable/disable frida mode. Default to false.")
-    ;
+  po::options_description fuzzer_desc("AFL options");
+  std::vector<std::string> pargs;
+  fuzzer_desc.add_options()(
+      "forksrv",
+      po::value<bool>(&afl_options.forksrv)->default_value(afl_options.forksrv),
+      "Enable/disable fork server mode. default is true.")(
+      "dict_file,x",
+      po::value<std::vector<std::string>>(&afl_options.dict_file)->composing(),
+      "Load additional dictionary file.")(
+      "pargs", po::value<std::vector<std::string>>(&pargs),
+      "Specify PUT and args for PUT.")(
+      "frida",
+      po::value<bool>(&afl_options.frida_mode)
+          ->default_value(afl_options.frida_mode),
+      "Enable/disable frida mode. Default to false.");
 
-    po::variables_map vm;
-    po::store(
-        po::command_line_parser(fuzzer_args.argc, fuzzer_args.argv)
-            .options(fuzzer_args.global_options_description.add(fuzzer_desc))
-            .positional(pargs_desc)
-            .run(), 
-        vm
-        );
-    po::notify(vm);
+  po::variables_map vm;
+  po::store(
+      po::command_line_parser(fuzzer_args.argc, fuzzer_args.argv)
+          .options(fuzzer_args.global_options_description.add(fuzzer_desc))
+          .positional(pargs_desc)
+          .run(),
+      vm);
+  po::notify(vm);
 
-    if (global_options.help) {
-        fuzzuf::cli::fuzzer::afl::usage(fuzzer_args.global_options_description);
-    }
+  if (global_options.help) {
+    fuzzuf::cli::fuzzer::afl::usage(fuzzer_args.global_options_description);
+  }
 
-    return fuzzuf::cli::fuzzer::afl::BuildFuzzer<
-        TFuzzer, TAFLFuzzer, TExecutor
-    >(
-        fuzzer_args.argv[ 0 ],
-        fuzzer_args.global_options_description,
-        afl_options, pargs, global_options
-    );
+  return fuzzuf::cli::fuzzer::afl::BuildFuzzer<TFuzzer, TAFLFuzzer, TExecutor>(
+      fuzzer_args.argv[0], fuzzer_args.global_options_description, afl_options,
+      pargs, global_options);
 }
 
 template <class TFuzzer, class TAFLFuzzer, class TExecutor>
 std::unique_ptr<TFuzzer> BuildFuzzer(
     const char *prog_name,
     const boost::program_options::options_description &option_description,
-    const AFLFuzzerOptions &afl_options,
-    const std::vector< std::string > &pargs,
-    const GlobalFuzzerOptions &global_options
-) {
+    const AFLFuzzerOptions &afl_options, const std::vector<std::string> &pargs,
+    const GlobalFuzzerOptions &global_options) {
+  using algorithm::afl::option::AFLTag;
+  using algorithm::afl::option::GetMemLimit;
 
-    using algorithm::afl::option::AFLTag;
-    using algorithm::afl::option::GetMemLimit;
+  u32 mem_limit = global_options.exec_memlimit.value_or(GetMemLimit<AFLTag>());
+  if (afl_options.frida_mode) {
+    setenv("__AFL_DEFER_FORKSRV", "1", 1);
+    fs::path frida_bin =
+        fs::path(prog_name).parent_path() / "afl-frida-trace.so";
+    setenv("LD_PRELOAD", frida_bin.c_str(), 1);
 
-    u32 mem_limit = global_options.exec_memlimit.value_or(GetMemLimit<AFLTag>());
-    if (afl_options.frida_mode) {
-        setenv("__AFL_DEFER_FORKSRV", "1", 1);
-        fs::path frida_bin = fs::path(prog_name).parent_path() / "afl-frida-trace.so";
-        setenv("LD_PRELOAD", frida_bin.c_str(), 1);
-
-        if (mem_limit > 0) {
-            struct stat statbuf;
-            if ((stat(frida_bin.c_str(), &statbuf)) == -1) {
-                std::cerr << cLRD <<
-                    "[-] File afl-frida-trace.so not found\n" <<
-                    "    Build one first with cmake where -DENABLE_FRIDA_TRACE=1" <<
-                    cRST << std::endl;
-            }
-            // Need to add the size of the library
-            mem_limit += statbuf.st_size;
-        }
+    if (mem_limit > 0) {
+      struct stat statbuf;
+      if ((stat(frida_bin.c_str(), &statbuf)) == -1) {
+        std::cerr
+            << cLRD << "[-] File afl-frida-trace.so not found\n"
+            << "    Build one first with cmake where -DENABLE_FRIDA_TRACE=1"
+            << cRST << std::endl;
+      }
+      // Need to add the size of the library
+      mem_limit += statbuf.st_size;
     }
+  }
 
-    PutArgs put(pargs);
-    try {
-        put.Check();
-    } catch (const exceptions::cli_error &e) {
-        std::cerr << "[!] " << e.what() << std::endl;
-        std::cerr << "\tat " << e.file << ":" << e.line << std::endl;
-        fuzzuf::cli::fuzzer::afl::usage(option_description);
-    } 
+  PutArgs put(pargs);
+  try {
+    put.Check();
+  } catch (const exceptions::cli_error &e) {
+    std::cerr << "[!] " << e.what() << std::endl;
+    std::cerr << "\tat " << e.file << ":" << e.line << std::endl;
+    fuzzuf::cli::fuzzer::afl::usage(option_description);
+  }
 
-    // Trace level log
-    DEBUG("[*] PUT: put = [");
-    for (auto v : put.Args()) {
-        DEBUG("\t\"%s\",", v.c_str());
-    }
-    DEBUG("    ]");
+  // Trace level log
+  DEBUG("[*] PUT: put = [");
+  for (auto v : put.Args()) {
+    DEBUG("\t\"%s\",", v.c_str());
+  }
+  DEBUG("    ]");
 
-    using fuzzuf::algorithm::afl::AFLSetting;
-    using fuzzuf::algorithm::afl::option::GetExecTimeout;
+  using fuzzuf::algorithm::afl::AFLSetting;
+  using fuzzuf::algorithm::afl::option::GetExecTimeout;
 
-    // Create AFLSetting
+  // Create AFLSetting
 
-    auto setting = std::make_shared<const AFLSetting>(
-                        put.Args(),
-                        global_options.in_dir,
-                        global_options.out_dir,
-                        global_options.exec_timelimit_ms.value_or(GetExecTimeout<AFLTag>()),
-                        mem_limit,
-                        afl_options.forksrv,
-                        /* dumb_mode */ false,  // FIXME: add dumb_mode
-                        fuzzuf::utils::CPUID_BIND_WHICHEVER
-                    );
+  auto setting = std::make_shared<const AFLSetting>(
+      put.Args(), global_options.in_dir, global_options.out_dir,
+      global_options.exec_timelimit_ms.value_or(GetExecTimeout<AFLTag>()),
+      mem_limit, afl_options.forksrv,
+      /* dumb_mode */ false,  // FIXME: add dumb_mode
+      fuzzuf::utils::CPUID_BIND_WHICHEVER);
 
-    // NativeLinuxExecutor needs the directory specified by "out_dir" to be already set up
-    // so we need to create the directory first, and then initialize Executor
-    SetupDirs(setting->out_dir.string());
+  // NativeLinuxExecutor needs the directory specified by "out_dir" to be
+  // already set up so we need to create the directory first, and then
+  // initialize Executor
+  SetupDirs(setting->out_dir.string());
 
-    using fuzzuf::algorithm::afl::option::GetDefaultOutfile;
-    using fuzzuf::algorithm::afl::option::GetMapSize;
-    using fuzzuf::cli::ExecutorKind;
+  using fuzzuf::algorithm::afl::option::GetDefaultOutfile;
+  using fuzzuf::algorithm::afl::option::GetMapSize;
+  using fuzzuf::cli::ExecutorKind;
 
-    std::shared_ptr<TExecutor> executor;
-    switch (global_options.executor) {
+  std::shared_ptr<TExecutor> executor;
+  switch (global_options.executor) {
     case ExecutorKind::NATIVE: {
-        auto nle = std::make_shared<NativeLinuxExecutor>(
-                            setting->argv,
-                            setting->exec_timelimit_ms,
-                            setting->exec_memlimit,
-                            setting->forksrv,
-                            setting->out_dir / GetDefaultOutfile<AFLTag>(),
-                            GetMapSize<AFLTag>(), // afl_shm_size
-                            0 // bb_shm_size
-                        );
-        executor = std::make_shared<TExecutor>(std::move(nle));
-        break;
+      auto nle = std::make_shared<NativeLinuxExecutor>(
+          setting->argv, setting->exec_timelimit_ms, setting->exec_memlimit,
+          setting->forksrv, setting->out_dir / GetDefaultOutfile<AFLTag>(),
+          GetMapSize<AFLTag>(),  // afl_shm_size
+          0                      // bb_shm_size
+      );
+      executor = std::make_shared<TExecutor>(std::move(nle));
+      break;
     }
 
     case ExecutorKind::FORKSERVER: {
-        auto lfe = std::make_shared<LinuxForkServerExecutor>(
-                            setting->argv,
-                            setting->exec_timelimit_ms,
-                            setting->exec_memlimit,
-                            setting->out_dir / GetDefaultOutfile<AFLTag>(),
-                            GetMapSize<AFLTag>(), // afl_shm_size
-                            0, // bb_shm_size
-                            0 // extra_shm_size
-                        );
-        executor = std::make_shared<TExecutor>(std::move(lfe));
-        break;
+      auto lfe =
+          std::shared_ptr<LinuxForkServerExecutor>(new LinuxForkServerExecutor{
+              LinuxForkServerExecutorParameters()
+                  .set_argv(setting->argv)
+                  .set_exec_timelimit_ms(setting->exec_timelimit_ms)
+                  .set_exec_memlimit(setting->exec_memlimit)
+                  .set_path_to_write_input(setting->out_dir /
+                                           GetDefaultOutfile<AFLTag>())
+                  .set_afl_shm_size(GetMapSize<AFLTag>())  // afl_shm_size
+                  .move()});
+      executor = std::make_shared<TExecutor>(std::move(lfe));
+      break;
     }
 
     case ExecutorKind::QEMU: {
-        // NOTE: Assuming GetMapSize<AFLTag>() == QEMUExecutor::QEMU_SHM_SIZE
-        auto qe = std::make_shared<QEMUExecutor>(
-                            global_options.proxy_path.value(),
-                            setting->argv,
-                            setting->exec_timelimit_ms,
-                            setting->exec_memlimit,
-                            setting->forksrv,
-                            setting->out_dir / GetDefaultOutfile<AFLTag>()
-                        );
-        executor = std::make_shared<TExecutor>(std::move(qe));
-        break;
+      // NOTE: Assuming GetMapSize<AFLTag>() == QEMUExecutor::QEMU_SHM_SIZE
+      auto qe = std::make_shared<QEMUExecutor>(
+          global_options.proxy_path.value(), setting->argv,
+          setting->exec_timelimit_ms, setting->exec_memlimit, setting->forksrv,
+          setting->out_dir / GetDefaultOutfile<AFLTag>());
+      executor = std::make_shared<TExecutor>(std::move(qe));
+      break;
     }
 
 #ifdef __aarch64__
     case ExecutorKind::CORESIGHT: {
-        auto cse = std::make_shared<CoreSightExecutor>(
-                            global_options.proxy_path.value(),
-                            setting->argv,
-                            setting->exec_timelimit_ms,
-                            setting->exec_memlimit,
-                            setting->forksrv,
-                            setting->out_dir / GetDefaultOutfile<AFLTag>(),
-                            GetMapSize<AFLTag>() // afl_shm_size
-                        );
-        executor = std::make_shared<TExecutor>(std::move(cse));
-        break;
+      auto cse = std::make_shared<CoreSightExecutor>(
+          global_options.proxy_path.value(), setting->argv,
+          setting->exec_timelimit_ms, setting->exec_memlimit, setting->forksrv,
+          setting->out_dir / GetDefaultOutfile<AFLTag>(),
+          GetMapSize<AFLTag>()  // afl_shm_size
+      );
+      executor = std::make_shared<TExecutor>(std::move(cse));
+      break;
     }
 #endif
 
     default:
-        EXIT("Unsupported executor: '%s'", global_options.executor.c_str());
-    }
+      EXIT("Unsupported executor: '%s'", global_options.executor.c_str());
+  }
 
-    auto mutop_optimizer = std::unique_ptr<optimizer::Optimizer<u32>>(
-                                new algorithm::afl::AFLHavocCaseDistrib()
-                           );
+  auto mutop_optimizer = std::unique_ptr<optimizer::Optimizer<u32>>(
+      new algorithm::afl::AFLHavocCaseDistrib());
 
-    // Create AFLState
-    using fuzzuf::algorithm::afl::AFLState;
-    auto state = std::make_unique<AFLState>(
-                    setting,
-                    executor,
-                    std::move(mutop_optimizer)
-                 );
+  // Create AFLState
+  using fuzzuf::algorithm::afl::AFLState;
+  auto state =
+      std::make_unique<AFLState>(setting, executor, std::move(mutop_optimizer));
 
-    // Load dictionary
-    for(const auto &d: afl_options.dict_file){
-        using fuzzuf::algorithm::afl::dictionary::AFLDictData;
+  // Load dictionary
+  for (const auto &d : afl_options.dict_file) {
+    using fuzzuf::algorithm::afl::dictionary::AFLDictData;
 
-        const std::function<void( std::string&& )> f = [](std::string s){
-            ERROR("Dictionary error: %s", s.c_str());     
-        };
+    const std::function<void(std::string &&)> f = [](std::string s) {
+      ERROR("Dictionary error: %s", s.c_str());
+    };
 
-        fuzzuf::algorithm::afl::dictionary::load(d, state->extras, false, f);
-    }
-    fuzzuf::algorithm::afl::dictionary::SortDictByLength( state->extras );
+    fuzzuf::algorithm::afl::dictionary::load(d, state->extras, false, f);
+  }
+  fuzzuf::algorithm::afl::dictionary::SortDictByLength(state->extras);
 
-    return std::unique_ptr<TFuzzer>(
-                dynamic_cast<TFuzzer *>(
-                    new TAFLFuzzer(std::move(state))
-                )
-            );
+  return std::unique_ptr<TFuzzer>(
+      dynamic_cast<TFuzzer *>(new TAFLFuzzer(std::move(state))));
 }
 
-} // namespace fuzzuf::cli::fuzzer::afl
+}  // namespace fuzzuf::cli::fuzzer::afl
 
 #endif

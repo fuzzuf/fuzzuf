@@ -1,7 +1,7 @@
 /*
  * fuzzuf
  * Copyright (C) 2022 Ricerca Security
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -21,17 +21,17 @@
 
 #include <memory>
 
-#include "fuzzuf/utils/common.hpp"
-#include "fuzzuf/feedback/inplace_memory_feedback.hpp"
-#include "fuzzuf/feedback/exit_status_feedback.hpp"
-#include "fuzzuf/hierarflow/hierarflow_routine.hpp"
-#include "fuzzuf/hierarflow/hierarflow_node.hpp"
-#include "fuzzuf/hierarflow/hierarflow_intermediates.hpp"
-#include "fuzzuf/algorithms/afl/afl_mutator.hpp"
 #include "fuzzuf/algorithms/afl/afl_mutation_hierarflow_routines.hpp"
-#include "fuzzuf/algorithms/afl/afl_update_hierarflow_routines.hpp"
+#include "fuzzuf/algorithms/afl/afl_mutator.hpp"
 #include "fuzzuf/algorithms/afl/afl_other_hierarflow_routines.hpp"
+#include "fuzzuf/algorithms/afl/afl_update_hierarflow_routines.hpp"
 #include "fuzzuf/algorithms/ijon/ijon_state.hpp"
+#include "fuzzuf/feedback/exit_status_feedback.hpp"
+#include "fuzzuf/feedback/inplace_memory_feedback.hpp"
+#include "fuzzuf/hierarflow/hierarflow_intermediates.hpp"
+#include "fuzzuf/hierarflow/hierarflow_node.hpp"
+#include "fuzzuf/hierarflow/hierarflow_routine.hpp"
+#include "fuzzuf/utils/common.hpp"
 
 namespace fuzzuf::algorithm::ijon::routine {
 
@@ -43,18 +43,14 @@ namespace other {
  * @struct
  * A HierarFlowRoutine for IJON that selects a seed to be mutated.
  */
-struct SelectSeed 
-    : public HierarFlowRoutine<
-        void(void),
-        bool(IJONMutator&)
-      > {
-public:
-    SelectSeed(IJONState &state);
+struct SelectSeed : public HierarFlowRoutine<void(void), bool(IJONMutator &)> {
+ public:
+  SelectSeed(IJONState &state);
 
-    NullableRef<HierarFlowCallee<void(void)>> operator()(void);
+  NullableRef<HierarFlowCallee<void(void)>> operator()(void);
 
-private:
-    IJONState &state;
+ private:
+  IJONState &state;
 };
 
 using IJONMidCalleeRef = afl::routine::other::AFLMidCalleeRef<IJONState>;
@@ -62,21 +58,21 @@ using IJONMidInputType = afl::routine::other::AFLMidInputType<IJONState>;
 
 /**
  * @struct
- * A HierarFlowRoutine for IJON that prints the message that IJONFuzzer is delegating to AFL now.
- * This message is just for keeping compatibile with the original implementation.
+ * A HierarFlowRoutine for IJON that prints the message that IJONFuzzer is
+ * delegating to AFL now. This message is just for keeping compatibile with the
+ * original implementation.
  */
 struct PrintAflIsSelected
-    : public HierarFlowRoutine<
-        IJONMidInputType,
-        void(void) // has no successors
-      > {
-public:
-    PrintAflIsSelected(void);
+    : public HierarFlowRoutine<IJONMidInputType,
+                               void(void)  // has no successors
+                               > {
+ public:
+  PrintAflIsSelected(void);
 
-    IJONMidCalleeRef operator()(std::shared_ptr<IJONTestcase>);
+  IJONMidCalleeRef operator()(std::shared_ptr<IJONTestcase>);
 };
 
-} // namespace other
+}  // namespace other
 
 namespace mutation {
 
@@ -89,13 +85,13 @@ using IJONMutCalleeRef = afl::routine::mutation::AFLMutCalleeRef<IJONState>;
  * A HierarFlowRoutine for IJON that calls havoc with custom hyperparameters.
  */
 struct MaxHavoc : public afl::routine::mutation::HavocBaseTemplate<IJONState> {
-public:
-    MaxHavoc(IJONState &state);
+ public:
+  MaxHavoc(IJONState &state);
 
-    IJONMutCalleeRef operator()(IJONMutator& mutator);
+  IJONMutCalleeRef operator()(IJONMutator &mutator);
 };
 
-} // namespace mutation
+}  // namespace mutation
 
 namespace update {
 
@@ -108,22 +104,20 @@ using IJONUpdOutputType = afl::routine::update::AFLUpdOutputType;
  * A HierarFlowRoutine for IJON that updates the internal state of IJON.
  */
 struct IJONUpdate
-    : public HierarFlowRoutine<
-        IJONUpdInputType,
-        IJONUpdOutputType
-    > {
-public:
-    IJONUpdate(IJONState &state);
+    : public HierarFlowRoutine<IJONUpdInputType, IJONUpdOutputType> {
+ public:
+  IJONUpdate(IJONState &state, std::size_t offset);
 
-    IJONUpdCalleeRef operator()(
-        const u8*, u32, InplaceMemoryFeedback&, ExitStatusFeedback&);
+  IJONUpdCalleeRef operator()(const u8 *, u32, InplaceMemoryFeedback &,
+                              ExitStatusFeedback &);
 
-private:
-    IJONState &state;
+ private:
+  IJONState &state;
+  std::size_t offset;
 };
 
-} // namespace update
+}  // namespace update
 
-} // namespace fuzzuf::algorithm::ijon::routine
+}  // namespace fuzzuf::algorithm::ijon::routine
 
 #endif

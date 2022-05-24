@@ -36,33 +36,34 @@ namespace fuzzuf::executor {
 /**
  * @class IJONExecutorInterface
  * @brief Represents minimal requirements for an AFL-capable executor.
- * 
+ *
  * @details The executor for AFL must have the methods declared in this class.
  * This class is to perform type erasure for the executor class to abstract
  * the executor on the algortihms. We found that the boost's type_erasure does
  * not meet our needs, so we implemented our own type erasure.
- * 
+ *
  * @note An AFL-capable executor must have the following functions:
  * - void Run(const u8 *buf, u32 len, u32 timeout_ms)
  * - InplaceMemoryFeedback GetAFLFeedback()
  * - ExitStatusFeedback GetExitStatusFeedback()
  * - void ReceiveStopSignal()
  */
-class IJONExecutorInterface : public AFLExecutorInterface
-{
-public:
-  template<class T> IJONExecutorInterface(const std::shared_ptr<T>& executor)
-  : AFLExecutorInterface(executor), _container(new DynContainerDerived<T>(executor))
-  {}
+class IJONExecutorInterface : public AFLExecutorInterface {
+ public:
+  template <class T>
+  IJONExecutorInterface(const std::shared_ptr<T> &executor)
+      : AFLExecutorInterface(executor),
+        _container(new DynContainerDerived<T>(executor)) {}
 
-  template<class T> IJONExecutorInterface(std::shared_ptr<T>&& executor) noexcept
-  : AFLExecutorInterface(executor), _container(new DynContainerDerived<T>(std::move(executor)))
-  {}
+  template <class T>
+  IJONExecutorInterface(std::shared_ptr<T> &&executor) noexcept
+      : AFLExecutorInterface(executor),
+        _container(new DynContainerDerived<T>(std::move(executor))) {}
 
-  IJONExecutorInterface(const IJONExecutorInterface&) = delete;
-  IJONExecutorInterface(IJONExecutorInterface&&) = delete;
-  IJONExecutorInterface &operator=(const IJONExecutorInterface&) = delete;
-  IJONExecutorInterface &operator=(IJONExecutorInterface&&) = delete;
+  IJONExecutorInterface(const IJONExecutorInterface &) = delete;
+  IJONExecutorInterface(IJONExecutorInterface &&) = delete;
+  IJONExecutorInterface &operator=(const IJONExecutorInterface &) = delete;
+  IJONExecutorInterface &operator=(IJONExecutorInterface &&) = delete;
   IJONExecutorInterface() = delete;
 
   // /// @brief Executes the executor with given inputs.
@@ -81,20 +82,14 @@ public:
 
   // TODO: 環境変数の設定
 
-  /// @brief Gets IJON feedback.
-  /// @returnIJON feedback.
-  InplaceMemoryFeedback GetIJONFeedback() {
-    return _container->GetIJONFeedback();
-  }
-
   // /// @brief Gets an exit status of last execution.
   // /// @return An exit status of last execution.
   // ExitStatusFeedback GetExitStatusFeedback() {
   //   return _container->GetExitStatusFeedback();
   // }
 
-  // /// @brief A callback function called when the fuzzer receives a stop signal.
-  // void ReceiveStopSignal() {
+  // /// @brief A callback function called when the fuzzer receives a stop
+  // signal. void ReceiveStopSignal() {
   //   _container->ReceiveStopSignal();
   // }
 
@@ -102,23 +97,24 @@ public:
   //   return _container->ExposeExecutor();
   // }
 
-private:
+ private:
   class DynContainerBase {
-  public:
+   public:
     virtual ~DynContainerBase() {}
     // virtual void Run(const u8 *buf, u32 len, u32 timeout_ms=0) = 0;
     // virtual InplaceMemoryFeedback GetAFLFeedback() = 0;
-    virtual InplaceMemoryFeedback GetIJONFeedback() = 0;
     // virtual ExitStatusFeedback GetExitStatusFeedback() = 0;
     // virtual void ReceiveStopSignal() = 0;
     // virtual AFLExecutorInterface ExposeExecutor() = 0;
   };
 
-  template<class T>
+  template <class T>
   class DynContainerDerived : public DynContainerBase {
-  public:
-    DynContainerDerived(std::shared_ptr<T> const &executor) : _executor(executor) {}
-    DynContainerDerived(std::shared_ptr<T> &&executor) noexcept : _executor(std::move(executor)) {}
+   public:
+    DynContainerDerived(std::shared_ptr<T> const &executor)
+        : _executor(executor) {}
+    DynContainerDerived(std::shared_ptr<T> &&executor) noexcept
+        : _executor(std::move(executor)) {}
 
     // void Run(const u8 *buf, u32 len, u32 timeout_ms=0) {
     //   _executor->Run(buf, len, timeout_ms);
@@ -127,10 +123,6 @@ private:
     // InplaceMemoryFeedback GetAFLFeedback() {
     //   return _executor->GetAFLFeedback();
     // }
-
-    InplaceMemoryFeedback GetIJONFeedback() {
-      return _executor->GetExtraFeedback();
-    }
 
     // ExitStatusFeedback GetExitStatusFeedback() {
     //   return _executor->GetExitStatusFeedback();
@@ -144,13 +136,13 @@ private:
     //   return AFLExecutorInterface(_executor);
     // }
 
-  private:
+   private:
     std::shared_ptr<T> _executor;
   };
 
   std::unique_ptr<DynContainerBase> _container;
 };
 
-} // namespace fuzzuf::executor
+}  // namespace fuzzuf::executor
 
-#endif // FUZZUF_INCLUDE_EXECUTOR_AFL_EXECUTOR_INTERFACE_HPP
+#endif  // FUZZUF_INCLUDE_EXECUTOR_AFL_EXECUTOR_INTERFACE_HPP

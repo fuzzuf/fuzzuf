@@ -91,6 +91,7 @@ find_package( FridaTrace )
 # Nezhaは類似した2つのPUTを必要としており、fuzz_toysにはその条件を満たす物が含まれている
 find_package( FuzzToys )
 find_package( FuzzToysSymCC )
+find_package( FuzzufCC )
 if( ${CMAKE_VERSION} VERSION_GREATER_EQUAL 3.6.0 )
   option( ENABLE_CLANG_TIDY "enable clang-tidy" OFF )
   if( ENABLE_CLANG_TIDY )
@@ -364,6 +365,7 @@ set(
   utils/common.cpp
   utils/create_empty_file.cpp
   utils/errno_to_system_error.cpp
+  utils/get_aligned_addr.cpp
   utils/get_hash.cpp
   utils/hex_dump.cpp
   utils/is_executable.cpp

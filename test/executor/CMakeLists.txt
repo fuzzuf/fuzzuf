@@ -131,3 +131,36 @@ endif()
 add_test( NAME "pintool_executor.pintool_context.run" COMMAND test-pintool-run )
 endif()
 
+add_executable( test-executor-ijon ijon.cpp )
+target_link_libraries(
+  test-executor-ijon
+  test-common
+  fuzzuf
+  ${FUZZUF_LIBRARIES}
+  Boost::unit_test_framework
+)
+target_include_directories(
+  test-executor-ijon
+  PRIVATE
+  ${FUZZUF_INCLUDE_DIRS}
+  ${CMAKE_SOURCE_DIR}/test/common
+)
+set_target_properties(
+  test-executor-ijon
+  PROPERTIES COMPILE_FLAGS "${ADDITIONAL_COMPILE_FLAGS_STR}"
+)
+set_target_properties(
+  test-executor-ijon
+  PROPERTIES LINK_FLAGS "${ADDITIONAL_COMPILE_FLAGS_STR}"
+)
+if( ENABLE_CLANG_TIDY )
+  set_target_properties(
+    test-executor-ijon
+    PROPERTIES
+    CXX_CLANG_TIDY "${CLANG_TIDY};${CLANG_TIDY_CONFIG_FOR_TEST}"
+  )
+endif()
+if( FUZZUF_CC_FOUND )
+add_test( NAME "executor.ijon" COMMAND test-executor-ijon )
+endif()
+
