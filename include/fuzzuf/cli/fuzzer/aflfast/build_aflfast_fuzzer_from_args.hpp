@@ -28,6 +28,7 @@
 #include "fuzzuf/algorithms/aflfast/aflfast_option.hpp"
 #include "fuzzuf/algorithms/aflfast/aflfast_setting.hpp"
 #include "fuzzuf/algorithms/aflfast/aflfast_state.hpp"
+#include "fuzzuf/algorithms/aflfast/aflfast_other_hierarflow_routines.hpp"
 #include "fuzzuf/executor/native_linux_executor.hpp"
 #include "fuzzuf/executor/qemu_executor.hpp"
 #ifdef __aarch64__
