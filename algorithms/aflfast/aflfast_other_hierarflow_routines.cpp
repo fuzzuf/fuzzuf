@@ -15,7 +15,7 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see http://www.gnu.org/licenses/.
  */
-#include "fuzzuf/algorithms/afl/afl_other_hierarflow_routines.hpp"
+#include "fuzzuf/algorithms/aflfast/aflfast_other_hierarflow_routines.hpp"
 #include "fuzzuf/algorithms/aflfast/aflfast_state.hpp"
 #include "fuzzuf/algorithms/aflfast/aflfast_testcase.hpp"
 
