@@ -34,7 +34,7 @@ AFLMidCalleeRef<AFLFastState> ApplyDetMutsTemplate<AFLFastState>::operator()(
     // So we can reload the file with mmap.
     testcase->input->LoadByMmap(); // no need to Unload
 
-    if (state.orig_perf && state.queued_paths > 10) {
+    if (!state.orig_perf && state.queued_paths > 10) {
         this->SetResponseValue(true);
         return abandon_entry;
     }
