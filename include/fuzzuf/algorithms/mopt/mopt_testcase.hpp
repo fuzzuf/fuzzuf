@@ -13,6 +13,6 @@ struct MOptTestcase : public afl::AFLTestcase {
 
     explicit MOptTestcase(std::shared_ptr<OnDiskExecInput> input);
     ~MOptTestcase();
-}
+};
 
 } // namespace fuzzuf::algorithm::mopt

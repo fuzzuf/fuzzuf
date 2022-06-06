@@ -1,3 +1,5 @@
+#pragma once
+
 #include "fuzzuf/optimizer/optimizer.hpp"
 #include "fuzzuf/optimizer/store.hpp"
 
@@ -31,7 +33,15 @@ private:
 template<size_t Demention, size_t ParticleNum>
 class PSO : public Optimizer<std::array<double, Demention>> {
 public:
-    PSO(double, double, double, double, double, double, double);
+    PSO(
+        double min_position,
+        double max_position,
+        double min_velocity,
+        double max_velocity,
+        double w = 0.729,
+        double c1 = 1.49445,
+        double c2 = 1.49445
+    );
     ~PSO();
 
     void Init();

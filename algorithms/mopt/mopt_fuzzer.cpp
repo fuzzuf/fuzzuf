@@ -10,9 +10,10 @@
 
 namespace fuzzuf::algorithm::mopt {
 
-MOptFuzzer::MOptFuzzer() {
-    
-}
+
+MOptFuzzer::MOptFuzzer(std::unique_ptr<MOptState>&& moved_state) 
+    : AFLFuzzerTemplate<MOptState>(std::move(moved_state)) 
+{}
 
 void MOptFuzzer::BuildFuzzFlow(void) {
     {
@@ -20,8 +21,8 @@ void MOptFuzzer::BuildFuzzFlow(void) {
         using namespace afl::routine::mutation;
         using namespace afl::routine::update;
 
-        using namespace hierarflow::CreateNode;
-        using namespace hierarflow::CreateDummyParent;
+        using hierarflow::CreateNode;
+        using hierarflow::CreateDummyParent;
 
         using namespace fuzzuf::algorithm::mopt::routine;
 
@@ -33,7 +34,6 @@ void MOptFuzzer::BuildFuzzFlow(void) {
         auto cull_queue  = CreateNode<CullQueueTemplate<MOptState>>(*state);
 
         auto abandon_node = CreateNode<AbandonEntryTemplate<MOptState>>(*state);
-        auto abandon_entry_puppet = CreateNode<AbandonEntryPuppet>(*state);
 
         auto consider_skip_mut = CreateNode<ConsiderSkipMutTemplate<MOptState>>(*state);
         auto retry_calibrate = CreateNode<RetryCalibrateTemplate<MOptState>>(*state, *abandon_node);
@@ -64,11 +64,11 @@ void MOptFuzzer::BuildFuzzFlow(void) {
         auto construct_eff_map = CreateNode<ConstructEffMapTemplate<MOptState>>(*state);
 
         // MOpt-specific nodes
-        using namespace fuzzuf::algorithm::mopt::routine::other::CheckPacemakerThreshold;
-        using namespace fuzzuf::algorithm::mopt::routine::other:UpdateMOptInfo;
+        using fuzzuf::algorithm::mopt::routine::other::CheckPacemakerThreshold;
+        using fuzzuf::algorithm::mopt::routine::other::MOptUpdate;
 
         auto check_pacemaker = CreateNode<CheckPacemakerThreshold>(*state, *abandon_node);
-        auto update_mopt = CreateNode<UpdateMOptInfo>(*state);
+        auto update_mopt = CreateNode<MOptUpdate>(*state);
 
         fuzz_loop << (
                 cull_queue

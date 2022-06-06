@@ -31,15 +31,15 @@ public:
 
 private:
     MOptState &state;
-}
+};
 
-struct CheckPackmakerThreshold
+struct CheckPacemakerThreshold
     : public HierarFlowRoutine<
         MOptMidInputType,
         MOptMidOutputType
     > {
 public:
-    CheckPackmakerThreshold(MOptState &state, MOptMidCalleeRef abandon_entry);
+    CheckPacemakerThreshold(MOptState &state, MOptMidCalleeRef abandon_entry);
 
     MOptMidCalleeRef operator()(
         std::shared_ptr<MOptTestcase>
@@ -47,7 +47,7 @@ public:
 
 private:
     MOptState &state;
-}
+};
 
 
 } // namespace other

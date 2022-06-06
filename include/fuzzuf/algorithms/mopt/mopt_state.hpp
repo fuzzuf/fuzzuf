@@ -23,6 +23,6 @@ struct MOptState : public afl::AFLStateTemplate<MOptTestcase> {
     u32 splice_cycles_limit = 0;
 
     std::unique_ptr<fuzzuf::optimizer::MOptOptimizer> mopt;
-}
+};
 
 } // namespace fuzzuf::algorithm::mopt

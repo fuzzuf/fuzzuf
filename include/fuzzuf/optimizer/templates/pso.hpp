@@ -15,9 +15,9 @@ PSO<Demention, ParticleNum>::PSO(
     double max_position,
     double min_velocity,
     double max_velocity,
-    double w = 0.729,
-    double c1 = 1.49445,
-    double c2 = 1.49445
+    double w,
+    double c1,
+    double c2
 ) : min_position(min_position),
     max_position(max_position),
     min_velocity(min_velocity),
@@ -43,7 +43,7 @@ PSO<Demention, ParticleNum>::Init() {
 template<size_t Demention, size_t ParticleNum>
 std::array<double, Demention>
 PSO<Demention, ParticleNum>::GetCurParticle() {
-    return particles[idx];
+    return swarm[idx];
 }
 
 template<size_t Demention, size_t ParticleNum>

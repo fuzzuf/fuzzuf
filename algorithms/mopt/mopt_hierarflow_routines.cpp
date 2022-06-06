@@ -46,12 +46,12 @@ MOptMidCalleeRef MOptUpdate::operator(std::shared_ptr<MOptTestcase> testcase) ()
 }
 
 
-CheckPackermakerThreshold::CheckPackermakerThreshold(
+CheckPacemakerThreshold::CheckPacemakerThreshold(
     MOptState &state,
     MOptMidCalleeRef abandon_entry
 ) : state(state), abandon_entry(abandon_entry) {}
 
-MOptMidCalleeRef CheckPackermakerThreshold::operator(std::shared_ptr<MOptTestcase> testcase) (){
+MOptMidCalleeRef CheckPacemakerThreshold::operator(std::shared_ptr<MOptTestcase> testcase) (){
     u64 cur_ms_lv = Util::GetCurTimeMS();
     if (!(state.packemaker_mode == false
             && ((cur_ms_lv - state.last_path_time < state.setting.limit_time_puppet)
@@ -105,7 +105,7 @@ bool MOptHavoc::DoHavoc(
         state.stage_cur_val = use_stacking;
         mutator.Havoc(use_stacking, state.extras, state.a_extras, mutop_optimizer, custom_cases);
 
-        auto& new_testcases = fuzzuf::optimizer::Store::GetInstance().GetRef(fuzzuf::optimizer::keys::NewTestcases);
+        auto& new_testcases = fuzzuf::optimizer::Store::GetInstance().GetMutRef(fuzzuf::optimizer::keys::NewTestcases);
         new_testcases++;
 
         u64 havoc_finds = state.queued_paths + state.unique_crashes;
@@ -116,7 +116,7 @@ bool MOptHavoc::DoHavoc(
 
         if (havoc_finds > 0) [[unlikely]] {
             auto selected_case_histogram = fuzzuf::optimizer::Store::GetInstance().Get(fuzzuf::optimizer::keys::SelectedCaseHistogram);
-            auto& havoc_operator_finds = fuzzuf::optimizer::Store::GetInstance().GetRef(fuzzuf::optimizer::keys::HavocOperatorFinds);
+            auto& havoc_operator_finds = fuzzuf::optimizer::Store::GetInstance().GetMutRef(fuzzuf::optimizer::keys::HavocOperatorFinds);
             for (size_t i = 0; i < selected_case_histogram.size(); i++) {
                 if (selected_case_histogram[i] > 0) {
                     havoc_operator_finds[state.core_mode?1:0][i] += havoc_finds;

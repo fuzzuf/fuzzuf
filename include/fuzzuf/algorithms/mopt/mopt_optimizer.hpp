@@ -10,7 +10,7 @@ namespace keys {
 
 const StoreKey<u32> LastSpliceCycle { "last_splice_cycle" };
 const StoreKey<u64> NewTestcases { "new_testcases" };
-const StoreKey<std::array<std::array<u64, NUM_CASE>>, 2> HavocOperatorFinds { "havoc_operator_finds" }; // 0: pilot, 1: core
+const StoreKey<std::array<std::array<u64, NUM_CASE>, 2>> HavocOperatorFinds { "havoc_operator_finds" }; // 0: pilot, 1: core
 
 
 }
@@ -24,7 +24,7 @@ public:
 private:
     std::array<double, NUM_CASE> fitness;
     std::array<double, NUM_CASE> best_fitness;
-}
+};
 
 
 class MOptOptimizer : public PSO<NUM_CASE, SwarmNum> {
@@ -34,14 +34,14 @@ public:
     ~MOptOptimizer();
 
     void Init();
-    void UpdateLocalBest() override;
-    void GlobalLocalBest() override;
+    void UpdateLocalBest();
+    void GlobalLocalBest();
 
     void PSOUpdate(); // pso_updating
 
     bool opt_minimize = false;
 private:
     std::array<MOptParticle, SwarmNum> swarm;
-}
+};
 
 }
