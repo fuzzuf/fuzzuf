@@ -5,7 +5,7 @@
 
 #include <functional>
 #include <array>
-
+#include <cstdint>
 // for Particle Swarm Optimization
 
 namespace fuzzuf::optimizer {
@@ -56,7 +56,7 @@ private:
     void UpdateGlobalBest();
 
     size_t idx = 0;
-    u64 time = 0;
+    std::uint64_t time = 0;
     std::array<Particle<Demention>, ParticleNum> swarm;
 
     // global best

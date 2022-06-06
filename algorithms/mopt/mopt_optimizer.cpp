@@ -11,14 +11,14 @@ MOptParticle::MOptParticle() {
     // init
 }
 
-MOptParticle::~MOptParticle();
+MOptParticle::~MOptParticle() {}
 
 
-MOptOptimizer::MOptOptimizer() {
+//MOptOptimizer::MOptOptimizer() {
     // init
-}
+//}
 
-MOptOptimizer::~MOptOptimizer();
+MOptOptimizer::~MOptOptimizer() {}
 
 void MOptOptimizer::SetScore(size_t i, double score) {
     auto& p = swarm[idx];

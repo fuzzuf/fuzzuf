@@ -2,6 +2,7 @@
 #include "fuzzuf/optimizer/pso.hpp"
 #include "fuzzuf/algorithms/mopt/mopt_optimizer.hpp"
 #include "fuzzuf/algorithms/mopt/mopt_option.hpp"
+#include "fuzzuf/algorithms/mopt/mopt_option_get_splice_cycles.hpp"
 
 namespace fuzzuf::algorithm::mopt::routine {
 

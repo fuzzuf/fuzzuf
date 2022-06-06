@@ -9,7 +9,7 @@
 namespace fuzzuf::algorithm::mopt {
 
 struct MOptTestcase : public afl::AFLTestcase {
-    using Tag = option::MOptTag;
+    using Tag = fuzzuf::algorithm::mopt::option::MOptTag;
 
     explicit MOptTestcase(std::shared_ptr<OnDiskExecInput> input);
     ~MOptTestcase();

@@ -1,11 +1,9 @@
 #pragma once
 
 #include "fuzzuf/algorithms/afl/afl_option.hpp"
-#include "fuzzuf/algorithms/mopt/mopt_testcase.hpp"
-#include "fuzzuf/algorithms/mopt/mopt_state.hpp"
 
 
-namespace fuzzuf::algorithm::mopt { struct MOptTestcase; }
+namespace fuzzuf::algorithm::mopt { struct MOptTestcase; struct MOptState; }
 namespace fuzzuf::algorithm::mopt::option {
 
 struct MOptTag {};

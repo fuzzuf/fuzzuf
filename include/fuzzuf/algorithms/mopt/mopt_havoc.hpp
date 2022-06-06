@@ -7,14 +7,10 @@
 #include "fuzzuf/optimizer/store.hpp"
 #include "fuzzuf/mutator/havoc_case.hpp"
 #include "fuzzuf/algorithms/mopt/mopt_optimizer.hpp"
-
 #include <memory>
 
 
 namespace fuzzuf::algorithm::mopt::havoc {
-
-MOptHavocCaseDistrib::MOptHavocCaseDistrib();
-MOptHavocCaseDistrib::~MOptHavocCaseDistrib();
 
 class MOptHavocCaseDistrib : public optimizer::Optimizer<u32> {
 public:

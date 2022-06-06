@@ -5,9 +5,8 @@
 #include "fuzzuf/executor/native_linux_executor.hpp"
 #include "fuzzuf/optimizer/optimizer.hpp"
 #include "fuzzuf/algorithms/afl/afl_state.hpp"
-#include "fuzzuf/algorithms/mopt/mopt_option.hpp"
-#include "fuzzuf/algorithms/mopt/mopt_testcase.hpp"
 #include "fuzzuf/algorithms/mopt/mopt_optimizer.hpp"
+#include "fuzzuf/algorithms/mopt/mopt_testcase.hpp"
 
 namespace fuzzuf::algorithm::mopt {
 
