@@ -91,7 +91,7 @@ void MOptFuzzer::BuildFuzzFlow(void) {
                 || user_dict_overwrite << execute.HardLink() << normal_update.HardLink()
                 || auto_dict_overwrite << execute.HardLink() << normal_update.HardLink()
                 )
-            || check_pacemaker << apply_rand_muts << (
+            || check_pacemaker || apply_rand_muts << (
                     havoc << execute.HardLink() << normal_update.HardLink()
                     || splicing << execute.HardLink() << normal_update.HardLink()
                 )

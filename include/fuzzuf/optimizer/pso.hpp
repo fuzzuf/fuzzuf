@@ -20,6 +20,7 @@ class Particle {
 public:
     Particle();
     ~Particle();
+    std::array<double, Demention> GetBestPosition();
 
 private:
     std::array<double, Demention> position;

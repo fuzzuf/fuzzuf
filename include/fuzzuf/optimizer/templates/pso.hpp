@@ -9,6 +9,13 @@
 
 namespace fuzzuf::optimizer {
 
+template<size_t Demention>
+std::array<double, Demention>
+Particle<Demention>::GetBestPosition() {
+    return best_position;
+}
+
+
 template<size_t Demention, size_t ParticleNum>
 PSO<Demention, ParticleNum>::PSO(
     double min_position,
@@ -43,7 +50,7 @@ PSO<Demention, ParticleNum>::Init() {
 template<size_t Demention, size_t ParticleNum>
 std::array<double, Demention>
 PSO<Demention, ParticleNum>::GetCurParticle() {
-    return swarm[idx];
+    return swarm[idx].GetBestPosition();
 }
 
 template<size_t Demention, size_t ParticleNum>
@@ -104,7 +111,8 @@ void
 PSO<Demention, ParticleNum>::UpdateLocalBest() {
     auto& p = swarm[idx];
 
-    if (time == 0) [[unlikely]] {
+    if (time == 0) {
+        [[unlikely]]
         p.best_position = p.position;
         p.best_fitness = p.fitness;
         return;
@@ -119,7 +127,8 @@ PSO<Demention, ParticleNum>::UpdateLocalBest() {
 template<size_t Demention, size_t ParticleNum>
 void
 PSO<Demention, ParticleNum>::UpdateGlobalBest() {
-    if (time == 0) [[unlikely]] {
+    if (time == 0) {
+        [[unlikely]]
         best_fitness = swarm[0].best_fitness;
         best_position = swarm[0].best_position;
     }

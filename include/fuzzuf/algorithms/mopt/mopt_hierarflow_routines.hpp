@@ -1,6 +1,7 @@
 #pragma once
 
 #include "fuzzuf/hierarflow/hierarflow_routine.hpp"
+#include "fuzzuf/algorithms/afl/afl_mutator.hpp"
 #include "fuzzuf/algorithms/afl/afl_other_hierarflow_routines.hpp"
 #include "fuzzuf/algorithms/afl/afl_mutation_hierarflow_routines.hpp"
 #include "fuzzuf/algorithms/mopt/mopt_state.hpp"
@@ -56,6 +57,10 @@ private:
 namespace mutation {
 
 using MOptMutCalleeRef = fuzzuf::algorithm::afl::routine::mutation::AFLMutCalleeRef<MOptState>;
+using fuzzuf::algorithm::afl::routine::mutation::HavocTemplate;
+using fuzzuf::algorithm::afl::AFLMutatorTemplate;
+using fuzzuf::algorithm::afl::routine::mutation::SplicingTemplate;
+using fuzzuf::algorithm::afl::dictionary::AFLDictData;
 
 struct MOptHavoc : public HavocTemplate<MOptState> {
 public:
@@ -64,13 +69,13 @@ public:
     bool DoHavoc(
         AFLMutatorTemplate<MOptState>& mutator,
         optimizer::Optimizer<u32> &mutop_optimizer,
-        CustomCases custom_cases,
+        void(*custom_cases)(u32, u8*&, u32&, const std::vector<AFLDictData>&, const std::vector<AFLDictData>&),
         const std::string &stage_name,
         const std::string &stage_short,
         u32 perf_score,
         s32 stage_max_multiplier, 
         int stage_idx
-    ) override;
+    );
 };
 
 struct Splicing : public SplicingTemplate<MOptState> {

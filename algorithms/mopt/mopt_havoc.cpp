@@ -34,7 +34,7 @@ u32 MOptHavocCaseDistrib::CalcValue() {
         weights[OVERWRITE_WITH_AEXTRA] = 0;
     }
 
-    std::discrete_distribution<double> dists(weights);
+    std::discrete_distribution<u32> dists(weights.begin(), weights.end());
 
     return dists(engine);
 }
