@@ -1,7 +1,7 @@
 /*
  * fuzzuf
  * Copyright (C) 2021 Ricerca Security
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -20,6 +20,7 @@
  * @author Ricerca Security <fuzzuf-dev@ricsec.co.jp>
  */
 #include "fuzzuf/algorithms/libfuzzer/state/input_info.hpp"
+
 #include "fuzzuf/algorithms/libfuzzer/exec_input_set_range.hpp"
 #include "fuzzuf/algorithms/libfuzzer/state/corpus.hpp"
 #include "fuzzuf/algorithms/libfuzzer/utils.hpp"
@@ -33,7 +34,8 @@ namespace fuzzuf::algorithm::libfuzzer {
  * https://github.com/llvm/llvm-project/blob/llvmorg-12.0.1/compiler-rt/lib/fuzzer/FuzzerCorpus.h#L74
  *
  * @param global_number_of_features Total number of known features
- * @param scale_per_exec_time If true, scale energy by variance of execution time
+ * @param scale_per_exec_time If true, scale energy by variance of execution
+ * time
  * @param average_unit_execution_time Average of execution time
  */
 void InputInfo::updateEnergy(
@@ -206,7 +208,7 @@ auto toString(std::string &dest, const FullCorpus &value,
   ++indent_count;
   // NOLINTBEGIN(cppcoreguidelines-pro-type-const-cast)
   for (auto &data :
-       const_cast<ExecInputSet &>(value.inputs) |
+       const_cast<exec_input::ExecInputSet &>(value.inputs) |
            adaptor::exec_input_set_range<false,
                                          ExecInputSetRangeInsertMode::NONE>) {
     if (!utils::toStringADL(dest, data.GetID(), indent_count, indent)) {
@@ -241,4 +243,4 @@ auto toString(std::string &dest, const FullCorpus &value,
   return true;
 }
 
-} // namespace fuzzuf::algorithm::libfuzzer
+}  // namespace fuzzuf::algorithm::libfuzzer

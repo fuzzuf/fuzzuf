@@ -1,7 +1,7 @@
 /*
  * fuzzuf
  * Copyright (C) 2021 Ricerca Security
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -15,27 +15,27 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see http://www.gnu.org/licenses/.
  */
-#include <vector>
-#include <string>
 #include "fuzzuf/python/python_setting.hpp"
 
-PythonSetting::PythonSetting(
-    const std::vector<std::string> &argv,
-    const std::string &in_dir,
-    const std::string &out_dir,
-    u32 exec_timelimit_ms,
-    u64 exec_memlimit,
-    bool forksrv,
-    bool need_afl_cov,
-    bool need_bb_cov
-) : 
-    argv( argv ),
-    in_dir( in_dir ),
-    out_dir( out_dir ),
-    exec_timelimit_ms( exec_timelimit_ms ),
-    exec_memlimit( exec_memlimit ),
-    forksrv( forksrv ),
-    need_afl_cov( need_afl_cov ),
-    need_bb_cov( need_bb_cov ) {}
+#include <string>
+#include <vector>
+
+namespace fuzzuf::bindings::python {
+
+PythonSetting::PythonSetting(const std::vector<std::string> &argv,
+                             const std::string &in_dir,
+                             const std::string &out_dir, u32 exec_timelimit_ms,
+                             u64 exec_memlimit, bool forksrv, bool need_afl_cov,
+                             bool need_bb_cov)
+    : argv(argv),
+      in_dir(in_dir),
+      out_dir(out_dir),
+      exec_timelimit_ms(exec_timelimit_ms),
+      exec_memlimit(exec_memlimit),
+      forksrv(forksrv),
+      need_afl_cov(need_afl_cov),
+      need_bb_cov(need_bb_cov) {}
 
 PythonSetting::~PythonSetting() {}
+
+}  // namespace fuzzuf::bindings::python

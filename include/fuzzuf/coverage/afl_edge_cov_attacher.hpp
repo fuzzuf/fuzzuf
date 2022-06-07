@@ -26,12 +26,14 @@
 
 #include "fuzzuf/coverage/shm_cov_attacher.hpp"
 
+namespace fuzzuf::coverage {
+
 /**
  * @class AFLEdgeCovAttacher
  * @brief AFL-compatible hashed edge coverage attacher.
  */
 class AFLEdgeCovAttacher : public ShmCovAttacher {
-public:
+ public:
   static constexpr const char* SHM_ENV_VAR = "__AFL_SHM_ID";
 
   AFLEdgeCovAttacher(u32 map_size) : ShmCovAttacher(map_size) {}
@@ -40,4 +42,6 @@ public:
   }
 };
 
-#endif // FUZZUF_INCLUDE_COVERAGE_AFL_EDGE_COV_ATTACHER_HPP
+}  // namespace fuzzuf::coverage
+
+#endif  // FUZZUF_INCLUDE_COVERAGE_AFL_EDGE_COV_ATTACHER_HPP

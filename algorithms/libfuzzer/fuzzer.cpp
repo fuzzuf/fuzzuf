@@ -20,16 +20,18 @@
  * @author Ricerca Security <fuzzuf-dev@ricsec.co.jp>
  */
 #include "fuzzuf/algorithms/libfuzzer/cli_compat/fuzzer.hpp"
+
+#include <boost/program_options.hpp>
+#include <cstdint>
+#include <fstream>
+#include <string>
+
 #include "fuzzuf/algorithms/libfuzzer/cli_compat/options.hpp"
 #include "fuzzuf/algorithms/libfuzzer/config.hpp"
 #include "fuzzuf/algorithms/libfuzzer/create.hpp"
 #include "fuzzuf/cli/fuzzer_args.hpp"
 #include "fuzzuf/cli/global_fuzzer_options.hpp"
 #include "fuzzuf/logger/logger.hpp"
-#include <boost/program_options.hpp>
-#include <cstdint>
-#include <fstream>
-#include <string>
 
 namespace fuzzuf::algorithm::libfuzzer {
 LibFuzzer::LibFuzzer(FuzzerArgs &fuzzer_args, const GlobalFuzzerOptions &global,
@@ -49,7 +51,7 @@ LibFuzzer::LibFuzzer(FuzzerArgs &fuzzer_args, const GlobalFuzzerOptions &global,
   vars.state.create_info = opts.create_info;
   vars.rng = std::move(opts.rng);
 
-  ExecInputSet initial_inputs = loadInitialInputs(opts, vars.rng);
+  exec_input::ExecInputSet initial_inputs = loadInitialInputs(opts, vars.rng);
   vars.max_input_size =
       opts.create_info.len_control ? 4u : opts.create_info.max_input_length;
   sink = std::move(opts.sink);
@@ -66,19 +68,21 @@ LibFuzzer::LibFuzzer(FuzzerArgs &fuzzer_args, const GlobalFuzzerOptions &global,
     if (i >= create_info.symcc_target_offset &&
         i < create_info.symcc_target_offset + create_info.symcc_target_count) {
       vars.executors.push_back(
-          std::shared_ptr<fuzzuf::executor::NativeLinuxExecutor>(new fuzzuf::executor::NativeLinuxExecutor(
-              {target_path.string(), output_file_path.string()},
-              create_info.exec_timelimit_ms, create_info.exec_memlimit, false,
-              path_to_write_seed, create_info.afl_shm_size,
-              create_info.bb_shm_size, false,
-              {"SYMCC_OUTPUT_DIR=" + symcc_dir.string()}, {symcc_dir})));
+          std::shared_ptr<fuzzuf::executor::NativeLinuxExecutor>(
+              new fuzzuf::executor::NativeLinuxExecutor(
+                  {target_path.string(), output_file_path.string()},
+                  create_info.exec_timelimit_ms, create_info.exec_memlimit,
+                  false, path_to_write_seed, create_info.afl_shm_size,
+                  create_info.bb_shm_size, false,
+                  {"SYMCC_OUTPUT_DIR=" + symcc_dir.string()}, {symcc_dir})));
     } else {
       vars.executors.push_back(
-          std::shared_ptr<fuzzuf::executor::NativeLinuxExecutor>(new fuzzuf::executor::NativeLinuxExecutor(
-              {target_path.string(), output_file_path.string()},
-              create_info.exec_timelimit_ms, create_info.exec_memlimit,
-              create_info.forksrv, path_to_write_seed, create_info.afl_shm_size,
-              create_info.bb_shm_size)));
+          std::shared_ptr<fuzzuf::executor::NativeLinuxExecutor>(
+              new fuzzuf::executor::NativeLinuxExecutor(
+                  {target_path.string(), output_file_path.string()},
+                  create_info.exec_timelimit_ms, create_info.exec_memlimit,
+                  create_info.forksrv, path_to_write_seed,
+                  create_info.afl_shm_size, create_info.bb_shm_size)));
     }
     ++i;
   }
@@ -114,4 +118,4 @@ void LibFuzzer::OneLoop() {
     }
   }
 }
-} // namespace fuzzuf::algorithm::libfuzzer
+}  // namespace fuzzuf::algorithm::libfuzzer

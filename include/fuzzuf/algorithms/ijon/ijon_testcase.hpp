@@ -1,7 +1,7 @@
 /*
  * fuzzuf
  * Copyright (C) 2021 Ricerca Security
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -21,9 +21,9 @@
 
 #include <memory>
 
-#include "fuzzuf/exec_input/on_disk_exec_input.hpp"
 #include "fuzzuf/algorithms/afl/afl_testcase.hpp"
 #include "fuzzuf/algorithms/ijon/ijon_option.hpp"
+#include "fuzzuf/exec_input/on_disk_exec_input.hpp"
 
 namespace fuzzuf::algorithm::ijon {
 
@@ -32,12 +32,12 @@ namespace fuzzuf::algorithm::ijon {
  * Just an alias of AFLTestcase(with Tag replaced)
  */
 struct IJONTestcase : public afl::AFLTestcase {
-    using Tag = option::IJONTag;
+  using Tag = option::IJONTag;
 
-    explicit IJONTestcase(std::shared_ptr<OnDiskExecInput> input);
-    ~IJONTestcase();
+  explicit IJONTestcase(std::shared_ptr<exec_input::OnDiskExecInput> input);
+  ~IJONTestcase();
 };
 
-} // namespace fuzzuf::algorithm::ijon
+}  // namespace fuzzuf::algorithm::ijon
 
 #endif

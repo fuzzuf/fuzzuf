@@ -104,7 +104,7 @@ BOOST_AUTO_TEST_CASE(LinuxForkServerExecutorVariableShm) {
       // (2) Check if coverage store is allocated as intended
       if (afl == 0) {
         BOOST_CHECK_EQUAL(executor.GetAFLShmID(),
-                          ShmCovAttacher::INVALID_SHMID);
+                          fuzzuf::coverage::ShmCovAttacher::INVALID_SHMID);
       } else {
         struct shmid_ds info;
         int res = shmctl(executor.GetAFLShmID(), IPC_STAT, &info);
@@ -113,7 +113,7 @@ BOOST_AUTO_TEST_CASE(LinuxForkServerExecutorVariableShm) {
       }
 
       if (bb == 0) {
-        BOOST_CHECK_EQUAL(executor.GetBBShmID(), ShmCovAttacher::INVALID_SHMID);
+        BOOST_CHECK_EQUAL(executor.GetBBShmID(), fuzzuf::coverage::ShmCovAttacher::INVALID_SHMID);
       } else {
         struct shmid_ds info;
         int res = shmctl(executor.GetBBShmID(), IPC_STAT, &info);

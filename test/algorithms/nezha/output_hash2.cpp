@@ -17,6 +17,14 @@
  */
 #define BOOST_TEST_MODULE algorithms.nezha.output_hash2
 #define BOOST_TEST_DYN_LINK
+#include <config.h>
+
+#include <array>
+#include <boost/scope_exit.hpp>
+#include <boost/test/unit_test.hpp>
+#include <iostream>
+#include <vector>
+
 #include "fuzzuf/algorithms/libfuzzer/calc_max_length.hpp"
 #include "fuzzuf/algorithms/libfuzzer/corpus/add_to_initial_exec_input_set.hpp"
 #include "fuzzuf/algorithms/libfuzzer/hierarflow.hpp"
@@ -34,12 +42,6 @@
 #include "fuzzuf/utils/node_tracer.hpp"
 #include "fuzzuf/utils/not_random.hpp"
 #include "fuzzuf/utils/which.hpp"
-#include <array>
-#include <boost/scope_exit.hpp>
-#include <boost/test/unit_test.hpp>
-#include <config.h>
-#include <iostream>
-#include <vector>
 
 /**
  * create()を使ってNezhaを組み立て、libFuzzerのデフォルトのサイクル数だけ回し、その過程でサニタイザにかかったりabortしたりしないことを確認する
@@ -106,25 +108,25 @@ BOOST_AUTO_TEST_CASE(HierarFlowOutputHash) {
     const auto output_file_path = create_info.output_dir / "result";
     const auto path_to_write_seed = create_info.output_dir / "cur_input";
     std::vector<LibFuzzerExecutorInterface> executor;
-    executor.push_back(
-        std::shared_ptr<fuzzuf::executor::NativeLinuxExecutor>(new fuzzuf::executor::NativeLinuxExecutor(
-            {FUZZUF_FUZZTOYS_DIR "/fuzz_toys-csv", output_file_path.string()},
-            create_info.exec_timelimit_ms, create_info.exec_memlimit,
-            create_info.forksrv, path_to_write_seed, create_info.afl_shm_size,
-            create_info.bb_shm_size, true)));
-    executor.push_back(
-        std::shared_ptr<fuzzuf::executor::NativeLinuxExecutor>(new fuzzuf::executor::NativeLinuxExecutor(
+    executor.push_back(std::shared_ptr<fuzzuf::executor::NativeLinuxExecutor>(
+        new fuzzuf::executor::NativeLinuxExecutor(
             {FUZZUF_FUZZTOYS_DIR "/fuzz_toys-csv", output_file_path.string()},
             create_info.exec_timelimit_ms, create_info.exec_memlimit,
             create_info.forksrv, path_to_write_seed, create_info.afl_shm_size,
             create_info.bb_shm_size, true)));
     executor.push_back(std::shared_ptr<fuzzuf::executor::NativeLinuxExecutor>(
-        new fuzzuf::executor::NativeLinuxExecutor({FUZZUF_FUZZTOYS_DIR "/fuzz_toys-csv_small",
-                                 output_file_path.string()},
-                                create_info.exec_timelimit_ms,
-                                create_info.exec_memlimit, create_info.forksrv,
-                                path_to_write_seed, create_info.afl_shm_size,
-                                create_info.bb_shm_size, true)));
+        new fuzzuf::executor::NativeLinuxExecutor(
+            {FUZZUF_FUZZTOYS_DIR "/fuzz_toys-csv", output_file_path.string()},
+            create_info.exec_timelimit_ms, create_info.exec_memlimit,
+            create_info.forksrv, path_to_write_seed, create_info.afl_shm_size,
+            create_info.bb_shm_size, true)));
+    executor.push_back(std::shared_ptr<fuzzuf::executor::NativeLinuxExecutor>(
+        new fuzzuf::executor::NativeLinuxExecutor(
+            {FUZZUF_FUZZTOYS_DIR "/fuzz_toys-csv_small",
+             output_file_path.string()},
+            create_info.exec_timelimit_ms, create_info.exec_memlimit,
+            create_info.forksrv, path_to_write_seed, create_info.afl_shm_size,
+            create_info.bb_shm_size, true)));
     libfuzzer_variables.executor = std::move(executor);
   }
   create_info.target_count = libfuzzer_variables.executor.size();
@@ -132,7 +134,7 @@ BOOST_AUTO_TEST_CASE(HierarFlowOutputHash) {
   BOOST_TEST_CHECKPOINT("after init executor");
   BOOST_CHECK_EQUAL(libfuzzer_variables.executor.size(), 3);
 
-  ExecInputSet initial_input;
+  fuzzuf::exec_input::ExecInputSet initial_input;
   lf::corpus::addToInitialExecInputSet(initial_input,
                                        std::vector<std::uint8_t>{'1'});
   if (create_info.max_input_length == 0U) {
@@ -162,14 +164,14 @@ BOOST_AUTO_TEST_CASE(HierarFlowOutputHash) {
     const auto path_to_write_seed = create_info.output_dir / "cur_input";
     std::vector<LibFuzzerExecutorInterface> executor;
     executor.push_back(std::shared_ptr<fuzzuf::executor::NativeLinuxExecutor>(
-        new fuzzuf::executor::NativeLinuxExecutor({FUZZUF_FUZZTOYS_DIR "/fuzz_toys-csv_small",
-                                 output_file_path.string()},
-                                create_info.exec_timelimit_ms,
-                                create_info.exec_memlimit, create_info.forksrv,
-                                path_to_write_seed, create_info.afl_shm_size,
-                                create_info.bb_shm_size, true)));
-    executor.push_back(
-        std::shared_ptr<fuzzuf::executor::NativeLinuxExecutor>(new fuzzuf::executor::NativeLinuxExecutor(
+        new fuzzuf::executor::NativeLinuxExecutor(
+            {FUZZUF_FUZZTOYS_DIR "/fuzz_toys-csv_small",
+             output_file_path.string()},
+            create_info.exec_timelimit_ms, create_info.exec_memlimit,
+            create_info.forksrv, path_to_write_seed, create_info.afl_shm_size,
+            create_info.bb_shm_size, true)));
+    executor.push_back(std::shared_ptr<fuzzuf::executor::NativeLinuxExecutor>(
+        new fuzzuf::executor::NativeLinuxExecutor(
             {FUZZUF_FUZZTOYS_DIR "/fuzz_toys-csv", output_file_path.string()},
             create_info.exec_timelimit_ms, create_info.exec_memlimit,
             create_info.forksrv, path_to_write_seed, create_info.afl_shm_size,

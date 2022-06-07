@@ -1,7 +1,7 @@
 /*
  * fuzzuf
  * Copyright (C) 2021 Ricerca Security
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -21,20 +21,24 @@
 #include <unordered_map>
 
 #include "fuzzuf/exec_input/exec_input_set.hpp"
-#include "fuzzuf/mutator/mutator.hpp"
 #include "fuzzuf/feedback/persistent_memory_feedback.hpp"
+#include "fuzzuf/mutator/mutator.hpp"
 #include "fuzzuf/python/python_setting.hpp"
 #include "fuzzuf/python/python_testcase.hpp"
+
+namespace fuzzuf::bindings::python {
 
 // We need this only for Mutator.
 struct PythonTag {};
 
 struct PythonState {
-    explicit PythonState(const PythonSetting &setting);
-    ~PythonState();
+  explicit PythonState(const PythonSetting &setting);
+  ~PythonState();
 
-    const PythonSetting &setting;
-    ExecInputSet input_set;
-    std::unordered_map<u64, std::unique_ptr<PythonTestcase>> test_set;
-    std::unique_ptr<Mutator<PythonTag>> mutator;
+  const PythonSetting &setting;
+  exec_input::ExecInputSet input_set;
+  std::unordered_map<u64, std::unique_ptr<PythonTestcase>> test_set;
+  std::unique_ptr<Mutator<PythonTag>> mutator;
 };
+
+}  // namespace fuzzuf::bindings::python

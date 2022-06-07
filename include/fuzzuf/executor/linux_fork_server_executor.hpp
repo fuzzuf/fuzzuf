@@ -145,8 +145,8 @@ class LinuxForkServerExecutor : public Executor {
   const bool uses_asan = false;  // May become one of the available options in
                                  // the future, but currently not anticipated
 
-  AFLEdgeCovAttacher afl_edge_coverage;
-  FuzzufBBCovAttacher fuzzuf_bb_coverage;
+  coverage::AFLEdgeCovAttacher afl_edge_coverage;
+  coverage::FuzzufBBCovAttacher fuzzuf_bb_coverage;
 
   LinuxForkServerExecutor(LinuxForkServerExecutorParameters &&args);
   ~LinuxForkServerExecutor();
@@ -169,11 +169,11 @@ class LinuxForkServerExecutor : public Executor {
   int GetAFLShmID();
   int GetBBShmID();
 
-  InplaceMemoryFeedback GetAFLFeedback();
-  InplaceMemoryFeedback GetBBFeedback();
-  InplaceMemoryFeedback GetStdOut();
-  InplaceMemoryFeedback GetStdErr();
-  ExitStatusFeedback GetExitStatusFeedback();
+  feedback::InplaceMemoryFeedback GetAFLFeedback();
+  feedback::InplaceMemoryFeedback GetBBFeedback();
+  feedback::InplaceMemoryFeedback GetStdOut();
+  feedback::InplaceMemoryFeedback GetStdErr();
+  feedback::ExitStatusFeedback GetExitStatusFeedback();
 
   virtual bool IsFeedbackLocked();
 
@@ -205,7 +205,7 @@ class LinuxForkServerExecutor : public Executor {
   void CreateJoinedEnvironmentVariables(std::vector<std::string> &&extra);
 
   u32 last_timeout_ms;
-  PUTExitReasonType last_exit_reason;
+  feedback::PUTExitReasonType last_exit_reason;
   u8 last_signal;
   fuzzuf::executor::output_t stdout_buffer;
   fuzzuf::executor::output_t stderr_buffer;
@@ -235,7 +235,6 @@ class LinuxForkServerExecutor : public Executor {
 
   fuzzuf::utils::vfs::LocalFilesystem filesystem;
 
-  FdChannel put_channel;
+  channel::FdChannel put_channel;
 };
-}
-
+}  // namespace fuzzuf::executor

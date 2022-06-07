@@ -22,13 +22,14 @@
 #ifndef FUZZUF_INCLUDE_ALGORITHM_LIBFUZZER_OPTIONS_HPP
 #define FUZZUF_INCLUDE_ALGORITHM_LIBFUZZER_OPTIONS_HPP
 
-#include "fuzzuf/algorithms/libfuzzer/config.hpp"
-#include "fuzzuf/exec_input/exec_input_set.hpp"
 #include <boost/program_options.hpp>
 #include <cstdint>
 #include <random>
 #include <string>
 #include <vector>
+
+#include "fuzzuf/algorithms/libfuzzer/config.hpp"
+#include "fuzzuf/exec_input/exec_input_set.hpp"
 
 struct GlobalFuzzerOptions;
 
@@ -59,7 +60,8 @@ auto postProcess(
     const boost::program_options::positional_options_description &pd, int argc,
     const char *argv[], const GlobalFuzzerOptions &,
     std::function<void(std::string &&)> &&sink, Options &dest) -> bool;
-auto loadInitialInputs(Options &dest, std::minstd_rand &rng) -> ExecInputSet;
-} // namespace fuzzuf::algorithm::libfuzzer
+auto loadInitialInputs(Options &dest, std::minstd_rand &rng)
+    -> exec_input::ExecInputSet;
+}  // namespace fuzzuf::algorithm::libfuzzer
 
 #endif

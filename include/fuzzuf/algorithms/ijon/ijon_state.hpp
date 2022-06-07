@@ -1,7 +1,7 @@
 /*
  * fuzzuf
  * Copyright (C) 2022 Ricerca Security
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -19,8 +19,8 @@
 #ifndef FUZZUF_INCLUDE_ALGORITHM_IJON_IJON_STATE_HPP
 #define FUZZUF_INCLUDE_ALGORITHM_IJON_IJON_STATE_HPP
 
-#include <vector>
 #include <memory>
+#include <vector>
 
 #include "fuzzuf/utils/filesystem.hpp"
 #include "fuzzuf/optimizer/optimizer.hpp"
@@ -35,9 +35,10 @@ namespace fuzzuf::algorithm::ijon {
 
 /**
  * @struct
- * expresses the internal state of IJON. 
+ * expresses the internal state of IJON.
  * It inherits from AFLStateTemplate to be compatible with AFLState.
- * The lifetime for an instance of this class must be longer than that of HierarFlow.
+ * The lifetime for an instance of this class must be longer than that of
+ * HierarFlow.
  */
 struct IJONState : public afl::AFLStateTemplate<IJONTestcase> {
     explicit IJONState(
@@ -47,8 +48,8 @@ struct IJONState : public afl::AFLStateTemplate<IJONTestcase> {
     );
     ~IJONState();
 
-    IJONState( const IJONState& ) = delete;
-    IJONState& operator=( const IJONState& ) = delete;
+  IJONState(const IJONState&) = delete;
+  IJONState& operator=(const IJONState&) = delete;
 
     std::shared_ptr<executor::IJONExecutorInterface> ijon_executor;
 
@@ -59,13 +60,13 @@ struct IJONState : public afl::AFLStateTemplate<IJONTestcase> {
     // define the following vectors.
     // Corresponding code of original IJON implementation:
     // https://github.com/RUB-SysSec/ijon/blob/4cb8ae04d/afl-ijon-min.h#L16-L17
-    std::vector<std::shared_ptr<OnDiskExecInput>> all_inputs;
-    std::vector<std::shared_ptr<OnDiskExecInput>> nonempty_inputs;
+    std::vector<std::shared_ptr<exec_input::OnDiskExecInput>> all_inputs;
+    std::vector<std::shared_ptr<exec_input::OnDiskExecInput>> nonempty_inputs;
 
-    size_t num_updates = 0;
-    fs::path max_dir;
+  size_t num_updates = 0;
+  fs::path max_dir;
 };
 
-} // namespace fuzzuf::algorithm::ijon
+}  // namespace fuzzuf::algorithm::ijon
 
 #endif

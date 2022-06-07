@@ -1,7 +1,7 @@
 /*
  * fuzzuf
  * Copyright (C) 2021 Ricerca Security
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -17,8 +17,8 @@
  */
 #pragma once
 
-#include <memory>
 #include <bitset>
+#include <memory>
 
 #include "fuzzuf/algorithms/vuzzer/vuzzer_option.hpp"
 #include "fuzzuf/exec_input/on_disk_exec_input.hpp"
@@ -26,14 +26,14 @@
 namespace fuzzuf::algorithm::vuzzer {
 
 struct VUzzerTestcase {
-    using Tag = option::VUzzerTag;
+  using Tag = option::VUzzerTag;
 
-    explicit VUzzerTestcase(std::shared_ptr<OnDiskExecInput> input);
-    ~VUzzerTestcase();
+  explicit VUzzerTestcase(std::shared_ptr<exec_input::OnDiskExecInput> input);
+  ~VUzzerTestcase();
 
-    std::shared_ptr<OnDiskExecInput> input;
+  std::shared_ptr<exec_input::OnDiskExecInput> input;
 
-    double fitness;
+  double fitness;
 };
 
-} // namespace fuzzuf::algorithm::vuzzer
+}  // namespace fuzzuf::algorithm::vuzzer

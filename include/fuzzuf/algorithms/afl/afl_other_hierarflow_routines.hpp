@@ -1,7 +1,7 @@
 /*
  * fuzzuf
  * Copyright (C) 2021 Ricerca Security
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -18,221 +18,189 @@
 #pragma once
 
 #include <memory>
-#include "fuzzuf/algorithms/afl/afl_state.hpp"
+
 #include "fuzzuf/algorithms/afl/afl_mutator.hpp"
-
-#include "fuzzuf/feedback/inplace_memory_feedback.hpp"
+#include "fuzzuf/algorithms/afl/afl_state.hpp"
 #include "fuzzuf/feedback/exit_status_feedback.hpp"
-
-#include "fuzzuf/hierarflow/hierarflow_routine.hpp"
-#include "fuzzuf/hierarflow/hierarflow_node.hpp"
+#include "fuzzuf/feedback/inplace_memory_feedback.hpp"
 #include "fuzzuf/hierarflow/hierarflow_intermediates.hpp"
+#include "fuzzuf/hierarflow/hierarflow_node.hpp"
+#include "fuzzuf/hierarflow/hierarflow_routine.hpp"
 
 namespace fuzzuf::algorithm::afl::routine::other {
 
 // middle nodes(steps done before and after actual mutations)
 
-template<class State>
-struct CullQueueTemplate
-    : public HierarFlowRoutine<
-        void(void),
-        void(void)
-      > {
-public:
-    CullQueueTemplate(State &state);
+template <class State>
+struct CullQueueTemplate : public HierarFlowRoutine<void(void), void(void)> {
+ public:
+  CullQueueTemplate(State &state);
 
-    NullableRef<HierarFlowCallee<void(void)>> operator()(void);
+  NullableRef<HierarFlowCallee<void(void)>> operator()(void);
 
-private:
-    State &state;
+ private:
+  State &state;
 };
 
 using CullQueue = CullQueueTemplate<AFLState>;
 
-template<class State>
+template <class State>
 struct SelectSeedTemplate
     : public HierarFlowRoutine<
-        void(void),
-        bool(std::shared_ptr<typename State::OwnTestcase>)
-      > {
-public:
-    SelectSeedTemplate(State &state);
+          void(void), bool(std::shared_ptr<typename State::OwnTestcase>)> {
+ public:
+  SelectSeedTemplate(State &state);
 
-    NullableRef<HierarFlowCallee<void(void)>> operator()(void);
+  NullableRef<HierarFlowCallee<void(void)>> operator()(void);
 
-private:
-    State &state;
-    u64 prev_queued = 0;
+ private:
+  State &state;
+  u64 prev_queued = 0;
 };
 
 using SelectSeed = SelectSeedTemplate<AFLState>;
 
-template<class State>
+template <class State>
 using AFLMidInputType = bool(std::shared_ptr<typename State::OwnTestcase>);
 
-template<class State>
+template <class State>
 using AFLMidCalleeRef = NullableRef<HierarFlowCallee<AFLMidInputType<State>>>;
 
-template<class State>
-using AFLMidOutputType = bool(AFLMutatorTemplate<State>&);
+template <class State>
+using AFLMidOutputType = bool(AFLMutatorTemplate<State> &);
 
-template<class State>
+template <class State>
 struct ConsiderSkipMutTemplate
-    : public HierarFlowRoutine<
-        AFLMidInputType<State>,
-        AFLMidOutputType<State>
-    > {
-public:
-    ConsiderSkipMutTemplate(State &state);
+    : public HierarFlowRoutine<AFLMidInputType<State>,
+                               AFLMidOutputType<State>> {
+ public:
+  ConsiderSkipMutTemplate(State &state);
 
-    AFLMidCalleeRef<State> operator()(
-        std::shared_ptr<typename State::OwnTestcase>
-    );
+  AFLMidCalleeRef<State> operator()(
+      std::shared_ptr<typename State::OwnTestcase>);
 
-private:
-    State &state;
+ private:
+  State &state;
 };
 
 using ConsiderSkipMut = ConsiderSkipMutTemplate<AFLState>;
 
-template<class State>
+template <class State>
 struct RetryCalibrateTemplate
-    : public HierarFlowRoutine<
-        AFLMidInputType<State>,
-        AFLMidOutputType<State>
-    > {
-public:
-    RetryCalibrateTemplate(State &state, AFLMidCalleeRef<State> abandon_entry);
+    : public HierarFlowRoutine<AFLMidInputType<State>,
+                               AFLMidOutputType<State>> {
+ public:
+  RetryCalibrateTemplate(State &state, AFLMidCalleeRef<State> abandon_entry);
 
-    AFLMidCalleeRef<State> operator()(
-        std::shared_ptr<typename State::OwnTestcase>
-    );
+  AFLMidCalleeRef<State> operator()(
+      std::shared_ptr<typename State::OwnTestcase>);
 
-private:
-    State &state;
-    AFLMidCalleeRef<State> abandon_entry;
+ private:
+  State &state;
+  AFLMidCalleeRef<State> abandon_entry;
 };
 
 using RetryCalibrate = RetryCalibrateTemplate<AFLState>;
 
-template<class State>
-struct TrimCaseTemplate
-    : public HierarFlowRoutine<
-        AFLMidInputType<State>,
-        AFLMidOutputType<State>
-    > {
-public:
-    TrimCaseTemplate(State &state, AFLMidCalleeRef<State> abandon_entry);
+template <class State>
+struct TrimCaseTemplate : public HierarFlowRoutine<AFLMidInputType<State>,
+                                                   AFLMidOutputType<State>> {
+ public:
+  TrimCaseTemplate(State &state, AFLMidCalleeRef<State> abandon_entry);
 
-    AFLMidCalleeRef<State> operator()(
-        std::shared_ptr<typename State::OwnTestcase>
-    );
+  AFLMidCalleeRef<State> operator()(
+      std::shared_ptr<typename State::OwnTestcase>);
 
-private:
-    State &state;
-    AFLMidCalleeRef<State> abandon_entry;
+ private:
+  State &state;
+  AFLMidCalleeRef<State> abandon_entry;
 };
 
 using TrimCase = TrimCaseTemplate<AFLState>;
 
-template<class State>
-struct CalcScoreTemplate
-    : public HierarFlowRoutine<
-        AFLMidInputType<State>,
-        AFLMidOutputType<State>
-    > {
-public:
-    CalcScoreTemplate(State &state);
+template <class State>
+struct CalcScoreTemplate : public HierarFlowRoutine<AFLMidInputType<State>,
+                                                    AFLMidOutputType<State>> {
+ public:
+  CalcScoreTemplate(State &state);
 
-    AFLMidCalleeRef<State> operator()(
-        std::shared_ptr<typename State::OwnTestcase>
-    );
+  AFLMidCalleeRef<State> operator()(
+      std::shared_ptr<typename State::OwnTestcase>);
 
-private:
-    State &state;
+ private:
+  State &state;
 };
 
 using CalcScore = CalcScoreTemplate<AFLState>;
 
-template<class State>
+template <class State>
 struct ApplyDetMutsTemplate
-    : public HierarFlowRoutine<
-        AFLMidInputType<State>,
-        AFLMidOutputType<State>
-    > {
-public:
-    ApplyDetMutsTemplate(State &state, AFLMidCalleeRef<State> abandon_entry);
+    : public HierarFlowRoutine<AFLMidInputType<State>,
+                               AFLMidOutputType<State>> {
+ public:
+  ApplyDetMutsTemplate(State &state, AFLMidCalleeRef<State> abandon_entry);
 
-    AFLMidCalleeRef<State> operator()(
-        std::shared_ptr<typename State::OwnTestcase>
-    );
+  AFLMidCalleeRef<State> operator()(
+      std::shared_ptr<typename State::OwnTestcase>);
 
-private:
-    State &state;
-    AFLMidCalleeRef<State> abandon_entry;
+ private:
+  State &state;
+  AFLMidCalleeRef<State> abandon_entry;
 };
 
 using ApplyDetMuts = ApplyDetMutsTemplate<AFLState>;
 
-template<class State>
+template <class State>
 struct ApplyRandMutsTemplate
-    : public HierarFlowRoutine<
-        AFLMidInputType<State>,
-        AFLMidOutputType<State>
-    > {
-public:
-    ApplyRandMutsTemplate(State &state, AFLMidCalleeRef<State> abandon_entry);
+    : public HierarFlowRoutine<AFLMidInputType<State>,
+                               AFLMidOutputType<State>> {
+ public:
+  ApplyRandMutsTemplate(State &state, AFLMidCalleeRef<State> abandon_entry);
 
-    AFLMidCalleeRef<State> operator()(
-        std::shared_ptr<typename State::OwnTestcase>
-    );
+  AFLMidCalleeRef<State> operator()(
+      std::shared_ptr<typename State::OwnTestcase>);
 
-private:
-    State &state;
-    AFLMidCalleeRef<State> abandon_entry;
+ private:
+  State &state;
+  AFLMidCalleeRef<State> abandon_entry;
 };
 
 using ApplyRandMuts = ApplyRandMutsTemplate<AFLState>;
 
-template<class State>
+template <class State>
 struct AbandonEntryTemplate
-    : public HierarFlowRoutine<
-        AFLMidInputType<State>,
-        AFLMidOutputType<State>
-    > {
-public:
-    AbandonEntryTemplate(State &state);
+    : public HierarFlowRoutine<AFLMidInputType<State>,
+                               AFLMidOutputType<State>> {
+ public:
+  AbandonEntryTemplate(State &state);
 
-    AFLMidCalleeRef<State> operator()(
-        std::shared_ptr<typename State::OwnTestcase>
-    );
+  AFLMidCalleeRef<State> operator()(
+      std::shared_ptr<typename State::OwnTestcase>);
 
-private:
-    State &state;
+ private:
+  State &state;
 };
 
 using AbandonEntry = AbandonEntryTemplate<AFLState>;
 
-template<class State>
+template <class State>
 struct ExecutePUTTemplate
-    : public HierarFlowRoutine<
-        bool(const u8*, u32),
-        bool(const u8*, u32, InplaceMemoryFeedback&, ExitStatusFeedback&)
-    > {
-public:
-    ExecutePUTTemplate(State &state);
+    : public HierarFlowRoutine<bool(const u8 *, u32),
+                               bool(const u8 *, u32,
+                                    feedback::InplaceMemoryFeedback &,
+                                    feedback::ExitStatusFeedback &)> {
+ public:
+  ExecutePUTTemplate(State &state);
 
-    NullableRef<HierarFlowCallee<bool(const u8*, u32)>> operator()(
-        const u8*, 
-        u32
-    );
+  NullableRef<HierarFlowCallee<bool(const u8 *, u32)>> operator()(const u8 *,
+                                                                  u32);
 
-private:
-    State &state;
+ private:
+  State &state;
 };
 
 using ExecutePUT = ExecutePUTTemplate<AFLState>;
 
-} // namespace fuzzuf::algorithm::afl::routine::other
+}  // namespace fuzzuf::algorithm::afl::routine::other
 
 #include "fuzzuf/algorithms/afl/templates/afl_other_hierarflow_routines.hpp"

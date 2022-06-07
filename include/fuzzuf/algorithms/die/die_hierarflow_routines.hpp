@@ -1,7 +1,7 @@
 /*
  * fuzzuf
  * Copyright (C) 2022 Ricerca Security
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -23,6 +23,7 @@
 #pragma once
 
 #include <memory>
+
 #include "fuzzuf/algorithms/die/die_mutator.hpp"
 #include "fuzzuf/algorithms/die/die_state.hpp"
 #include "fuzzuf/algorithms/die/die_testcase.hpp"
@@ -32,73 +33,71 @@
 #include "fuzzuf/hierarflow/hierarflow_node.hpp"
 #include "fuzzuf/hierarflow/hierarflow_routine.hpp"
 
-
 namespace fuzzuf::algorithm::die::routine::mutation {
 
 /* Declaration for DIEMutate */
 
 using DIEMutInputType = bool(std::shared_ptr<DIETestcase>);
 using DIEMutCalleeRef = NullableRef<HierarFlowCallee<DIEMutInputType>>;
-using DIEMutOutputType = bool(const u8*, u32, const u8*, u32);
+using DIEMutOutputType = bool(const u8 *, u32, const u8 *, u32);
 
-struct DIEMutate
-  : public HierarFlowRoutine<DIEMutInputType, DIEMutOutputType> {
-public:
+struct DIEMutate : public HierarFlowRoutine<DIEMutInputType, DIEMutOutputType> {
+ public:
   DIEMutCalleeRef operator()(std::shared_ptr<DIETestcase>);
   DIEMutate(DIEState &state) : state(state) {}
 
-private:
-    DIEState &state;
+ private:
+  DIEState &state;
 };
 
-} // namespace fuzzuf::algorithm::die::routine::mutation
-
+}  // namespace fuzzuf::algorithm::die::routine::mutation
 
 namespace fuzzuf::algorithm::die::routine::other {
 
 /* Declaration for DIEExecute */
 
-using DIEExecInputType = bool(const u8*, u32,  // js file
-                              const u8*, u32); // type file (extended from AFL)
+using DIEExecInputType = bool(const u8 *, u32,  // js file
+                              const u8 *,
+                              u32);  // type file (extended from AFL)
 using DIEExecCalleeRef = NullableRef<HierarFlowCallee<DIEExecInputType>>;
-using DIEExecOutputType = bool(const u8*, u32, // js file
-                               const u8*, u32, // type file (extended from AFL)
-                               InplaceMemoryFeedback&, ExitStatusFeedback&);
+using DIEExecOutputType = bool(const u8 *, u32,  // js file
+                               const u8 *,
+                               u32,  // type file (extended from AFL)
+                               feedback::InplaceMemoryFeedback &,
+                               feedback::ExitStatusFeedback &);
 
 struct DIEExecute
-  : public HierarFlowRoutine<DIEExecInputType, DIEExecOutputType> {
-public:
-  DIEExecCalleeRef operator()(const u8*, u32,
-                              const u8*, u32);
+    : public HierarFlowRoutine<DIEExecInputType, DIEExecOutputType> {
+ public:
+  DIEExecCalleeRef operator()(const u8 *, u32, const u8 *, u32);
   DIEExecute(DIEState &state) : state(state) {}
 
-private:
+ private:
   DIEState &state;
 };
 
-} // namespace fuzzuf::algorithm::die::routine::other
-
+}  // namespace fuzzuf::algorithm::die::routine::other
 
 namespace fuzzuf::algorithm::die::routine::update {
 
 /* Declaration for DIEUpdate */
 
-using DIEUpdateInputType = bool(const u8*, u32,
-                                const u8*, u32,
-                                InplaceMemoryFeedback&, ExitStatusFeedback&);
+using DIEUpdateInputType = bool(const u8 *, u32, const u8 *, u32,
+                                feedback::InplaceMemoryFeedback &,
+                                feedback::ExitStatusFeedback &);
 using DIEUpdateCalleeRef = NullableRef<HierarFlowCallee<DIEUpdateInputType>>;
 using DIEUpdateOutputType = void(void);
 
 struct DIEUpdate
-  : public HierarFlowRoutine<DIEUpdateInputType, DIEUpdateOutputType> {
-public:
-  DIEUpdateCalleeRef operator()(const u8*, u32,
-                                const u8*, u32,
-                                InplaceMemoryFeedback&, ExitStatusFeedback&);
+    : public HierarFlowRoutine<DIEUpdateInputType, DIEUpdateOutputType> {
+ public:
+  DIEUpdateCalleeRef operator()(const u8 *, u32, const u8 *, u32,
+                                feedback::InplaceMemoryFeedback &,
+                                feedback::ExitStatusFeedback &);
   DIEUpdate(DIEState &state) : state(state) {}
 
-private:
+ private:
   DIEState &state;
 };
 
-} // namespace fuzzuf::algorithm::die::routine::update
+}  // namespace fuzzuf::algorithm::die::routine::update

@@ -66,11 +66,11 @@ void PTExecutor::SetupEnvironmentVariablesForTarget() {
   BaseProxyExecutor::SetupEnvironmentVariablesForTarget();
 }
 
-InplaceMemoryFeedback PTExecutor::GetPathFeedback() {
+feedback::InplaceMemoryFeedback PTExecutor::GetPathFeedback() {
   return afl_pt_path_coverage.GetFeedback();
 }
 
-InplaceMemoryFeedback PTExecutor::GetFavFeedback() {
+feedback::InplaceMemoryFeedback PTExecutor::GetFavFeedback() {
   return afl_pt_path_fav.GetFeedback();
 }
 
@@ -79,4 +79,4 @@ bool PTExecutor::IsFeedbackLocked() {
          (afl_pt_path_coverage.GetLockUseCount() > 1) ||
          (afl_pt_path_fav.GetLockUseCount() > 1);
 }
-}
+}  // namespace fuzzuf::executor

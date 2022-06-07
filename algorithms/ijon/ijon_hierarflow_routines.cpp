@@ -71,7 +71,7 @@ namespace mutation {
 using HavocBase = afl::routine::mutation::HavocBaseTemplate<IJONState>;
 using IJONMutCaleeRef = afl::routine::mutation::AFLMutCalleeRef<IJONState>;
 
-MaxHavoc::MaxHavoc(IJONState &state) : HavocBase(state) {}
+MaxHavoc::MaxHavoc(IJONState& state) : HavocBase(state) {}
 
 /**
  * Corresponding code of original IJON implementation:
@@ -97,6 +97,7 @@ using IJONUpdCalleeRef = afl::routine::update::AFLUpdCalleeRef;
 IJONUpdate::IJONUpdate(IJONState &state, std::size_t offset_)
     : state(state), offset(offset_) {}
 
+UpdateMax::UpdateMax(IJONState& state) : state(state) {}
 static void StoreMaxInput(IJONState &state, u32 idx, const u8 *data, u32 len) {
   // NOTE: is it no problem to overwrite/unload `all_inputs[idx]`,
   // even though this input can be still loaded in IJON's flow?
@@ -120,8 +121,8 @@ static void StoreMaxInput(IJONState &state, u32 idx, const u8 *data, u32 len) {
  * https://github.com/RUB-SysSec/ijon/blob/4cb8ae04d/afl-ijon-min.c#L68-L83
  */
 IJONUpdCalleeRef IJONUpdate::operator()(const u8 *buf, u32 len,
-                                        InplaceMemoryFeedback &inp_feed,
-                                        ExitStatusFeedback &exit_status) {
+                                        feedback::InplaceMemoryFeedback &inp_feed,
+                                        feedback::ExitStatusFeedback &exit_status) {
   // Originally, this procedure is done in save_if_interesting.
   // And the update occurs only if the following condition is not met.
   if (exit_status.exit_reason != state.crash_mode) return GoToDefaultNext();

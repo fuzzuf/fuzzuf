@@ -1,7 +1,7 @@
 /*
  * fuzzuf
  * Copyright (C) 2022 Ricerca Security
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -20,18 +20,19 @@
  * @brief Global state for HierarFlow loop
  * @author Ricerca Security <fuzzuf-dev@ricsec.co.jp>
  */
+#include "fuzzuf/algorithms/die/die_state.hpp"
+
 #include <istream>
 #include <sstream>
 #include <string>
 #include <vector>
+
 #include "fuzzuf/algorithms/afl/afl_option.hpp"
 #include "fuzzuf/algorithms/die/die_option.hpp"
-#include "fuzzuf/algorithms/die/die_state.hpp"
 #include "fuzzuf/algorithms/die/die_testcase.hpp"
 #include "fuzzuf/logger/logger.hpp"
 #include "fuzzuf/utils/common.hpp"
 #include "fuzzuf/utils/filesystem.hpp"
-
 
 namespace fuzzuf::algorithm::die {
 
@@ -53,23 +54,21 @@ void DIEState::PivotInputs(void) {
 
     u32 orig_id;
     std::string nfn;
-    if ( rsl.substr(0, 3) == case_prefix
-         && sscanf(rsl.c_str()+3, "%06u", &orig_id) == 1
-         && orig_id == id) {
+    if (rsl.substr(0, 3) == case_prefix &&
+        sscanf(rsl.c_str() + 3, "%06u", &orig_id) == 1 && orig_id == id) {
       resuming_fuzz = true;
       /* We don't need to add ".js" here
          because the original file name contains the extension */
-      nfn = fuzzuf::utils::StrPrintf("%s/queue/%s",
-                            setting->out_dir.c_str(), rsl.c_str());
+      nfn = fuzzuf::utils::StrPrintf("%s/queue/%s", setting->out_dir.c_str(),
+                                     rsl.c_str());
 
       /* Since we're at it, let's also try to find parent and figure out the
          appropriate depth for this entry. */
 
       u32 src_id;
       auto pos = rsl.find(':');
-      if ( pos != std::string::npos
-           && sscanf(rsl.c_str()+pos+1, "%06u", &src_id) == 1) {
-
+      if (pos != std::string::npos &&
+          sscanf(rsl.c_str() + pos + 1, "%06u", &src_id) == 1) {
         if (src_id < case_queue.size()) {
           testcase->depth = case_queue[src_id]->depth + 1;
         }
@@ -85,16 +84,17 @@ void DIEState::PivotInputs(void) {
       if (!setting->simple_files) {
         auto pos = rsl.find(",orig:");
 
-        if (pos != std::string::npos) pos += 6;
-        else pos = 0;
+        if (pos != std::string::npos)
+          pos += 6;
+        else
+          pos = 0;
 
         nfn = fuzzuf::utils::StrPrintf("%s/queue/id:%06u,orig:%s",
-                              setting->out_dir.c_str(),
-                              id,
-                              rsl.c_str() + pos);
+                                       setting->out_dir.c_str(), id,
+                                       rsl.c_str() + pos);
       } else {
         nfn = fuzzuf::utils::StrPrintf("%s/queue/id_%06u",
-                              setting->out_dir.c_str(), id);
+                                       setting->out_dir.c_str(), id);
       }
     }
 
@@ -134,12 +134,11 @@ void DIEState::PivotInputs(void) {
  * @param (passed_det) True if deterministic run is done for this testcase
  */
 std::shared_ptr<DIETestcase> DIEState::AddToQueue(
-  const std::string &fn_js,     // path to js file
-  const u8 *buf_js, u32 len_js, // js data
-  const std::string &fn_ty,     // path to type file
-  const u8 *buf_ty, u32 len_ty, // type data
-  bool passed_det
-) {
+    const std::string& fn_js,      // path to js file
+    const u8* buf_js, u32 len_js,  // js data
+    const std::string& fn_ty,      // path to type file
+    const u8* buf_ty, u32 len_ty,  // type data
+    bool passed_det) {
   auto input_js = input_set.CreateOnDisk(fn_js);
   auto input_ty = input_set.CreateOnDisk(fn_ty);
   if (buf_js && buf_ty) {
@@ -148,9 +147,8 @@ std::shared_ptr<DIETestcase> DIEState::AddToQueue(
   }
 
   std::shared_ptr<DIETestcase> testcase(
-    // A testcase contains JS and Type files
-    new DIETestcase(std::move(input_js), std::move(input_ty))
-  );
+      // A testcase contains JS and Type files
+      new DIETestcase(std::move(input_js), std::move(input_ty)));
 
   testcase->depth = cur_depth + 1;
   testcase->passed_det = passed_det;
@@ -175,9 +173,9 @@ void DIEState::ReadTestcases(void) {
   int status;
   std::vector<std::string> cmd;
 
-  fs::path path_input  = fs::absolute(setting->in_dir);
-  fs::path path_die    = fs::absolute(setting->die_dir);
-  fs::path path_typer  = path_die / "fuzz/TS/typer/typer.js";
+  fs::path path_input = fs::absolute(setting->in_dir);
+  fs::path path_die = fs::absolute(setting->die_dir);
+  fs::path path_typer = path_die / "fuzz/TS/typer/typer.js";
   fs::path path_esfuzz = path_die / "fuzz/TS/esfuzz.js";
 
   /* Create directory for JS testcase */
@@ -202,7 +200,7 @@ void DIEState::ReadTestcases(void) {
       "(This process may take a while if it's the first time.)\n");
 
   /* Scan input directory and call typer */
-  for (const auto& entry_js: fs::recursive_directory_iterator(path_input)) {
+  for (const auto& entry_js : fs::recursive_directory_iterator(path_input)) {
     u32 type_size;
 
     /* Check extension */
@@ -218,17 +216,17 @@ void DIEState::ReadTestcases(void) {
     fs::file_status st = fs::status(path_js);
 
     if (!fs::is_regular_file(st) || js_size == 0)
-      continue; // Skip empty files and non-regular files
+      continue;  // Skip empty files and non-regular files
 
     if (js_size > option::GetMaxFile())
-      EXIT("Test case '%s' is too big (%s, limit is %s)",
-           path_js.c_str(),
+      EXIT("Test case '%s' is too big (%s, limit is %s)", path_js.c_str(),
            afl::util::DescribeMemorySize(js_size).c_str(),
-           afl::util::DescribeMemorySize(afl::option::GetMaxFile<Tag>()).c_str()
-      ); // File size is too big
+           afl::util::DescribeMemorySize(afl::option::GetMaxFile<Tag>())
+               .c_str());  // File size is too big
 
     /* Check deterministic fuzzing */
-    fs::path dfn = path_input / ".state/deterministic_done" / path_js.filename();
+    fs::path dfn =
+        path_input / ".state/deterministic_done" / path_js.filename();
     bool passed_det = fs::exists(dfn);
 
     /* Create path to instrumented JS (jsi) */
@@ -242,11 +240,8 @@ void DIEState::ReadTestcases(void) {
     if (fs::exists(path_type)) {
       /* Add to queue and skip if we already have type file */
       type_size = fs::file_size(path_type);
-      AddToQueue(
-        path_js.string(), nullptr, js_size,
-        path_type.string(), nullptr, type_size,
-        passed_det
-      );
+      AddToQueue(path_js.string(), nullptr, js_size, path_type.string(),
+                 nullptr, type_size, passed_det);
 
       ACTF("Type file exists. Skipping '%s'...", path_js.c_str());
       continue;
@@ -255,10 +250,10 @@ void DIEState::ReadTestcases(void) {
     /* Instrument JS file */
     ACTF("Instrumenting '%s'...", path_js.c_str());
 
-    cmd = {setting->cmd_node,   // node
-           path_typer.string(), // typer.js
-           path_js.string(),    // js file
-           path_jsi.string()};  // instrumented js file
+    cmd = {setting->cmd_node,    // node
+           path_typer.string(),  // typer.js
+           path_js.string(),     // js file
+           path_jsi.string()};   // instrumented js file
     status = fuzzuf::utils::ExecuteCommand(cmd);
 
     if (status != 0) {
@@ -272,12 +267,12 @@ void DIEState::ReadTestcases(void) {
 
     // Call typer.py
     cmd.clear();
-    cmd = {setting->cmd_py,     // python3
-           setting->typer_path, // typer.py
-           setting->d8_path,    // path to d8 binary
-           setting->d8_flags,   // flags for d8
-           path_jsi.string(),   // instrumented js
-           path_type.string()}; // path of output type file
+    cmd = {setting->cmd_py,      // python3
+           setting->typer_path,  // typer.py
+           setting->d8_path,     // path to d8 binary
+           setting->d8_flags,    // flags for d8
+           path_jsi.string(),    // instrumented js
+           path_type.string()};  // path of output type file
     status = fuzzuf::utils::ExecuteCommand(cmd);
 
     if (status != 0 || !fs::exists(path_type)) {
@@ -288,17 +283,16 @@ void DIEState::ReadTestcases(void) {
 
     /* Add testcase to queue */
     type_size = fs::file_size(path_type);
-    AddToQueue(
-      path_js.string(), nullptr, js_size,
-      path_type.string(), nullptr, type_size,
-      passed_det
-    );
+    AddToQueue(path_js.string(), nullptr, js_size, path_type.string(), nullptr,
+               type_size, passed_det);
   }
 
   if (!queued_paths) {
     MSG("\n" cLRD "[-] " cRST
-        "Looks like there are no valid test cases in the input directory! The fuzzer\n"
-        "    needs one or more test case to start with. The cases must be stored as\n"
+        "Looks like there are no valid test cases in the input directory! The "
+        "fuzzer\n"
+        "    needs one or more test case to start with. The cases must be "
+        "stored as\n"
         "    regular files directly in the input directory.\n");
 
     EXIT("No usable test cases in '%s'", path_input.c_str());
@@ -321,12 +315,10 @@ void DIEState::ReadTestcases(void) {
  * @param (inp_feed) Inplace memory feedback
  * @param (exit_status) Exit status feedback
  */
-bool DIEState::SaveIfInteresting(
-  const u8 *buf_js, u32 len_js,
-  const u8 *buf_ty, u32 len_ty,
-  InplaceMemoryFeedback &inp_feed,
-  ExitStatusFeedback &exit_status
-) {
+bool DIEState::SaveIfInteresting(const u8* buf_js, u32 len_js, const u8* buf_ty,
+                                 u32 len_ty,
+                                 feedback::InplaceMemoryFeedback& inp_feed,
+                                 feedback::ExitStatusFeedback& exit_status) {
   bool keeping = false;
 
   std::string fn;
@@ -337,36 +329,30 @@ bool DIEState::SaveIfInteresting(
     u8 hnb;
 
     inp_feed.ShowMemoryToFunc(
-      [this, &hnb](const u8* trace_bits, u32 /* map_size */) {
-        hnb = HasNewBits(trace_bits, &virgin_bits[0], afl::option::GetMapSize<Tag>());
-      }
-    );
+        [this, &hnb](const u8* trace_bits, u32 /* map_size */) {
+          hnb = HasNewBits(trace_bits, &virgin_bits[0],
+                           afl::option::GetMapSize<Tag>());
+        });
 
     if (!hnb) {
-      if (crash_mode == PUTExitReasonType::FAULT_CRASH) {
+      if (crash_mode == feedback::PUTExitReasonType::FAULT_CRASH) {
         total_crashes++;
       }
       return false;
     }
 
     if (!setting->simple_files) {
-      fn = fuzzuf::utils::StrPrintf("%s/queue/id:%06u,%s.js",
-                           setting->out_dir.c_str(),
-                           queued_paths,
-                           afl::routine::update::DescribeOp(*this, hnb).c_str()
-      );
+      fn = fuzzuf::utils::StrPrintf(
+          "%s/queue/id:%06u,%s.js", setting->out_dir.c_str(), queued_paths,
+          afl::routine::update::DescribeOp(*this, hnb).c_str());
     } else {
       fn = fuzzuf::utils::StrPrintf("%s/queue/id_%06u.js",
-                           setting->out_dir.c_str(),
-                           queued_paths
-      );
+                                    setting->out_dir.c_str(), queued_paths);
     }
 
-    auto testcase = AddToQueue(
-      fn, buf_js, len_js,
-      fn + ".t", buf_ty, len_ty, // type file
-      false
-    );
+    auto testcase =
+        AddToQueue(fn, buf_js, len_js, fn + ".t", buf_ty, len_ty,  // type file
+                   false);
     if (hnb == 2) {
       testcase->has_new_cov = 1;
       queued_with_cov++;
@@ -377,15 +363,11 @@ bool DIEState::SaveIfInteresting(
     /* FIXME: We should use refined coverage instead */
     // inp_feed will maybe discard to start a new execution
     // in that case inp_feed will receive the new feedback
-    PUTExitReasonType res = CalibrateCaseWithFeedDestroyed(
-      *testcase,
-      buf_js, len_js,
-      inp_feed,
-      exit_status,
-      queue_cycle - 1,
-      false);
+    feedback::PUTExitReasonType res =
+        CalibrateCaseWithFeedDestroyed(*testcase, buf_js, len_js, inp_feed,
+                                       exit_status, queue_cycle - 1, false);
 
-    if (res == PUTExitReasonType::FAULT_ERROR) {
+    if (res == feedback::PUTExitReasonType::FAULT_ERROR) {
       ERROR("Unable to execute target application");
     }
 
@@ -393,7 +375,7 @@ bool DIEState::SaveIfInteresting(
   }
 
   switch (exit_status.exit_reason) {
-    case PUTExitReasonType::FAULT_TMOUT:
+    case feedback::PUTExitReasonType::FAULT_TMOUT:
 
       /* Timeouts are not very interesting, but we're still obliged to keep
          a handful of samples. We use the presence of new bits in the
@@ -407,31 +389,30 @@ bool DIEState::SaveIfInteresting(
       }
 
       if (!setting->dumb_mode) {
-          if constexpr (sizeof(size_t) == 8) {
-              inp_feed.ModifyMemoryWithFunc(
-                  [](u8* trace_bits, u32 /* map_size */) {
-                      afl::util::SimplifyTrace<u64>((u64*)trace_bits, afl::option::GetMapSize<Tag>());
-                  }
-                );
-          } else {
-              inp_feed.ModifyMemoryWithFunc(
-                  [](u8* trace_bits, u32 /* map_size */) {
-                      afl::util::SimplifyTrace<u32>((u32*)trace_bits, afl::option::GetMapSize<Tag>());
-                  }
-              );
-          }
+        if constexpr (sizeof(size_t) == 8) {
+          inp_feed.ModifyMemoryWithFunc([](u8* trace_bits, u32 /* map_size */) {
+            afl::util::SimplifyTrace<u64>((u64*)trace_bits,
+                                          afl::option::GetMapSize<Tag>());
+          });
+        } else {
+          inp_feed.ModifyMemoryWithFunc([](u8* trace_bits, u32 /* map_size */) {
+            afl::util::SimplifyTrace<u32>((u32*)trace_bits,
+                                          afl::option::GetMapSize<Tag>());
+          });
+        }
 
-          u8 res;
-          inp_feed.ShowMemoryToFunc(
-              [this, &res](const u8* trace_bits, u32 /* map_size */) {
-                  res = HasNewBits(trace_bits, &virgin_tmout[0], afl::option::GetMapSize<Tag>());
-              }
-          );
+        u8 res;
+        inp_feed.ShowMemoryToFunc(
+            [this, &res](const u8* trace_bits, u32 /* map_size */) {
+              res = HasNewBits(trace_bits, &virgin_tmout[0],
+                               afl::option::GetMapSize<Tag>());
+            });
 
-          if (!res) {
-              // originally here "return keeping" is used, but this is clearer right?
-              return false;
-          }
+        if (!res) {
+          // originally here "return keeping" is used, but this is clearer
+          // right?
+          return false;
+        }
       }
 
       unique_tmouts++;
@@ -442,43 +423,40 @@ bool DIEState::SaveIfInteresting(
 
       if (setting->exec_timelimit_ms < hang_tmout) {
         // discard inp_feed here because we will use executor
-        InplaceMemoryFeedback::DiscardActive(std::move(inp_feed));
-        inp_feed = RunExecutorWithClassifyCounts(
-          buf_js, len_js, exit_status, hang_tmout);
+        feedback::InplaceMemoryFeedback::DiscardActive(std::move(inp_feed));
+        inp_feed = RunExecutorWithClassifyCounts(buf_js, len_js, exit_status,
+                                                 hang_tmout);
 
         /* A corner case that one user reported bumping into: increasing the
            timeout actually uncovers a crash. Make sure we don't discard it if
            so. */
 
-        if (!stop_soon && exit_status.exit_reason == PUTExitReasonType::FAULT_CRASH) {
-          goto keep_as_crash; // FIXME: goto
+        if (!stop_soon && exit_status.exit_reason ==
+                              feedback::PUTExitReasonType::FAULT_CRASH) {
+          goto keep_as_crash;  // FIXME: goto
         }
 
-        if ( stop_soon
-             || exit_status.exit_reason != PUTExitReasonType::FAULT_TMOUT) {
+        if (stop_soon || exit_status.exit_reason !=
+                             feedback::PUTExitReasonType::FAULT_TMOUT) {
           return false;
         }
       }
 
       if (!setting->simple_files) {
-        fn = fuzzuf::utils::StrPrintf("%s/hangs/id:%06llu,%s.js",
-                             setting->out_dir.c_str(),
-                             unique_hangs,
-                             afl::routine::update::DescribeOp(*this, 0).c_str()
-        );
+        fn = fuzzuf::utils::StrPrintf(
+            "%s/hangs/id:%06llu,%s.js", setting->out_dir.c_str(), unique_hangs,
+            afl::routine::update::DescribeOp(*this, 0).c_str());
       } else {
         fn = fuzzuf::utils::StrPrintf("%s/hangs/id_%06llu.js",
-                             setting->out_dir.c_str(),
-                             unique_hangs
-        );
+                                      setting->out_dir.c_str(), unique_hangs);
       }
 
       unique_hangs++;
       last_hang_time = fuzzuf::utils::GetCurTimeMs();
       break;
 
-    case PUTExitReasonType::FAULT_CRASH:
-      keep_as_crash:
+    case feedback::PUTExitReasonType::FAULT_CRASH:
+    keep_as_crash:
 
       /* This is handled in a manner roughly similar to timeouts,
          except for slightly different limits and no need to re-run test
@@ -487,34 +465,34 @@ bool DIEState::SaveIfInteresting(
       total_crashes++;
 
       if (unique_crashes >= afl::option::GetKeepUniqueCrash(*this)) {
-        // unlike FAULT_TMOUT case, keeping can be true when "crash mode" is enabled
+        // unlike FAULT_TMOUT case, keeping can be true when "crash mode" is
+        // enabled
         return keeping;
       }
 
       if (!setting->dumb_mode) {
         if constexpr (sizeof(size_t) == 8) {
-            inp_feed.ModifyMemoryWithFunc(
-              [](u8* trace_bits, u32 /* map_size */) {
-                afl::util::SimplifyTrace<u64>((u64*)trace_bits, afl::option::GetMapSize<Tag>());
-              }
-            );
-          } else {
-          inp_feed.ModifyMemoryWithFunc(
-            [](u8* trace_bits, u32 /* map_size */) {
-              afl::util::SimplifyTrace<u32>((u32*)trace_bits, afl::option::GetMapSize<Tag>());
-            }
-          );
+          inp_feed.ModifyMemoryWithFunc([](u8* trace_bits, u32 /* map_size */) {
+            afl::util::SimplifyTrace<u64>((u64*)trace_bits,
+                                          afl::option::GetMapSize<Tag>());
+          });
+        } else {
+          inp_feed.ModifyMemoryWithFunc([](u8* trace_bits, u32 /* map_size */) {
+            afl::util::SimplifyTrace<u32>((u32*)trace_bits,
+                                          afl::option::GetMapSize<Tag>());
+          });
         }
 
         u8 res;
         inp_feed.ShowMemoryToFunc(
-          [this, &res](const u8* trace_bits, u32 /* map_size */) {
-            res = HasNewBits(trace_bits, &virgin_crash[0], afl::option::GetMapSize<Tag>());
-          }
-        );
+            [this, &res](const u8* trace_bits, u32 /* map_size */) {
+              res = HasNewBits(trace_bits, &virgin_crash[0],
+                               afl::option::GetMapSize<Tag>());
+            });
 
         if (!res) {
-          // unlike FAULT_TMOUT case, keeping can be true when "crash mode" is enabled
+          // unlike FAULT_TMOUT case, keeping can be true when "crash mode" is
+          // enabled
           return keeping;
         }
       }
@@ -524,18 +502,14 @@ bool DIEState::SaveIfInteresting(
 #endif
 
       if (!setting->simple_files) {
-        fn = fuzzuf::utils::StrPrintf("%s/crashes/id:%06llu,sig:%02u,%s.js",
-                             setting->out_dir.c_str(),
-                             unique_crashes,
-                             exit_status.signal,
-                             afl::routine::update::DescribeOp(*this, 0).c_str()
-        );
+        fn = fuzzuf::utils::StrPrintf(
+            "%s/crashes/id:%06llu,sig:%02u,%s.js", setting->out_dir.c_str(),
+            unique_crashes, exit_status.signal,
+            afl::routine::update::DescribeOp(*this, 0).c_str());
       } else {
         fn = fuzzuf::utils::StrPrintf("%s/hangs/id_%06llu_%02u.js",
-                             setting->out_dir.c_str(),
-                             unique_crashes,
-                             exit_status.signal
-        );
+                                      setting->out_dir.c_str(), unique_crashes,
+                                      exit_status.signal);
       }
 
       unique_crashes++;
@@ -545,7 +519,7 @@ bool DIEState::SaveIfInteresting(
 
       break;
 
-    case PUTExitReasonType::FAULT_ERROR:
+    case feedback::PUTExitReasonType::FAULT_ERROR:
       ERROR("Unable to execute target application");
 
     default:
@@ -590,16 +564,15 @@ void DIEState::ShowStats(void) {
   if (last_execs == 0) {
     avg_exec = ((double)total_execs) * 1000 / (cur_ms - start_time);
   } else {
-    double cur_avg = ((double)(total_execs - last_execs)) * 1000 /
-      (cur_ms - last_ms);
+    double cur_avg =
+        ((double)(total_execs - last_execs)) * 1000 / (cur_ms - last_ms);
 
     /* If there is a dramatic (5x+) jump in speed, reset the indicator
        more quickly. */
-    if (cur_avg * 5 < avg_exec || cur_avg / 5 > avg_exec)
-      avg_exec = cur_avg;
+    if (cur_avg * 5 < avg_exec || cur_avg / 5 > avg_exec) avg_exec = cur_avg;
 
     avg_exec = avg_exec * (1.0 - 1.0 / GetAvgSmoothing(*this)) +
-      cur_avg  *       (1.0 / GetAvgSmoothing(*this));
+               cur_avg * (1.0 / GetAvgSmoothing(*this));
   }
 
   last_ms = cur_ms;
@@ -610,7 +583,8 @@ void DIEState::ShowStats(void) {
   if (!stats_update_freq) stats_update_freq = 1;
 
   /* Do some bitmap stats. */
-  u32 t_bytes = fuzzuf::utils::CountNon255Bytes(&virgin_bits[0], virgin_bits.size());
+  u32 t_bytes =
+      fuzzuf::utils::CountNon255Bytes(&virgin_bits[0], virgin_bits.size());
   double t_byte_ratio = ((double)t_bytes * 100) / MAP_SIZE;
 
   double stab_ratio;
@@ -636,7 +610,8 @@ void DIEState::ShowStats(void) {
 
   /* Honor AFL_EXIT_WHEN_DONE and AFL_BENCH_UNTIL_CRASH. */
   if (!setting->dumb_mode && cycles_wo_finds > 100 && !pending_not_fuzzed &&
-      getenv("AFL_EXIT_WHEN_DONE")) stop_soon = 2;
+      getenv("AFL_EXIT_WHEN_DONE"))
+    stop_soon = 2;
 
   if (total_crashes && getenv("AFL_BENCH_UNTIL_CRASH")) stop_soon = 2;
 
@@ -644,7 +619,8 @@ void DIEState::ShowStats(void) {
   if (not_on_tty) return;
 
   /* Compute some mildly useful bitmap stats. */
-  u32 t_bits = (MAP_SIZE << 3) - fuzzuf::utils::CountBits(&virgin_bits[0], virgin_bits.size());
+  u32 t_bits = (MAP_SIZE << 3) -
+               fuzzuf::utils::CountBits(&virgin_bits[0], virgin_bits.size());
 
   /* Now, for the visuals... */
   bool term_too_small = false;
@@ -658,7 +634,8 @@ void DIEState::ShowStats(void) {
   MSG(TERM_HOME);
 
   if (term_too_small) {
-    MSG(cBRI "Your terminal is too small to display the UI.\n"
+    MSG(cBRI
+        "Your terminal is too small to display the UI.\n"
         "Please resize terminal window to at least 80x25.\n" cRST);
 
     return;
@@ -668,22 +645,24 @@ void DIEState::ShowStats(void) {
   // anyways it's weird to mix up sprintf and std::string
 
   /* Let's start by drawing a centered banner. */
-  u32 banner_len = (crash_mode != PUTExitReasonType::FAULT_NONE ? 24 : 22)
-    + strlen(GetVersion(*this)) + use_banner.size();
+  u32 banner_len =
+      (crash_mode != feedback::PUTExitReasonType::FAULT_NONE ? 24 : 22) +
+      strlen(GetVersion(*this)) + use_banner.size();
   u32 banner_pad = (80 - banner_len) / 2;
 
-  auto fuzzer_name = crash_mode != PUTExitReasonType::FAULT_NONE
-    ? cPIN "fuzzuf peruvian were-rabbit"
-    : cYEL "fuzzuf american fuzzy lop";
+  auto fuzzer_name = crash_mode != feedback::PUTExitReasonType::FAULT_NONE
+                         ? cPIN "fuzzuf peruvian were-rabbit"
+                         : cYEL "fuzzuf american fuzzy lop";
 
   std::string tmp(banner_pad, ' ');
-  tmp += fuzzuf::utils::StrPrintf("%s " cLCY "%s" cLGN " (%s)",
-                         fuzzer_name, GetVersion(*this), use_banner.c_str());
+  tmp += fuzzuf::utils::StrPrintf("%s " cLCY "%s" cLGN " (%s)", fuzzer_name,
+                                  GetVersion(*this), use_banner.c_str());
   MSG("\n%s\n\n", tmp.c_str());
 
   /* Lord, forgive me this. */
-  MSG(SET_G1 bSTG bLT bH bSTOP cCYA " process timing " bSTG bH30 bH5 bH2 bHB
-      bH bSTOP cCYA " overall results " bSTG bH5 bRT "\n");
+  MSG(SET_G1 bSTG bLT bH bSTOP cCYA
+      " process timing " bSTG bH30 bH5 bH2 bHB bH bSTOP cCYA
+      " overall results " bSTG bH5 bRT "\n");
 
   std::string col;
   if (setting->dumb_mode) {
@@ -697,8 +676,8 @@ void DIEState::ShowStats(void) {
     } else if (cycles_wo_finds < 25 || min_wo_finds < 30) {
       /* Subsequent cycles, but we're still making finds. */
       col = cYEL;
-    } else if (cycles_wo_finds > 100
-               && !pending_not_fuzzed && min_wo_finds > 120) {
+    } else if (cycles_wo_finds > 100 && !pending_not_fuzzed &&
+               min_wo_finds > 120) {
       /* No finds for a long time and no test cases to try. */
       col = cLGN;
     } else {
@@ -708,12 +687,12 @@ void DIEState::ShowStats(void) {
   }
 
   // From here, we use these a lot...!
-  using afl::util::DescribeInteger;
   using afl::util::DescribeFloat;
+  using afl::util::DescribeInteger;
   using afl::util::DescribeTimeDelta;
 
   MSG(bV bSTOP "        run time : " cRST "%-34s " bSTG bV bSTOP
-      " current seed : " cRST "%-5s  " bSTG bV "\n",
+               " current seed : " cRST "%-5s  " bSTG bV "\n",
       DescribeTimeDelta(cur_ms, start_time).c_str(),
       DescribeInteger(current_entry).c_str());
 
@@ -721,23 +700,19 @@ void DIEState::ShowStats(void) {
      except when resuming fuzzing or running in non-instrumented mode. */
 
   if (!setting->dumb_mode &&
-      ( last_path_time
-        || resuming_fuzz
-        || queue_cycle == 1
-        || !in_bitmap.empty()
-        || crash_mode != PUTExitReasonType::FAULT_NONE)
-  ) {
-
+      (last_path_time || resuming_fuzz || queue_cycle == 1 ||
+       !in_bitmap.empty() ||
+       crash_mode != feedback::PUTExitReasonType::FAULT_NONE)) {
     MSG(bV bSTOP "   last new path : " cRST "%-34s ",
         DescribeTimeDelta(cur_ms, last_path_time).c_str());
 
   } else {
     if (setting->dumb_mode) {
       MSG(bV bSTOP "   last new path : " cPIN "n/a" cRST
-          " (non-instrumented mode)        ");
+                   " (non-instrumented mode)        ");
     } else {
       MSG(bV bSTOP "   last new path : " cRST "none yet " cLRD
-          "(odd, check syntax!)      ");
+                   "(odd, check syntax!)      ");
     }
   }
 
@@ -751,7 +726,7 @@ void DIEState::ShowStats(void) {
   if (unique_crashes >= GetKeepUniqueCrash(*this)) tmp += '+';
 
   MSG(bV bSTOP " last uniq crash : " cRST "%-34s " bSTG bV bSTOP
-      " uniq crashes : %s%-6s " bSTG bV "\n",
+               " uniq crashes : %s%-6s " bSTG bV "\n",
       DescribeTimeDelta(cur_ms, last_crash_time).c_str(),
       unique_crashes ? cLRD : cRST, tmp.c_str());
 
@@ -759,11 +734,11 @@ void DIEState::ShowStats(void) {
   if (unique_hangs >= GetKeepUniqueHang(*this)) tmp += '+';
 
   MSG(bV bSTOP "  last uniq hang : " cRST "%-34s " bSTG bV bSTOP
-      "   uniq hangs : " cRST "%-6s " bSTG bV "\n",
+               "   uniq hangs : " cRST "%-6s " bSTG bV "\n",
       DescribeTimeDelta(cur_ms, last_hang_time).c_str(), tmp.c_str());
 
   MSG(bVR bH bSTOP cCYA " cycle progress " bSTG bH20 bHB bH bSTOP cCYA
-      " map coverage " bSTG bH bHT bH20 bH2 bH bVL "\n");
+                        " map coverage " bSTG bH bHT bH20 bH2 bH bVL "\n");
 
   /* This gets funny because we want to print several variable-length variables
      together, but then cram them into a fixed-width field - so we need to
@@ -773,73 +748,85 @@ void DIEState::ShowStats(void) {
 
   tmp = DescribeInteger(current_entry);
   if (!queue_cur.favored) tmp += '*';
-  tmp += fuzzuf::utils::StrPrintf(" (%0.02f%%)", ((double)current_entry * 100) / queued_paths);
+  tmp += fuzzuf::utils::StrPrintf(" (%0.02f%%)",
+                                  ((double)current_entry * 100) / queued_paths);
 
   MSG(bV bSTOP "  now processing : " cRST "%-17s " bSTG bV bSTOP, tmp.c_str());
 
-  tmp = fuzzuf::utils::StrPrintf("%0.02f%% / %0.02f%%",
-                        ((double)queue_cur.bitmap_size) * 100 / MAP_SIZE, t_byte_ratio);
+  tmp = fuzzuf::utils::StrPrintf(
+      "%0.02f%% / %0.02f%%", ((double)queue_cur.bitmap_size) * 100 / MAP_SIZE,
+      t_byte_ratio);
 
-  MSG("    map density : %s%-21s " bSTG bV "\n", t_byte_ratio > 70 ? cLRD :
-      ((t_bytes < 200 && !setting->dumb_mode) ? cPIN : cRST), tmp.c_str());
+  MSG("    map density : %s%-21s " bSTG bV "\n",
+      t_byte_ratio > 70
+          ? cLRD
+          : ((t_bytes < 200 && !setting->dumb_mode) ? cPIN : cRST),
+      tmp.c_str());
 
   tmp = DescribeInteger(cur_skipped_paths);
-  tmp += fuzzuf::utils::StrPrintf(" (%0.02f%%)", ((double)cur_skipped_paths * 100) / queued_paths);
+  tmp += fuzzuf::utils::StrPrintf(
+      " (%0.02f%%)", ((double)cur_skipped_paths * 100) / queued_paths);
 
   MSG(bV bSTOP " paths timed out : " cRST "%-17s " bSTG bV, tmp.c_str());
 
-  tmp = fuzzuf::utils::StrPrintf("%0.02f bits/tuple", t_bytes ? (((double)t_bits) / t_bytes) : 0);
+  tmp = fuzzuf::utils::StrPrintf("%0.02f bits/tuple",
+                                 t_bytes ? (((double)t_bits) / t_bytes) : 0);
 
   MSG(bSTOP " count coverage : " cRST "%-21s " bSTG bV "\n", tmp.c_str());
 
   MSG(bVR bH bSTOP cCYA " stage progress " bSTG bH20 bX bH bSTOP cCYA
-      " findings in depth " bSTG bH20 bVL "\n");
+                        " findings in depth " bSTG bH20 bVL "\n");
 
   tmp = DescribeInteger(queued_favored);
-  tmp += fuzzuf::utils::StrPrintf(" (%0.02f%%)", ((double)queued_favored) * 100 / queued_paths);
+  tmp += fuzzuf::utils::StrPrintf(
+      " (%0.02f%%)", ((double)queued_favored) * 100 / queued_paths);
 
   /* Yeah... it's still going on... halp? */
 
   MSG(bV bSTOP "  now trying : " cRST "%-21s " bSTG bV bSTOP
-      " favored paths : " cRST "%-22s " bSTG bV "\n", stage_name.c_str(), tmp.c_str());
+               " favored paths : " cRST "%-22s " bSTG bV "\n",
+      stage_name.c_str(), tmp.c_str());
 
   if (!stage_max) {
     tmp = DescribeInteger(stage_cur) + "/-";
   } else {
     tmp = DescribeInteger(stage_cur) + "/" + DescribeInteger(stage_max);
-    tmp += fuzzuf::utils::StrPrintf(" (%0.02f%%)", ((double)stage_cur) * 100 / stage_max);
+    tmp += fuzzuf::utils::StrPrintf(" (%0.02f%%)",
+                                    ((double)stage_cur) * 100 / stage_max);
   }
 
   MSG(bV bSTOP " stage execs : " cRST "%-21s " bSTG bV bSTOP, tmp.c_str());
 
   tmp = DescribeInteger(queued_with_cov);
-  tmp += fuzzuf::utils::StrPrintf(" (%0.02f%%)", ((double)queued_with_cov) * 100 / queued_paths);
+  tmp += fuzzuf::utils::StrPrintf(
+      " (%0.02f%%)", ((double)queued_with_cov) * 100 / queued_paths);
 
   MSG("  new edges on : " cRST "%-22s " bSTG bV "\n", tmp.c_str());
 
-  tmp = DescribeInteger(total_crashes) + " ("
-    + DescribeInteger(unique_crashes);
+  tmp = DescribeInteger(total_crashes) + " (" + DescribeInteger(unique_crashes);
   if (unique_crashes >= GetKeepUniqueCrash(*this)) tmp += '+';
   tmp += " unique)";
 
-  if (crash_mode != PUTExitReasonType::FAULT_NONE) {
+  if (crash_mode != feedback::PUTExitReasonType::FAULT_NONE) {
     MSG(bV bSTOP " total execs : " cRST "%-21s " bSTG bV bSTOP
-        "   new crashes : %s%-22s " bSTG bV "\n",
-        DescribeInteger(total_execs).c_str(),
-        unique_crashes ? cLRD : cRST, tmp.c_str());
+                 "   new crashes : %s%-22s " bSTG bV "\n",
+        DescribeInteger(total_execs).c_str(), unique_crashes ? cLRD : cRST,
+        tmp.c_str());
   } else {
     MSG(bV bSTOP " total execs : " cRST "%-21s " bSTG bV bSTOP
-        " total crashes : %s%-22s " bSTG bV "\n",
-        DescribeInteger(total_execs).c_str(),
-        unique_crashes ? cLRD : cRST, tmp.c_str());
+                 " total crashes : %s%-22s " bSTG bV "\n",
+        DescribeInteger(total_execs).c_str(), unique_crashes ? cLRD : cRST,
+        tmp.c_str());
   }
 
   /* Show a warning about slow execution. */
 
-  if (avg_exec < 20) { // JS mutation is relatively slow!
+  if (avg_exec < 20) {  // JS mutation is relatively slow!
     tmp = DescribeFloat(avg_exec) + "/sec (";
-    if (avg_exec < 10) tmp += "zzzz...";
-    else tmp += "slow!";
+    if (avg_exec < 10)
+      tmp += "zzzz...";
+    else
+      tmp += "slow!";
     tmp += ')';
 
     MSG(bV bSTOP "  exec speed : " cLRD "%-21s ", tmp.c_str());
@@ -849,16 +836,16 @@ void DIEState::ShowStats(void) {
     MSG(bV bSTOP "  exec speed : " cRST "%-21s ", tmp.c_str());
   }
 
-  tmp = DescribeInteger(total_tmouts) + " (" +
-    DescribeInteger(unique_tmouts);
+  tmp = DescribeInteger(total_tmouts) + " (" + DescribeInteger(unique_tmouts);
   if (unique_hangs >= GetKeepUniqueHang(*this)) tmp += '+';
   tmp += " unique)";
 
-  MSG (bSTG bV bSTOP "  total tmouts : " cRST "%-22s " bSTG bV "\n", tmp.c_str());
+  MSG(bSTG bV bSTOP "  total tmouts : " cRST "%-22s " bSTG bV "\n",
+      tmp.c_str());
 
   /* We don't show fuzzing strategy. Who flips bits in JavaScript? */
 
-  MSG(bLB bH30 bH5 bH2 bHT bH30 bH10 bRB bSTOP cRST RESET_G1"\n");
+  MSG(bLB bH30 bH5 bH2 bHT bH30 bH10 bRB bSTOP cRST RESET_G1 "\n");
 
   /* Provide some CPU utilization stats. */
 
@@ -870,8 +857,7 @@ void DIEState::ShowStats(void) {
 
     /* If we could still run one or more processes, use green. */
 
-    if (cpu_core_count > 1 &&
-        cur_runnable + 1 <= cpu_core_count)
+    if (cpu_core_count > 1 && cur_runnable + 1 <= cpu_core_count)
       cpu_color = cLGN;
 
     /* If we're clearly oversubscribed, use red. */
@@ -882,8 +868,8 @@ void DIEState::ShowStats(void) {
 
     if (cpu_aff >= 0) {
       MSG(SP20 SP20 SP20 SP5 cGRA "[cpu%03d:%s%3u%%" cGRA "]\r" cRST,
-          std::min(cpu_aff, 999),
-          cpu_color.c_str(), std::min(cur_utilization, 999u));
+          std::min(cpu_aff, 999), cpu_color.c_str(),
+          std::min(cur_utilization, 999u));
     } else {
       MSG(SP20 SP20 SP20 SP5 cGRA "   [cpu:%s%3u%%" cGRA "]\r" cRST,
           cpu_color.c_str(), std::min(cur_utilization, 999u));
@@ -896,12 +882,12 @@ void DIEState::ShowStats(void) {
 
 #endif /* ^HAVE_AFFINITY */
 
-  } else MSG("\r");
+  } else
+    MSG("\r");
 
   /* Hallelujah! */
 
   fflush(0);
 }
 
-
-} // namespace fuzzuf::algorithm::die
+}  // namespace fuzzuf::algorithm::die

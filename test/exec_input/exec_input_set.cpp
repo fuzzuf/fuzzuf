@@ -1,7 +1,7 @@
 /*
  * fuzzuf
  * Copyright (C) 2021 Ricerca Security
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -17,15 +17,16 @@
  */
 #define BOOST_TEST_MODULE exec_input.set
 #define BOOST_TEST_DYN_LINK
-#include <set>
-#include <memory>
-#include <boost/test/unit_test.hpp>
-
-#include "fuzzuf/exec_input/exec_input.hpp"
 #include "fuzzuf/exec_input/exec_input_set.hpp"
 
+#include <boost/test/unit_test.hpp>
+#include <memory>
+#include <set>
+
+#include "fuzzuf/exec_input/exec_input.hpp"
+
 BOOST_AUTO_TEST_CASE(ExecInputSetTest) {
-  ExecInputSet input_set;
+  fuzzuf::exec_input::ExecInputSet input_set;
 
   int N = 5;
   for (int i = 0; i < N; i++) {

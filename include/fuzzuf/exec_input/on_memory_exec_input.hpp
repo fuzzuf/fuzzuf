@@ -1,7 +1,7 @@
 /*
  * fuzzuf
  * Copyright (C) 2021 Ricerca Security
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -19,38 +19,42 @@
 
 #include <memory>
 
-#include "fuzzuf/utils/common.hpp"
 #include "fuzzuf/exec_input/exec_input.hpp"
 #include "fuzzuf/exec_input/exec_input_set.hpp"
+#include "fuzzuf/utils/common.hpp"
+#include "fuzzuf/utils/filesystem.hpp"
+
+namespace fuzzuf::exec_input {
 
 class OnMemoryExecInput : public ExecInput {
-public:     
-    ~OnMemoryExecInput() {}
+ public:
+  ~OnMemoryExecInput() {}
 
-    // disable copies
-    OnMemoryExecInput(const OnMemoryExecInput&) = delete;
-    OnMemoryExecInput& operator=(const OnMemoryExecInput&) = delete;
+  // disable copies
+  OnMemoryExecInput(const OnMemoryExecInput&) = delete;
+  OnMemoryExecInput& operator=(const OnMemoryExecInput&) = delete;
 
-    // allow moves
-    OnMemoryExecInput(OnMemoryExecInput&&);
-    OnMemoryExecInput& operator=(OnMemoryExecInput&&);
+  // allow moves
+  OnMemoryExecInput(OnMemoryExecInput&&);
+  OnMemoryExecInput& operator=(OnMemoryExecInput&&);
 
-    void LoadIfNotLoaded(void);
-    void Load(void);
-    void Unload(void);
-    void Save(void);
-    void OverwriteKeepingLoaded(const u8* buf, u32 len);
-    void OverwriteKeepingLoaded(std::unique_ptr<u8[]>&& buf, u32 len);
-    void OverwriteThenUnload(const u8* buf, u32 len);
-    void OverwriteThenUnload(std::unique_ptr<u8[]>&& buf, u32 len);
+  void LoadIfNotLoaded(void);
+  void Load(void);
+  void Unload(void);
+  void Save(void);
+  void OverwriteKeepingLoaded(const u8* buf, u32 len);
+  void OverwriteKeepingLoaded(std::unique_ptr<u8[]>&& buf, u32 len);
+  void OverwriteThenUnload(const u8* buf, u32 len);
+  void OverwriteThenUnload(std::unique_ptr<u8[]>&& buf, u32 len);
 
-    void SaveToFile(const fs::path& path);
+  void SaveToFile(const fs::path& path);
 
-private:
-    
-    // ExecInput instances can be created only in ExecInputSet
-    // (i.e. it's the factory of ExecInput)
-    friend class ExecInputSet;
-    OnMemoryExecInput(const u8* buf, u32 len);
-    OnMemoryExecInput(std::unique_ptr<u8[]>&& buf, u32 len);
+ private:
+  // ExecInput instances can be created only in ExecInputSet
+  // (i.e. it's the factory of ExecInput)
+  friend class ExecInputSet;
+  OnMemoryExecInput(const u8* buf, u32 len);
+  OnMemoryExecInput(std::unique_ptr<u8[]>&& buf, u32 len);
 };
+
+}  // namespace fuzzuf::exec_input

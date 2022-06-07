@@ -1,7 +1,7 @@
 /*
  * fuzzuf
  * Copyright (C) 2021 Ricerca Security
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -19,33 +19,37 @@
 
 #include <cstddef>
 #include <functional>
+
 #include "fuzzuf/algorithms/afl/afl_option.hpp"
-#include "fuzzuf/utils/common.hpp"
 #include "fuzzuf/feedback/put_exit_reason_type.hpp"
+#include "fuzzuf/utils/common.hpp"
+
+namespace fuzzuf::feedback {
 
 DisposableFdFeedback::DisposableFdFeedback() : fd(-1) {}
 
-DisposableFdFeedback::DisposableFdFeedback(int fd) : fd( fd ) {}
+DisposableFdFeedback::DisposableFdFeedback(int fd) : fd(fd) {}
 
 DisposableFdFeedback::DisposableFdFeedback(const DisposableFdFeedback& orig)
-    : fd( orig.fd ) {}
+    : fd(orig.fd) {}
 
 DisposableFdFeedback& DisposableFdFeedback::operator=(
-    const DisposableFdFeedback& orig
-) {
-    fd = orig.fd;
+    const DisposableFdFeedback& orig) {
+  fd = orig.fd;
 
-    return *this;
+  return *this;
 }
 
-void DisposableFdFeedback::Read(void *buf, u32 len) {
-    fuzzuf::utils::ReadFile(fd, buf, len);
+void DisposableFdFeedback::Read(void* buf, u32 len) {
+  fuzzuf::utils::ReadFile(fd, buf, len);
 }
 
-u32 DisposableFdFeedback::ReadTimed(void *buf, u32 len, u32 timeout_ms) {
-    return fuzzuf::utils::ReadFileTimed(fd, buf, len, timeout_ms);
+u32 DisposableFdFeedback::ReadTimed(void* buf, u32 len, u32 timeout_ms) {
+  return fuzzuf::utils::ReadFileTimed(fd, buf, len, timeout_ms);
 }
 
-void DisposableFdFeedback::Write(void *buf, u32 len) {
-    fuzzuf::utils::WriteFile(fd, buf, len);
+void DisposableFdFeedback::Write(void* buf, u32 len) {
+  fuzzuf::utils::WriteFile(fd, buf, len);
 }
+
+}  // namespace fuzzuf::feedback

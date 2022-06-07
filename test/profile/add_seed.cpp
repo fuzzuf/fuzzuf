@@ -1,7 +1,7 @@
 /*
  * fuzzuf
  * Copyright (C) 2021 Ricerca Security
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -20,17 +20,16 @@
 #include <cstdlib>
 #include <iostream>
 
+#include "config.h"
 #include "fuzzuf/exec_input/exec_input.hpp"
 #include "fuzzuf/python/python_fuzzer.hpp"
 #include "fuzzuf/utils/filesystem.hpp"
-#include "config.h"
 
 int main(int argc, char **argv) {
   srand(time(NULL));
   std::string root_dir_template("/tmp/fuzzuf_test.XXXXXX");
   auto *const raw_dirname = mkdtemp(root_dir_template.data());
-  if (!raw_dirname)
-    throw -1;
+  if (!raw_dirname) throw -1;
 
   auto root_dir = fs::path(raw_dirname);
   BOOST_SCOPE_EXIT(&root_dir) { fs::remove_all(root_dir); }
@@ -50,11 +49,11 @@ int main(int argc, char **argv) {
   for (int i = 2; i < argc; i++) {
     argvv.emplace_back(argv[i]);
   }
-  auto fuzzer =
-      PythonFuzzer(argvv, input_dir.native(), output_dir.native(), 100, 10000,
-                   argv[1][0] == '1', // forksrv
-                   true, true         // need_afl_cov, need_bb_cov
-      );
+  auto fuzzer = fuzzuf::bindings::python::PythonFuzzer(
+      argvv, input_dir.native(), output_dir.native(), 100, 10000,
+      argv[1][0] == '1',  // forksrv
+      true, true          // need_afl_cov, need_bb_cov
+  );
   fuzzer.SuppressLog();
   std::vector<u8> my_buf;
   auto LEN = 10000;
@@ -66,7 +65,7 @@ int main(int argc, char **argv) {
       printf("finished %d add_seed\n", i);
     }
     auto id = fuzzer.AddSeed(LEN, my_buf);
-    if (id != ExecInput::INVALID_INPUT_ID) {
+    if (id != fuzzuf::exec_input::ExecInput::INVALID_INPUT_ID) {
       fuzzer.RemoveSeed(id);
     }
   }

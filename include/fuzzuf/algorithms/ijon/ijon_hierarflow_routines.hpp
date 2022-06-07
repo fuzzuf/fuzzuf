@@ -108,8 +108,8 @@ struct IJONUpdate
  public:
   IJONUpdate(IJONState &state, std::size_t offset);
 
-  IJONUpdCalleeRef operator()(const u8 *, u32, InplaceMemoryFeedback &,
-                              ExitStatusFeedback &);
+  IJONUpdCalleeRef operator()(const u8 *, u32, feedback::InplaceMemoryFeedback &,
+                              feedback::ExitStatusFeedback &);
 
  private:
   IJONState &state;

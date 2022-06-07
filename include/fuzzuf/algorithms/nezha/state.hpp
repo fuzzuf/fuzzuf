@@ -1,7 +1,7 @@
 /*
  * fuzzuf
  * Copyright (C) 2021 Ricerca Security
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -21,10 +21,11 @@
  */
 #ifndef FUZZUF_INCLUDE_ALGORITHM_NEZHA_STATE_HPP
 #define FUZZUF_INCLUDE_ALGORITHM_NEZHA_STATE_HPP
-#include "fuzzuf/feedback/put_exit_reason_type.hpp"
-#include "fuzzuf/utils/range_traits.hpp"
 #include <boost/functional/hash.hpp>
 #include <unordered_set>
+
+#include "fuzzuf/feedback/put_exit_reason_type.hpp"
+#include "fuzzuf/utils/range_traits.hpp"
 
 namespace fuzzuf::algorithm::nezha {
 
@@ -59,19 +60,21 @@ struct output_hash {
    * @param r1 Range
    * @return hash value
    */
-  template <typename R1> std::size_t operator()(const R1 &r1) const {
+  template <typename R1>
+  std::size_t operator()(const R1 &r1) const {
     return boost::hash<R1>()(r1);
   }
 };
 
-// Vector to store bools which indicate the execution result of each targets had been added to corpus or not
+// Vector to store bools which indicate the execution result of each targets had
+// been added to corpus or not
 using trace_t = std::vector<bool>;
 // unordered set to check if a trace_t value is novel
 using known_traces_t =
     std::unordered_set<trace_t, output_hash, output_equal_to>;
 
 // Vector to store status code of each execution
-using status_t = std::vector<PUTExitReasonType>;
+using status_t = std::vector<feedback::PUTExitReasonType>;
 // unordered set to check if a status_t value is novel
 using known_status_t =
     std::unordered_set<status_t, output_hash, output_equal_to>;
@@ -82,6 +85,6 @@ using outputs_t = std::vector<std::size_t>;
 using known_outputs_t =
     std::unordered_set<outputs_t, output_hash, output_equal_to>;
 
-} // namespace fuzzuf::algorithm::nezha
+}  // namespace fuzzuf::algorithm::nezha
 
 #endif

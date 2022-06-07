@@ -1,7 +1,7 @@
 /*
  * fuzzuf
  * Copyright (C) 2021 Ricerca Security
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -16,21 +16,18 @@
  * along with this program.  If not, see http://www.gnu.org/licenses/.
  */
 #include "fuzzuf/algorithms/afl/afl_testcase.hpp"
+
 #include "fuzzuf/exec_input/on_disk_exec_input.hpp"
 
 namespace fuzzuf::algorithm::afl {
 
-AFLTestcase::AFLTestcase(std::shared_ptr<OnDiskExecInput> input)
-    : input( input ) {}
+AFLTestcase::AFLTestcase(std::shared_ptr<exec_input::OnDiskExecInput> input)
+    : input(input) {}
 
 AFLTestcase::~AFLTestcase() {}
 
-bool AFLTestcase::WasFuzzed(void) {
-    return fuzz_level > 0;
-}
+bool AFLTestcase::WasFuzzed(void) { return fuzz_level > 0; }
 
-void AFLTestcase::MarkFuzzed(void) {
-    fuzz_level = 1;
-}
+void AFLTestcase::MarkFuzzed(void) { fuzz_level = 1; }
 
-} // namespace fuzzuf::algorithm::afl
+}  // namespace fuzzuf::algorithm::afl

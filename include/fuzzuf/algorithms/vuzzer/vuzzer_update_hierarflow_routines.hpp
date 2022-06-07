@@ -1,7 +1,7 @@
 /*
  * fuzzuf
  * Copyright (C) 2021 Ricerca Security
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -23,77 +23,72 @@
 #pragma once
 
 #include <memory>
+
 #include "fuzzuf/algorithms/vuzzer/vuzzer_state.hpp"
 #include "fuzzuf/algorithms/vuzzer/vuzzer_testcase.hpp"
 #include "fuzzuf/algorithms/vuzzer/vuzzer_util.hpp"
-
-#include "fuzzuf/feedback/file_feedback.hpp"
 #include "fuzzuf/feedback/exit_status_feedback.hpp"
-
-#include "fuzzuf/hierarflow/hierarflow_routine.hpp"
-#include "fuzzuf/hierarflow/hierarflow_node.hpp"
+#include "fuzzuf/feedback/file_feedback.hpp"
 #include "fuzzuf/hierarflow/hierarflow_intermediates.hpp"
+#include "fuzzuf/hierarflow/hierarflow_node.hpp"
+#include "fuzzuf/hierarflow/hierarflow_routine.hpp"
 
 namespace fuzzuf::algorithm::vuzzer::routine::update {
 
-using VUzzerUpdInputType = double(const std::shared_ptr<VUzzerTestcase>&, FileFeedback&);
+using VUzzerUpdInputType = double(const std::shared_ptr<VUzzerTestcase> &,
+                                  feedback::FileFeedback &);
 using VUzzerUpdCalleeRef = NullableRef<HierarFlowCallee<VUzzerUpdInputType>>;
 using VUzzerUpdOutputType = void(void);
 
 struct UpdateFitness
-    : public HierarFlowRoutine<
-        VUzzerUpdInputType,
-        void(const std::shared_ptr<VUzzerTestcase>&, std::map<u64, u32>&)
-    > {
-public:
-    UpdateFitness(VUzzerState &state);
+    : public HierarFlowRoutine<VUzzerUpdInputType,
+                               void(const std::shared_ptr<VUzzerTestcase> &,
+                                    std::map<u64, u32> &)> {
+ public:
+  UpdateFitness(VUzzerState &state);
 
-    VUzzerUpdCalleeRef operator()(const std::shared_ptr<VUzzerTestcase>&, FileFeedback&);
+  VUzzerUpdCalleeRef operator()(const std::shared_ptr<VUzzerTestcase> &,
+                                feedback::FileFeedback &);
 
-private:
-    VUzzerState &state;
+ private:
+  VUzzerState &state;
 };
 
 struct UpdateTaint
-    : public HierarFlowRoutine<
-        VUzzerUpdInputType,
-        VUzzerUpdOutputType
-    > {
-public:
-    UpdateTaint(VUzzerState &state);
+    : public HierarFlowRoutine<VUzzerUpdInputType, VUzzerUpdOutputType> {
+ public:
+  UpdateTaint(VUzzerState &state);
 
-    VUzzerUpdCalleeRef operator()(const std::shared_ptr<VUzzerTestcase>&, FileFeedback&);
+  VUzzerUpdCalleeRef operator()(const std::shared_ptr<VUzzerTestcase> &,
+                                feedback::FileFeedback &);
 
-private:
-    VUzzerState &state;
+ private:
+  VUzzerState &state;
 };
 
 struct TrimQueue
-    : public HierarFlowRoutine<
-        void(const std::shared_ptr<VUzzerTestcase>&, std::map<u64, u32>&),
-        VUzzerUpdOutputType
-    > {
-public:
-    TrimQueue(VUzzerState &state);
+    : public HierarFlowRoutine<void(const std::shared_ptr<VUzzerTestcase> &,
+                                    std::map<u64, u32> &),
+                               VUzzerUpdOutputType> {
+ public:
+  TrimQueue(VUzzerState &state);
 
-    NullableRef<HierarFlowCallee<void(const std::shared_ptr<VUzzerTestcase>&, std::map<u64, u32>&)>> operator()(const std::shared_ptr<VUzzerTestcase>&, std::map<u64, u32>&);
+  NullableRef<HierarFlowCallee<void(const std::shared_ptr<VUzzerTestcase> &,
+                                    std::map<u64, u32> &)>>
+  operator()(const std::shared_ptr<VUzzerTestcase> &, std::map<u64, u32> &);
 
-private:
-    VUzzerState &state;
+ private:
+  VUzzerState &state;
 };
 
-struct UpdateQueue
-    : public HierarFlowRoutine<
-        void(void),
-        void(void)
-    > {
-public:
-    UpdateQueue(VUzzerState &state);
+struct UpdateQueue : public HierarFlowRoutine<void(void), void(void)> {
+ public:
+  UpdateQueue(VUzzerState &state);
 
-    NullableRef<HierarFlowCallee<void(void)>> operator()(void);
+  NullableRef<HierarFlowCallee<void(void)>> operator()(void);
 
-private:
-    VUzzerState &state;
+ private:
+  VUzzerState &state;
 };
 
-} // namespace fuzzuf::algorithm::vuzzer::routine::update
+}  // namespace fuzzuf::algorithm::vuzzer::routine::update

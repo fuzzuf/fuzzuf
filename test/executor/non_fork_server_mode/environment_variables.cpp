@@ -15,7 +15,7 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see http://www.gnu.org/licenses/.
  */
-#define BOOST_TEST_MODULE                                                      \
+#define BOOST_TEST_MODULE \
   native_linux_executor.non_fork_server_mode.environment_variables
 #define BOOST_TEST_DYN_LINK
 
@@ -40,9 +40,9 @@ BOOST_AUTO_TEST_CASE(NativeLinuxExecutorWithEnvironmentVariables) {
   auto path_to_write_seed = output_dir / "cur_input";
 
   // Create executor
-  fuzzuf::executor::NativeLinuxExecutor executor({TEST_BINARY_DIR "/executor/print_env"}, 1000,
-                               10000, false, path_to_write_seed, 0, 0, true,
-                               {"FOO=World"});
+  fuzzuf::executor::NativeLinuxExecutor executor(
+      {TEST_BINARY_DIR "/executor/print_env"}, 1000, 10000, false,
+      path_to_write_seed, 0, 0, true, {"FOO=World"});
 
   // Run executor
   executor.Run(nullptr, 0);
@@ -50,7 +50,7 @@ BOOST_AUTO_TEST_CASE(NativeLinuxExecutorWithEnvironmentVariables) {
   // The execution should success due to the required environment variable is
   // set
   BOOST_CHECK_EQUAL(executor.GetExitStatusFeedback().exit_reason,
-                    PUTExitReasonType::FAULT_NONE);
+                    fuzzuf::feedback::PUTExitReasonType::FAULT_NONE);
 
   // Check if appropriate value is set on the environment variable
   const auto standard_output = executor.MoveStdOut();
@@ -72,8 +72,9 @@ BOOST_AUTO_TEST_CASE(NativeLinuxExecutorWithoutEnvironmentVariables) {
   auto path_to_write_seed = output_dir / "cur_input";
 
   // Create executor
-  fuzzuf::executor::NativeLinuxExecutor executor({TEST_BINARY_DIR "/executor/print_env"}, 1000,
-                               10000, false, path_to_write_seed, 0, 0, true);
+  fuzzuf::executor::NativeLinuxExecutor executor(
+      {TEST_BINARY_DIR "/executor/print_env"}, 1000, 10000, false,
+      path_to_write_seed, 0, 0, true);
 
   // Run executor
   executor.Run(nullptr, 0);
@@ -81,5 +82,5 @@ BOOST_AUTO_TEST_CASE(NativeLinuxExecutorWithoutEnvironmentVariables) {
   // The execution should fail due to the required environment variable is not
   // set
   BOOST_CHECK_EQUAL(executor.GetExitStatusFeedback().exit_reason,
-                    PUTExitReasonType::FAULT_CRASH);
+                    fuzzuf::feedback::PUTExitReasonType::FAULT_CRASH);
 }

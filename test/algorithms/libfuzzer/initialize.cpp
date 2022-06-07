@@ -1,7 +1,7 @@
 /*
  * fuzzuf
  * Copyright (C) 2021 Ricerca Security
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -17,6 +17,14 @@
  */
 #define BOOST_TEST_MODULE algorithms.libfuzzer.initialize
 #define BOOST_TEST_DYN_LINK
+#include <config.h>
+
+#include <array>
+#include <boost/scope_exit.hpp>
+#include <boost/test/unit_test.hpp>
+#include <iostream>
+#include <vector>
+
 #include "fuzzuf/algorithms/libfuzzer/corpus/add_to_initial_exec_input_set.hpp"
 #include "fuzzuf/algorithms/libfuzzer/exec_input_set_range.hpp"
 #include "fuzzuf/algorithms/libfuzzer/hierarflow.hpp"
@@ -27,12 +35,6 @@
 #include "fuzzuf/utils/node_tracer.hpp"
 #include "fuzzuf/utils/not_random.hpp"
 #include "fuzzuf/utils/which.hpp"
-#include <array>
-#include <boost/scope_exit.hpp>
-#include <boost/test/unit_test.hpp>
-#include <config.h>
-#include <iostream>
-#include <vector>
 
 /**
  * Execute all initial inputs, add them to corpus and update corpus
@@ -62,14 +64,12 @@ BOOST_AUTO_TEST_CASE(Initialize) {
 
   using fuzzuf::executor::LibFuzzerExecutorInterface;
   BOOST_TEST_CHECKPOINT("before init executor");
-  std::vector< LibFuzzerExecutorInterface > executor;
-  executor.push_back(
-    std::shared_ptr<fuzzuf::executor::NativeLinuxExecutor>(
-      new fuzzuf::executor::NativeLinuxExecutor({fuzzuf::utils::which(fs::path("tee")).c_str(),
-                               output_file_path.native()},
-                              1000, 10000, false, path_to_write_seed, 1000,
-                              1000))
-  );
+  std::vector<LibFuzzerExecutorInterface> executor;
+  executor.push_back(std::shared_ptr<fuzzuf::executor::NativeLinuxExecutor>(
+      new fuzzuf::executor::NativeLinuxExecutor(
+          {fuzzuf::utils::which(fs::path("tee")).c_str(),
+           output_file_path.native()},
+          1000, 10000, false, path_to_write_seed, 1000, 1000)));
   BOOST_TEST_CHECKPOINT("after init executor");
 
   namespace lf = fuzzuf::algorithm::libfuzzer;
@@ -83,7 +83,7 @@ BOOST_AUTO_TEST_CASE(Initialize) {
 
   BOOST_TEST_CHECKPOINT("after init state");
 
-  ExecInputSet initial_input;
+  fuzzuf::exec_input::ExecInputSet initial_input;
   auto data1 = lf::test::getSeed1();
   lf::corpus::addToInitialExecInputSet(initial_input, data1);
   auto data2 = lf::test::getSeed2();
@@ -155,14 +155,12 @@ BOOST_AUTO_TEST_CASE(HierarFlowExecute) {
 
   BOOST_TEST_CHECKPOINT("before int executor");
 
-  std::vector< LibFuzzerExecutorInterface > executor;
-  executor.push_back(
-    std::shared_ptr<fuzzuf::executor::NativeLinuxExecutor>(
-      new fuzzuf::executor::NativeLinuxExecutor({fuzzuf::utils::which(fs::path("tee")).c_str(),
-                               output_file_path.native()},
-                              1000, 10000, false, path_to_write_seed, 1000,
-                              1000))
-  );
+  std::vector<LibFuzzerExecutorInterface> executor;
+  executor.push_back(std::shared_ptr<fuzzuf::executor::NativeLinuxExecutor>(
+      new fuzzuf::executor::NativeLinuxExecutor(
+          {fuzzuf::utils::which(fs::path("tee")).c_str(),
+           output_file_path.native()},
+          1000, 10000, false, path_to_write_seed, 1000, 1000)));
 
   BOOST_TEST_CHECKPOINT("after init executor");
 
@@ -175,7 +173,7 @@ BOOST_AUTO_TEST_CASE(HierarFlowExecute) {
 
   BOOST_TEST_CHECKPOINT("after init state");
 
-  ExecInputSet initial_input;
+  fuzzuf::exec_input::ExecInputSet initial_input;
   auto data1 = lf::test::getSeed1();
   lf::corpus::addToInitialExecInputSet(initial_input, data1);
   auto data2 = lf::test::getSeed2();
@@ -192,8 +190,8 @@ BOOST_AUTO_TEST_CASE(HierarFlowExecute) {
                                         lf::ExecInputSetRangeInsertMode::NONE>);
   auto create_input_info = hf::CreateNode<
       lf::StaticAssign<lf::test::Full, decltype(Ord::exec_result)>>();
-  auto execute = hf::CreateNode<
-      lf::standard_order::Execute<lf::test::Full, Ord>>();
+  auto execute =
+      hf::CreateNode<lf::standard_order::Execute<lf::test::Full, Ord>>();
   auto collect_features = hf::CreateNode<
       lf::standard_order::CollectFeatures<lf::test::Full, Ord>>();
   auto add_to_corpus =
@@ -214,7 +212,7 @@ BOOST_AUTO_TEST_CASE(HierarFlowExecute) {
   BOOST_TEST_CHECKPOINT("after init graph");
 
   lf::test::Variables vars;
-  vars.executor = std::move( executor );
+  vars.executor = std::move(executor);
   fuzzuf::utils::DumpTracer tracer(
       [](std::string &&m) { std::cout << "trace : " << m << std::flush; });
   fuzzuf::utils::ElapsedTimeTracer ett;

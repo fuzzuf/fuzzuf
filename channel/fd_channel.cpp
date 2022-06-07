@@ -15,6 +15,8 @@
 #include "fuzzuf/utils/errno_to_system_error.hpp"
 #include "fuzzuf_cc/fork_server_api.h"
 
+namespace fuzzuf::channel {
+
 FdChannel::FdChannel() {
   // Nothing to do
 }
@@ -249,3 +251,5 @@ void FdChannel::TerminateForkServer() {
     forksrv_pid = -1;
   }
 }
+
+}  // namespace fuzzuf::channel

@@ -1,7 +1,7 @@
 /*
  * fuzzuf
  * Copyright (C) 2021 Ricerca Security
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -17,17 +17,18 @@
  */
 #define BOOST_TEST_MODULE native_linux_executor.run
 #define BOOST_TEST_DYN_LINK
+#include <unistd.h>
+
 #include <boost/scope_exit.hpp>
 #include <boost/test/unit_test.hpp>
 #include <iostream>
-#include <unistd.h>
 
+#include "config.h"
 #include "fuzzuf/executor/native_linux_executor.hpp"
 #include "fuzzuf/feedback/inplace_memory_feedback.hpp"
 #include "fuzzuf/feedback/put_exit_reason_type.hpp"
 #include "fuzzuf/utils/common.hpp"
 #include "fuzzuf/utils/filesystem.hpp"
-#include "config.h"
 
 // Check if NativeLinuxExecutor correctly allocates the shared memory of
 // variable size
@@ -59,7 +60,7 @@ BOOST_AUTO_TEST_CASE(NativeLinuxExecutorVariableShm) {
   auto path_to_write_seed = output_dir / "cur_input";
 
   long val = sysconf(_SC_PAGESIZE);
-  BOOST_CHECK(val != -1); // Make sure sysconf succeeds
+  BOOST_CHECK(val != -1);  // Make sure sysconf succeeds
   u32 PAGE_SIZE = (u32)val;
 
   std::vector<u32> checked_sizes = {0, 1, PAGE_SIZE - 1, PAGE_SIZE,
@@ -67,16 +68,16 @@ BOOST_AUTO_TEST_CASE(NativeLinuxExecutorVariableShm) {
 
   for (u32 afl : checked_sizes) {
     for (u32 bb : checked_sizes) {
-	fuzzuf::executor::NativeLinuxExecutor executor({"/usr/bin/tee", output_file_path.native()},
-                                   1000, 10000, false, path_to_write_seed, afl,
-                                   bb);
+      fuzzuf::executor::NativeLinuxExecutor executor(
+          {"/usr/bin/tee", output_file_path.native()}, 1000, 10000, false,
+          path_to_write_seed, afl, bb);
 
       std::string input("Hello, World!");
       executor.Run(reinterpret_cast<const u8 *>(input.c_str()), input.size());
 
       if (afl == 0) {
         BOOST_CHECK_EQUAL(executor.GetAFLShmID(),
-                          ShmCovAttacher::INVALID_SHMID);
+                          fuzzuf::coverage::ShmCovAttacher::INVALID_SHMID);
       } else {
         struct shmid_ds info;
         int res = shmctl(executor.GetAFLShmID(), IPC_STAT, &info);
@@ -86,7 +87,7 @@ BOOST_AUTO_TEST_CASE(NativeLinuxExecutorVariableShm) {
 
       if (bb == 0) {
         BOOST_CHECK_EQUAL(executor.GetBBShmID(),
-                          ShmCovAttacher::INVALID_SHMID);
+                          fuzzuf::coverage::ShmCovAttacher::INVALID_SHMID);
       } else {
         struct shmid_ds info;
         int res = shmctl(executor.GetBBShmID(), IPC_STAT, &info);
