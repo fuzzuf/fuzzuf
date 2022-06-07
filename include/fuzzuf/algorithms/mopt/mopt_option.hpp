@@ -3,7 +3,6 @@
 #include "fuzzuf/algorithms/afl/afl_option.hpp"
 
 
-namespace fuzzuf::algorithm::mopt { struct MOptTestcase; }
 namespace fuzzuf::algorithm::mopt::option {
 
 struct MOptTag {};
