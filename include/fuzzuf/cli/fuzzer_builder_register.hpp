@@ -20,6 +20,8 @@
 #include <map>
 #include "fuzzuf/cli/fuzzer_builder.hpp"
 
+namespace fuzzuf::cli {
+
 using BuilderMap = std::map<std::string, FuzzerBuilder>;
 
 // Used only for CLI
@@ -32,3 +34,6 @@ class FuzzerBuilderRegister {
     private:
         static BuilderMap& GetBuilderMap();
 };
+
+}
+

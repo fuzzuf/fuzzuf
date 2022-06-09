@@ -21,6 +21,6 @@
 #include "fuzzuf/executor/libfuzzer_executor_interface.hpp"
 
 namespace fuzzuf::algorithm::libfuzzer {
-  static FuzzerBuilderRegister global_libfuzzer_register("libfuzzer", BuildLibFuzzerFromArgs<Fuzzer, fuzzuf::algorithm::libfuzzer::LibFuzzer, executor::LibFuzzerExecutorInterface>);
+  static cli::FuzzerBuilderRegister global_libfuzzer_register("libfuzzer", BuildLibFuzzerFromArgs<Fuzzer, fuzzuf::algorithm::libfuzzer::LibFuzzer, executor::LibFuzzerExecutorInterface>);
 }
 

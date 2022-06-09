@@ -20,6 +20,8 @@
 #include "fuzzuf/exceptions.hpp"
 #include "fuzzuf/utils/common.hpp"
 
+namespace fuzzuf::cli {
+
 struct PutArgs {
     std::vector<std::string> args;
     int argc;
@@ -40,4 +42,5 @@ struct PutArgs {
     }
 };
 
+}
 

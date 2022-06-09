@@ -97,7 +97,6 @@ using IJONUpdCalleeRef = afl::routine::update::AFLUpdCalleeRef;
 IJONUpdate::IJONUpdate(IJONState &state, std::size_t offset_)
     : state(state), offset(offset_) {}
 
-UpdateMax::UpdateMax(IJONState& state) : state(state) {}
 static void StoreMaxInput(IJONState &state, u32 idx, const u8 *data, u32 len) {
   // NOTE: is it no problem to overwrite/unload `all_inputs[idx]`,
   // even though this input can be still loaded in IJON's flow?

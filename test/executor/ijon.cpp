@@ -58,7 +58,7 @@ BOOST_AUTO_TEST_CASE(IJONExecute) {
 
   auto path_to_write_seed = output_dir / "cur_input";
   auto params =
-      LinuxForkServerExecutorParameters()
+      fuzzuf::executor::LinuxForkServerExecutorParameters()
           .set_argv(std::vector<std::string>{
               TEST_BINARY_DIR
               "/put/ijon/ijon-test_put1" })
@@ -71,7 +71,7 @@ BOOST_AUTO_TEST_CASE(IJONExecute) {
           .set_record_stdout_and_err(false);
   const auto ijon_counter_offset = params.GetIjonCounterOffset();
   const auto ijon_max_offset = params.GetIjonMaxOffset();
-  LinuxForkServerExecutor executor(params.move());
+  fuzzuf::executor::LinuxForkServerExecutor executor(params.move());
 
   BOOST_CHECK_EQUAL(executor.stdin_mode, true);
 
@@ -83,7 +83,7 @@ BOOST_AUTO_TEST_CASE(IJONExecute) {
   // (1) 正常実行されたこと → feedbackのexit_reason が
   // PUTExitReasonType::FAULT_NONE であることを確認する
   BOOST_CHECK_EQUAL(executor.GetExitStatusFeedback().exit_reason,
-                    PUTExitReasonType::FAULT_NONE);
+                    fuzzuf::feedback::PUTExitReasonType::FAULT_NONE);
 
   executor.GetAFLFeedback().ShowMemoryToFunc(
       [ijon_counter_offset, ijon_max_offset](const u8 *head, u32 size) {

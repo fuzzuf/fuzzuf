@@ -18,6 +18,8 @@
 #include "fuzzuf/cli/command_line_args.hpp"
 #include "fuzzuf/logger/logger.hpp"
 
+namespace fuzzuf::cli {
+
 std::vector<std::string> CommandLineArgs::Args() {
     std::vector<std::string> res;
     for (int i = 0; i < argc; i += 1) {
@@ -27,3 +29,6 @@ std::vector<std::string> CommandLineArgs::Args() {
     }
     return res;
 }
+
+}
+

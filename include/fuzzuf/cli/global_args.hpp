@@ -18,4 +18,9 @@
 #pragma once
 #include "fuzzuf/cli/command_line_args.hpp"
 
+namespace fuzzuf::cli {
+
 using GlobalArgs = CommandLineArgs;
+
+}
+

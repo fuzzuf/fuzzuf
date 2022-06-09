@@ -19,6 +19,8 @@
 #include <string>
 #include <vector>
 
+namespace fuzzuf::cli {
+
 // Used only for CLI
 // NOTE: A struct dealing with a raw pointer.
 //       Beware that the lifetime of this struct must not be longer than that of pointers.
@@ -30,4 +32,6 @@ struct CommandLineArgs {
 
     std::vector<std::string> Args();
 };
+
+}
 

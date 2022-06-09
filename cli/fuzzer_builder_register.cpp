@@ -20,6 +20,7 @@
 #include "fuzzuf/exceptions.hpp"
 #include <utility>
 
+namespace fuzzuf::cli {
 
 // A design to prevent an insertion to the map before initialization
 // ref. https://stackoverflow.com/a/3746390
@@ -43,3 +44,6 @@ FuzzerBuilder FuzzerBuilderRegister::Get(std::string name) {
     DEBUG("[*] Starting fuzzer \"%s\"", name.c_str());
     return res->second;
 }
+
+}
+

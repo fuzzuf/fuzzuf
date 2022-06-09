@@ -22,6 +22,6 @@
 #include <iostream>
 
 namespace fuzzuf::algorithm::nezha {
-  static FuzzerBuilderRegister global_nezha_register("nezha", BuildNezhaFuzzerFromArgs<Fuzzer, fuzzuf::algorithm::nezha::NezhaFuzzer, executor::LibFuzzerExecutorInterface>);
+  static cli::FuzzerBuilderRegister global_nezha_register("nezha", BuildNezhaFuzzerFromArgs<Fuzzer, fuzzuf::algorithm::nezha::NezhaFuzzer, executor::LibFuzzerExecutorInterface>);
 }
 

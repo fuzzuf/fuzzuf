@@ -24,5 +24,10 @@
 
 #include <boost/program_options.hpp>
 
+namespace fuzzuf::cli {
+
 // Used only for CLI
 using FuzzerBuilder = std::function<std::unique_ptr<Fuzzer>(FuzzerArgs&, GlobalFuzzerOptions&)>;
+
+}
+

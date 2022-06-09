@@ -54,8 +54,6 @@ std::istream& operator>>(std::istream& in, ExecutorKind& executor) {
     return in;
 }
 
-} // namespace fuzzuf::cli
-
 FuzzerArgs ParseGlobalOptionsForFuzzer(GlobalArgs &global_args, GlobalFuzzerOptions &global_options) {
     // Parse a sub-command
     po::positional_options_description subcommand;
@@ -167,3 +165,6 @@ FuzzerArgs ParseGlobalOptionsForFuzzer(GlobalArgs &global_args, GlobalFuzzerOpti
         .global_options_description = global_desc
     };
 }
+
+} // namespace fuzzuf::cli
+

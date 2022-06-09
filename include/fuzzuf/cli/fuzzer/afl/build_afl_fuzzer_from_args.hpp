@@ -185,7 +185,7 @@ std::unique_ptr<TFuzzer> BuildFuzzer(
 
     case ExecutorKind::FORKSERVER: {
       auto lfe = std::make_shared<fuzzuf::executor::LinuxForkServerExecutor>(
-              LinuxForkServerExecutorParameters()
+              fuzzuf::executor::LinuxForkServerExecutorParameters()
                   .set_argv(setting->argv)
                   .set_exec_timelimit_ms(setting->exec_timelimit_ms)
                   .set_exec_memlimit(setting->exec_memlimit)

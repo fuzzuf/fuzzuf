@@ -19,4 +19,9 @@
 #include "fuzzuf/cli/fuzzer_args.hpp"
 #include "fuzzuf/cli/global_args.hpp"
 
+namespace fuzzuf::cli {
+
 FuzzerArgs ParseGlobalOptionsForFuzzer(GlobalArgs &global_args, GlobalFuzzerOptions &global_options);
+
+}
+
