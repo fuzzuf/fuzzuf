@@ -13,4 +13,5 @@ subdirs(
   put_binaries
   python
   util
+  put
 )

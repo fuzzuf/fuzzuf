@@ -17,9 +17,6 @@
  */
 #pragma once
 
-#include <vector>
-#include <array>
-#include <memory>
 #include "fuzzuf/utils/common.hpp"
 #include "fuzzuf/fuzzer/fuzzer.hpp"
 #include "fuzzuf/algorithms/afl/afl_state.hpp"

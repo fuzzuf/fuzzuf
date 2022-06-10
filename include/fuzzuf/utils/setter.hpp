@@ -1,7 +1,7 @@
 /*
  * fuzzuf
  * Copyright (C) 2021 Ricerca Security
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -23,7 +23,8 @@
 #define FUZZUF_INCLUDE_UTILS_SETTER_HPP
 
 #include <type_traits>
-
+#define FUZZUF_MOVABLE \
+  auto &&move() { return std::move(*this); }
 #define FUZZUF_SETTER(name)                                                    \
   template <typename ArgType>                                                  \
   decltype(auto) set_##name(                                                   \

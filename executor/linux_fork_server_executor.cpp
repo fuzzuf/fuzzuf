@@ -66,20 +66,16 @@
  * fuzzing algorithm is responsible to it.
  */
 LinuxForkServerExecutor::LinuxForkServerExecutor(
-    const std::vector<std::string> &argv, u32 exec_timelimit_ms,
-    u64 exec_memlimit, const fs::path &path_to_write_input, u32 afl_shm_size,
-    u32 bb_shm_size, bool record_stdout_and_err,
-    std::vector<std::string> &&environment_variables_,
-    std::vector<fs::path> &&allowed_path_)
-    : Executor(argv, exec_timelimit_ms, exec_memlimit,
-               path_to_write_input.string()),
-      afl_edge_coverage(afl_shm_size),
-      fuzzuf_bb_coverage(bb_shm_size),
+    LinuxForkServerExecutorParameters &&args)
+    : Executor(args.argv, args.exec_timelimit_ms, args.exec_memlimit,
+               args.path_to_write_input.string()),
+      afl_edge_coverage(args.GetAflCoverageSize()),
+      fuzzuf_bb_coverage(args.bb_shm_size),
 
       // cargv and stdin_mode are initialized at SetCArgvAndDecideInputMode
-      last_timeout_ms(exec_timelimit_ms),
-      record_stdout_and_err(record_stdout_and_err),
-      filesystem(std::move(allowed_path_)),
+      last_timeout_ms(args.exec_timelimit_ms),
+      record_stdout_and_err(args.record_stdout_and_err),
+      filesystem(std::move(args.allowed_path)),
       put_channel()  // TODO: Make channel configurable outside of executor
 {
   fuzzuf::utils::CheckCrashHandling();
@@ -93,10 +89,11 @@ LinuxForkServerExecutor::LinuxForkServerExecutor(
   if (stdin_mode) {
     auto path = fuzzuf::utils::StrPrintf(
         "/dev/shm/fuzzuf-cc.forkserver.executor_id-%d.stdin", getpid());
-    input_fd = fuzzuf::utils::OpenFile(path, O_RDWR | O_CREAT | O_CLOEXEC, 0600);
+    input_fd =
+        fuzzuf::utils::OpenFile(path, O_RDWR | O_CREAT | O_CLOEXEC, 0600);
   } else {
-    input_fd = fuzzuf::utils::OpenFile(path_to_write_input.string(),
-                              O_RDWR | O_CREAT | O_CLOEXEC, 0600);
+    input_fd = fuzzuf::utils::OpenFile(args.path_to_write_input.string(),
+                                       O_RDWR | O_CREAT | O_CLOEXEC, 0600);
   }
 
   // Allocate shared memory on initialization of Executor
@@ -104,15 +101,17 @@ LinuxForkServerExecutor::LinuxForkServerExecutor(
   // memory
   SetupSharedMemories();
   SetupEnvironmentVariablesForTarget();
-  CreateJoinedEnvironmentVariables(std::move(environment_variables_));
+  args.AflCoverageSizeToEnvironmentVariables();
+  CreateJoinedEnvironmentVariables(std::move(args.environment_variables));
 
   // Configure PUT runtime settings
-  put_channel.SetupForkServer((char *const *)cargv.data());
-  put_channel.SetPUTExecutionTimeout(exec_timelimit_ms * 1000);
+  put_channel.SetupForkServer((char *const *)cargv.data(),
+                              raw_environment_variables);
+  put_channel.SetPUTExecutionTimeout(args.exec_timelimit_ms * 1000);
   if (stdin_mode) {
     put_channel.ReadStdin();
   }
-  if (record_stdout_and_err) {
+  if (args.record_stdout_and_err) {
     put_channel.SaveStdoutStderr();
   }
 }
@@ -365,6 +364,8 @@ void LinuxForkServerExecutor::SetupEnvironmentVariablesForTarget() {
   // Pass the id of shared memory to PUT.
   afl_edge_coverage.SetupEnvironmentVariable();
   fuzzuf_bb_coverage.SetupEnvironmentVariable();
+  // NOTE: Call extra_feedback.SetupEnvironmentVariable(...) from
+  // XXXExecutorInterface
 
   /* This should improve performance a bit, since it stops the linker from
       doing extra work post-fork(). */
@@ -390,17 +391,17 @@ void LinuxForkServerExecutor::SetupEnvironmentVariablesForTarget() {
 
   setenv("MSAN_OPTIONS",
          fuzzuf::utils::StrPrintf("exit_code=%d:"
-                         "symbolize=0:"
-                         "abort_on_error=1:"
-                         "malloc_context_size=0:"
-                         "allocator_may_return_null=1:"
-                         "msan_track_origins=0:"
-                         "handle_segv=0:"
-                         "handle_sigbus=0:"
-                         "handle_abort=0:"
-                         "handle_sigfpe=0:"
-                         "handle_sigill=0",
-                         MSAN_ERROR)
+                                  "symbolize=0:"
+                                  "abort_on_error=1:"
+                                  "malloc_context_size=0:"
+                                  "allocator_may_return_null=1:"
+                                  "msan_track_origins=0:"
+                                  "handle_segv=0:"
+                                  "handle_sigbus=0:"
+                                  "handle_abort=0:"
+                                  "handle_sigfpe=0:"
+                                  "handle_sigill=0",
+                                  MSAN_ERROR)
              .c_str(),
          0);
 
