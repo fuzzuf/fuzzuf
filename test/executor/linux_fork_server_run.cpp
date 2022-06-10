@@ -113,7 +113,8 @@ BOOST_AUTO_TEST_CASE(LinuxForkServerExecutorVariableShm) {
       }
 
       if (bb == 0) {
-        BOOST_CHECK_EQUAL(executor.GetBBShmID(), fuzzuf::coverage::ShmCovAttacher::INVALID_SHMID);
+        BOOST_CHECK_EQUAL(executor.GetBBShmID(),
+                          fuzzuf::coverage::ShmCovAttacher::INVALID_SHMID);
       } else {
         struct shmid_ds info;
         int res = shmctl(executor.GetBBShmID(), IPC_STAT, &info);

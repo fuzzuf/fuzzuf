@@ -1,7 +1,7 @@
 /*
  * fuzzuf
  * Copyright (C) 2021 Ricerca Security
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -19,15 +19,15 @@
 #ifndef FUZZUF_INCLUDE_CLI_CREATE_FUZZER_INSTANCE_FROM_ARGV_HPP
 #define FUZZUF_INCLUDE_CLI_CREATE_FUZZER_INSTANCE_FROM_ARGV_HPP
 
-
 #include <memory>
 
 #include "fuzzuf/fuzzer/fuzzer.hpp"
 
 namespace fuzzuf::cli {
 
-std::unique_ptr<Fuzzer> CreateFuzzerInstanceFromArgv(int argc, const char **argv);
+std::unique_ptr<fuzzer::Fuzzer> CreateFuzzerInstanceFromArgv(int argc,
+                                                             const char **argv);
 
-} // namespacce fuzzuf::cli
+}  // namespace fuzzuf::cli
 
 #endif

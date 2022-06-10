@@ -32,11 +32,11 @@ namespace fuzzuf::algorithm::vuzzer::routine::other {
 
 // the head node(the fuzzing loop starts from execution in VUzzer)
 
-struct FuzzLoop : public HierarFlowRoutine<void(void), void(void)> {
+struct FuzzLoop : public hierarflow::HierarFlowRoutine<void(void), void(void)> {
  public:
   FuzzLoop(VUzzerState &state);
 
-  NullableRef<HierarFlowCallee<void(void)>> operator()(void);
+  NullableRef<hierarflow::HierarFlowCallee<void(void)>> operator()(void);
 
  private:
   VUzzerState &state;
@@ -45,11 +45,12 @@ struct FuzzLoop : public HierarFlowRoutine<void(void), void(void)> {
 // middle nodes(steps done before and after actual mutations)
 
 using VUzzerMidInputType = void(void);
-using VUzzerMidCalleeRef = NullableRef<HierarFlowCallee<VUzzerMidInputType>>;
+using VUzzerMidCalleeRef =
+    NullableRef<hierarflow::HierarFlowCallee<VUzzerMidInputType>>;
 using VUzzerMidOutputType = void(void);
 
-struct DecideKeep
-    : public HierarFlowRoutine<VUzzerMidInputType, VUzzerMidOutputType> {
+struct DecideKeep : public hierarflow::HierarFlowRoutine<VUzzerMidInputType,
+                                                         VUzzerMidOutputType> {
  public:
   DecideKeep(VUzzerState &state);
 
@@ -59,8 +60,8 @@ struct DecideKeep
   VUzzerState &state;
 };
 
-struct RunEHB
-    : public HierarFlowRoutine<VUzzerMidInputType, VUzzerMidOutputType> {
+struct RunEHB : public hierarflow::HierarFlowRoutine<VUzzerMidInputType,
+                                                     VUzzerMidOutputType> {
  public:
   RunEHB(VUzzerState &state);
 
@@ -71,9 +72,9 @@ struct RunEHB
 };
 
 struct ExecutePUT
-    : public HierarFlowRoutine<VUzzerMidInputType,
-                               double(const std::shared_ptr<VUzzerTestcase> &,
-                                      feedback::FileFeedback &)> {
+    : public hierarflow::HierarFlowRoutine<
+          VUzzerMidInputType, double(const std::shared_ptr<VUzzerTestcase> &,
+                                     feedback::FileFeedback &)> {
  public:
   ExecutePUT(VUzzerState &state);
 
@@ -84,9 +85,9 @@ struct ExecutePUT
 };
 
 struct ExecuteTaintPUT
-    : public HierarFlowRoutine<VUzzerMidInputType,
-                               double(const std::shared_ptr<VUzzerTestcase> &,
-                                      feedback::FileFeedback &)> {
+    : public hierarflow::HierarFlowRoutine<
+          VUzzerMidInputType, double(const std::shared_ptr<VUzzerTestcase> &,
+                                     feedback::FileFeedback &)> {
  public:
   ExecuteTaintPUT(VUzzerState &state);
 

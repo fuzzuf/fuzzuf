@@ -1,7 +1,7 @@
 /*
  * fuzzuf
  * Copyright (C) 2021 Ricerca Security
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -23,24 +23,20 @@
 namespace fuzzuf::cli {
 
 struct PutArgs {
-    std::vector<std::string> args;
-    int argc;
+  std::vector<std::string> args;
+  int argc;
 
-    PutArgs(std::vector<std::string> args) :
-        args(args),
-        argc(args.size())
-        {}
+  PutArgs(std::vector<std::string> args) : args(args), argc(args.size()) {}
 
-    void Check() {
-        if (args.size() == 0) {
-            throw exceptions::cli_error(fuzzuf::utils::StrPrintf("Command line of PUT is not specified"), __FILE__, __LINE__);
-        }
+  void Check() {
+    if (args.size() == 0) {
+      throw exceptions::cli_error(
+          fuzzuf::utils::StrPrintf("Command line of PUT is not specified"),
+          __FILE__, __LINE__);
     }
+  }
 
-    std::vector<std::string>& Args() {
-        return this->args;
-    }
+  std::vector<std::string>& Args() { return this->args; }
 };
 
-}
-
+}  // namespace fuzzuf::cli

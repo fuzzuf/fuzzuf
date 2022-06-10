@@ -1,7 +1,7 @@
 /*
  * fuzzuf
  * Copyright (C) 2021 Ricerca Security
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -21,11 +21,12 @@
  */
 #ifndef FUZZUF_INCLUDE_ALGORITHM_LIBFUZZER_HIERARFLOW_MARKER_HPP
 #define FUZZUF_INCLUDE_ALGORITHM_LIBFUZZER_HIERARFLOW_MARKER_HPP
+#include <utility>
+
 #include "fuzzuf/algorithms/libfuzzer/hierarflow/simple_function.hpp"
 #include "fuzzuf/algorithms/libfuzzer/hierarflow/standard_typedef.hpp"
 #include "fuzzuf/algorithms/libfuzzer/hierarflow/trace.hpp"
 #include "fuzzuf/hierarflow/hierarflow_routine.hpp"
-#include <utility>
 
 namespace fuzzuf::algorithm::libfuzzer {
 
@@ -41,10 +42,11 @@ namespace fuzzuf::algorithm::libfuzzer {
  * @tparam F Function type to define what arguments passes through this node.
  * @tparam T Event detail type.
  */
-template <typename F, typename T> struct Marker {};
+template <typename F, typename T>
+struct Marker {};
 template <typename R, typename... Args, typename T>
 struct Marker<R(Args...), T>
-    : public HierarFlowRoutine<R(Args...), R(Args...)> {
+    : public hierarflow::HierarFlowRoutine<R(Args...), R(Args...)> {
   FUZZUF_ALGORITHM_LIBFUZZER_HIERARFLOW_STANDARD_TYPEDEFS
   /**
    * Constructor
@@ -62,9 +64,9 @@ struct Marker<R(Args...), T>
     FUZZUF_ALGORITHM_LIBFUZZER_HIERARFLOW_STANDARD_END(name)
   }
 
-private:
+ private:
   T info;
 };
 
-} // namespace fuzzuf::algorithm::libfuzzer
+}  // namespace fuzzuf::algorithm::libfuzzer
 #endif

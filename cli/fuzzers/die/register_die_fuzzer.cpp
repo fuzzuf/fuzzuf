@@ -1,7 +1,7 @@
 /*
  * fuzzuf
  * Copyright (C) 2022 Ricerca Security
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -21,12 +21,14 @@
  * @author Ricerca Security <fuzzuf-dev@ricsec.co.jp>
  */
 #include "fuzzuf/algorithms/die/die_fuzzer.hpp"
-#include "fuzzuf/cli/fuzzer_builder_register.hpp"
 #include "fuzzuf/cli/fuzzer/die/build_die_fuzzer_from_args.hpp"
+#include "fuzzuf/cli/fuzzer_builder_register.hpp"
 #include "fuzzuf/executor/afl_executor_interface.hpp"
 
 namespace fuzzuf::cli::fuzzer::die {
 
-static FuzzerBuilderRegister global_die_register("die", BuildDIEFuzzerFromArgs<Fuzzer, DIEFuzzer, executor::AFLExecutorInterface>);
+static FuzzerBuilderRegister global_die_register(
+    "die", BuildDIEFuzzerFromArgs<fuzzuf::fuzzer::Fuzzer, DIEFuzzer,
+                                  executor::AFLExecutorInterface>);
 
-} // namespace fuzzuf::cli::fuzzer::die
+}  // namespace fuzzuf::cli::fuzzer::die

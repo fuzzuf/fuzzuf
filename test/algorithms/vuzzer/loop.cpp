@@ -1,7 +1,7 @@
 /*
  * fuzzuf
  * Copyright (C) 2021 Ricerca Security
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -22,16 +22,17 @@
  */
 #define BOOST_TEST_MODULE VUzzer.loop
 #define BOOST_TEST_DYN_LINK
-#include "config.h"
-#include "fuzzuf/algorithms/vuzzer/vuzzer.hpp"
-#include "fuzzuf/utils/common.hpp"
-#include "fuzzuf/utils/filesystem.hpp"
-#include "fuzzuf/utils/workspace.hpp"
 #include <boost/scope_exit.hpp>
 #include <boost/test/unit_test.hpp>
 #include <iostream>
 #include <move_to_program_location.hpp>
 #include <random>
+
+#include "config.h"
+#include "fuzzuf/algorithms/vuzzer/vuzzer.hpp"
+#include "fuzzuf/utils/common.hpp"
+#include "fuzzuf/utils/filesystem.hpp"
+#include "fuzzuf/utils/workspace.hpp"
 
 // to test both fork server mode and non fork server mode, we specify forksrv
 // via an argument
@@ -42,8 +43,7 @@ static void VUzzerLoop() {
   // Create root directory
   std::string root_dir_template("/tmp/fuzzuf_test.XXXXXX");
   const auto raw_dirname = mkdtemp(root_dir_template.data());
-  if (!raw_dirname)
-    throw -1;
+  if (!raw_dirname) throw -1;
   BOOST_CHECK(raw_dirname != nullptr);
 
   auto root_dir = fs::path(raw_dirname);
@@ -79,18 +79,21 @@ static void VUzzerLoop() {
   // TODO: support more types of executors
   // FIXME: TEST_BINARY_DIR macro should be used only for test codes. We must
   // define a new macro in config.h.
-  std::shared_ptr<fuzzuf::executor::PinToolExecutor> executor(new fuzzuf::executor::PinToolExecutor(
-      FUZZUF_PIN_EXECUTABLE,
-      {TEST_BINARY_DIR "/../tools/bbcounts2/bbcounts2.so", "-o", "bb.out",
-       "-libc", "0"},
-      setting->argv, setting->exec_timelimit_ms, setting->exec_memlimit,
-      setting->out_dir / GetDefaultOutfile()));
+  std::shared_ptr<fuzzuf::executor::PinToolExecutor> executor(
+      new fuzzuf::executor::PinToolExecutor(
+          FUZZUF_PIN_EXECUTABLE,
+          {TEST_BINARY_DIR "/../tools/bbcounts2/bbcounts2.so", "-o", "bb.out",
+           "-libc", "0"},
+          setting->argv, setting->exec_timelimit_ms, setting->exec_memlimit,
+          setting->out_dir / GetDefaultOutfile()));
 
-  std::shared_ptr<fuzzuf::executor::PolyTrackerExecutor> taint_executor(new fuzzuf::executor::PolyTrackerExecutor(
-      TEST_BINARY_DIR "/../tools/polyexecutor/polyexecutor.py",
-      setting->path_to_inst_bin, setting->path_to_taint_db,
-      setting->path_to_taint_file, setting->argv, setting->exec_timelimit_ms,
-      setting->exec_memlimit, setting->out_dir / GetDefaultOutfile()));
+  std::shared_ptr<fuzzuf::executor::PolyTrackerExecutor> taint_executor(
+      new fuzzuf::executor::PolyTrackerExecutor(
+          TEST_BINARY_DIR "/../tools/polyexecutor/polyexecutor.py",
+          setting->path_to_inst_bin, setting->path_to_taint_db,
+          setting->path_to_taint_file, setting->argv,
+          setting->exec_timelimit_ms, setting->exec_memlimit,
+          setting->out_dir / GetDefaultOutfile()));
 
   // Create VUzzerState
   std::unique_ptr<VUzzerState> state(

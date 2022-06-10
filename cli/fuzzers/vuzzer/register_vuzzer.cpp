@@ -1,7 +1,7 @@
 /*
  * fuzzuf
  * Copyright (C) 2021 Ricerca Security
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -16,11 +16,12 @@
  * along with this program.  If not, see http://www.gnu.org/licenses/.
  */
 #include "fuzzuf/algorithms/vuzzer/vuzzer.hpp"
-#include "fuzzuf/cli/fuzzer_builder_register.hpp"
 #include "fuzzuf/cli/fuzzer/vuzzer/build_vuzzer_from_args.hpp"
+#include "fuzzuf/cli/fuzzer_builder_register.hpp"
 
 namespace fuzzuf::cli::fuzzer::vuzzer {
 
-static FuzzerBuilderRegister global_vuzzer_register("vuzzer", BuildVUzzerFromArgs<Fuzzer, VUzzer>);
+static FuzzerBuilderRegister global_vuzzer_register(
+    "vuzzer", BuildVUzzerFromArgs<fuzzuf::fuzzer::Fuzzer, VUzzer>);
 
-} // namespace fuzzuf::cli::fuzzer::vuzzer
+}  // namespace fuzzuf::cli::fuzzer::vuzzer

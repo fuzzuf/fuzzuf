@@ -1,7 +1,7 @@
 /*
  * fuzzuf
  * Copyright (C) 2021 Ricerca Security
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -37,11 +37,12 @@ namespace fuzzuf::algorithm::libfuzzer {
  * @tparam F Function type to define what arguments passes through this node.
  * @tparam Path Struct path to define which value to to use.
  */
-template <typename F, typename Path> struct UpdateMaxLength {};
+template <typename F, typename Path>
+struct UpdateMaxLength {};
 template <typename R, typename... Args, typename Path>
 class UpdateMaxLength<R(Args...), Path>
-    : public HierarFlowRoutine<R(Args...), R(Args...)> {
-public:
+    : public hierarflow::HierarFlowRoutine<R(Args...), R(Args...)> {
+ public:
   FUZZUF_ALGORITHM_LIBFUZZER_HIERARFLOW_STANDARD_TYPEDEFS
   /**
    * Constructor
@@ -74,7 +75,7 @@ public:
     FUZZUF_ALGORITHM_LIBFUZZER_HIERARFLOW_STANDARD_END(UpdateMaxLength)
   }
 
-private:
+ private:
   std::size_t max_length;
   std::size_t len_control;
 };
@@ -85,6 +86,6 @@ using UpdateMaxLengthStdArgOrderT =
 template <typename F, typename Ord>
 using UpdateMaxLength =
     libfuzzer::UpdateMaxLength<F, UpdateMaxLengthStdArgOrderT<Ord>>;
-} // namespace standard_order
-} // namespace fuzzuf::algorithm::libfuzzer
+}  // namespace standard_order
+}  // namespace fuzzuf::algorithm::libfuzzer
 #endif

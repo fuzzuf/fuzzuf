@@ -116,7 +116,7 @@ BOOST_AUTO_TEST_CASE(HierarFlowExecute) {
       .global_options_description = global_desc,
   };
 
-  lf::LibFuzzer fuzzer(fargs, GlobalFuzzerOptions(),
+  lf::LibFuzzer fuzzer(fargs, fuzzuf::cli::GlobalFuzzerOptions(),
                        [](std::string &&m) { std::cout << m << std::flush; });
 
   while (!fuzzer.ShouldEnd()) {

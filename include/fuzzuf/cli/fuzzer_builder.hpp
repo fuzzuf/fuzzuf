@@ -1,7 +1,7 @@
 /*
  * fuzzuf
  * Copyright (C) 2021 Ricerca Security
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -17,17 +17,17 @@
  */
 #pragma once
 
+#include <boost/program_options.hpp>
 #include <functional>
-#include "fuzzuf/fuzzer/fuzzer.hpp"
+
 #include "fuzzuf/cli/fuzzer_args.hpp"
 #include "fuzzuf/cli/global_fuzzer_options.hpp"
-
-#include <boost/program_options.hpp>
+#include "fuzzuf/fuzzer/fuzzer.hpp"
 
 namespace fuzzuf::cli {
 
 // Used only for CLI
-using FuzzerBuilder = std::function<std::unique_ptr<Fuzzer>(FuzzerArgs&, GlobalFuzzerOptions&)>;
+using FuzzerBuilder = std::function<std::unique_ptr<fuzzuf::fuzzer::Fuzzer>(
+    FuzzerArgs&, GlobalFuzzerOptions&)>;
 
-}
-
+}  // namespace fuzzuf::cli

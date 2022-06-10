@@ -1,7 +1,7 @@
 /*
  * fuzzuf
  * Copyright (C) 2021 Ricerca Security
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -18,22 +18,22 @@
 #ifndef __EXCEPTIONS_HPP__
 #define __EXCEPTIONS_HPP__
 #include <stdexcept>
-namespace exceptions {
+namespace fuzzuf::exceptions {
 
-#define FUZZUF_BASE_EXCEPTION(base, name)                                      \
-  struct name : public base {                                                  \
-    name() : base(#name), file("unknown"), line(0) {}                          \
-    name(const std::string &what_arg, const char *file, int line)              \
-        : base(what_arg), file(file), line(line) {}                            \
-    name(const char *what_arg, const char *file, int line)                     \
-        : base(what_arg), file(file), line(line) {}                            \
-    const char *file;                                                          \
-    int line;                                                                  \
+#define FUZZUF_BASE_EXCEPTION(base, name)                         \
+  struct name : public base {                                     \
+    name() : base(#name), file("unknown"), line(0) {}             \
+    name(const std::string &what_arg, const char *file, int line) \
+        : base(what_arg), file(file), line(line) {}               \
+    name(const char *what_arg, const char *file, int line)        \
+        : base(what_arg), file(file), line(line) {}               \
+    const char *file;                                             \
+    int line;                                                     \
   };
-#define FUZZUF_INHERIT_EXCEPTION(base, name)                                   \
-  struct name : public base {                                                  \
-    using base ::base;                                                         \
-    name() : base(#name, "unknown", 0) {}                                      \
+#define FUZZUF_INHERIT_EXCEPTION(base, name) \
+  struct name : public base {                \
+    using base ::base;                       \
+    name() : base(#name, "unknown", 0) {}    \
   };
 FUZZUF_BASE_EXCEPTION(std::logic_error, fuzzuf_logic_error)
 FUZZUF_BASE_EXCEPTION(std::runtime_error, fuzzuf_runtime_error)
@@ -49,5 +49,5 @@ FUZZUF_INHERIT_EXCEPTION(fuzzuf_runtime_error, cli_error)
 FUZZUF_INHERIT_EXCEPTION(fuzzuf_runtime_error, logger_error)
 FUZZUF_INHERIT_EXCEPTION(fuzzuf_logic_error, unexpected_leave_event)
 FUZZUF_INHERIT_EXCEPTION(fuzzuf_invalid_argument, invalid_argument)
-} // namespace exceptions
+}  // namespace fuzzuf::exceptions
 #endif

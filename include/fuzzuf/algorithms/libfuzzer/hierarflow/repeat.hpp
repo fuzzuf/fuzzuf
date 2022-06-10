@@ -35,11 +35,12 @@ namespace fuzzuf::algorithm::libfuzzer {
  * The node takes no any Paths.
  * @tparam F Function type to define what arguments passes through this node.
  */
-template <typename F> struct StaticRepeat {};
+template <typename F>
+struct StaticRepeat {};
 template <typename R, typename... Args>
 class StaticRepeat<R(Args...)>
-    : public HierarFlowRoutine<R(Args...), R(Args...)> {
-public:
+    : public hierarflow::HierarFlowRoutine<R(Args...), R(Args...)> {
+ public:
   FUZZUF_ALGORITHM_LIBFUZZER_HIERARFLOW_STANDARD_TYPEDEFS
   /**
    * Constructor
@@ -64,7 +65,7 @@ public:
     return base_type::GoToDefaultNext();
   }
 
-private:
+ private:
   std::size_t cycle;
 };
 
@@ -77,11 +78,12 @@ private:
  * @tparam F Function type to define what arguments passes through this node.
  * @tparam Path Struct path to define which value to to use.
  */
-template <typename F, typename Path> struct PartiallyDynamicRepeat {};
+template <typename F, typename Path>
+struct PartiallyDynamicRepeat {};
 template <typename R, typename... Args, typename Path>
 class PartiallyDynamicRepeat<R(Args...), Path>
-    : public HierarFlowRoutine<R(Args...), R(Args...)> {
-public:
+    : public hierarflow::HierarFlowRoutine<R(Args...), R(Args...)> {
+ public:
   FUZZUF_ALGORITHM_LIBFUZZER_HIERARFLOW_STANDARD_TYPEDEFS
   /**
    * Constructor
@@ -122,7 +124,7 @@ public:
     return base_type::GoToDefaultNext();
   }
 
-private:
+ private:
   std::size_t cycle;
 };
 
@@ -135,11 +137,12 @@ private:
  * @tparam F Function type to define what arguments passes through this node.
  * @tparam Path Struct path to define which value to to use.
  */
-template <typename F, typename Path> struct DynamicRepeat {};
+template <typename F, typename Path>
+struct DynamicRepeat {};
 template <typename R, typename... Args, typename Path>
 class DynamicRepeat<R(Args...), Path>
-    : public HierarFlowRoutine<R(Args...), R(Args...)> {
-public:
+    : public hierarflow::HierarFlowRoutine<R(Args...), R(Args...)> {
+ public:
   FUZZUF_ALGORITHM_LIBFUZZER_HIERARFLOW_STANDARD_TYPEDEFS
   /**
    * This callable is called on HierarFlow execution
@@ -167,5 +170,5 @@ public:
   }
 };
 
-} // namespace fuzzuf::algorithm::libfuzzer
+}  // namespace fuzzuf::algorithm::libfuzzer
 #endif

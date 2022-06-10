@@ -281,8 +281,10 @@ std::vector<std::unordered_map<int, u8>> PythonFuzzer::GetBBTraces(void) {
   return ret;
 }
 
-void PythonFuzzer::SuppressLog() { runlevel = RunLevel::MODE_RELEASE; }
+void PythonFuzzer::SuppressLog() {
+  utils::runlevel = utils::RunLevel::MODE_RELEASE;
+}
 
-void PythonFuzzer::ShowLog() { runlevel = RunLevel::MODE_DEBUG; }
+void PythonFuzzer::ShowLog() { utils::runlevel = utils::RunLevel::MODE_DEBUG; }
 
 }  // namespace fuzzuf::bindings::python

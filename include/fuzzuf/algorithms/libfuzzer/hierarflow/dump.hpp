@@ -1,7 +1,7 @@
 /*
  * fuzzuf
  * Copyright (C) 2021 Ricerca Security
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -39,11 +39,12 @@ namespace fuzzuf::algorithm::libfuzzer {
  * @tparam F Function type to define what arguments passes through this node.
  * @tparam Path Struct path to define which value to to use.
  */
-template <typename F, typename Path> class StaticDump {};
+template <typename F, typename Path>
+class StaticDump {};
 template <typename R, typename... Args, typename Path>
 class StaticDump<R(Args...), Path>
-    : public HierarFlowRoutine<R(Args...), R(Args...)> {
-public:
+    : public hierarflow::HierarFlowRoutine<R(Args...), R(Args...)> {
+ public:
   FUZZUF_ALGORITHM_LIBFUZZER_HIERARFLOW_STANDARD_TYPEDEFS
   /**
    * Constructor
@@ -61,7 +62,9 @@ public:
   template <typename Sink>
   StaticDump(const std::string &prefix_, std::size_t indent_count_,
              const std::string &indent_, Sink &&sink_)
-      : prefix(prefix_), indent_count(indent_count_), indent(indent_),
+      : prefix(prefix_),
+        indent_count(indent_count_),
+        indent(indent_),
         sink(std::forward<Sink>(sink_)) {}
   /**
    * This callable is called on HierarFlow execution
@@ -71,20 +74,19 @@ public:
   callee_ref_t operator()(Args... args) {
     FUZZUF_ALGORITHM_LIBFUZZER_HIERARFLOW_CHECKPOINT("StaticDump", enter)
     std::string dest = prefix;
-    if (!dest.empty() && dest.back() != '\n')
-      dest += '\n';
+    if (!dest.empty() && dest.back() != '\n') dest += '\n';
     Path()([&](auto &&v) { utils::toStringADL(dest, v, indent_count, indent); },
            std::forward<Args>(args)...);
     sink(std::move(dest));
     FUZZUF_ALGORITHM_LIBFUZZER_HIERARFLOW_STANDARD_END(StaticDump)
   }
 
-private:
+ private:
   std::string prefix;
   std::size_t indent_count;
   std::string indent;
   std::function<void(std::string &&)> sink;
 };
 
-} // namespace fuzzuf::algorithm::libfuzzer
+}  // namespace fuzzuf::algorithm::libfuzzer
 #endif

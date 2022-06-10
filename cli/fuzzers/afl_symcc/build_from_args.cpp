@@ -1,17 +1,18 @@
 #include "fuzzuf/cli/fuzzer/afl_symcc/build_from_args.hpp"
-#include "fuzzuf/algorithms/afl/afl_fuzzer.hpp"
-#include "fuzzuf/algorithms/afl_symcc/fuzzer.hpp"
-#include "fuzzuf/cli/fuzzer/afl/build_afl_fuzzer_from_args.hpp"
+
 #include <boost/program_options.hpp>
 #include <cstdint>
 #include <string>
 #include <vector>
 
+#include "fuzzuf/algorithms/afl/afl_fuzzer.hpp"
+#include "fuzzuf/algorithms/afl_symcc/fuzzer.hpp"
+#include "fuzzuf/cli/fuzzer/afl/build_afl_fuzzer_from_args.hpp"
+
 namespace fuzzuf::cli::fuzzer::afl_symcc {
 // Used only for CLI
-std::unique_ptr<Fuzzer>
-BuildFromArgs(const FuzzerArgs &fuzzer_args,
-              const GlobalFuzzerOptions &global_options) {
+std::unique_ptr<fuzzuf::fuzzer::Fuzzer> BuildFromArgs(
+    const FuzzerArgs &fuzzer_args, const GlobalFuzzerOptions &global_options) {
   namespace po = boost::program_options;
   po::positional_options_description pargs_desc;
   pargs_desc.add("fuzzer", 1);
@@ -23,9 +24,10 @@ BuildFromArgs(const FuzzerArgs &fuzzer_args,
   std::vector<std::string> pargs;
   afl_options.forksrv = true;
   fuzzer_desc.add(fuzzer_args.global_options_description)
-      .add_options()("dict_file,x", 
-          po::value<std::vector<std::string>>(&afl_options.dict_file)->composing(), 
-          "Load additional dictionary file.")(
+      .add_options()("dict_file,x",
+                     po::value<std::vector<std::string>>(&afl_options.dict_file)
+                         ->composing(),
+                     "Load additional dictionary file.")(
           "pargs", po::value<std::vector<std::string>>(&pargs),
           "Specify PUT and args for PUT.")(
           "frida",
@@ -72,15 +74,16 @@ BuildFromArgs(const FuzzerArgs &fuzzer_args,
       std::move(symcc_options),
       std::shared_ptr<executor::AFLSymCCExecutorInterface>(
           new executor::AFLSymCCExecutorInterface(
-              std::shared_ptr<fuzzuf::executor::NativeLinuxExecutor>(new fuzzuf::executor::NativeLinuxExecutor(
-                  std::move(symcc_args),
-                  global_options.exec_timelimit_ms.value_or(
-                      afl::option::GetExecTimeout<afl::option::AFLTag>()),
-                  global_options.exec_memlimit.value_or(
-                      afl::option::GetMemLimit<afl::option::AFLTag>()),
-                  false, fs::path(global_options.out_dir) / "cur_input", 0, 0,
-                  false, {"SYMCC_OUTPUT_DIR=" + symcc_dir.string()},
-                  {symcc_dir}))))));
+              std::shared_ptr<fuzzuf::executor::NativeLinuxExecutor>(
+                  new fuzzuf::executor::NativeLinuxExecutor(
+                      std::move(symcc_args),
+                      global_options.exec_timelimit_ms.value_or(
+                          afl::option::GetExecTimeout<afl::option::AFLTag>()),
+                      global_options.exec_memlimit.value_or(
+                          afl::option::GetMemLimit<afl::option::AFLTag>()),
+                      false, fs::path(global_options.out_dir) / "cur_input", 0,
+                      0, false, {"SYMCC_OUTPUT_DIR=" + symcc_dir.string()},
+                      {symcc_dir}))))));
 }
 
-} // namespace fuzzuf::cli::fuzzer::afl_symcc
+}  // namespace fuzzuf::cli::fuzzer::afl_symcc

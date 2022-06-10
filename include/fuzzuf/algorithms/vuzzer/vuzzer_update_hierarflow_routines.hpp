@@ -37,13 +37,14 @@ namespace fuzzuf::algorithm::vuzzer::routine::update {
 
 using VUzzerUpdInputType = double(const std::shared_ptr<VUzzerTestcase> &,
                                   feedback::FileFeedback &);
-using VUzzerUpdCalleeRef = NullableRef<HierarFlowCallee<VUzzerUpdInputType>>;
+using VUzzerUpdCalleeRef =
+    NullableRef<hierarflow::HierarFlowCallee<VUzzerUpdInputType>>;
 using VUzzerUpdOutputType = void(void);
 
 struct UpdateFitness
-    : public HierarFlowRoutine<VUzzerUpdInputType,
-                               void(const std::shared_ptr<VUzzerTestcase> &,
-                                    std::map<u64, u32> &)> {
+    : public hierarflow::HierarFlowRoutine<
+          VUzzerUpdInputType,
+          void(const std::shared_ptr<VUzzerTestcase> &, std::map<u64, u32> &)> {
  public:
   UpdateFitness(VUzzerState &state);
 
@@ -54,8 +55,8 @@ struct UpdateFitness
   VUzzerState &state;
 };
 
-struct UpdateTaint
-    : public HierarFlowRoutine<VUzzerUpdInputType, VUzzerUpdOutputType> {
+struct UpdateTaint : public hierarflow::HierarFlowRoutine<VUzzerUpdInputType,
+                                                          VUzzerUpdOutputType> {
  public:
   UpdateTaint(VUzzerState &state);
 
@@ -67,25 +68,26 @@ struct UpdateTaint
 };
 
 struct TrimQueue
-    : public HierarFlowRoutine<void(const std::shared_ptr<VUzzerTestcase> &,
-                                    std::map<u64, u32> &),
-                               VUzzerUpdOutputType> {
+    : public hierarflow::HierarFlowRoutine<
+          void(const std::shared_ptr<VUzzerTestcase> &, std::map<u64, u32> &),
+          VUzzerUpdOutputType> {
  public:
   TrimQueue(VUzzerState &state);
 
-  NullableRef<HierarFlowCallee<void(const std::shared_ptr<VUzzerTestcase> &,
-                                    std::map<u64, u32> &)>>
+  NullableRef<hierarflow::HierarFlowCallee<
+      void(const std::shared_ptr<VUzzerTestcase> &, std::map<u64, u32> &)>>
   operator()(const std::shared_ptr<VUzzerTestcase> &, std::map<u64, u32> &);
 
  private:
   VUzzerState &state;
 };
 
-struct UpdateQueue : public HierarFlowRoutine<void(void), void(void)> {
+struct UpdateQueue
+    : public hierarflow::HierarFlowRoutine<void(void), void(void)> {
  public:
   UpdateQueue(VUzzerState &state);
 
-  NullableRef<HierarFlowCallee<void(void)>> operator()(void);
+  NullableRef<hierarflow::HierarFlowCallee<void(void)>> operator()(void);
 
  private:
   VUzzerState &state;

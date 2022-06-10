@@ -11,5 +11,4 @@ bool CheckIfStringIsDecimal(const char *cstr) {
   std::string str(cstr);
   return CheckIfStringIsDecimal(str);
 }
-}
-
+}  // namespace fuzzuf::utils

@@ -1,7 +1,7 @@
 /*
  * fuzzuf
  * Copyright (C) 2021 Ricerca Security
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -18,7 +18,17 @@
 #ifndef __COMMON_HPP__
 #define __COMMON_HPP__
 
-#include "fuzzuf/utils/status.hpp"
+#include <ctype.h>
+#include <dirent.h>
+#include <fcntl.h>
+#include <sys/mman.h>
+#include <sys/resource.h>
+#include <sys/shm.h>
+#include <sys/stat.h>
+#include <sys/time.h>
+#include <sys/types.h>
+#include <sys/wait.h>
+#include <unistd.h>
 
 #include <algorithm>
 #include <array>
@@ -28,10 +38,7 @@
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
-#include <ctype.h>
-#include <dirent.h>
 #include <exception>
-#include <fcntl.h>
 #include <fstream>
 #include <functional>
 #include <iostream>
@@ -43,18 +50,12 @@
 #include <queue>
 #include <set>
 #include <string>
-#include <sys/mman.h>
-#include <sys/resource.h>
-#include <sys/shm.h>
-#include <sys/stat.h>
-#include <sys/time.h>
-#include <sys/types.h>
-#include <sys/wait.h>
 #include <system_error>
 #include <tuple>
-#include <unistd.h>
 #include <unordered_map>
 #include <vector>
+
+#include "fuzzuf/utils/status.hpp"
 
 typedef uint8_t u8;
 typedef uint16_t u16;
@@ -71,20 +72,20 @@ typedef int32_t s32;
 typedef int64_t s64;
 
 namespace fuzzuf::executor {
-using output_t = std::vector< std::uint8_t >;
+using output_t = std::vector<std::uint8_t>;
 }
 
-#define SWAP16(_x)                                                             \
-  ({                                                                           \
-    u16 _ret = (_x);                                                           \
-    (u16)((_ret << 8) | (_ret >> 8));                                          \
+#define SWAP16(_x)                    \
+  ({                                  \
+    u16 _ret = (_x);                  \
+    (u16)((_ret << 8) | (_ret >> 8)); \
   })
 
-#define SWAP32(_x)                                                             \
-  ({                                                                           \
-    u32 _ret = (_x);                                                           \
-    (u32)((_ret << 24) | (_ret >> 24) | ((_ret << 8) & 0x00FF0000) |           \
-          ((_ret >> 8) & 0x0000FF00));                                         \
+#define SWAP32(_x)                                                   \
+  ({                                                                 \
+    u32 _ret = (_x);                                                 \
+    (u32)((_ret << 24) | (_ret >> 24) | ((_ret << 8) & 0x00FF0000) | \
+          ((_ret >> 8) & 0x0000FF00));                               \
   })
 
 #define likely(_x) __builtin_expect(!!(_x), 1)
@@ -104,8 +105,8 @@ using output_t = std::vector< std::uint8_t >;
 #else
 // To avoid Wempty-body in "if (...) DEBUG_ASSERT(...);",
 // we need some value.
-#define DEBUG_ASSERT(...)                                                      \
-  do {                                                                         \
+#define DEBUG_ASSERT(...) \
+  do {                    \
   } while (0)
 #endif
 
@@ -114,16 +115,17 @@ using output_t = std::vector< std::uint8_t >;
 // Instead of T*, we should use T& and this in usual cases because T* is
 // ambiguous in the point that we can't see whether the pointer refers to array
 // or an element also raw pointers are relatively dangerous
-template <class T> using NullableRef = std::optional<std::reference_wrapper<T>>;
+template <class T>
+using NullableRef = std::optional<std::reference_wrapper<T>>;
 
 class InvalidOption : public std::invalid_argument {
-public:
+ public:
   InvalidOption(const std::string &what_arg)
       : std::invalid_argument(what_arg) {}
 };
 
 class FileError : public std::invalid_argument {
-public:
+ public:
   FileError(const std::string &what_arg) : std::invalid_argument(what_arg) {}
 };
 
@@ -148,7 +150,7 @@ template<class T>
 using GetFuncArgsType = typename func_trait<T>::args_type_t;
 */
 
-int ExecuteCommand(std::vector<std::string>& args);
+int ExecuteCommand(std::vector<std::string> &args);
 
 void CreateDir(std::string path);
 
@@ -209,14 +211,14 @@ std::string StrPrintf(const char *format, ...);
 u64 GlobalCounter();
 
 class set_segv_handler {
-public:
+ public:
   set_segv_handler(const set_segv_handler &) = delete;
   set_segv_handler(set_segv_handler &&) = delete;
   set_segv_handler &operator-(const set_segv_handler &) = delete;
   set_segv_handler &operator=(set_segv_handler &&) = delete;
   static const set_segv_handler &get();
 
-private:
+ private:
   set_segv_handler();
 };
 /**
@@ -287,6 +289,6 @@ void log(std::string &&tag, nlohmann::json &&message,
  **/
 status_t log(std::string &&tag, nlohmann::json &&message);
 
-}; // namespace fuzzuf::utils
+};  // namespace fuzzuf::utils
 
 #endif

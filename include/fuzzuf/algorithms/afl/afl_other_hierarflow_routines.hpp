@@ -32,11 +32,12 @@ namespace fuzzuf::algorithm::afl::routine::other {
 // middle nodes(steps done before and after actual mutations)
 
 template <class State>
-struct CullQueueTemplate : public HierarFlowRoutine<void(void), void(void)> {
+struct CullQueueTemplate
+    : public hierarflow::HierarFlowRoutine<void(void), void(void)> {
  public:
   CullQueueTemplate(State &state);
 
-  NullableRef<HierarFlowCallee<void(void)>> operator()(void);
+  NullableRef<hierarflow::HierarFlowCallee<void(void)>> operator()(void);
 
  private:
   State &state;
@@ -46,12 +47,12 @@ using CullQueue = CullQueueTemplate<AFLState>;
 
 template <class State>
 struct SelectSeedTemplate
-    : public HierarFlowRoutine<
+    : public hierarflow::HierarFlowRoutine<
           void(void), bool(std::shared_ptr<typename State::OwnTestcase>)> {
  public:
   SelectSeedTemplate(State &state);
 
-  NullableRef<HierarFlowCallee<void(void)>> operator()(void);
+  NullableRef<hierarflow::HierarFlowCallee<void(void)>> operator()(void);
 
  private:
   State &state;
@@ -64,15 +65,16 @@ template <class State>
 using AFLMidInputType = bool(std::shared_ptr<typename State::OwnTestcase>);
 
 template <class State>
-using AFLMidCalleeRef = NullableRef<HierarFlowCallee<AFLMidInputType<State>>>;
+using AFLMidCalleeRef =
+    NullableRef<hierarflow::HierarFlowCallee<AFLMidInputType<State>>>;
 
 template <class State>
 using AFLMidOutputType = bool(AFLMutatorTemplate<State> &);
 
 template <class State>
 struct ConsiderSkipMutTemplate
-    : public HierarFlowRoutine<AFLMidInputType<State>,
-                               AFLMidOutputType<State>> {
+    : public hierarflow::HierarFlowRoutine<AFLMidInputType<State>,
+                                           AFLMidOutputType<State>> {
  public:
   ConsiderSkipMutTemplate(State &state);
 
@@ -87,8 +89,8 @@ using ConsiderSkipMut = ConsiderSkipMutTemplate<AFLState>;
 
 template <class State>
 struct RetryCalibrateTemplate
-    : public HierarFlowRoutine<AFLMidInputType<State>,
-                               AFLMidOutputType<State>> {
+    : public hierarflow::HierarFlowRoutine<AFLMidInputType<State>,
+                                           AFLMidOutputType<State>> {
  public:
   RetryCalibrateTemplate(State &state, AFLMidCalleeRef<State> abandon_entry);
 
@@ -103,8 +105,9 @@ struct RetryCalibrateTemplate
 using RetryCalibrate = RetryCalibrateTemplate<AFLState>;
 
 template <class State>
-struct TrimCaseTemplate : public HierarFlowRoutine<AFLMidInputType<State>,
-                                                   AFLMidOutputType<State>> {
+struct TrimCaseTemplate
+    : public hierarflow::HierarFlowRoutine<AFLMidInputType<State>,
+                                           AFLMidOutputType<State>> {
  public:
   TrimCaseTemplate(State &state, AFLMidCalleeRef<State> abandon_entry);
 
@@ -119,8 +122,9 @@ struct TrimCaseTemplate : public HierarFlowRoutine<AFLMidInputType<State>,
 using TrimCase = TrimCaseTemplate<AFLState>;
 
 template <class State>
-struct CalcScoreTemplate : public HierarFlowRoutine<AFLMidInputType<State>,
-                                                    AFLMidOutputType<State>> {
+struct CalcScoreTemplate
+    : public hierarflow::HierarFlowRoutine<AFLMidInputType<State>,
+                                           AFLMidOutputType<State>> {
  public:
   CalcScoreTemplate(State &state);
 
@@ -135,8 +139,8 @@ using CalcScore = CalcScoreTemplate<AFLState>;
 
 template <class State>
 struct ApplyDetMutsTemplate
-    : public HierarFlowRoutine<AFLMidInputType<State>,
-                               AFLMidOutputType<State>> {
+    : public hierarflow::HierarFlowRoutine<AFLMidInputType<State>,
+                                           AFLMidOutputType<State>> {
  public:
   ApplyDetMutsTemplate(State &state, AFLMidCalleeRef<State> abandon_entry);
 
@@ -152,8 +156,8 @@ using ApplyDetMuts = ApplyDetMutsTemplate<AFLState>;
 
 template <class State>
 struct ApplyRandMutsTemplate
-    : public HierarFlowRoutine<AFLMidInputType<State>,
-                               AFLMidOutputType<State>> {
+    : public hierarflow::HierarFlowRoutine<AFLMidInputType<State>,
+                                           AFLMidOutputType<State>> {
  public:
   ApplyRandMutsTemplate(State &state, AFLMidCalleeRef<State> abandon_entry);
 
@@ -169,8 +173,8 @@ using ApplyRandMuts = ApplyRandMutsTemplate<AFLState>;
 
 template <class State>
 struct AbandonEntryTemplate
-    : public HierarFlowRoutine<AFLMidInputType<State>,
-                               AFLMidOutputType<State>> {
+    : public hierarflow::HierarFlowRoutine<AFLMidInputType<State>,
+                                           AFLMidOutputType<State>> {
  public:
   AbandonEntryTemplate(State &state);
 
@@ -185,15 +189,15 @@ using AbandonEntry = AbandonEntryTemplate<AFLState>;
 
 template <class State>
 struct ExecutePUTTemplate
-    : public HierarFlowRoutine<bool(const u8 *, u32),
-                               bool(const u8 *, u32,
-                                    feedback::InplaceMemoryFeedback &,
-                                    feedback::ExitStatusFeedback &)> {
+    : public hierarflow::HierarFlowRoutine<
+          bool(const u8 *, u32),
+          bool(const u8 *, u32, feedback::InplaceMemoryFeedback &,
+               feedback::ExitStatusFeedback &)> {
  public:
   ExecutePUTTemplate(State &state);
 
-  NullableRef<HierarFlowCallee<bool(const u8 *, u32)>> operator()(const u8 *,
-                                                                  u32);
+  NullableRef<hierarflow::HierarFlowCallee<bool(const u8 *, u32)>> operator()(
+      const u8 *, u32);
 
  private:
   State &state;

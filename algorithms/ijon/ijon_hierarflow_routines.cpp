@@ -32,12 +32,14 @@ SelectSeed::SelectSeed(struct IJONState &state) : state(state) {}
  * Corresponding code of original IJON implementation:
  * https://github.com/RUB-SysSec/ijon/blob/4cb8ae04d/afl-fuzz.c#L4977-L5002
  */
-NullableRef<HierarFlowCallee<void(void)>> SelectSeed::operator()(void) {
-  StdoutLogger::Println("scheduled max input!!!!");
+NullableRef<hierarflow::HierarFlowCallee<void(void)>> SelectSeed::operator()(
+    void) {
+  utils::StdoutLogger::Println("scheduled max input!!!!");
 
   u32 idx = afl::util::UR(state.nonempty_inputs.size(), state.rand_fd);
   auto &selected_input = *state.nonempty_inputs[idx];
-  StdoutLogger::Println("schedule: " + selected_input.GetPath().string());
+  utils::StdoutLogger::Println("schedule: " +
+                               selected_input.GetPath().string());
 
   state.orig_perf = 100;
 
@@ -60,7 +62,7 @@ PrintAflIsSelected::PrintAflIsSelected() {}
  * https://github.com/RUB-SysSec/ijon/blob/4cb8ae04d/afl-fuzz.c#L5035
  */
 IJONMidCalleeRef PrintAflIsSelected::operator()(std::shared_ptr<IJONTestcase>) {
-  StdoutLogger::Println("scheduled normal input!!!!");
+  utils::StdoutLogger::Println("scheduled normal input!!!!");
   return GoToDefaultNext();
 }
 
@@ -71,7 +73,7 @@ namespace mutation {
 using HavocBase = afl::routine::mutation::HavocBaseTemplate<IJONState>;
 using IJONMutCaleeRef = afl::routine::mutation::AFLMutCalleeRef<IJONState>;
 
-MaxHavoc::MaxHavoc(IJONState& state) : HavocBase(state) {}
+MaxHavoc::MaxHavoc(IJONState &state) : HavocBase(state) {}
 
 /**
  * Corresponding code of original IJON implementation:
@@ -119,9 +121,9 @@ static void StoreMaxInput(IJONState &state, u32 idx, const u8 *data, u32 len) {
  * Corresponding code of original IJON implementation:
  * https://github.com/RUB-SysSec/ijon/blob/4cb8ae04d/afl-ijon-min.c#L68-L83
  */
-IJONUpdCalleeRef IJONUpdate::operator()(const u8 *buf, u32 len,
-                                        feedback::InplaceMemoryFeedback &inp_feed,
-                                        feedback::ExitStatusFeedback &exit_status) {
+IJONUpdCalleeRef IJONUpdate::operator()(
+    const u8 *buf, u32 len, feedback::InplaceMemoryFeedback &inp_feed,
+    feedback::ExitStatusFeedback &exit_status) {
   // Originally, this procedure is done in save_if_interesting.
   // And the update occurs only if the following condition is not met.
   if (exit_status.exit_reason != state.crash_mode) return GoToDefaultNext();
@@ -145,12 +147,12 @@ IJONUpdCalleeRef IJONUpdate::operator()(const u8 *buf, u32 len,
         }
 
         state.max_map[i] = afl_max[i];
-        StdoutLogger::Println(fuzzuf::utils::StrPrintf(
+        utils::StdoutLogger::Println(fuzzuf::utils::StrPrintf(
             "updated maxmap %d: %lx (len: %ld)", i, state.max_map[i], len));
       } else if (should_minify && afl_max[i] == state.max_map[i] &&
                  len < state.all_inputs[i]->GetLen()) {
         need_update = true;
-        StdoutLogger::Println(fuzzuf::utils::StrPrintf(
+        utils::StdoutLogger::Println(fuzzuf::utils::StrPrintf(
             "minimized maxmap %d: %lx (len: %ld)", i, state.max_map[i], len));
       }
 

@@ -1,7 +1,7 @@
 /*
  * fuzzuf
  * Copyright (C) 2022 Ricerca Security
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -24,11 +24,11 @@
 #define FUZZUF_INCLUDE_ALGORITHMS_NAUTILUS_FUZZER_MUTATION_HIERARFLOW_ROUTINES_HPP
 
 #include <memory>
+
 #include "fuzzuf/algorithms/nautilus/fuzzer/state.hpp"
 #include "fuzzuf/hierarflow/hierarflow_intermediates.hpp"
 #include "fuzzuf/hierarflow/hierarflow_node.hpp"
 #include "fuzzuf/hierarflow/hierarflow_routine.hpp"
-
 
 namespace fuzzuf::algorithm::nautilus::fuzzer::routine::mutation {
 
@@ -39,46 +39,51 @@ using OProcessInput = void(QueueItem&);
  */
 // ProcessInput <--> InitializeState
 using IInitializeState = OProcessInput;
-using RInitializeState = NullableRef<HierarFlowCallee<IInitializeState>>;
+using RInitializeState =
+    NullableRef<hierarflow::HierarFlowCallee<IInitializeState>>;
 // InitializeState <--> N/A
 using OInitializeState = void(void);
 
 // ProcessInput <--> ApplyDetMuts
 using IApplyDetMuts = OProcessInput;
-using RApplyDetMuts = NullableRef<HierarFlowCallee<IApplyDetMuts>>;
+using RApplyDetMuts = NullableRef<hierarflow::HierarFlowCallee<IApplyDetMuts>>;
 // ApplyDetMuts <--> MutSplice/MutHavoc/MutHavocRecursion
 using OApplyDetMuts = void(QueueItem&);
 
 // ProcessInput <--> ApplyRandMuts
 using IApplyRandMuts = OProcessInput;
-using RApplyRandMuts = NullableRef<HierarFlowCallee<IApplyRandMuts>>;
+using RApplyRandMuts =
+    NullableRef<hierarflow::HierarFlowCallee<IApplyRandMuts>>;
 // ApplyRandMuts <--> MutSplice/MutHavoc/MutHavocRecursion
 using OApplyRandMuts = void(QueueItem&);
 
 /* initialize_state */
-struct InitializeState : HierarFlowRoutine<IInitializeState, OInitializeState> {
+struct InitializeState
+    : hierarflow::HierarFlowRoutine<IInitializeState, OInitializeState> {
   InitializeState(NautilusState& state) : state(state) {}
   RInitializeState operator()(QueueItem&);
 
-private:
+ private:
   NautilusState& state;
 };
 
 /* apply_det_muts */
-struct ApplyDetMuts : HierarFlowRoutine<IApplyDetMuts, OApplyDetMuts> {
+struct ApplyDetMuts
+    : hierarflow::HierarFlowRoutine<IApplyDetMuts, OApplyDetMuts> {
   ApplyDetMuts(NautilusState& state) : state(state) {}
   RApplyDetMuts operator()(QueueItem&);
 
-private:
+ private:
   NautilusState& state;
 };
 
 /* apply_rand_muts */
-struct ApplyRandMuts : HierarFlowRoutine<IApplyRandMuts, OApplyRandMuts> {
+struct ApplyRandMuts
+    : hierarflow::HierarFlowRoutine<IApplyRandMuts, OApplyRandMuts> {
   ApplyRandMuts(NautilusState& state) : state(state) {}
   RApplyRandMuts operator()(QueueItem&);
 
-private:
+ private:
   NautilusState& state;
 };
 
@@ -87,64 +92,64 @@ private:
  */
 // ApplyDetMuts <--> MutRules
 using IMutRules = OApplyDetMuts;
-using RMutRules = NullableRef<HierarFlowCallee<IMutRules>>;
+using RMutRules = NullableRef<hierarflow::HierarFlowCallee<IMutRules>>;
 // MutRules <--> N/A
 using OMutRules = void(void);
 
 // ApplyDetMuts/ApplyRandMuts <--> Splice
-using IMutSplice = OApplyDetMuts; // == OApplyRandMuts
-using RMutSplice = NullableRef<HierarFlowCallee<IMutSplice>>;
+using IMutSplice = OApplyDetMuts;  // == OApplyRandMuts
+using RMutSplice = NullableRef<hierarflow::HierarFlowCallee<IMutSplice>>;
 // MutSplice <--> N/A
 using OMutSplice = void(void);
 
 // ApplyDetMuts/ApplyRandMuts <--> MutHavoc
-using IMutHavoc = OApplyDetMuts; // == OApplyRandMuts
-using RMutHavoc = NullableRef<HierarFlowCallee<IMutHavoc>>;
+using IMutHavoc = OApplyDetMuts;  // == OApplyRandMuts
+using RMutHavoc = NullableRef<hierarflow::HierarFlowCallee<IMutHavoc>>;
 // MutHavoc <--> N/A
 using OMutHavoc = void(void);
 
 // ApplyDetMuts/ApplyRandMuts <--> HavocRec
-using IMutHavocRec = OApplyDetMuts; // == OApplyRandMuts
-using RMutHavocRec = NullableRef<HierarFlowCallee<IMutHavocRec>>;
+using IMutHavocRec = OApplyDetMuts;  // == OApplyRandMuts
+using RMutHavocRec = NullableRef<hierarflow::HierarFlowCallee<IMutHavocRec>>;
 // Havoc <--> N/A
 using OMutHavocRec = void(void);
 
 /* rules mutation */
-struct MutRules : HierarFlowRoutine<IMutRules, OMutRules> {
+struct MutRules : hierarflow::HierarFlowRoutine<IMutRules, OMutRules> {
   MutRules(NautilusState& state) : state(state) {}
   RMutRules operator()(QueueItem&);
 
-private:
+ private:
   NautilusState& state;
 };
 
 /* splice */
-struct MutSplice : HierarFlowRoutine<IMutSplice, OMutSplice> {
+struct MutSplice : hierarflow::HierarFlowRoutine<IMutSplice, OMutSplice> {
   MutSplice(NautilusState& state) : state(state) {}
   RMutSplice operator()(QueueItem&);
 
-private:
+ private:
   NautilusState& state;
 };
 
 /* havoc */
-struct MutHavoc : HierarFlowRoutine<IMutHavoc, OMutHavoc> {
+struct MutHavoc : hierarflow::HierarFlowRoutine<IMutHavoc, OMutHavoc> {
   MutHavoc(NautilusState& state) : state(state) {}
   RMutHavoc operator()(QueueItem&);
 
-private:
+ private:
   NautilusState& state;
 };
 
 /* havoc_rec */
-struct MutHavocRec : HierarFlowRoutine<IMutHavocRec, OMutHavocRec> {
+struct MutHavocRec : hierarflow::HierarFlowRoutine<IMutHavocRec, OMutHavocRec> {
   MutHavocRec(NautilusState& state) : state(state) {}
   RMutHavocRec operator()(QueueItem&);
 
-private:
+ private:
   NautilusState& state;
 };
 
-} // namespace fuzzuf::algorithm::nautilus::fuzzer::routine::mutation
+}  // namespace fuzzuf::algorithm::nautilus::fuzzer::routine::mutation
 
 #endif

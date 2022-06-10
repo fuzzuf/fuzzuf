@@ -1,7 +1,7 @@
 /*
  * fuzzuf
  * Copyright (C) 2021 Ricerca Security
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -39,11 +39,12 @@ namespace fuzzuf::algorithm::libfuzzer {
  * @tparam F Function type to define what arguments passes through this node.
  * @tparam Path Struct path to define which value to to use.
  */
-template <typename F, typename Path> struct AddToSolution {};
+template <typename F, typename Path>
+struct AddToSolution {};
 template <typename R, typename... Args, typename Path>
 struct AddToSolution<R(Args...), Path>
-    : public HierarFlowRoutine<R(Args...), R(Args...)> {
-public:
+    : public hierarflow::HierarFlowRoutine<R(Args...), R(Args...)> {
+ public:
   FUZZUF_ALGORITHM_LIBFUZZER_HIERARFLOW_STANDARD_TYPEDEFS
   /**
    * Constructor
@@ -69,7 +70,7 @@ public:
     FUZZUF_ALGORITHM_LIBFUZZER_HIERARFLOW_STANDARD_END(AddToSolution)
   }
 
-private:
+ private:
   bool crashed_only;
   fs::path path_prefix;
 };
@@ -79,8 +80,8 @@ using AddToSolutionStdArgOrderT = decltype(T::input && T::exec_result);
 template <typename F, typename Ord>
 using AddToSolution =
     libfuzzer::AddToSolution<F, AddToSolutionStdArgOrderT<Ord>>;
-} // namespace standard_order
+}  // namespace standard_order
 
-} // namespace fuzzuf::algorithm::libfuzzer
+}  // namespace fuzzuf::algorithm::libfuzzer
 
 #endif

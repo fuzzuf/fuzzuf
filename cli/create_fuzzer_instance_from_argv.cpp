@@ -28,11 +28,11 @@
 
 namespace fuzzuf::cli {
 
-std::unique_ptr<Fuzzer> CreateFuzzerInstanceFromArgv(int argc,
-                                                     const char **argv) {
+std::unique_ptr<fuzzer::Fuzzer> CreateFuzzerInstanceFromArgv(
+    int argc, const char **argv) {
   // Explicitly enable logging to stdout as Logger does not get confirmed before
   // parsing command line options
-  StdoutLogger::Enable();
+  utils::StdoutLogger::Enable();
 
   GlobalFuzzerOptions global_options;
 
@@ -42,13 +42,13 @@ std::unique_ptr<Fuzzer> CreateFuzzerInstanceFromArgv(int argc,
 
   // Follow the command line, and initialize a logger instance which gets and
   // saves the logs
-  StdoutLogger::Disable();
-  if (global_options.logger == Logger::Stdout) {
-    StdoutLogger::Enable();
-  } else if (global_options.logger == Logger::LogFile) {
+  utils::StdoutLogger::Disable();
+  if (global_options.logger == utils::Logger::Stdout) {
+    utils::StdoutLogger::Enable();
+  } else if (global_options.logger == utils::Logger::LogFile) {
     if (global_options.log_file.has_value()) {
       DEBUG("LogFile logger is enabled");
-      LogFileLogger::Init(global_options.log_file.value());
+      utils::LogFileLogger::Init(global_options.log_file.value());
     } else {
       throw exceptions::cli_error(
           "LogFile logger is specified, but log_file "

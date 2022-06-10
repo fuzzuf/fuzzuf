@@ -34,7 +34,7 @@
 
 namespace fuzzuf::bindings::python {
 
-class PythonFuzzer : public Fuzzer {
+class PythonFuzzer : public fuzzer::Fuzzer {
  public:
   explicit PythonFuzzer(const std::vector<std::string> &argv,
                         const std::string &in, const std::string &out,
@@ -77,14 +77,16 @@ class PythonFuzzer : public Fuzzer {
   using PyMutOutputType = fuzzuf::bindings::python::routine::PyMutOutputType;
   using PyUpdInputType = fuzzuf::bindings::python::routine::PyUpdInputType;
 
-  HierarFlowNode<void(u32, u32), PyMutOutputType> bit_flip;
-  HierarFlowNode<void(u32, u32), PyMutOutputType> byte_flip;
-  HierarFlowNode<void(u32), PyMutOutputType> havoc;
-  HierarFlowNode<void(u32, int, int, bool), PyMutOutputType> add;
-  HierarFlowNode<void(u32, int, int, bool), PyMutOutputType> sub;
-  HierarFlowNode<void(u32, int, u32, bool), PyMutOutputType> interest;
-  HierarFlowNode<void(u32, char), PyMutOutputType> overwrite;
-  HierarFlowNode<void(const u8 *, u32), u64(const u8 *, u32)> add_seed;
+  hierarflow::HierarFlowNode<void(u32, u32), PyMutOutputType> bit_flip;
+  hierarflow::HierarFlowNode<void(u32, u32), PyMutOutputType> byte_flip;
+  hierarflow::HierarFlowNode<void(u32), PyMutOutputType> havoc;
+  hierarflow::HierarFlowNode<void(u32, int, int, bool), PyMutOutputType> add;
+  hierarflow::HierarFlowNode<void(u32, int, int, bool), PyMutOutputType> sub;
+  hierarflow::HierarFlowNode<void(u32, int, u32, bool), PyMutOutputType>
+      interest;
+  hierarflow::HierarFlowNode<void(u32, char), PyMutOutputType> overwrite;
+  hierarflow::HierarFlowNode<void(const u8 *, u32), u64(const u8 *, u32)>
+      add_seed;
 
   // 以下はすべてPythonFuzzer::Reset用にunique_ptrになっている。別にResetがなければ例えばPythonState
   // stateでいい

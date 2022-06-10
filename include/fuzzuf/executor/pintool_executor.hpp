@@ -1,7 +1,7 @@
 /*
  * fuzzuf
  * Copyright (C) 2021 Ricerca Security
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -21,18 +21,12 @@
 
 namespace fuzzuf::executor {
 class PinToolExecutor : public BaseProxyExecutor {
-public:
+ public:
+  PinToolExecutor(const fs::path &proxy_path,
+                  const std::vector<std::string> &pargv,
+                  const std::vector<std::string> &argv, u32 exec_timelimit_ms,
+                  u64 exec_memlimit, const fs::path &path_to_write_input);
 
-    PinToolExecutor(  
-        const fs::path &proxy_path,
-        const std::vector<std::string> &pargv,             
-        const std::vector<std::string> &argv,
-        u32 exec_timelimit_ms,
-        u64 exec_memlimit,
-        const fs::path &path_to_write_input
-    );
-
-    void SetCArgvAndDecideInputMode();
+  void SetCArgvAndDecideInputMode();
 };
-}
-
+}  // namespace fuzzuf::executor

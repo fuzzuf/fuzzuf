@@ -1,7 +1,7 @@
 /*
  * fuzzuf
  * Copyright (C) 2021 Ricerca Security
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -15,12 +15,13 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see http://www.gnu.org/licenses/.
  */
-#include "config.h"
 #include <cassert>
 #include <future>
 #include <memory>
 #include <numeric>
 #include <thread>
+
+#include "config.h"
 #ifdef HAS_CXX_STD_BIT
 #include <bit>
 #endif
@@ -31,19 +32,21 @@ namespace filesystem = std::filesystem;
 #include <boost/filesystem.hpp>
 namespace filesystem = boost::filesystem;
 #endif
+#include <config.h>
+
 #include <boost/asio.hpp>
 #include <boost/spirit/include/karma.hpp>
 #include <boost/stacktrace.hpp>
-#include <config.h>
 #include <nlohmann/json.hpp>
 #ifdef FLC_FOUND
 #include <flc/flc.hpp>
 #endif
+#include <execinfo.h>
+#include <signal.h>
+
 #include "fuzzuf/logger/logger.hpp"
 #include "fuzzuf/utils/common.hpp"
 #include "fuzzuf/utils/errno_to_system_error.hpp"
-#include <execinfo.h>
-#include <signal.h>
 
 /* Maximum line length passed from GCC to 'as' and used for parsing
    configuration files: */
@@ -66,40 +69,35 @@ namespace fuzzuf::utils {
  * @brief Execute external command with arguments
  * @param (args) Argument vector
  */
-int ExecuteCommand(std::vector<std::string>& args) {
-  if (args.size() == 0)
-    return -1; // Too short arguments
+int ExecuteCommand(std::vector<std::string> &args) {
+  if (args.size() == 0) return -1;  // Too short arguments
 
   auto pid = fork();
-  if (pid < 0)
-    ERROR("fork() failed");
+  if (pid < 0) ERROR("fork() failed");
 
   if (pid == 0) {
     /* Child process: Execute command */
     // Prepare arguments
     char **argv = new char *[args.size() + 1];
 
-    for (size_t i = 0; i < args.size(); i++)
-      argv[i] = strdup(args[i].c_str());
+    for (size_t i = 0; i < args.size(); i++) argv[i] = strdup(args[i].c_str());
 
     argv[args.size()] = NULL;
 
     // Execute command
     if (execvp(args[0].c_str(), argv) == -1) {
       std::string cmd = "";
-      for (auto arg: args)
-        cmd += arg + " ";
+      for (auto arg : args) cmd += arg + " ";
       ERROR("execvp() failed: %s", cmd.c_str());
     }
 
-    _exit(-1); // Unreachable
+    _exit(-1);  // Unreachable
 
   } else {
     /* Parent process: Wait for child*/
     int wstatus;
 
-    if (waitpid(pid, &wstatus, 0) < 0)
-      ERROR("waitpid() failed");
+    if (waitpid(pid, &wstatus, 0) < 0) ERROR("waitpid() failed");
 
     return WEXITSTATUS(wstatus);
   }
@@ -119,15 +117,13 @@ void CreateDir(std::string path) {
 
 int OpenFile(std::string path, int flag) {
   int fd = open(path.c_str(), flag);
-  if (fd < 0)
-    throw FileError("Unable to open file: " + path);
+  if (fd < 0) throw FileError("Unable to open file: " + path);
   return fd;
 }
 
 int OpenFile(std::string path, int flag, mode_t mode) {
   int fd = open(path.c_str(), flag, mode);
-  if (fd < 0)
-    throw FileError("Unable to open file: " + path);
+  if (fd < 0) throw FileError("Unable to open file: " + path);
   return fd;
 }
 
@@ -186,7 +182,9 @@ ssize_t write_n(int fd, const void *buf, size_t n) {
 ssize_t ReadFile(int fd, void *buf, u32 len, bool original_behaviour) {
   ssize_t nbytes = read_n(fd, buf, len, original_behaviour);
   if (nbytes != len) {
-    throw FileError(StrPrintf("Failed to read exact len bytes: fd=%d, len=%d, nbytes=%d", fd, len, nbytes));
+    throw FileError(
+        StrPrintf("Failed to read exact len bytes: fd=%d, len=%d, nbytes=%d",
+                  fd, len, nbytes));
   }
   return nbytes;
 }
@@ -195,7 +193,9 @@ ssize_t ReadFile(int fd, void *buf, u32 len, bool original_behaviour) {
 ssize_t WriteFile(int fd, const void *buf, u32 len) {
   ssize_t nbytes = write_n(fd, buf, len);
   if (nbytes != len) {
-    throw FileError(StrPrintf("Failed to write exact len bytes: fd=%d, len=%d, nbytes=%d", fd, len, nbytes));
+    throw FileError(
+        StrPrintf("Failed to write exact len bytes: fd=%d, len=%d, nbytes=%d",
+                  fd, len, nbytes));
   }
   return nbytes;
 }
@@ -205,9 +205,9 @@ ssize_t ReadFileAll(int fd, fuzzuf::executor::output_t &buf) {
   if (size < 0) {
     throw FileError(StrPrintf("Failed to get file size: fd=%d", fd));
   }
-  
+
   buf.resize(size);
-  assert(buf.size() == (size_t) size);
+  assert(buf.size() == (size_t)size);
   return ReadFile(fd, buf.data(), size, true);
 }
 
@@ -249,7 +249,7 @@ u32 ReadFileTimed(int fd, void *buf, u32 len, u32 timeout_ms) {
 
     // 戻り値が正、0、負で場合分け
     if (likely(sret >
-               0)) { // 戻り値が正の時、fdから読み出し準備ができているはず
+               0)) {  // 戻り値が正の時、fdから読み出し準備ができているはず
       // 読み出し処理。ただしreadがシグナル割り込みなどで失敗する可能性があるため、do
       // whileで囲む
       do {
@@ -267,23 +267,23 @@ u32 ReadFileTimed(int fd, void *buf, u32 len, u32 timeout_ms) {
         timeout.tv_usec = (remain_ms % 1000) * 1000;
 #endif
 
-        if (likely(rret) > 0) { // fdからバイトが読めている、ただし
-                                // lenバイト読めているかは分からない
-          nread += rret;              // 今まで読んだバイト数を合算
-          if (likely(nread == len)) { // 一致していたらreturnしてよい
+        if (likely(rret) > 0) {  // fdからバイトが読めている、ただし
+                                 // lenバイト読めているかは分からない
+          nread += rret;  // 今まで読んだバイト数を合算
+          if (likely(nread == len)) {  // 一致していたらreturnしてよい
             return std::max<u32>(
-                exec_ms, 1); // 0を返すとエラーになってしまうので1で切り上げる
+                exec_ms, 1);  // 0を返すとエラーになってしまうので1で切り上げる
           }
-          break; // 一致していない場合はまだreadがいる。ただしselectに戻るのでbreak
+          break;  // 一致していない場合はまだreadがいる。ただしselectに戻るのでbreak
         } else if (
             unlikely(
                 rret ==
-                0)) { // 0が返ってきたらファイルの末端に来ているということ。lenバイト読めないので失敗
+                0)) {  // 0が返ってきたらファイルの末端に来ているということ。lenバイト読めないので失敗
           return 0;
         } else if (
             errno != EINTR && errno != EAGAIN &&
             errno !=
-                EWOULDBLOCK) { // この時点でrretは-1確定。先に完全なエラーのみ処理
+                EWOULDBLOCK) {  // この時点でrretは-1確定。先に完全なエラーのみ処理
           return 0;
         }
 
@@ -298,7 +298,7 @@ u32 ReadFileTimed(int fd, void *buf, u32 len, u32 timeout_ms) {
       } while (1);
     } else if (unlikely(
                    sret ==
-                   0)) { // タイムアウトしてselectがreturnしたことを意味する
+                   0)) {  // タイムアウトしてselectがreturnしたことを意味する
       return timeout_ms + 1;
     }
 
@@ -307,8 +307,7 @@ u32 ReadFileTimed(int fd, void *buf, u32 len, u32 timeout_ms) {
     // loopになるレアケースがあるか（ないと思うし時間計測頻繁にやると重いのであまり入れたくない）
     // 現状timeoutの修正をreadのloop内でやっているため、外側だけをloopされるとbusy
     // loopになる恐れはなくはない
-    if (likely(errno == EINTR))
-      continue;
+    if (likely(errno == EINTR)) continue;
 
     // その他何かしらの失敗なのでエラー
     return 0;
@@ -369,12 +368,10 @@ int GetCpuCore() {
   size_t s = sizeof(cpu_core_count);
   /* On *BSD systems, we can just use a sysctl to get the number of CPUs. */
 #ifdef __APPLE__
-  if (sysctlbyname("hw.logicalcpu", &cpu_core_count, &s, NULL, 0) < 0)
-    return;
+  if (sysctlbyname("hw.logicalcpu", &cpu_core_count, &s, NULL, 0) < 0) return;
 #else
   int s_name[2] = {CTL_HW, HW_NCPU};
-  if (sysctl(s_name, 2, &cpu_core_count, &s, NULL, 0) < 0)
-    return;
+  if (sysctl(s_name, 2, &cpu_core_count, &s, NULL, 0) < 0) return;
 #endif /* ^__APPLE__ */
 
 #else
@@ -384,12 +381,10 @@ int GetCpuCore() {
   FILE *f = fopen("/proc/stat", "r");
   u8 tmp[1024];
 
-  if (!f)
-    return;
+  if (!f) return;
 
   while (fgets(tmp, sizeof(tmp), f))
-    if (!strncmp(tmp, "cpu", 3) && isdigit(tmp[3]))
-      cpu_core_count++;
+    if (!strncmp(tmp, "cpu", 3) && isdigit(tmp[3])) cpu_core_count++;
 
   fclose(f);
 
@@ -421,8 +416,7 @@ std::set<int> GetFreeCpu(int allcpu) {
     char tmp[MAX_LINE];
     bool has_vmsize = false;
 
-    if (!isdigit(de->d_name[0]))
-      continue;
+    if (!isdigit(de->d_name[0])) continue;
 
     fn = StrPrintf("/proc/%s/status", de->d_name);
 
@@ -433,8 +427,7 @@ std::set<int> GetFreeCpu(int allcpu) {
     while (fgets(tmp, MAX_LINE, f)) {
       int hval;
       /* Processes without VmSize are probably kernel tasks. */
-      if (!strncmp(tmp, "VmSize:\t", 8))
-        has_vmsize = true;
+      if (!strncmp(tmp, "VmSize:\t", 8)) has_vmsize = true;
 
       if (!strncmp(tmp, "Cpus_allowed_list:\t", 19) && !strchr(tmp, '-') &&
           !strchr(tmp, ',') && sscanf(tmp + 19, "%d", &hval) == 1 &&
@@ -449,8 +442,7 @@ std::set<int> GetFreeCpu(int allcpu) {
   closedir(d);
 
   for (int i = 0; i < allcpu; i++) {
-    if (used.find(i) == used.end())
-      frees.insert(i);
+    if (used.find(i) == used.end()) frees.insert(i);
   }
   return frees;
 }
@@ -490,10 +482,11 @@ int BindCpu(int cpu_core_count, int cpuid_to_bind) {
       ERROR("No more free CPU cores");
     }
 
-    binded_cpuid = *vacant_cpus.begin(); // just return a random number
+    binded_cpuid = *vacant_cpus.begin();  // just return a random number
   } else {
     if (cpuid_to_bind < 0 || cpu_core_count <= cpuid_to_bind) {
-      ERROR("The CPU core id to bind should be between 0 and %d", cpu_core_count - 1);
+      ERROR("The CPU core id to bind should be between 0 and %d",
+            cpu_core_count - 1);
     }
 
     if (vacant_cpus.count(cpuid_to_bind) == 0) {
@@ -512,9 +505,9 @@ int BindCpu(int cpu_core_count, int cpuid_to_bind) {
   }
 
   return binded_cpuid;
-#else /* defined(__linux__) */
+#else  /* defined(__linux__) */
   if (cpuid_to_bind != CPUID_DO_NOT_BIND) {
-      DEBUG("In this environment, processes cannot be binded to a cpu core.");
+    DEBUG("In this environment, processes cannot be binded to a cpu core.");
   }
   return CPUID_DO_NOT_BIND;
 #endif /* ^defined(__linux__) */
@@ -522,8 +515,7 @@ int BindCpu(int cpu_core_count, int cpuid_to_bind) {
 
 u64 NextP2(u64 val) {
   u64 ret = 1;
-  while (val > ret)
-    ret <<= 1;
+  while (val > ret) ret <<= 1;
   return ret;
 }
 
@@ -607,7 +599,6 @@ u32 Hash32(const void *key, u32 len, u32 seed) {
   len >>= 2;
 
   while (len--) {
-
     u32 k1 = *data++;
 
     k1 *= 0xcc9e2d51;
@@ -643,7 +634,6 @@ u32 CountBits(const u8 *mem, u32 len) {
   u32 ret = 0;
 
   while (i--) {
-
     u32 v = *(ptr++);
 
     /* This gets called on the inverse, virgin bitmap; optimize for sparse
@@ -681,8 +671,7 @@ u32 CountNon255Bytes(const u8 *mem, u32 len) {
 void MinimizeBits(u8 *dst, const u8 *src, u32 len) {
   u32 i = 0;
   while (i < len) {
-    if (*(src++))
-      dst[i >> 3] |= 1 << (i & 7);
+    if (*(src++)) dst[i >> 3] |= 1 << (i & 7);
     i++;
   }
 }
@@ -695,8 +684,7 @@ std::tuple<s32, s32> LocateDiffs(const u8 *ptr1, const u8 *ptr2, u32 len) {
   s32 l_loc = -1;
   for (u32 pos = 0; pos < len; pos++) {
     if (*(ptr1++) != *(ptr2++)) {
-      if (f_loc == -1)
-        f_loc = pos;
+      if (f_loc == -1) f_loc = pos;
       l_loc = pos;
     }
   }
@@ -759,8 +747,8 @@ u64 GlobalCounter() {
 #ifdef FLC_FOUND
 // FIXME: Common.cpp にあるべきクラスではない。GlobaLogger.cppなどに移したい。
 namespace {
-class global_logger_t { // FIXME: 命名規則が既存のクラスと異なる
-public:
+class global_logger_t {  // FIXME: 命名規則が既存のクラスと異なる
+ public:
   static global_logger_t &get() {
     static global_logger_t instance;
     return instance;
@@ -787,9 +775,9 @@ public:
     fluent->set_tag_prefix(prefix);
     thread.reset(new std::thread([this]() { io_context.run(); }));
   }
-  template <typename T> status_t write(std::string &&tag, T &&data) {
-    std::shared_ptr<std::promise<status_t>> p(
-        new std::promise<status_t>());
+  template <typename T>
+  status_t write(std::string &&tag, T &&data) {
+    std::shared_ptr<std::promise<status_t>> p(new std::promise<status_t>());
     auto f = p->get_future();
     (*fluent)[std::move(tag)]
         << data << flc::commit([p = std::move(p)](auto result) mutable {
@@ -811,8 +799,7 @@ public:
     return f.get();
   }
   template <typename T>
-  void write(std::string &&tag, T &&data,
-             std::function<void(status_t)> &&cb) {
+  void write(std::string &&tag, T &&data, std::function<void(status_t)> &&cb) {
     (*fluent)[std::move(tag)]
         << data << flc::commit([cb = std::move(cb)](auto result) {
              if (result == flc::status_t::OK)
@@ -833,7 +820,7 @@ public:
   }
   bool is_ready() const { return bool(fluent); }
 
-private:
+ private:
   global_logger_t()
 #if BOOST_VERSION < 106600
       : guard(new boost::asio::io_service::work(io_context)) {
@@ -850,7 +837,7 @@ private:
   std::unique_ptr<flc::fluent_t> fluent;
   std::unique_ptr<std::thread> thread;
 };
-} // namespace
+}  // namespace
 
 void init_logger(const std::string &url) { global_logger_t::get().init(url); }
 
@@ -894,23 +881,18 @@ void init_logger(const std::string &) {}
 
 bool has_logger() { return false; }
 
-void log(std::string &&, std::string &&,
-         std::function<void(status_t)> &&cb) {
+void log(std::string &&, std::string &&, std::function<void(status_t)> &&cb) {
   cb(status_t::OK);
 }
 
-status_t log(std::string &&, std::string &&) {
-  return status_t::OK;
-}
+status_t log(std::string &&, std::string &&) { return status_t::OK; }
 
 void log(std::string &&, nlohmann::json &&,
          std::function<void(status_t)> &&cb) {
   cb(status_t::OK);
 }
 
-status_t log(std::string &&, nlohmann::json &&) {
-  return status_t::OK;
-}
+status_t log(std::string &&, nlohmann::json &&) { return status_t::OK; }
 
 #endif
-}; // namespace fuzzuf::utils
+};  // namespace fuzzuf::utils

@@ -31,7 +31,8 @@ namespace fuzzuf::algorithm::vuzzer::routine::other {
 
 FuzzLoop::FuzzLoop(VUzzerState &state) : state(state) {}
 
-NullableRef<HierarFlowCallee<void(void)>> FuzzLoop::operator()(void) {
+NullableRef<hierarflow::HierarFlowCallee<void(void)>> FuzzLoop::operator()(
+    void) {
   CallSuccessors();
   state.loop_cnt++;
   return GoToDefaultNext();

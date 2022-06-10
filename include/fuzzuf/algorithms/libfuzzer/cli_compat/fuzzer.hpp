@@ -22,6 +22,12 @@
 #ifndef FUZZUF_INCLUDE_ALGORITHM_LIBFUZZER_FUZZER_HPP
 #define FUZZUF_INCLUDE_ALGORITHM_LIBFUZZER_FUZZER_HPP
 
+#include <chrono>
+#include <cstddef>
+#include <functional>
+#include <random>
+#include <vector>
+
 #include "fuzzuf/algorithms/libfuzzer/cli_compat/variables.hpp"
 #include "fuzzuf/algorithms/libfuzzer/dictionary.hpp"
 #include "fuzzuf/algorithms/libfuzzer/mutation_history.hpp"
@@ -33,23 +39,20 @@
 #include "fuzzuf/utils/node_tracer.hpp"
 #include "fuzzuf/utils/range_traits.hpp"
 #include "fuzzuf/utils/type_traits/replace_return_type.hpp"
-#include <chrono>
-#include <cstddef>
-#include <functional>
-#include <random>
-#include <vector>
 
+namespace fuzzuf::cli {
 struct GlobalFuzzerOptions;
+}
 
 namespace fuzzuf::algorithm::libfuzzer {
 
-class LibFuzzer : public ::Fuzzer {
+class LibFuzzer : public fuzzer::Fuzzer {
   using Func = bool(Variables &, utils::DumpTracer &,
                     utils::ElapsedTimeTracer &);
   using Wrapped = utils::type_traits::replace_return_type_t<void, Func>;
 
-public:
-  LibFuzzer(FuzzerArgs &, const GlobalFuzzerOptions &,
+ public:
+  LibFuzzer(FuzzerArgs &, const cli::GlobalFuzzerOptions &,
             std::function<void(std::string &&)> &&);
   virtual ~LibFuzzer() {}
   virtual void OneLoop();
@@ -58,7 +61,7 @@ public:
   const FuzzerCreateInfo &get_create_info() const { return create_info; }
   const auto &GetVariables() const { return vars; }
 
-private:
+ private:
   FuzzerCreateInfo create_info;
   Variables vars;
   signed long long int total_cycles = 0u;
@@ -70,6 +73,6 @@ private:
   utils::DumpTracer node_tracer;
   utils::ElapsedTimeTracer ett;
 };
-} // namespace fuzzuf::algorithm::libfuzzer
+}  // namespace fuzzuf::algorithm::libfuzzer
 
 #endif

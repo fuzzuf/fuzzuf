@@ -34,7 +34,8 @@
 #include "fuzzuf/logger/logger.hpp"
 
 namespace fuzzuf::algorithm::libfuzzer {
-LibFuzzer::LibFuzzer(FuzzerArgs &fuzzer_args, const GlobalFuzzerOptions &global,
+LibFuzzer::LibFuzzer(FuzzerArgs &fuzzer_args,
+                     const cli::GlobalFuzzerOptions &global,
                      std::function<void(std::string &&)> &&sink_)
     : node_tracer([this](std::string &&m) { sink("trace : " + m); }) {
   Options opts;

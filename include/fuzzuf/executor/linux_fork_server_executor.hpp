@@ -67,13 +67,13 @@ struct LinuxForkServerExecutorParameters {
    */
   u32 GetIjonMaxOffset() const {
     return fuzzuf::utils::get_aligned_addr(
-        GetIjonCounterOffset() + ijon_counter_shm_size,
-        alignof(std::uint64_t));
+        GetIjonCounterOffset() + ijon_counter_shm_size, alignof(std::uint64_t));
   }
   /*
    * Calculate total required shared memory size.
-   * Note that this is not AFL coverage size in IJON, but sum of all required buffer size.
-   * During such extra buffers are not in use, the value is equal to AFL coverage size.
+   * Note that this is not AFL coverage size in IJON, but sum of all required
+   * buffer size. During such extra buffers are not in use, the value is equal
+   * to AFL coverage size.
    */
   u32 GetAflCoverageSize() const {
     return fuzzuf::utils::get_aligned_addr(
@@ -82,11 +82,11 @@ struct LinuxForkServerExecutorParameters {
   /**
    * Convert afl_coverage_size to environment variable string.
    * If IJON related values are specified, those values are serialized too.
-   * Since the function just add environment variables above and never erase existing one, the function should called just once.
+   * Since the function just add environment variables above and never erase
+   * existing one, the function should called just once.
    * @returns *this in reference
    */
-  LinuxForkServerExecutorParameters &
-  AflCoverageSizeToEnvironmentVariables() {
+  LinuxForkServerExecutorParameters &AflCoverageSizeToEnvironmentVariables() {
     std::string afl_coverage_size_str("__AFL_SIZE=");
     afl_coverage_size_str += std::to_string(GetIjonCounterOffset());
     environment_variables.emplace_back(std::move(afl_coverage_size_str));

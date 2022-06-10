@@ -38,10 +38,12 @@ namespace fuzzuf::algorithm::die::routine::mutation {
 /* Declaration for DIEMutate */
 
 using DIEMutInputType = bool(std::shared_ptr<DIETestcase>);
-using DIEMutCalleeRef = NullableRef<HierarFlowCallee<DIEMutInputType>>;
+using DIEMutCalleeRef =
+    NullableRef<hierarflow::HierarFlowCallee<DIEMutInputType>>;
 using DIEMutOutputType = bool(const u8 *, u32, const u8 *, u32);
 
-struct DIEMutate : public HierarFlowRoutine<DIEMutInputType, DIEMutOutputType> {
+struct DIEMutate
+    : public hierarflow::HierarFlowRoutine<DIEMutInputType, DIEMutOutputType> {
  public:
   DIEMutCalleeRef operator()(std::shared_ptr<DIETestcase>);
   DIEMutate(DIEState &state) : state(state) {}
@@ -59,15 +61,16 @@ namespace fuzzuf::algorithm::die::routine::other {
 using DIEExecInputType = bool(const u8 *, u32,  // js file
                               const u8 *,
                               u32);  // type file (extended from AFL)
-using DIEExecCalleeRef = NullableRef<HierarFlowCallee<DIEExecInputType>>;
+using DIEExecCalleeRef =
+    NullableRef<hierarflow::HierarFlowCallee<DIEExecInputType>>;
 using DIEExecOutputType = bool(const u8 *, u32,  // js file
                                const u8 *,
                                u32,  // type file (extended from AFL)
                                feedback::InplaceMemoryFeedback &,
                                feedback::ExitStatusFeedback &);
 
-struct DIEExecute
-    : public HierarFlowRoutine<DIEExecInputType, DIEExecOutputType> {
+struct DIEExecute : public hierarflow::HierarFlowRoutine<DIEExecInputType,
+                                                         DIEExecOutputType> {
  public:
   DIEExecCalleeRef operator()(const u8 *, u32, const u8 *, u32);
   DIEExecute(DIEState &state) : state(state) {}
@@ -85,11 +88,12 @@ namespace fuzzuf::algorithm::die::routine::update {
 using DIEUpdateInputType = bool(const u8 *, u32, const u8 *, u32,
                                 feedback::InplaceMemoryFeedback &,
                                 feedback::ExitStatusFeedback &);
-using DIEUpdateCalleeRef = NullableRef<HierarFlowCallee<DIEUpdateInputType>>;
+using DIEUpdateCalleeRef =
+    NullableRef<hierarflow::HierarFlowCallee<DIEUpdateInputType>>;
 using DIEUpdateOutputType = void(void);
 
-struct DIEUpdate
-    : public HierarFlowRoutine<DIEUpdateInputType, DIEUpdateOutputType> {
+struct DIEUpdate : public hierarflow::HierarFlowRoutine<DIEUpdateInputType,
+                                                        DIEUpdateOutputType> {
  public:
   DIEUpdateCalleeRef operator()(const u8 *, u32, const u8 *, u32,
                                 feedback::InplaceMemoryFeedback &,

@@ -148,7 +148,8 @@ UpdateQueue::UpdateQueue(VUzzerState &state) : state(state) {}
  * @todo Consider time complexity. Currently it calls DeleteFromQueue method at
  * every deletion of seeds. It costs O(n^2).
  */
-NullableRef<HierarFlowCallee<void(void)>> UpdateQueue::operator()(void) {
+NullableRef<hierarflow::HierarFlowCallee<void(void)>> UpdateQueue::operator()(
+    void) {
   DEBUG("UpdateQueue seed_queue(%zu)\n", state.seed_queue.size());
 
   /* Sort seed_queue in order by fitness score */
@@ -185,7 +186,7 @@ TrimQueue::TrimQueue(VUzzerState &state) : state(state) {}
  * @param (testcase) New seed just got executed
  * @param (bb_cov) BB coverage of new seed
  */
-NullableRef<HierarFlowCallee<void(
+NullableRef<hierarflow::HierarFlowCallee<void(
     const std::shared_ptr<VUzzerTestcase> &testcase, std::map<u64, u32> &)>>
 TrimQueue::operator()(const std::shared_ptr<VUzzerTestcase> &testcase,
                       std::map<u64, u32> &bb_cov) {

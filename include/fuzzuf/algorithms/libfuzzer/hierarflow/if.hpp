@@ -36,10 +36,12 @@ namespace fuzzuf::algorithm::libfuzzer {
  * @tparam F Function type to define what arguments passes through this node.
  * @tparam Path Struct path to define which value to to use.
  */
-template <typename F, typename Path> struct If {};
+template <typename F, typename Path>
+struct If {};
 template <typename R, typename... Args, typename Path>
-class If<R(Args...), Path> : public HierarFlowRoutine<R(Args...), R(Args...)> {
-public:
+class If<R(Args...), Path>
+    : public hierarflow::HierarFlowRoutine<R(Args...), R(Args...)> {
+ public:
   FUZZUF_ALGORITHM_LIBFUZZER_HIERARFLOW_STANDARD_TYPEDEFS
   /**
    * This callable is called on HierarFlow execution
@@ -63,5 +65,5 @@ public:
   }
 };
 
-} // namespace fuzzuf::algorithm::libfuzzer
+}  // namespace fuzzuf::algorithm::libfuzzer
 #endif

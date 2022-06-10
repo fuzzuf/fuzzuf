@@ -35,21 +35,23 @@ using PyUpdInputType = u64(const u8 *, u32, feedback::ExitStatusFeedback,
                            feedback::InplaceMemoryFeedback &);
 
 struct PyExecutePUT
-    : public HierarFlowRoutine<PyMutOutputType, PyUpdInputType> {
+    : public hierarflow::HierarFlowRoutine<PyMutOutputType, PyUpdInputType> {
  public:
   PyExecutePUT(fuzzuf::executor::NativeLinuxExecutor &executor);
 
-  NullableRef<HierarFlowCallee<PyMutOutputType>> operator()(const u8 *, u32);
+  NullableRef<hierarflow::HierarFlowCallee<PyMutOutputType>> operator()(
+      const u8 *, u32);
 
  private:
   fuzzuf::executor::NativeLinuxExecutor &executor;
 };
 
-struct PyUpdate : public HierarFlowRoutine<PyUpdInputType, void(void)> {
+struct PyUpdate
+    : public hierarflow::HierarFlowRoutine<PyUpdInputType, void(void)> {
  public:
   PyUpdate(PythonState &state);
 
-  NullableRef<HierarFlowCallee<PyUpdInputType>> operator()(
+  NullableRef<hierarflow::HierarFlowCallee<PyUpdInputType>> operator()(
       const u8 *, u32, feedback::ExitStatusFeedback,
       feedback::InplaceMemoryFeedback &, feedback::InplaceMemoryFeedback &);
 
@@ -57,81 +59,85 @@ struct PyUpdate : public HierarFlowRoutine<PyUpdInputType, void(void)> {
   PythonState &state;
 };
 
-struct PyBitFlip : public HierarFlowRoutine<void(u32, u32), PyMutOutputType> {
+struct PyBitFlip
+    : public hierarflow::HierarFlowRoutine<void(u32, u32), PyMutOutputType> {
  public:
   PyBitFlip(PythonState &state);
 
-  NullableRef<HierarFlowCallee<void(u32, u32)>> operator()(u32, u32);
+  NullableRef<hierarflow::HierarFlowCallee<void(u32, u32)>> operator()(u32,
+                                                                       u32);
 
  private:
   PythonState &state;
 };
 
-struct PyByteFlip : public HierarFlowRoutine<void(u32, u32), PyMutOutputType> {
+struct PyByteFlip
+    : public hierarflow::HierarFlowRoutine<void(u32, u32), PyMutOutputType> {
  public:
   PyByteFlip(PythonState &state);
 
-  NullableRef<HierarFlowCallee<void(u32, u32)>> operator()(u32, u32);
+  NullableRef<hierarflow::HierarFlowCallee<void(u32, u32)>> operator()(u32,
+                                                                       u32);
 
  private:
   PythonState &state;
 };
 
-struct PyHavoc : public HierarFlowRoutine<void(u32), PyMutOutputType> {
+struct PyHavoc
+    : public hierarflow::HierarFlowRoutine<void(u32), PyMutOutputType> {
  public:
   PyHavoc(PythonState &state);
 
-  NullableRef<HierarFlowCallee<void(u32)>> operator()(u32);
+  NullableRef<hierarflow::HierarFlowCallee<void(u32)>> operator()(u32);
 
  private:
   PythonState &state;
 };
 
-struct PyAdd
-    : public HierarFlowRoutine<void(u32, int, int, bool), PyMutOutputType> {
+struct PyAdd : public hierarflow::HierarFlowRoutine<void(u32, int, int, bool),
+                                                    PyMutOutputType> {
  public:
   PyAdd(PythonState &state);
 
-  NullableRef<HierarFlowCallee<void(u32, int, int, bool)>> operator()(u32, int,
-                                                                      int,
-                                                                      bool);
+  NullableRef<hierarflow::HierarFlowCallee<void(u32, int, int, bool)>>
+  operator()(u32, int, int, bool);
 
  private:
   PythonState &state;
 };
 
-struct PySub
-    : public HierarFlowRoutine<void(u32, int, int, bool), PyMutOutputType> {
+struct PySub : public hierarflow::HierarFlowRoutine<void(u32, int, int, bool),
+                                                    PyMutOutputType> {
  public:
   PySub(PythonState &state);
 
-  NullableRef<HierarFlowCallee<void(u32, int, int, bool)>> operator()(u32, int,
-                                                                      int,
-                                                                      bool);
+  NullableRef<hierarflow::HierarFlowCallee<void(u32, int, int, bool)>>
+  operator()(u32, int, int, bool);
 
  private:
   PythonState &state;
 };
 
 struct PyInterest
-    : public HierarFlowRoutine<void(u32, int, u32, bool), PyMutOutputType> {
+    : public hierarflow::HierarFlowRoutine<void(u32, int, u32, bool),
+                                           PyMutOutputType> {
  public:
   PyInterest(PythonState &state);
 
-  NullableRef<HierarFlowCallee<void(u32, int, u32, bool)>> operator()(u32, int,
-                                                                      u32,
-                                                                      bool);
+  NullableRef<hierarflow::HierarFlowCallee<void(u32, int, u32, bool)>>
+  operator()(u32, int, u32, bool);
 
  private:
   PythonState &state;
 };
 
 struct PyOverwrite
-    : public HierarFlowRoutine<void(u32, char), PyMutOutputType> {
+    : public hierarflow::HierarFlowRoutine<void(u32, char), PyMutOutputType> {
  public:
   PyOverwrite(PythonState &state);
 
-  NullableRef<HierarFlowCallee<void(u32, char)>> operator()(u32, char);
+  NullableRef<hierarflow::HierarFlowCallee<void(u32, char)>> operator()(u32,
+                                                                        char);
 
  private:
   PythonState &state;

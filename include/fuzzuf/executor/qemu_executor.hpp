@@ -1,7 +1,7 @@
 /*
  * fuzzuf
  * Copyright (C) 2021 Ricerca Security
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -22,20 +22,15 @@
 namespace fuzzuf::executor {
 // A class for fuzz executions with QEMU
 class QEMUExecutor : public ProxyExecutor {
-public:
-    // shm_size is fixed in AFL++ afl-qemu-trace
-    static constexpr u32 QEMU_SHM_SIZE = (1U << 16);
+ public:
+  // shm_size is fixed in AFL++ afl-qemu-trace
+  static constexpr u32 QEMU_SHM_SIZE = (1U << 16);
 
-    QEMUExecutor(
-        const fs::path &proxy_path,
-        const std::vector<std::string> &argv,
-        u32 exec_timelimit_ms,
-        u64 exec_memlimit,
-        bool forksrv,
-        const fs::path &path_to_write_input,
-        // FIXME: see the comment for the same variable in NativeLinuxExecutor
-        bool record_stdout_and_err = false
-    );
+  QEMUExecutor(
+      const fs::path &proxy_path, const std::vector<std::string> &argv,
+      u32 exec_timelimit_ms, u64 exec_memlimit, bool forksrv,
+      const fs::path &path_to_write_input,
+      // FIXME: see the comment for the same variable in NativeLinuxExecutor
+      bool record_stdout_and_err = false);
 };
-}
-
+}  // namespace fuzzuf::executor

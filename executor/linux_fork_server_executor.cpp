@@ -94,7 +94,7 @@ LinuxForkServerExecutor::LinuxForkServerExecutor(
         fuzzuf::utils::OpenFile(path, O_RDWR | O_CREAT | O_CLOEXEC, 0600);
   } else {
     input_fd = fuzzuf::utils::OpenFile(args.path_to_write_input.string(),
-		    O_RDWR | O_CREAT | O_CLOEXEC, 0600);
+                                       O_RDWR | O_CREAT | O_CLOEXEC, 0600);
   }
 
   // Allocate shared memory on initialization of Executor

@@ -57,5 +57,4 @@ void PinToolExecutor::SetCArgvAndDecideInputMode() {
   }
   cargv.emplace_back(nullptr);
 }
-}
-
+}  // namespace fuzzuf::executor

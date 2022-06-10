@@ -84,5 +84,4 @@ void PolyTrackerExecutor::SetCArgvAndDecideInputMode() {
 
   cargv.emplace_back(nullptr);
 }
-}
-
+}  // namespace fuzzuf::executor

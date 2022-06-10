@@ -31,8 +31,8 @@ template <class State>
 CullQueueTemplate<State>::CullQueueTemplate(State &state) : state(state) {}
 
 template <class State>
-NullableRef<HierarFlowCallee<void(void)>> CullQueueTemplate<State>::operator()(
-    void) {
+NullableRef<hierarflow::HierarFlowCallee<void(void)>>
+CullQueueTemplate<State>::operator()(void) {
   if (state.setting->dumb_mode || !state.score_changed)
     return GoToDefaultNext();
 
@@ -73,8 +73,8 @@ template <class State>
 SelectSeedTemplate<State>::SelectSeedTemplate(State &state) : state(state) {}
 
 template <class State>
-NullableRef<HierarFlowCallee<void(void)>> SelectSeedTemplate<State>::operator()(
-    void) {
+NullableRef<hierarflow::HierarFlowCallee<void(void)>>
+SelectSeedTemplate<State>::operator()(void) {
   if (state.queue_cycle == 0 ||
       state.current_entry >= state.case_queue.size()) {
     state.queue_cycle++;
@@ -500,7 +500,7 @@ template <class State>
 ExecutePUTTemplate<State>::ExecutePUTTemplate(State &state) : state(state) {}
 
 template <class State>
-NullableRef<HierarFlowCallee<bool(const u8 *, u32)>>
+NullableRef<hierarflow::HierarFlowCallee<bool(const u8 *, u32)>>
 ExecutePUTTemplate<State>::operator()(const u8 *input, u32 len) {
   feedback::ExitStatusFeedback exit_status;
 

@@ -236,7 +236,7 @@ auto createOptions(Options &dest)
 auto postProcess(
     const boost::program_options::options_description &desc,
     const boost::program_options::positional_options_description &pd, int argc,
-    const char *argv[], const GlobalFuzzerOptions &global,
+    const char *argv[], const cli::GlobalFuzzerOptions &global,
     std::function<void(std::string &&)> &&sink, Options &dest) -> bool {
   namespace po = boost::program_options;
   po::variables_map vm;
@@ -249,7 +249,7 @@ auto postProcess(
             vm);
   po::notify(vm);
 
-  if (global.logger != Logger::Stdout && global.log_file) {
+  if (global.logger != utils::Logger::Stdout && global.log_file) {
     std::shared_ptr<std::fstream> fd(new std::fstream(
         global.log_file->string(), std::ios::out | std::ios::binary));
     dest.sink = [fd = std::move(fd)](std::string &&m) {

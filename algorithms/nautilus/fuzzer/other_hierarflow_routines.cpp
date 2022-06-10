@@ -1,7 +1,7 @@
 /*
  * fuzzuf
  * Copyright (C) 2022 Ricerca Security
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -20,12 +20,13 @@
  * @brief Definition of unclassified HierarFlow routines of Nautilus.
  * @author Ricerca Security <fuzzuf-dev@ricsec.co.jp>
  */
+#include "fuzzuf/algorithms/nautilus/fuzzer/other_hierarflow_routines.hpp"
+
 #include <memory>
 #include <variant>
-#include "fuzzuf/algorithms/nautilus/fuzzer/other_hierarflow_routines.hpp"
+
 #include "fuzzuf/algorithms/nautilus/fuzzer/queue.hpp"
 #include "fuzzuf/algorithms/nautilus/fuzzer/state.hpp"
-
 
 namespace fuzzuf::algorithm::nautilus::fuzzer::routine::other {
 
@@ -33,8 +34,9 @@ namespace fuzzuf::algorithm::nautilus::fuzzer::routine::other {
  * @fn
  * @brief HierarFlow routine for FuzzLoop (fuzz_loop)
  */
-NullableRef<HierarFlowCallee<void(void)>> FuzzLoop::operator()(void) {
-  CallSuccessors(); // select_input
+NullableRef<hierarflow::HierarFlowCallee<void(void)>> FuzzLoop::operator()(
+    void) {
+  CallSuccessors();  // select_input
 
   state.cycles_done++;
 
@@ -60,10 +62,10 @@ RSelectInput SelectInput::operator()(void) {
     /* If queue is not empty, pop a testcase and mutate it by ProcessInput */
     // TODO: Use lock when multi-threaded
     inp = state.queue.Pop();
-    (*succ_nodes[_process_input_idx])(inp); // process_next_input
+    (*succ_nodes[_process_input_idx])(inp);  // process_next_input
   }
 
-  return GoToDefaultNext(); // update_state
+  return GoToDefaultNext();  // update_state
 }
 
 /**
@@ -77,26 +79,25 @@ RProcessInput ProcessInput::operator()(std::unique_ptr<QueueItem>& inp) {
 
   /* Call child node according to the state */
   if (std::holds_alternative<InitState>(inp->state)) {
-    (*succ_nodes[_initialize_state_idx])(*inp); // initialize_state
+    (*succ_nodes[_initialize_state_idx])(*inp);  // initialize_state
 
   } else if (std::holds_alternative<DetState>(inp->state)) {
-    (*succ_nodes[_apply_det_muts_idx])(*inp); // apply_det_muts
+    (*succ_nodes[_apply_det_muts_idx])(*inp);  // apply_det_muts
 
   } else if (std::holds_alternative<RandomState>(inp->state)) {
-    (*succ_nodes[_apply_rand_muts_idx])(*inp); // apply_rand_muts
+    (*succ_nodes[_apply_rand_muts_idx])(*inp);  // apply_rand_muts
 
   } else {
     throw exceptions::wrong_hierarflow_usage(
-      "Unexpected input state encountered in ProcessInput",
-      __FILE__, __LINE__
-    );
+        "Unexpected input state encountered in ProcessInput", __FILE__,
+        __LINE__);
   }
 
   /* Mark as finished.
      We use `std::move` because `inp` will never be used after this. */
   state.queue.Finished(std::move(inp));
 
-  return GoToParent(); // back to select_input_and_switch
+  return GoToParent();  // back to select_input_and_switch
 }
 
 /**
@@ -117,7 +118,7 @@ RGenerateInput GenerateInput::operator()(std::unique_ptr<QueueItem>&) {
 
   state.queue.NewRound();
 
-  return GoToDefaultNext(); // back to select_input_and_switch
+  return GoToDefaultNext();  // back to select_input_and_switch
 }
 
-} // namespace fuzzuf::algorithm::nautilus::fuzzer::routine::other
+}  // namespace fuzzuf::algorithm::nautilus::fuzzer::routine::other

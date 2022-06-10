@@ -32,12 +32,13 @@ namespace fuzzuf::algorithm::afl::routine::update {
 
 using AFLUpdInputType = bool(const u8 *, u32, feedback::InplaceMemoryFeedback &,
                              feedback::ExitStatusFeedback &);
-using AFLUpdCalleeRef = NullableRef<HierarFlowCallee<AFLUpdInputType>>;
+using AFLUpdCalleeRef =
+    NullableRef<hierarflow::HierarFlowCallee<AFLUpdInputType>>;
 using AFLUpdOutputType = void(void);
 
 template <class State>
 struct NormalUpdateTemplate
-    : public HierarFlowRoutine<AFLUpdInputType, AFLUpdOutputType> {
+    : public hierarflow::HierarFlowRoutine<AFLUpdInputType, AFLUpdOutputType> {
  public:
   NormalUpdateTemplate(State &state);
 
@@ -52,7 +53,7 @@ using NormalUpdate = NormalUpdateTemplate<AFLState>;
 
 template <class State>
 struct ConstructAutoDictTemplate
-    : public HierarFlowRoutine<AFLUpdInputType, AFLUpdOutputType> {
+    : public hierarflow::HierarFlowRoutine<AFLUpdInputType, AFLUpdOutputType> {
  public:
   ConstructAutoDictTemplate(State &state);
 
@@ -67,7 +68,7 @@ using ConstructAutoDict = ConstructAutoDictTemplate<AFLState>;
 
 template <class State>
 struct ConstructEffMapTemplate
-    : public HierarFlowRoutine<AFLUpdInputType, AFLUpdOutputType> {
+    : public hierarflow::HierarFlowRoutine<AFLUpdInputType, AFLUpdOutputType> {
  public:
   ConstructEffMapTemplate(State &state);
 

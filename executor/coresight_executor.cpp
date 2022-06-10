@@ -39,5 +39,4 @@ CoreSightExecutor::CoreSightExecutor(const fs::path &proxy_path,
   ProxyExecutor::SetCArgvAndDecideInputMode();
   ProxyExecutor::Initilize();
 }
-}
-
+}  // namespace fuzzuf::executor
