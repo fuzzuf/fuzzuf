@@ -1,5 +1,6 @@
 #include "fuzzuf/algorithms/mopt/mopt_hierarflow_routines.hpp"
 #include "fuzzuf/optimizer/pso.hpp"
+#include "fuzzuf/utils/common.hpp"
 #include "fuzzuf/algorithms/mopt/mopt_optimizer.hpp"
 #include "fuzzuf/algorithms/mopt/mopt_option.hpp"
 #include "fuzzuf/algorithms/mopt/mopt_option_get_splice_cycles.hpp"
@@ -9,41 +10,45 @@ namespace fuzzuf::algorithm::mopt::routine {
 namespace other {
 
 
-MOptMidCalleeRef MOptUpdate::operator(std::shared_ptr<MOptTestcase> testcase) (){
+MOptMidCalleeRef MOptUpdate::operator()(
+    std::shared_ptr<MOptTestcase> testcase
+) {
     auto last_splice_cycle = fuzzuf::optimizer::Store::GetInstance().Get(fuzzuf::optimizer::keys::LastSpliceCycle);
 
-    if (last_splice_cycle >= option::GetSpliceCycles(state)) {
+    if (last_splice_cycle >= afl::option::GetSpliceCycles(state)) {
         state.UpdateSpliceCycles();
     }
 
-    if (state.packemaker_mode) {
+    if (state.pacemaker_mode) {
         // TODO
     }
 
     auto new_testcases = fuzzuf::optimizer::Store::GetInstance().Get(fuzzuf::optimizer::keys::NewTestcases);
-    auto havoc_operator_finds = fuzzuf::optimizer::Store::GetInstance().Get(fuzzuf::optimizer::keys::HavoOperatorFinds);
+    auto havoc_operator_finds = fuzzuf::optimizer::Store::GetInstance().Get(fuzzuf::optimizer::keys::HavocOperatorFinds);
     auto selected_case_histogram = fuzzuf::optimizer::Store::GetInstance().Get(fuzzuf::optimizer::keys::SelectedCaseHistogram);
 
     // pilot mode (update local best)
     if (!state.core_mode) {
-        if (new_testcases > option::GetPeriodPilot()) [[unlikely]] {
+        if (unlikely(new_testcases > option::GetPeriodPilot<option::MOptTag>())) {
             for (size_t i = 0; i < selected_case_histogram.size(); i++) {
                 double score = 0.0;
                 if (selected_case_histogram[i] > 0) {
-                    score = havoc_operator_finds[i] / selected_case_histogram[i];
+                    score = havoc_operator_finds[0][i] / selected_case_histogram[i];
                 }
-                state.mopt.SetScore(i, score);
+                state.mopt->SetScore(i, score);
             }
-            state.mopt.UpdateLocalBest();
+            state.mopt->UpdateLocalBest();
         }
     }
 
     // core mode (update global best)
     if (state.core_mode) {
-        if (new_testcases > option::GetPeriodCore()) [[unlikely]] {
-            state.mopt.UpdateGlobalBest();
+        if (unlikely(new_testcases > option::GetPeriodCore<option::MOptTag>())) {
+            state.mopt->UpdateGlobalBest();
         }
     }
+
+    return this->GoToDefaultNext();
 }
 
 
@@ -52,13 +57,15 @@ CheckPacemakerThreshold::CheckPacemakerThreshold(
     MOptMidCalleeRef abandon_entry
 ) : state(state), abandon_entry(abandon_entry) {}
 
-MOptMidCalleeRef CheckPacemakerThreshold::operator(std::shared_ptr<MOptTestcase> testcase) (){
-    u64 cur_ms_lv = Util::GetCurTimeMS();
-    if (!(state.packemaker_mode == false
-            && ((cur_ms_lv - state.last_path_time < state.setting.limit_time_puppet)
-                || (state.last_crash_time != 0 && cur_ms_lv - state.last_crash_time < state.setting.limit_time_puppet)
+MOptMidCalleeRef CheckPacemakerThreshold::operator()(
+    std::shared_ptr<MOptTestcase> testcase
+) {
+    u64 cur_ms_lv = Util::GetCurTimeMs();
+    if (!(state.pacemaker_mode == false
+            && ((cur_ms_lv - state.last_path_time < state.setting->limit_time_puppet)
+                || (state.last_crash_time != 0 && cur_ms_lv - state.last_crash_time < state.setting->limit_time_puppet)
                 || (state.last_path_time == 0)))) {
-        state.packemaker_mode = true;
+        state.pacemaker_mode = true;
         return abandon_entry;
     }
     return this->GoToDefaultNext();
@@ -70,12 +77,10 @@ MOptMidCalleeRef CheckPacemakerThreshold::operator(std::shared_ptr<MOptTestcase>
 
 namespace mutation {
 
-MOptHavoc::MOptHavoc() {}
-
 bool MOptHavoc::DoHavoc(
     AFLMutatorTemplate<MOptState>& mutator,
     optimizer::Optimizer<u32> &mutop_optimizer,
-    CustomCases custom_cases,
+    void(*custom_cases)(u32, u8*&, u32&, const std::vector<AFLDictData>&, const std::vector<AFLDictData>&),
     const std::string &stage_name,
     const std::string &stage_short,
     u32 perf_score,
@@ -87,8 +92,8 @@ bool MOptHavoc::DoHavoc(
     state.stage_max = stage_max_multiplier * perf_score / state.havoc_div / 100;
     state.stage_cur_byte = -1;
 
-    if (state.stage_max < option::GetHavocMin(state)) {
-        state.stage_max = option::GetHavocMin(state);
+    if (state.stage_max < afl::option::GetHavocMin(state)) {
+        state.stage_max = afl::option::GetHavocMin(state);
     }
 
     u64 orig_hit_cnt = state.queued_paths + state.unique_crashes;
@@ -101,7 +106,7 @@ bool MOptHavoc::DoHavoc(
     for (state.stage_cur = 0; state.stage_cur < state.stage_max; state.stage_cur++) {
         using afl::util::UR;
 
-        u32 use_stacking = 1 << (1 + UR(option::GetHavocStackPow2(state), state.rand_fd));
+        u32 use_stacking = 1 << (1 + UR(afl::option::GetHavocStackPow2(state), state.rand_fd));
 
         state.stage_cur_val = use_stacking;
         mutator.Havoc(use_stacking, state.extras, state.a_extras, mutop_optimizer, custom_cases);
@@ -115,7 +120,7 @@ bool MOptHavoc::DoHavoc(
 
         havoc_finds -= state.queued_paths + state.unique_crashes;
 
-        if (havoc_finds > 0) [[unlikely]] {
+        if (unlikely(havoc_finds > 0)) {
             auto selected_case_histogram = fuzzuf::optimizer::Store::GetInstance().Get(fuzzuf::optimizer::keys::SelectedCaseHistogram);
             auto& havoc_operator_finds = fuzzuf::optimizer::Store::GetInstance().GetMutRef(fuzzuf::optimizer::keys::HavocOperatorFinds);
             for (size_t i = 0; i < selected_case_histogram.size(); i++) {
@@ -134,7 +139,7 @@ bool MOptHavoc::DoHavoc(
            permitting. */
 
         if (state.queued_paths != havoc_queued) {
-            if (perf_score <= option::GetHavocMaxMult(state) * 100) {
+            if (perf_score <= afl::option::GetHavocMaxMult(state) * 100) {
                 state.stage_max *= 2;
                 perf_score *= 2;
             }
@@ -151,8 +156,6 @@ bool MOptHavoc::DoHavoc(
 }
 
 
-Splicing::Splicing();
-
 MOptMutCalleeRef Splicing::operator()(
     AFLMutatorTemplate<MOptState>& mutator
 ) {
@@ -164,7 +167,7 @@ MOptMutCalleeRef Splicing::operator()(
     }
 
     u32 splice_cycle = 0;
-    while (splice_cycle++ < option::GetSpliceCycles(state)
+    while (splice_cycle++ < afl::option::GetSpliceCycles<MOptState>(state)
         && state.queued_paths > 1
         && mutator.GetSource().GetLen() > 1) {
 
@@ -207,8 +210,8 @@ MOptMutCalleeRef Splicing::operator()(
                     [](int, u8*&, u32&, const std::vector<AFLDictData>&, const std::vector<AFLDictData>&){},
                     Util::StrPrintf("splice %u", splice_cycle),
                     "splice",
-                    state.orig_perf, option::GetSpliceHavoc(state),
-                    option::STAGE_SPLICE)) {
+                    state.orig_perf, afl::option::GetSpliceHavoc(state),
+                    afl::option::STAGE_SPLICE)) {
             this->SetResponseValue(true);
             return this->GoToParent();
         }

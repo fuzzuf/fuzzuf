@@ -14,15 +14,20 @@ namespace keys {
 
 }
 
+template<size_t Demention, size_t ParticleNum>
+class PSO;
+
 
 template<size_t Demention>
 class Particle {
 public:
     Particle();
     ~Particle();
-    std::array<double, Demention> GetBestPosition();
 
-private:
+    template<size_t _Demention, size_t ParticleNum>
+    friend class PSO;
+
+protected:
     std::array<double, Demention> position;
     double fitness;
     std::array<double, Demention> velocity;
@@ -49,19 +54,19 @@ public:
     std::array<double, Demention> GetCurParticle();
     void SetScore(double);
     std::array<double, Demention> CalcValue() override; // return global best
-
-private:
-    void UpdatePositions();
-    void UpdateVelocities();
     void UpdateLocalBest();
     void UpdateGlobalBest();
+
+protected:
+    void UpdatePositions();
+    void UpdateVelocities();
 
     size_t idx = 0;
     std::uint64_t time = 0;
     std::array<Particle<Demention>, ParticleNum> swarm;
 
     // global best
-    Particle<Demention> best_position;
+    std::array<double, Demention> best_position;
     double best_fitness;
 
     // parameters

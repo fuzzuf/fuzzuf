@@ -31,8 +31,7 @@ struct MOptSetting : public afl::AFLSetting {
         u64 exec_memlimit,
         bool forksrv,
         bool dumb_mode,
-        int cpuid_to_bind,
-        const option::Schedule schedule
+        int cpuid_to_bind
     );
 
     ~MOptSetting();

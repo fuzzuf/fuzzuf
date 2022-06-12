@@ -48,6 +48,7 @@ public:
 
 private:
     MOptState &state;
+    MOptMidCalleeRef abandon_entry;
 };
 
 

@@ -1,7 +1,7 @@
 #include "fuzzuf/algorithms/afl/afl_option.hpp"
 #include "fuzzuf/algorithms/afl/afl_state.hpp"
 
-// separated from mopt_option.hpp as methods defined here access MOptState member
+// separated from mopt_option.hpp as methods defined here use MOptState member
 
 namespace fuzzuf::algorithm::afl::option {
 

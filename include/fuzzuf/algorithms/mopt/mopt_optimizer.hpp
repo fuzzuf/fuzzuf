@@ -21,6 +21,8 @@ class MOptParticle : public Particle<NUM_CASE> {
 public:
     MOptParticle();
     ~MOptParticle();
+
+    friend class MOptOptimizer;
 private:
     std::array<double, NUM_CASE> fitness;
     std::array<double, NUM_CASE> best_fitness;
@@ -35,7 +37,8 @@ public:
 
     void Init();
     void UpdateLocalBest();
-    void GlobalLocalBest();
+    void UpdateGlobalBest();
+    void SetScore(size_t, double);
 
     void PSOUpdate(); // pso_updating
 
