@@ -32,14 +32,15 @@ namespace fuzzuf::algorithm::afl {
 template <class State>
 AFLMutatorTemplate<State>::AFLMutatorTemplate(
     const exec_input::ExecInput& input, const State& state)
-    : Mutator<typename State::Tag>(input), state(state) {}
+    : fuzzuf::mutator::Mutator<typename State::Tag>(input), state(state) {}
 
 template <class State>
 AFLMutatorTemplate<State>::~AFLMutatorTemplate() {}
 
 template <class State>
 AFLMutatorTemplate<State>::AFLMutatorTemplate(AFLMutatorTemplate&& src)
-    : Mutator<typename State::Tag>(std::move(src)), state(src.state) {}
+    : fuzzuf::mutator::Mutator<typename State::Tag>(std::move(src)),
+      state(src.state) {}
 
 /* Helper to choose random block len for block operations in fuzz_one().
    Doesn't return zero, provided that max_len is > 0. */

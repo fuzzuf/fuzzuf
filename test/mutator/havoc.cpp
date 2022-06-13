@@ -66,12 +66,12 @@ BOOST_AUTO_TEST_CASE(MutatorHavoc) {
   fuzzuf::exec_input::ExecInputSet
       input_set;  // to create OnMemoryInputSet, we need the set(factory)
 
-  for (u32 i = 0; i < NUM_CASE; i++) {
+  for (u32 i = 0; i < fuzzuf::mutator::NUM_CASE; i++) {
     std::cout << "check the " << i << "-th mutation." << std::endl;
 
     // Create an instance of Mutator.
     auto input = input_set.CreateOnMemory(&seed[0], seed.size());
-    auto mutator = Mutator<TestTag>(*input);
+    auto mutator = fuzzuf::mutator::Mutator<TestTag>(*input);
 
     // Create the i-th distribution.
     auto case_dist = ConstantMutopSelector(i);
@@ -92,10 +92,10 @@ BOOST_AUTO_TEST_CASE(MutatorHavoc) {
   // Make sure that Havoc passes through the default case
   // when a distribution return an integer other than 0, 1, ..., NUM_CASE-1
   auto input = input_set.CreateOnMemory(&seed[0], seed.size());
-  auto mutator = Mutator<TestTag>(*input);
+  auto mutator = fuzzuf::mutator::Mutator<TestTag>(*input);
 
   // Create a distribution that always returns NUM_CASE.
-  auto case_dist = ConstantMutopSelector(NUM_CASE);
+  auto case_dist = ConstantMutopSelector(fuzzuf::mutator::NUM_CASE);
 
   bool passed_custom_cases = false;
   auto custom_cases = [&passed_custom_cases](u32, u8*, u32,

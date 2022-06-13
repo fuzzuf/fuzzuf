@@ -188,25 +188,25 @@ PyInterest::operator()(u32 pos, int bits, u32 idx, bool be) {
 
   if (bits == 8) {
     if (pos + 1 > mutator.GetLen()) ERROR("Interest: would be out of bounds.");
-    if (idx >= Mutator<PythonTag>::interesting_8.size()) {
+    if (idx >= mutator::Mutator<PythonTag>::interesting_8.size()) {
       ERROR("Interest: idx < %u must hold.\n",
-            (u32)Mutator<PythonTag>::interesting_8.size());
+            (u32)mutator::Mutator<PythonTag>::interesting_8.size());
     }
 
     mutator.template InterestN<u8>(pos, idx, be);
   } else if (bits == 16) {
     if (pos + 2 > mutator.GetLen()) ERROR("Interest: would be out of bounds.");
-    if (idx >= Mutator<PythonTag>::interesting_16.size()) {
+    if (idx >= mutator::Mutator<PythonTag>::interesting_16.size()) {
       ERROR("Interest: idx < %u must hold.\n",
-            (u32)Mutator<PythonTag>::interesting_16.size());
+            (u32)mutator::Mutator<PythonTag>::interesting_16.size());
     }
 
     mutator.template InterestN<u16>(pos, idx, be);
   } else if (bits == 32) {
     if (pos + 4 > mutator.GetLen()) ERROR("Interest: would be out of bounds.");
-    if (idx >= Mutator<PythonTag>::interesting_32.size()) {
+    if (idx >= mutator::Mutator<PythonTag>::interesting_32.size()) {
       ERROR("Interest: idx < %u must hold.\n",
-            (u32)Mutator<PythonTag>::interesting_32.size());
+            (u32)mutator::Mutator<PythonTag>::interesting_32.size());
     }
     mutator.template InterestN<u32>(pos, idx, be);
   } else {

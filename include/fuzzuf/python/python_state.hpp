@@ -38,7 +38,7 @@ struct PythonState {
   const PythonSetting &setting;
   exec_input::ExecInputSet input_set;
   std::unordered_map<u64, std::unique_ptr<PythonTestcase>> test_set;
-  std::unique_ptr<Mutator<PythonTag>> mutator;
+  std::unique_ptr<fuzzuf::mutator::Mutator<PythonTag>> mutator;
 };
 
 }  // namespace fuzzuf::bindings::python

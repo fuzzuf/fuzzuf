@@ -241,7 +241,7 @@ void PythonFuzzer::SelectSeed(u64 seed_id) {
   auto itr = state->test_set.find(seed_id);
   if (itr == state->test_set.end()) ERROR("specified seed ID is not found");
 
-  state->mutator.reset(new Mutator<PythonTag>(*itr->second->input));
+  state->mutator.reset(new mutator::Mutator<PythonTag>(*itr->second->input));
 }
 
 void PythonFuzzer::RemoveSeed(u64 seed_id) {

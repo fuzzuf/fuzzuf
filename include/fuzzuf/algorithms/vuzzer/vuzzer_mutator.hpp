@@ -36,7 +36,7 @@ namespace fuzzuf::algorithm::vuzzer {
 // Mutator's member functions are not virtual.
 // Hence you must not treat this as Mutator instance
 
-class VUzzerMutator : public Mutator<VUzzerState::Tag> {
+class VUzzerMutator : public fuzzuf::mutator::Mutator<VUzzerState::Tag> {
  public:
   using MutFunc = void (VUzzerMutator::*)();
 

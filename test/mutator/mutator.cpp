@@ -45,7 +45,7 @@ BOOST_AUTO_TEST_CASE(MutatorMutator) {
   BOOST_CHECK(std::memcmp(input->GetBuf(), buf_seed, sizeof(buf_seed)) == 0);
   BOOST_CHECK_EQUAL(input->GetLen(), sizeof(buf_seed));
 
-  auto mutator = Mutator<TestTag>(*input);
+  auto mutator = fuzzuf::mutator::Mutator<TestTag>(*input);
   int pos = 2;
 
   // 与えたバッファと内容が一致するのかを確認

@@ -59,6 +59,8 @@
       100663045,  /* Large positive number (endian-agnostic) */ \
       2147483647  /* Overflow signed 32-bit when incremented */
 
+namespace fuzzuf::mutator {
+
 // FIXME: having these vectors as member variables brings
 // duplication and waste since these are defined for each Tag.
 template <class Tag>
@@ -287,5 +289,7 @@ void Mutator<Tag>::RestoreSplice(void) {
   std::swap(outbuf, splbuf);
   std::swap(len, spl_len);
 }
+
+}  // namespace fuzzuf::mutator
 
 #undef FLIP_BIT

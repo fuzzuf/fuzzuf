@@ -33,7 +33,8 @@ namespace fuzzuf::algorithm::afl {
 // Hence you must not treat this as Mutator instance
 
 template <class State>
-class AFLMutatorTemplate : public Mutator<typename State::Tag> {
+class AFLMutatorTemplate
+    : public fuzzuf::mutator::Mutator<typename State::Tag> {
  protected:
   u32 val_for_restore;
   u32 pos_for_restore;

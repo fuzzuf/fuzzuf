@@ -85,12 +85,14 @@ static void MaybeAddAuto(State &state, const std::vector<u8> &mem) {
 
   if (mem.size() == 2) {
     u16 converted = *(u16 *)mem.data();
-    for (auto val : Mutator<typename State::Tag>::interesting_16) {
+    for (auto val :
+         fuzzuf::mutator::Mutator<typename State::Tag>::interesting_16) {
       if (converted == (u16)val || converted == SWAP16(val)) return;
     }
   } else if (mem.size() == 4) {
     u32 converted = *(u32 *)mem.data();
-    for (auto val : Mutator<typename State::Tag>::interesting_32) {
+    for (auto val :
+         fuzzuf::mutator::Mutator<typename State::Tag>::interesting_32) {
       if (converted == (u32)val || converted == SWAP32(val)) return;
     }
   }

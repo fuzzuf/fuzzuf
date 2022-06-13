@@ -32,6 +32,8 @@
 #include "fuzzuf/optimizer/store.hpp"
 #include "fuzzuf/utils/common.hpp"
 
+namespace fuzzuf::mutator {
+
 // Responsibility:
 //  - An instance generates fuzzes an arbitrary number of times according to the
 //  specified algorithm
@@ -656,6 +658,8 @@ void Mutator<Tag>::Havoc(u32 stacking, const std::vector<AFLDictData> &extras,
     }
   }
 }
+
+}  // namespace fuzzuf::mutator
 
 #include "fuzzuf/mutator/templates/mutator.hpp"
 

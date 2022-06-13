@@ -252,11 +252,11 @@ bool InterestTemplate<State>::DoInterest(AFLMutatorTemplate<State> &mutator) {
   // So we have to use a pointer...
   const std::vector<SInt> *interest_values;
   if constexpr (byte_width == 1)
-    interest_values = &Mutator<Tag>::interesting_8;
+    interest_values = &fuzzuf::mutator::Mutator<Tag>::interesting_8;
   else if constexpr (byte_width == 2)
-    interest_values = &Mutator<Tag>::interesting_16;
+    interest_values = &fuzzuf::mutator::Mutator<Tag>::interesting_16;
   else if constexpr (byte_width == 4)
-    interest_values = &Mutator<Tag>::interesting_32;
+    interest_values = &fuzzuf::mutator::Mutator<Tag>::interesting_32;
 
   int num_endians;
   if constexpr (byte_width == 1)
