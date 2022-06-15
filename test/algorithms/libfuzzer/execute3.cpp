@@ -110,7 +110,7 @@ BOOST_AUTO_TEST_CASE(HierarFlowExecute) {
   std::transform(args.begin(), args.end(), std::back_inserter(cargs),
                  [](const auto &v) { return v.c_str(); });
 
-  FuzzerArgs fargs{
+  fuzzuf::cli::FuzzerArgs fargs{
       .argc = int(cargs.size()),
       .argv = cargs.data(),
       .global_options_description = global_desc,

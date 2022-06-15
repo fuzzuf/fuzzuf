@@ -52,7 +52,7 @@ class LibFuzzer : public fuzzer::Fuzzer {
   using Wrapped = utils::type_traits::replace_return_type_t<void, Func>;
 
  public:
-  LibFuzzer(FuzzerArgs &, const cli::GlobalFuzzerOptions &,
+  LibFuzzer(cli::FuzzerArgs &, const cli::GlobalFuzzerOptions &,
             std::function<void(std::string &&)> &&);
   virtual ~LibFuzzer() {}
   virtual void OneLoop();

@@ -24,14 +24,18 @@
 #include "fuzzuf/cli/put_args.hpp"
 #include "fuzzuf/exceptions.hpp"
 
+namespace fuzzuf::cli {
+
 namespace po = boost::program_options;
 
 // Used only for CLI
 template <class TFuzzer, class TLibFuzzer, class TExecutor>
 std::unique_ptr<TFuzzer> BuildLibFuzzerFromArgs(
-    FuzzerArgs &fuzzer_args, fuzzuf::cli::GlobalFuzzerOptions &global_options) {
+    FuzzerArgs &fuzzer_args, GlobalFuzzerOptions &global_options) {
   std::unique_ptr<TFuzzer> p(
       new TLibFuzzer(fuzzer_args, global_options,
                      [](std::string &&m) { std::cout << m << std::flush; }));
   return p;
 }
+
+}  // namespace fuzzuf::cli

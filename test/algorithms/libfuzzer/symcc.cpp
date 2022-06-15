@@ -17,6 +17,13 @@
  */
 #define BOOST_TEST_MODULE algorithms.libfuzzer.execute3
 #define BOOST_TEST_DYN_LINK
+#include <config.h>
+
+#include <boost/program_options.hpp>
+#include <boost/scope_exit.hpp>
+#include <boost/test/unit_test.hpp>
+#include <iostream>
+
 #include "fuzzuf/algorithms/libfuzzer/cli_compat/fuzzer.hpp"
 #include "fuzzuf/algorithms/libfuzzer/executor/execute.hpp"
 #include "fuzzuf/cli/global_fuzzer_options.hpp"
@@ -26,11 +33,6 @@
 #include "fuzzuf/utils/map_file.hpp"
 #include "fuzzuf/utils/sha1.hpp"
 #include "fuzzuf/utils/which.hpp"
-#include <boost/program_options.hpp>
-#include <boost/scope_exit.hpp>
-#include <boost/test/unit_test.hpp>
-#include <config.h>
-#include <iostream>
 
 namespace po = boost::program_options;
 
@@ -50,63 +52,34 @@ BOOST_AUTO_TEST_CASE(SymCC) {
   BOOST_SCOPE_EXIT(&root_dir) { fs::remove_all(root_dir); }
   BOOST_SCOPE_EXIT_END
   // NOLINTEND(cppcoreguidelines-pro-type-cstyle-cast,cppcoreguidelines-pro-type-member-init,cppcoreguidelines-special-member-functions,hicpp-explicit-conversions)
-  const std::vector< std::vector< std::string > > args{
-    {
-      "fuzzuf",
-      "libfuzzer",
-      "-target=" FUZZUF_FUZZTOYS_DIR "/fuzz_toys-branch",
-      "-symcc_target=" FUZZUF_FUZZTOYS_SYMCC_DIR "/fuzz_toys-branch",
-      "-seed=1",
-      "-runs=1000",
-      "-exact_artifact_path=" + output_dir.string(),
-      input_dir.string()
-    },
-    {
-      "fuzzuf",
-      "libfuzzer",
-      "-target=" FUZZUF_FUZZTOYS_DIR "/fuzz_toys-branch",
-      "-symcc_target=" FUZZUF_FUZZTOYS_SYMCC_DIR "/fuzz_toys-branch",
-      "-symcc_freq=0",
-      "-seed=1",
-      "-runs=1000",
-      "-exact_artifact_path=" + output_dir.string(),
-      input_dir.string()
-    },
-    {
-      "fuzzuf",
-      "libfuzzer",
-      "-target=" FUZZUF_FUZZTOYS_DIR "/fuzz_toys-branch",
-      "-symcc_target=" FUZZUF_FUZZTOYS_SYMCC_DIR "/fuzz_toys-branch",
-      "-symcc_freq=1",
-      "-seed=1",
-      "-runs=1000",
-      "-exact_artifact_path=" + output_dir.string(),
-      input_dir.string()
-    },
-    {
-      "fuzzuf",
-      "libfuzzer",
-      "-target=" FUZZUF_FUZZTOYS_DIR "/fuzz_toys-branch",
-      "-symcc_target=" FUZZUF_FUZZTOYS_SYMCC_DIR "/fuzz_toys-branch",
-      "-symcc_freq=20",
-      "-seed=1",
-      "-runs=1000",
-      "-exact_artifact_path=" + output_dir.string(),
-      input_dir.string()
-    },
-    {
-      "fuzzuf",
-      "libfuzzer",
-      "-target=" FUZZUF_FUZZTOYS_DIR "/fuzz_toys-branch",
-      "-seed=1",
-      "-runs=1000",
-      "-exact_artifact_path=" + output_dir.string(),
-      input_dir.string()
-    }
-  };
-  std::vector< std::size_t > corpus_size;
-  corpus_size.reserve( args.size() );
-  for( const auto &a: args ) {
+  const std::vector<std::vector<std::string> > args{
+      {"fuzzuf", "libfuzzer",
+       "-target=" FUZZUF_FUZZTOYS_DIR "/fuzz_toys-branch",
+       "-symcc_target=" FUZZUF_FUZZTOYS_SYMCC_DIR "/fuzz_toys-branch",
+       "-seed=1", "-runs=1000", "-exact_artifact_path=" + output_dir.string(),
+       input_dir.string()},
+      {"fuzzuf", "libfuzzer",
+       "-target=" FUZZUF_FUZZTOYS_DIR "/fuzz_toys-branch",
+       "-symcc_target=" FUZZUF_FUZZTOYS_SYMCC_DIR "/fuzz_toys-branch",
+       "-symcc_freq=0", "-seed=1", "-runs=1000",
+       "-exact_artifact_path=" + output_dir.string(), input_dir.string()},
+      {"fuzzuf", "libfuzzer",
+       "-target=" FUZZUF_FUZZTOYS_DIR "/fuzz_toys-branch",
+       "-symcc_target=" FUZZUF_FUZZTOYS_SYMCC_DIR "/fuzz_toys-branch",
+       "-symcc_freq=1", "-seed=1", "-runs=1000",
+       "-exact_artifact_path=" + output_dir.string(), input_dir.string()},
+      {"fuzzuf", "libfuzzer",
+       "-target=" FUZZUF_FUZZTOYS_DIR "/fuzz_toys-branch",
+       "-symcc_target=" FUZZUF_FUZZTOYS_SYMCC_DIR "/fuzz_toys-branch",
+       "-symcc_freq=20", "-seed=1", "-runs=1000",
+       "-exact_artifact_path=" + output_dir.string(), input_dir.string()},
+      {"fuzzuf", "libfuzzer",
+       "-target=" FUZZUF_FUZZTOYS_DIR "/fuzz_toys-branch", "-seed=1",
+       "-runs=1000", "-exact_artifact_path=" + output_dir.string(),
+       input_dir.string()}};
+  std::vector<std::size_t> corpus_size;
+  corpus_size.reserve(args.size());
+  for (const auto &a : args) {
     BOOST_TEST_CHECKPOINT("begin");
     BOOST_CHECK_EQUAL(fs::create_directory(input_dir), true);
     BOOST_CHECK_EQUAL(fs::create_directory(output_dir), true);
@@ -137,7 +110,7 @@ BOOST_AUTO_TEST_CASE(SymCC) {
     std::transform(a.begin(), a.end(), std::back_inserter(cargs),
                    [](const auto &v) { return v.c_str(); });
 
-    FuzzerArgs fargs{
+    fuzzuf::cli::FuzzerArgs fargs{
         .argc = int(cargs.size()),
         .argv = cargs.data(),
         .global_options_description = global_desc,
@@ -149,9 +122,10 @@ BOOST_AUTO_TEST_CASE(SymCC) {
     while (!fuzzer.ShouldEnd()) {
       fuzzer.OneLoop();
     }
-    corpus_size.push_back( std::count_if(fuzzer.GetVariables().corpus.corpus.begin(),
-                               fuzzer.GetVariables().corpus.corpus.end(),
-                               [](const auto &v) { return v.enabled; }));
+    corpus_size.push_back(
+        std::count_if(fuzzer.GetVariables().corpus.corpus.begin(),
+                      fuzzer.GetVariables().corpus.corpus.end(),
+                      [](const auto &v) { return v.enabled; }));
 
     fs::remove_all(input_dir);
     fs::remove_all(output_dir);
@@ -160,8 +134,8 @@ BOOST_AUTO_TEST_CASE(SymCC) {
   }
   // Number of active inputs in libFuzzer only is less than number of active
   // inputs in libFuzzer+SymCC
-  BOOST_CHECK_LT( corpus_size[ 4 ], corpus_size[ 0 ] );
-  BOOST_CHECK_EQUAL( corpus_size[ 4 ], corpus_size[ 1 ] );
-  BOOST_CHECK_EQUAL( corpus_size[ 0 ], corpus_size[ 2 ] );
-  BOOST_CHECK_EQUAL( corpus_size[ 0 ], corpus_size[ 3 ] );
+  BOOST_CHECK_LT(corpus_size[4], corpus_size[0]);
+  BOOST_CHECK_EQUAL(corpus_size[4], corpus_size[1]);
+  BOOST_CHECK_EQUAL(corpus_size[0], corpus_size[2]);
+  BOOST_CHECK_EQUAL(corpus_size[0], corpus_size[3]);
 }

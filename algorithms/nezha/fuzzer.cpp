@@ -33,7 +33,7 @@
 #include "fuzzuf/cli/global_fuzzer_options.hpp"
 
 namespace fuzzuf::algorithm::nezha {
-NezhaFuzzer::NezhaFuzzer(const FuzzerArgs &fuzzer_args,
+NezhaFuzzer::NezhaFuzzer(const cli::FuzzerArgs &fuzzer_args,
                          const cli::GlobalFuzzerOptions &global,
                          std::function<void(std::string &&)> &&sink_)
     : node_tracer([this](std::string &&m) { sink("trace : " + m); }) {

@@ -22,7 +22,7 @@
 
 namespace fuzzuf::algorithm::libfuzzer {
 static cli::FuzzerBuilderRegister global_libfuzzer_register(
-    "libfuzzer", BuildLibFuzzerFromArgs<fuzzuf::fuzzer::Fuzzer,
-                                        fuzzuf::algorithm::libfuzzer::LibFuzzer,
-                                        executor::LibFuzzerExecutorInterface>);
+    "libfuzzer",
+    cli::BuildLibFuzzerFromArgs<fuzzer::Fuzzer, algorithm::libfuzzer::LibFuzzer,
+                                executor::LibFuzzerExecutorInterface>);
 }

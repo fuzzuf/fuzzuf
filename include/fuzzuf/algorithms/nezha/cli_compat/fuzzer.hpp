@@ -52,7 +52,7 @@ class NezhaFuzzer : public fuzzer::Fuzzer {
   using wrapped = utils::type_traits::replace_return_type_t<void, Func>;
 
  public:
-  NezhaFuzzer(const FuzzerArgs &, const cli::GlobalFuzzerOptions &,
+  NezhaFuzzer(const cli::FuzzerArgs &, const cli::GlobalFuzzerOptions &,
               std::function<void(std::string &&)> &&);
   virtual ~NezhaFuzzer() {}
   virtual void OneLoop();

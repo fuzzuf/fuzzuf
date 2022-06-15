@@ -53,7 +53,7 @@ BOOST_AUTO_TEST_CASE(ParseGlobalFuzzerOptions_AllOptions) {
       .argc = Argc(argv),
       .argv = argv,
   };
-  FuzzerArgs fuzzer_args =
+  fuzzuf::cli::FuzzerArgs fuzzer_args =
       fuzzuf::cli::ParseGlobalOptionsForFuzzer(args, options);
 
   // Check if fuzzer is captured

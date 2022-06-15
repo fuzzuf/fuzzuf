@@ -225,7 +225,7 @@ void LinuxForkServerExecutor::Run(const u8 *buf, u32 len, u32 timeout_ms) {
   // value that represent if the last execution failed for timeout.
 
   // Request creating PUT process to fork server
-  ExecutePUTAPIResponse response = this->put_channel.ExecutePUT();
+  channel::ExecutePUTAPIResponse response = this->put_channel.ExecutePUT();
 
   // NOTE: Avoids reading shared memory before PUT exit.
   /* Any subsequent operations on trace_bits must not be moved by the
