@@ -71,9 +71,11 @@ BOOST_AUTO_TEST_CASE(ExecuteIJONFromCLI) {
                         output_dir.c_str(),
                         "-e",
                         "forkserver",
+                        "--exec_timelimit_ms",
+                        "10000",
                         TEST_BINARY_DIR "/put/ijon/ijon-test_put1",
                         nullptr};
-  constexpr int argc = 9;
+  constexpr int argc = 11;
   auto fuzzer = fuzzuf::cli::CreateFuzzerInstanceFromArgv(argc, argv);
 
   BOOST_TEST_CHECKPOINT("created fuzzer");
