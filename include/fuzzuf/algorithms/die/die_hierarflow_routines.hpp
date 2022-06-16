@@ -39,7 +39,7 @@ namespace fuzzuf::algorithm::die::routine::mutation {
 
 using DIEMutInputType = bool(std::shared_ptr<DIETestcase>);
 using DIEMutCalleeRef =
-    NullableRef<hierarflow::HierarFlowCallee<DIEMutInputType>>;
+    utils::NullableRef<hierarflow::HierarFlowCallee<DIEMutInputType>>;
 using DIEMutOutputType = bool(const u8 *, u32, const u8 *, u32);
 
 struct DIEMutate
@@ -62,7 +62,7 @@ using DIEExecInputType = bool(const u8 *, u32,  // js file
                               const u8 *,
                               u32);  // type file (extended from AFL)
 using DIEExecCalleeRef =
-    NullableRef<hierarflow::HierarFlowCallee<DIEExecInputType>>;
+    utils::NullableRef<hierarflow::HierarFlowCallee<DIEExecInputType>>;
 using DIEExecOutputType = bool(const u8 *, u32,  // js file
                                const u8 *,
                                u32,  // type file (extended from AFL)
@@ -89,7 +89,7 @@ using DIEUpdateInputType = bool(const u8 *, u32, const u8 *, u32,
                                 feedback::InplaceMemoryFeedback &,
                                 feedback::ExitStatusFeedback &);
 using DIEUpdateCalleeRef =
-    NullableRef<hierarflow::HierarFlowCallee<DIEUpdateInputType>>;
+    utils::NullableRef<hierarflow::HierarFlowCallee<DIEUpdateInputType>>;
 using DIEUpdateOutputType = void(void);
 
 struct DIEUpdate : public hierarflow::HierarFlowRoutine<DIEUpdateInputType,

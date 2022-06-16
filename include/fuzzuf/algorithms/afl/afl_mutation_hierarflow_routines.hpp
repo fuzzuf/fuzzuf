@@ -35,7 +35,7 @@ using AFLMutInputType = bool(AFLMutatorTemplate<State> &);
 
 template <class State>
 using AFLMutCalleeRef =
-    NullableRef<hierarflow::HierarFlowCallee<AFLMutInputType<State>>>;
+    utils::NullableRef<hierarflow::HierarFlowCallee<AFLMutInputType<State>>>;
 
 using AFLMutOutputType = bool(const u8 *, u32);
 

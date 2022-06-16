@@ -34,8 +34,8 @@ namespace fuzzuf::algorithm::nautilus::fuzzer::routine::other {
  * @fn
  * @brief HierarFlow routine for FuzzLoop (fuzz_loop)
  */
-NullableRef<hierarflow::HierarFlowCallee<void(void)>> FuzzLoop::operator()(
-    void) {
+utils::NullableRef<hierarflow::HierarFlowCallee<void(void)>>
+FuzzLoop::operator()(void) {
   CallSuccessors();  // select_input
 
   state.cycles_done++;

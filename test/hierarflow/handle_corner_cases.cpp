@@ -38,7 +38,8 @@ struct VoidRoutine
   VoidRoutine(std::string name, std::vector<std::string>& order_queue)
       : name(name), order_queue(order_queue) {}
 
-  NullableRef<fuzzuf::hierarflow::HierarFlowCallee<VoidType>> operator()(void) {
+  fuzzuf::utils::NullableRef<fuzzuf::hierarflow::HierarFlowCallee<VoidType>>
+  operator()(void) {
     order_queue.emplace_back(name);
     CallSuccessors();
     return GoToDefaultNext();

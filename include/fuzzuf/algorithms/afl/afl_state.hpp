@@ -305,8 +305,8 @@ struct AFLStateTemplate {
   std::vector<std::shared_ptr<Testcase>> case_queue;
 
   /* Top entries for bitmap bytes     */
-  std::vector<NullableRef<Testcase>> top_rated =
-      std::vector<NullableRef<Testcase>>(option::GetMapSize<Tag>());
+  std::vector<utils::NullableRef<Testcase>> top_rated =
+      std::vector<utils::NullableRef<Testcase>>(option::GetMapSize<Tag>());
 
   using AFLDictData = afl::dictionary::AFLDictData;
   /* Extra tokens to fuzz with        */

@@ -37,7 +37,7 @@ struct CullQueueTemplate
  public:
   CullQueueTemplate(State &state);
 
-  NullableRef<hierarflow::HierarFlowCallee<void(void)>> operator()(void);
+  utils::NullableRef<hierarflow::HierarFlowCallee<void(void)>> operator()(void);
 
  private:
   State &state;
@@ -52,7 +52,7 @@ struct SelectSeedTemplate
  public:
   SelectSeedTemplate(State &state);
 
-  NullableRef<hierarflow::HierarFlowCallee<void(void)>> operator()(void);
+  utils::NullableRef<hierarflow::HierarFlowCallee<void(void)>> operator()(void);
 
  private:
   State &state;
@@ -66,7 +66,7 @@ using AFLMidInputType = bool(std::shared_ptr<typename State::OwnTestcase>);
 
 template <class State>
 using AFLMidCalleeRef =
-    NullableRef<hierarflow::HierarFlowCallee<AFLMidInputType<State>>>;
+    utils::NullableRef<hierarflow::HierarFlowCallee<AFLMidInputType<State>>>;
 
 template <class State>
 using AFLMidOutputType = bool(AFLMutatorTemplate<State> &);
@@ -196,8 +196,8 @@ struct ExecutePUTTemplate
  public:
   ExecutePUTTemplate(State &state);
 
-  NullableRef<hierarflow::HierarFlowCallee<bool(const u8 *, u32)>> operator()(
-      const u8 *, u32);
+  utils::NullableRef<hierarflow::HierarFlowCallee<bool(const u8 *, u32)>>
+  operator()(const u8 *, u32);
 
  private:
   State &state;

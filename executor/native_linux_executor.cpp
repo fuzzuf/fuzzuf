@@ -459,7 +459,7 @@ void NativeLinuxExecutor::Run(const u8 *buf, u32 len, u32 timeout_ms) {
         else
           left_ms -= elapsed;
       }
-    } catch (const FileError &e) {
+    } catch (const utils::FileError &e) {
       ERROR("Unable to request new process from fork server (OOM?)");
     }
     if (read_buffer.size() >= 4u)

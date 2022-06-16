@@ -40,20 +40,21 @@ using OProcessInput = void(QueueItem&);
 // ProcessInput <--> InitializeState
 using IInitializeState = OProcessInput;
 using RInitializeState =
-    NullableRef<hierarflow::HierarFlowCallee<IInitializeState>>;
+    utils::NullableRef<hierarflow::HierarFlowCallee<IInitializeState>>;
 // InitializeState <--> N/A
 using OInitializeState = void(void);
 
 // ProcessInput <--> ApplyDetMuts
 using IApplyDetMuts = OProcessInput;
-using RApplyDetMuts = NullableRef<hierarflow::HierarFlowCallee<IApplyDetMuts>>;
+using RApplyDetMuts =
+    utils::NullableRef<hierarflow::HierarFlowCallee<IApplyDetMuts>>;
 // ApplyDetMuts <--> MutSplice/MutHavoc/MutHavocRecursion
 using OApplyDetMuts = void(QueueItem&);
 
 // ProcessInput <--> ApplyRandMuts
 using IApplyRandMuts = OProcessInput;
 using RApplyRandMuts =
-    NullableRef<hierarflow::HierarFlowCallee<IApplyRandMuts>>;
+    utils::NullableRef<hierarflow::HierarFlowCallee<IApplyRandMuts>>;
 // ApplyRandMuts <--> MutSplice/MutHavoc/MutHavocRecursion
 using OApplyRandMuts = void(QueueItem&);
 
@@ -92,25 +93,26 @@ struct ApplyRandMuts
  */
 // ApplyDetMuts <--> MutRules
 using IMutRules = OApplyDetMuts;
-using RMutRules = NullableRef<hierarflow::HierarFlowCallee<IMutRules>>;
+using RMutRules = utils::NullableRef<hierarflow::HierarFlowCallee<IMutRules>>;
 // MutRules <--> N/A
 using OMutRules = void(void);
 
 // ApplyDetMuts/ApplyRandMuts <--> Splice
 using IMutSplice = OApplyDetMuts;  // == OApplyRandMuts
-using RMutSplice = NullableRef<hierarflow::HierarFlowCallee<IMutSplice>>;
+using RMutSplice = utils::NullableRef<hierarflow::HierarFlowCallee<IMutSplice>>;
 // MutSplice <--> N/A
 using OMutSplice = void(void);
 
 // ApplyDetMuts/ApplyRandMuts <--> MutHavoc
 using IMutHavoc = OApplyDetMuts;  // == OApplyRandMuts
-using RMutHavoc = NullableRef<hierarflow::HierarFlowCallee<IMutHavoc>>;
+using RMutHavoc = utils::NullableRef<hierarflow::HierarFlowCallee<IMutHavoc>>;
 // MutHavoc <--> N/A
 using OMutHavoc = void(void);
 
 // ApplyDetMuts/ApplyRandMuts <--> HavocRec
 using IMutHavocRec = OApplyDetMuts;  // == OApplyRandMuts
-using RMutHavocRec = NullableRef<hierarflow::HierarFlowCallee<IMutHavocRec>>;
+using RMutHavocRec =
+    utils::NullableRef<hierarflow::HierarFlowCallee<IMutHavocRec>>;
 // Havoc <--> N/A
 using OMutHavocRec = void(void);
 

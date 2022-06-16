@@ -39,7 +39,7 @@ struct PyExecutePUT
  public:
   PyExecutePUT(fuzzuf::executor::NativeLinuxExecutor &executor);
 
-  NullableRef<hierarflow::HierarFlowCallee<PyMutOutputType>> operator()(
+  utils::NullableRef<hierarflow::HierarFlowCallee<PyMutOutputType>> operator()(
       const u8 *, u32);
 
  private:
@@ -51,7 +51,7 @@ struct PyUpdate
  public:
   PyUpdate(PythonState &state);
 
-  NullableRef<hierarflow::HierarFlowCallee<PyUpdInputType>> operator()(
+  utils::NullableRef<hierarflow::HierarFlowCallee<PyUpdInputType>> operator()(
       const u8 *, u32, feedback::ExitStatusFeedback,
       feedback::InplaceMemoryFeedback &, feedback::InplaceMemoryFeedback &);
 
@@ -64,8 +64,8 @@ struct PyBitFlip
  public:
   PyBitFlip(PythonState &state);
 
-  NullableRef<hierarflow::HierarFlowCallee<void(u32, u32)>> operator()(u32,
-                                                                       u32);
+  utils::NullableRef<hierarflow::HierarFlowCallee<void(u32, u32)>> operator()(
+      u32, u32);
 
  private:
   PythonState &state;
@@ -76,8 +76,8 @@ struct PyByteFlip
  public:
   PyByteFlip(PythonState &state);
 
-  NullableRef<hierarflow::HierarFlowCallee<void(u32, u32)>> operator()(u32,
-                                                                       u32);
+  utils::NullableRef<hierarflow::HierarFlowCallee<void(u32, u32)>> operator()(
+      u32, u32);
 
  private:
   PythonState &state;
@@ -88,7 +88,7 @@ struct PyHavoc
  public:
   PyHavoc(PythonState &state);
 
-  NullableRef<hierarflow::HierarFlowCallee<void(u32)>> operator()(u32);
+  utils::NullableRef<hierarflow::HierarFlowCallee<void(u32)>> operator()(u32);
 
  private:
   PythonState &state;
@@ -99,7 +99,7 @@ struct PyAdd : public hierarflow::HierarFlowRoutine<void(u32, int, int, bool),
  public:
   PyAdd(PythonState &state);
 
-  NullableRef<hierarflow::HierarFlowCallee<void(u32, int, int, bool)>>
+  utils::NullableRef<hierarflow::HierarFlowCallee<void(u32, int, int, bool)>>
   operator()(u32, int, int, bool);
 
  private:
@@ -111,7 +111,7 @@ struct PySub : public hierarflow::HierarFlowRoutine<void(u32, int, int, bool),
  public:
   PySub(PythonState &state);
 
-  NullableRef<hierarflow::HierarFlowCallee<void(u32, int, int, bool)>>
+  utils::NullableRef<hierarflow::HierarFlowCallee<void(u32, int, int, bool)>>
   operator()(u32, int, int, bool);
 
  private:
@@ -124,7 +124,7 @@ struct PyInterest
  public:
   PyInterest(PythonState &state);
 
-  NullableRef<hierarflow::HierarFlowCallee<void(u32, int, u32, bool)>>
+  utils::NullableRef<hierarflow::HierarFlowCallee<void(u32, int, u32, bool)>>
   operator()(u32, int, u32, bool);
 
  private:
@@ -136,8 +136,8 @@ struct PyOverwrite
  public:
   PyOverwrite(PythonState &state);
 
-  NullableRef<hierarflow::HierarFlowCallee<void(u32, char)>> operator()(u32,
-                                                                        char);
+  utils::NullableRef<hierarflow::HierarFlowCallee<void(u32, char)>> operator()(
+      u32, char);
 
  private:
   PythonState &state;

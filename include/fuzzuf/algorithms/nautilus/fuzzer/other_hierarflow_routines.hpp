@@ -42,7 +42,7 @@ struct GenerateInput;
 /* fuzz_loop */
 struct FuzzLoop : hierarflow::HierarFlowRoutine<void(void), void(void)> {
   FuzzLoop(NautilusState& state) : state(state) {}
-  NullableRef<hierarflow::HierarFlowCallee<void(void)>> operator()(void);
+  utils::NullableRef<hierarflow::HierarFlowCallee<void(void)>> operator()(void);
 
  private:
   NautilusState& state;
@@ -53,7 +53,8 @@ struct FuzzLoop : hierarflow::HierarFlowRoutine<void(void), void(void)> {
  */
 // FuzzLoop <--> SelectInput
 using ISelectInput = void(void);
-using RSelectInput = NullableRef<hierarflow::HierarFlowCallee<ISelectInput>>;
+using RSelectInput =
+    utils::NullableRef<hierarflow::HierarFlowCallee<ISelectInput>>;
 // SelectInput <--> ProcessInput/GenerateInput
 using OSelectInput = void(std::unique_ptr<QueueItem>&);
 
@@ -78,14 +79,15 @@ struct SelectInput : hierarflow::HierarFlowRoutine<ISelectInput, OSelectInput> {
  */
 // SelectInput <--> ProcessInput
 using IProcessInput = OSelectInput;
-using RProcessInput = NullableRef<hierarflow::HierarFlowCallee<IProcessInput>>;
+using RProcessInput =
+    utils::NullableRef<hierarflow::HierarFlowCallee<IProcessInput>>;
 // ProcessInput <--> Initialize/ApplyDetMuts/ApplyRandMuts
 using OProcessInput = void(QueueItem&);
 
 // SelectInput <--> GenerateInput
 using IGenerateInput = OSelectInput;
 using RGenerateInput =
-    NullableRef<hierarflow::HierarFlowCallee<IGenerateInput>>;
+    utils::NullableRef<hierarflow::HierarFlowCallee<IGenerateInput>>;
 // Generate <--> ...
 using OGenerateInput = void(QueueItem&);
 

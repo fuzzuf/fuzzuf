@@ -25,7 +25,7 @@ ExecInputSet::~ExecInputSet() {}
 
 size_t ExecInputSet::size(void) { return elems.size(); }
 
-NullableRef<ExecInput> ExecInputSet::get_ref(u64 id) {
+utils::NullableRef<ExecInput> ExecInputSet::get_ref(u64 id) {
   auto itr = elems.find(id);
   if (itr == elems.end()) return std::nullopt;
   return *itr->second;

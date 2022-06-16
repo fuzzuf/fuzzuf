@@ -39,8 +39,8 @@ struct IntRoutine
   IntRoutine(std::string name, std::vector<std::string>& order_queue)
       : name(name), order_queue(order_queue) {}
 
-  NullableRef<fuzzuf::hierarflow::HierarFlowCallee<IntType>> operator()(
-      int arg) {
+  fuzzuf::utils::NullableRef<fuzzuf::hierarflow::HierarFlowCallee<IntType>>
+  operator()(int arg) {
     order_queue.emplace_back(name);
     int res = CallSuccessors(arg);
     SetResponseValue(res);
@@ -59,8 +59,8 @@ struct IntGoToParentRoutine
   IntGoToParentRoutine(std::string name, std::vector<std::string>& order_queue)
       : name(name), order_queue(order_queue) {}
 
-  NullableRef<fuzzuf::hierarflow::HierarFlowCallee<IntType>> operator()(
-      int arg) {
+  fuzzuf::utils::NullableRef<fuzzuf::hierarflow::HierarFlowCallee<IntType>>
+  operator()(int arg) {
     order_queue.emplace_back(name);
     SetResponseValue(arg);
     return GoToParent();

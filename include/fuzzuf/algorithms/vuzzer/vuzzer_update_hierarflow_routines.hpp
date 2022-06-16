@@ -38,7 +38,7 @@ namespace fuzzuf::algorithm::vuzzer::routine::update {
 using VUzzerUpdInputType = double(const std::shared_ptr<VUzzerTestcase> &,
                                   feedback::FileFeedback &);
 using VUzzerUpdCalleeRef =
-    NullableRef<hierarflow::HierarFlowCallee<VUzzerUpdInputType>>;
+    utils::NullableRef<hierarflow::HierarFlowCallee<VUzzerUpdInputType>>;
 using VUzzerUpdOutputType = void(void);
 
 struct UpdateFitness
@@ -74,7 +74,7 @@ struct TrimQueue
  public:
   TrimQueue(VUzzerState &state);
 
-  NullableRef<hierarflow::HierarFlowCallee<
+  utils::NullableRef<hierarflow::HierarFlowCallee<
       void(const std::shared_ptr<VUzzerTestcase> &, std::map<u64, u32> &)>>
   operator()(const std::shared_ptr<VUzzerTestcase> &, std::map<u64, u32> &);
 
@@ -87,7 +87,7 @@ struct UpdateQueue
  public:
   UpdateQueue(VUzzerState &state);
 
-  NullableRef<hierarflow::HierarFlowCallee<void(void)>> operator()(void);
+  utils::NullableRef<hierarflow::HierarFlowCallee<void(void)>> operator()(void);
 
  private:
   VUzzerState &state;

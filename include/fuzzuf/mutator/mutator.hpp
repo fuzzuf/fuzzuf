@@ -299,7 +299,7 @@ void Mutator<Tag>::Havoc(u32 stacking, const std::vector<AFLDictData> &extras,
   // just an alias of afl::util::UR
   auto UR = [this](u32 limit) { return afl::util::UR(limit, rand_fd); };
 
-  using AFLDictRef = NullableRef<
+  using AFLDictRef = utils::NullableRef<
       const std::vector<fuzzuf::algorithm::afl::dictionary::AFLDictData>>;
   fuzzuf::optimizer::Store::GetInstance().Set(fuzzuf::optimizer::keys::Extras,
                                               AFLDictRef(extras));

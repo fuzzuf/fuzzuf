@@ -112,6 +112,8 @@ using output_t = std::vector<std::uint8_t>;
 
 #define UNUSED(UNUSED_VAR) (void)(UNUSED_VAR)
 
+namespace fuzzuf::utils {
+
 // Instead of T*, we should use T& and this in usual cases because T* is
 // ambiguous in the point that we can't see whether the pointer refers to array
 // or an element also raw pointers are relatively dangerous
@@ -128,8 +130,6 @@ class FileError : public std::invalid_argument {
  public:
   FileError(const std::string &what_arg) : std::invalid_argument(what_arg) {}
 };
-
-namespace fuzzuf::utils {
 
 /*
 namespace {

@@ -48,7 +48,7 @@ struct SelectSeed
  public:
   SelectSeed(IJONState &state);
 
-  NullableRef<hierarflow::HierarFlowCallee<void(void)>> operator()(void);
+  utils::NullableRef<hierarflow::HierarFlowCallee<void(void)>> operator()(void);
 
  private:
   IJONState &state;

@@ -31,10 +31,11 @@
 /**
  * Macro to generate standard typedefs for libFuzzer nodes.
  */
-#define FUZZUF_ALGORITHM_LIBFUZZER_HIERARFLOW_STANDARD_TYPEDEFS               \
-  using input_cb_t = R(Args...);                                              \
-  using output_cb_t = input_cb_t;                                             \
-  using callee_ref_t = NullableRef<hierarflow::HierarFlowCallee<input_cb_t>>; \
+#define FUZZUF_ALGORITHM_LIBFUZZER_HIERARFLOW_STANDARD_TYPEDEFS     \
+  using input_cb_t = R(Args...);                                    \
+  using output_cb_t = input_cb_t;                                   \
+  using callee_ref_t =                                              \
+      utils::NullableRef<hierarflow::HierarFlowCallee<input_cb_t>>; \
   using base_type = hierarflow::HierarFlowRoutine<input_cb_t, output_cb_t>;
 
 #endif

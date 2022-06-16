@@ -55,7 +55,7 @@ class HierarFlowCallee<IReturn(IArgs...)> {
 
   virtual ~HierarFlowCallee() {}
 
-  virtual NullableRef<HierarFlowCallee<I>> operator()(IArgs... args) = 0;
+  virtual utils::NullableRef<HierarFlowCallee<I>> operator()(IArgs... args) = 0;
 
   const CalleeIndex& GetCalleeIndexRef() const { return idx; };
 

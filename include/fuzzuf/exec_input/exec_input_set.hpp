@@ -57,7 +57,7 @@ class ExecInputSet {
   ~ExecInputSet();
 
   size_t size(void);
-  NullableRef<ExecInput> get_ref(u64 id);
+  utils::NullableRef<ExecInput> get_ref(u64 id);
   std::shared_ptr<ExecInput> get_shared(u64 id);
   void erase(u64 id);
 

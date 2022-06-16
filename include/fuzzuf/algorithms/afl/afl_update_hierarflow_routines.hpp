@@ -33,7 +33,7 @@ namespace fuzzuf::algorithm::afl::routine::update {
 using AFLUpdInputType = bool(const u8 *, u32, feedback::InplaceMemoryFeedback &,
                              feedback::ExitStatusFeedback &);
 using AFLUpdCalleeRef =
-    NullableRef<hierarflow::HierarFlowCallee<AFLUpdInputType>>;
+    utils::NullableRef<hierarflow::HierarFlowCallee<AFLUpdInputType>>;
 using AFLUpdOutputType = void(void);
 
 template <class State>

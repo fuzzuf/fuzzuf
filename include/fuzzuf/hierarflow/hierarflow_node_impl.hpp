@@ -89,7 +89,7 @@ class HierarFlowNodeImpl<IReturn(IArgs...), OReturn(OArgs...)>
                      std::shared_ptr<HierarFlowRoutine<I, O>> routine)
       : HierarFlowCallee<I>(&parent), HierarFlowCaller<O>(), routine(routine) {}
 
-  NullableRef<HierarFlowCallee<I>> operator()(IArgs... args) {
+  utils::NullableRef<HierarFlowCallee<I>> operator()(IArgs... args) {
     if constexpr (!std::is_same_v<OReturn, void>) {
       // Initialize OReturn. This means, OReturn must be a type which is movable
       // and which has the default constructor

@@ -73,7 +73,7 @@ class RandomCall<R(Args...), Path>
       Path()([&](auto &&rng) { n = random_value(rng, end); },
              std::forward<Args>(args)...);
       {
-        NullableRef<hierarflow::HierarFlowCallee<output_cb_t>> succ_ref =
+        utils::NullableRef<hierarflow::HierarFlowCallee<output_cb_t>> succ_ref =
             *base_type::UnwrapCurrentLinkedNodeRef().succ_nodes[n];
         auto &succ = succ_ref.value().get();
         auto next_succ_ref = succ(std::forward<Args>(args)...);

@@ -32,7 +32,7 @@ namespace fuzzuf::algorithm::vuzzer::routine::mutation {
 
 using VUzzerMutInputType = void(void);
 using VUzzerMutCalleeRef =
-    NullableRef<hierarflow::HierarFlowCallee<VUzzerMutInputType>>;
+    utils::NullableRef<hierarflow::HierarFlowCallee<VUzzerMutInputType>>;
 using VUzzerMutOutputType = void(void);
 
 struct Mutate : public hierarflow::HierarFlowRoutine<VUzzerMutInputType,

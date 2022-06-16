@@ -70,9 +70,11 @@ class HierarFlowRoutine<IReturn(IArgs...), OReturn(OArgs...)> {
     UnwrapCurrentLinkedNodeRef().parent->GetResponseValue() = val;
   }
 
-  NullableRef<HierarFlowCallee<I>> GoToParent(void) { return std::nullopt; }
+  utils::NullableRef<HierarFlowCallee<I>> GoToParent(void) {
+    return std::nullopt;
+  }
 
-  NullableRef<HierarFlowCallee<I>> GoToDefaultNext(void) {
+  utils::NullableRef<HierarFlowCallee<I>> GoToDefaultNext(void) {
     auto &node = UnwrapCurrentLinkedNodeRef();
     if (node.parent == nullptr) return std::nullopt;
     if (node.idx + 1 == node.parent->succ_nodes.size()) return std::nullopt;
@@ -112,7 +114,7 @@ class HierarFlowRoutine<IReturn(IArgs...), OReturn(OArgs...)> {
   }
 
   void runAllChildren(OArgs... args) {
-    NullableRef<HierarFlowCallee<O>> succ_ref = std::nullopt;
+    utils::NullableRef<HierarFlowCallee<O>> succ_ref = std::nullopt;
     auto &succ_nodes = UnwrapCurrentLinkedNodeRef().succ_nodes;
     if (!succ_nodes.empty()) {
       succ_ref = *succ_nodes[0];
@@ -130,13 +132,14 @@ class HierarFlowRoutine<IReturn(IArgs...), OReturn(OArgs...)> {
     }
   }
 
-  virtual NullableRef<HierarFlowCallee<I>> operator()(IArgs... args) = 0;
+  virtual utils::NullableRef<HierarFlowCallee<I>> operator()(IArgs... args) = 0;
 
-  NullableRef<HierarFlowNodeImpl<I, O>> GetCurrentLinkedNodeRef(void) {
+  utils::NullableRef<HierarFlowNodeImpl<I, O>> GetCurrentLinkedNodeRef(void) {
     return cur_linked_node_ref;
   }
 
-  void SetCurrentLinkedNodeRef(NullableRef<HierarFlowNodeImpl<I, O>> ref) {
+  void SetCurrentLinkedNodeRef(
+      utils::NullableRef<HierarFlowNodeImpl<I, O>> ref) {
     cur_linked_node_ref = ref;
   }
 
@@ -145,7 +148,7 @@ class HierarFlowRoutine<IReturn(IArgs...), OReturn(OArgs...)> {
   }
 
  private:
-  NullableRef<HierarFlowNodeImpl<I, O>> cur_linked_node_ref;
+  utils::NullableRef<HierarFlowNodeImpl<I, O>> cur_linked_node_ref;
 };
 
 }  // namespace fuzzuf::hierarflow

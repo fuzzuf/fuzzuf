@@ -34,7 +34,7 @@ namespace fuzzuf::bindings::python::routine {
 PyExecutePUT::PyExecutePUT(fuzzuf::executor::NativeLinuxExecutor& executor)
     : executor(executor) {}
 
-NullableRef<hierarflow::HierarFlowCallee<PyMutOutputType>>
+utils::NullableRef<hierarflow::HierarFlowCallee<PyMutOutputType>>
 PyExecutePUT::operator()(const u8* buf, u32 len) {
   executor.Run(buf, len);
   auto exit_status = executor.GetExitStatusFeedback();
@@ -47,10 +47,11 @@ PyExecutePUT::operator()(const u8* buf, u32 len) {
 
 PyUpdate::PyUpdate(PythonState& state) : state(state) {}
 
-NullableRef<hierarflow::HierarFlowCallee<PyUpdInputType>> PyUpdate::operator()(
-    const u8* buf, u32 len, feedback::ExitStatusFeedback exit_status,
-    feedback::InplaceMemoryFeedback& afl_inp_feed,
-    feedback::InplaceMemoryFeedback& bb_inp_feed) {
+utils::NullableRef<hierarflow::HierarFlowCallee<PyUpdInputType>>
+PyUpdate::operator()(const u8* buf, u32 len,
+                     feedback::ExitStatusFeedback exit_status,
+                     feedback::InplaceMemoryFeedback& afl_inp_feed,
+                     feedback::InplaceMemoryFeedback& bb_inp_feed) {
   auto input = state.input_set.CreateOnMemory(buf, len);
 
   std::string fn;
@@ -87,8 +88,8 @@ NullableRef<hierarflow::HierarFlowCallee<PyUpdInputType>> PyUpdate::operator()(
 
 PyBitFlip::PyBitFlip(PythonState& state) : state(state) {}
 
-NullableRef<hierarflow::HierarFlowCallee<void(u32, u32)>> PyBitFlip::operator()(
-    u32 pos, u32 len) {
+utils::NullableRef<hierarflow::HierarFlowCallee<void(u32, u32)>>
+PyBitFlip::operator()(u32 pos, u32 len) {
   auto& mutator = *state.mutator;
 
   if (len > 7) ERROR("BitFlip: 0 <= len < 8 must hold.");
@@ -102,7 +103,7 @@ NullableRef<hierarflow::HierarFlowCallee<void(u32, u32)>> PyBitFlip::operator()(
 
 PyByteFlip::PyByteFlip(PythonState& state) : state(state) {}
 
-NullableRef<hierarflow::HierarFlowCallee<void(u32, u32)>>
+utils::NullableRef<hierarflow::HierarFlowCallee<void(u32, u32)>>
 PyByteFlip::operator()(u32 pos, u32 len) {
   auto& mutator = *state.mutator;
 
@@ -117,7 +118,7 @@ PyByteFlip::operator()(u32 pos, u32 len) {
 
 PyHavoc::PyHavoc(PythonState& state) : state(state) {}
 
-NullableRef<hierarflow::HierarFlowCallee<void(u32)>> PyHavoc::operator()(
+utils::NullableRef<hierarflow::HierarFlowCallee<void(u32)>> PyHavoc::operator()(
     u32 stacking) {
   using algorithm::afl::AFLHavocCaseDistrib;
   static AFLHavocCaseDistrib mutop_optimizer;
@@ -136,7 +137,7 @@ NullableRef<hierarflow::HierarFlowCallee<void(u32)>> PyHavoc::operator()(
 
 PyAdd::PyAdd(PythonState& state) : state(state) {}
 
-NullableRef<hierarflow::HierarFlowCallee<void(u32, int, int, bool)>>
+utils::NullableRef<hierarflow::HierarFlowCallee<void(u32, int, int, bool)>>
 PyAdd::operator()(u32 pos, int val, int bits, bool be) {
   auto& mutator = *state.mutator;
 
@@ -159,7 +160,7 @@ PyAdd::operator()(u32 pos, int val, int bits, bool be) {
 
 PySub::PySub(PythonState& state) : state(state) {}
 
-NullableRef<hierarflow::HierarFlowCallee<void(u32, int, int, bool)>>
+utils::NullableRef<hierarflow::HierarFlowCallee<void(u32, int, int, bool)>>
 PySub::operator()(u32 pos, int val, int bits, bool be) {
   auto& mutator = *state.mutator;
 
@@ -182,7 +183,7 @@ PySub::operator()(u32 pos, int val, int bits, bool be) {
 
 PyInterest::PyInterest(PythonState& state) : state(state) {}
 
-NullableRef<hierarflow::HierarFlowCallee<void(u32, int, u32, bool)>>
+utils::NullableRef<hierarflow::HierarFlowCallee<void(u32, int, u32, bool)>>
 PyInterest::operator()(u32 pos, int bits, u32 idx, bool be) {
   auto& mutator = *state.mutator;
 
@@ -219,7 +220,7 @@ PyInterest::operator()(u32 pos, int bits, u32 idx, bool be) {
 
 PyOverwrite::PyOverwrite(PythonState& state) : state(state) {}
 
-NullableRef<hierarflow::HierarFlowCallee<void(u32, char)>>
+utils::NullableRef<hierarflow::HierarFlowCallee<void(u32, char)>>
 PyOverwrite::operator()(u32 pos, char chr) {
   auto& mutator = *state.mutator;
 

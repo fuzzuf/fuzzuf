@@ -49,7 +49,8 @@ using TypeLevel5 = std::string(std::string);
                        std::vector<std::string>& order_queue)          \
         : name(name), order_queue(order_queue) {}                      \
                                                                        \
-    NullableRef<fuzzuf::hierarflow::HierarFlowCallee<Type##level_n_1>> \
+    fuzzuf::utils::NullableRef<                                        \
+        fuzzuf::hierarflow::HierarFlowCallee<Type##level_n_1>>         \
     operator() ArgumentType {                                          \
       order_queue.emplace_back(name);                                  \
       RetType ret = CallSuccessors(__VA_ARGS__);                       \

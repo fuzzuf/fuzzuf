@@ -36,7 +36,7 @@ struct FuzzLoop : public hierarflow::HierarFlowRoutine<void(void), void(void)> {
  public:
   FuzzLoop(VUzzerState &state);
 
-  NullableRef<hierarflow::HierarFlowCallee<void(void)>> operator()(void);
+  utils::NullableRef<hierarflow::HierarFlowCallee<void(void)>> operator()(void);
 
  private:
   VUzzerState &state;
@@ -46,7 +46,7 @@ struct FuzzLoop : public hierarflow::HierarFlowRoutine<void(void), void(void)> {
 
 using VUzzerMidInputType = void(void);
 using VUzzerMidCalleeRef =
-    NullableRef<hierarflow::HierarFlowCallee<VUzzerMidInputType>>;
+    utils::NullableRef<hierarflow::HierarFlowCallee<VUzzerMidInputType>>;
 using VUzzerMidOutputType = void(void);
 
 struct DecideKeep : public hierarflow::HierarFlowRoutine<VUzzerMidInputType,

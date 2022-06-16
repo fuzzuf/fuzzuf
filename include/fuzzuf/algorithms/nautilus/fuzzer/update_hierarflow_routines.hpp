@@ -37,7 +37,8 @@ namespace fuzzuf::algorithm::nautilus::fuzzer::routine::update {
  */
 // FuzzLoop <--> UpdateState
 using IUpdateState = void(void);
-using RUpdateState = NullableRef<hierarflow::HierarFlowCallee<IUpdateState>>;
+using RUpdateState =
+    utils::NullableRef<hierarflow::HierarFlowCallee<IUpdateState>>;
 // UpdateState <--> N/A
 using OUpdateState = void(void);
 

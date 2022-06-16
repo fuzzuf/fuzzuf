@@ -32,8 +32,8 @@ SelectSeed::SelectSeed(struct IJONState &state) : state(state) {}
  * Corresponding code of original IJON implementation:
  * https://github.com/RUB-SysSec/ijon/blob/4cb8ae04d/afl-fuzz.c#L4977-L5002
  */
-NullableRef<hierarflow::HierarFlowCallee<void(void)>> SelectSeed::operator()(
-    void) {
+utils::NullableRef<hierarflow::HierarFlowCallee<void(void)>>
+SelectSeed::operator()(void) {
   utils::StdoutLogger::Println("scheduled max input!!!!");
 
   u32 idx = afl::util::UR(state.nonempty_inputs.size(), state.rand_fd);
