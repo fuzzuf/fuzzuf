@@ -1,7 +1,7 @@
 /*
  * fuzzuf
  * Copyright (C) 2021 Ricerca Security
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -20,20 +20,27 @@
  * @brief Calculate SHA1 hash
  * @author Ricerca Security <fuzzuf-dev@ricsec.co.jp>
  */
-#include <cryptopp/sha.h>
+#include "fuzzuf/utils/get_hash.hpp"
+
 #include <cryptopp/filters.h>
 #include <cryptopp/hex.h>
-#include "fuzzuf/utils/get_hash.hpp"
+#include <cryptopp/sha.h>
+
+namespace fuzzuf::utils {
 std::string GetSHA1HashFromFile(std::string path, u32 len) {
-    int fd = fuzzuf::utils::OpenFile(path, O_RDONLY);
-    u8 *buf = new u8[len];
-    fuzzuf::utils::ReadFile(fd, buf, len);
-    fuzzuf::utils::CloseFile(fd);
+  int fd = fuzzuf::utils::OpenFile(path, O_RDONLY);
+  u8 *buf = new u8[len];
+  fuzzuf::utils::ReadFile(fd, buf, len);
+  fuzzuf::utils::CloseFile(fd);
 
-    CryptoPP::SHA1 sha1;
-    std::string hash = "";
+  CryptoPP::SHA1 sha1;
+  std::string hash = "";
 
-    CryptoPP::StringSource(buf, len, true, new CryptoPP::HashFilter(sha1, new CryptoPP::HexEncoder(new CryptoPP::StringSink(hash))));
-    delete[] buf;
-    return hash;
+  CryptoPP::StringSource(
+      buf, len, true,
+      new CryptoPP::HashFilter(
+          sha1, new CryptoPP::HexEncoder(new CryptoPP::StringSink(hash))));
+  delete[] buf;
+  return hash;
 }
+}  // namespace fuzzuf::utils

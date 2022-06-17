@@ -1,7 +1,7 @@
 /*
  * fuzzuf
  * Copyright (C) 2021 Ricerca Security
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -21,12 +21,13 @@
  */
 #ifndef FUZZUF_INCLUDE_ALGORITHM_LIBFUZZER_EXECUTOR_ADD_TO_SOLUTIONS_HPP
 #define FUZZUF_INCLUDE_ALGORITHM_LIBFUZZER_EXECUTOR_ADD_TO_SOLUTIONS_HPP
+#include <type_traits>
+
 #include "fuzzuf/algorithms/libfuzzer/corpus/add_to_solution.hpp"
 #include "fuzzuf/algorithms/libfuzzer/state/corpus.hpp"
 #include "fuzzuf/algorithms/libfuzzer/state/input_info.hpp"
 #include "fuzzuf/utils/filtered_range.hpp"
 #include "fuzzuf/utils/range_traits.hpp"
-#include <type_traits>
 
 namespace fuzzuf::algorithm::libfuzzer::executor {
 
@@ -52,13 +53,14 @@ auto AddToSolution(Range &range, InputInfo &exec_result, bool crashed_only,
                             utils::range::has_data_v<Range>,
                         bool> {
   if (exec_result.added_to_corpus &&
-      (!crashed_only || exec_result.status != PUTExitReasonType::FAULT_NONE)) {
+      (!crashed_only ||
+       exec_result.status != feedback::PUTExitReasonType::FAULT_NONE)) {
     corpus::AddToSolution(range, exec_result, path_prefix);
     return true;
   }
   return false;
 }
 
-} // namespace fuzzuf::algorithm::libfuzzer::executor
+}  // namespace fuzzuf::algorithm::libfuzzer::executor
 
 #endif

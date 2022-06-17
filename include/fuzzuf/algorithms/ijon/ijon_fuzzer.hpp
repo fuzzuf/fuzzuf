@@ -25,7 +25,7 @@
 
 namespace fuzzuf::algorithm::ijon {
 /**
- * @brief CLI compatible interface for IJON 
+ * @brief CLI compatible interface for IJON
  */
 class IJONFuzzer : public afl::AFLFuzzerTemplate<IJONState> {
  public:
@@ -38,7 +38,7 @@ class IJONFuzzer : public afl::AFLFuzzerTemplate<IJONState> {
  private:
   bool IjonShouldSchedule(void);
 
-  HierarFlowNode<void(void), void(void)> ijon_fuzz_loop;
+  hierarflow::HierarFlowNode<void(void), void(void)> ijon_fuzz_loop;
   u32 ijon_max_offset;
 };
 

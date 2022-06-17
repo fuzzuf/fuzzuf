@@ -29,6 +29,8 @@ if( ENABLE_CLANG_TIDY )
   )
 endif()
 if( FUZZUF_CC_FOUND )
+if( ENABLE_HEAVY_TEST )
 add_test( NAME "ijon.cli" COMMAND test-ijon-cli )
+endif()
 endif()
 

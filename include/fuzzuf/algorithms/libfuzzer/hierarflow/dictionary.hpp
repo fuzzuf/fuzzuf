@@ -1,7 +1,7 @@
 /*
  * fuzzuf
  * Copyright (C) 2021 Ricerca Security
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -42,11 +42,12 @@ namespace fuzzuf::algorithm::libfuzzer {
  * BasicDictionaryEntry (reference container type) or compatible type.
  * @tparam Path Struct path to define which value to to use.
  */
-template <typename F, typename Dict, typename Path> class StaticDict {};
+template <typename F, typename Dict, typename Path>
+class StaticDict {};
 template <typename R, typename... Args, typename Dict, typename Path>
 class StaticDict<R(Args...), Dict, Path>
-    : public HierarFlowRoutine<R(Args...), R(Args...)> {
-public:
+    : public hierarflow::HierarFlowRoutine<R(Args...), R(Args...)> {
+ public:
   FUZZUF_ALGORITHM_LIBFUZZER_HIERARFLOW_STANDARD_TYPEDEFS
   /**
    * Constructor
@@ -66,7 +67,7 @@ public:
     FUZZUF_ALGORITHM_LIBFUZZER_HIERARFLOW_STANDARD_END(StaticDict)
   }
 
-private:
+ private:
   Dict dict;
 };
 namespace standard_order {
@@ -75,7 +76,7 @@ using StaticDictStdArgOrderT = decltype(T::rng && T::input && T::max_length &&
                                         T::mutation_history && T::dict_history);
 template <typename F, typename Dict, typename Ord>
 using StaticDict = libfuzzer::StaticDict<F, Dict, StaticDictStdArgOrderT<Ord>>;
-} // namespace standard_order
+}  // namespace standard_order
 
 /**
  * @class DynamicDict
@@ -95,7 +96,7 @@ using DynamicDictStdArgOrderT =
              T::dict_history && T::dict);
 template <typename F, typename Ord>
 using DynamicDict = libfuzzer::DynamicDict<F, DynamicDictStdArgOrderT<Ord>>;
-} // namespace standard_order
+}  // namespace standard_order
 
 /**
  * @class UpdateDictionary
@@ -117,7 +118,7 @@ using UpdateDictionaryStdArgOrderT = decltype(T::dict && T::dict_history);
 template <typename F, typename Ord>
 using UpdateDictionary =
     libfuzzer::UpdateDictionary<F, UpdateDictionaryStdArgOrderT<Ord>>;
-} // namespace standard_order
+}  // namespace standard_order
 
-} // namespace fuzzuf::algorithm::libfuzzer
+}  // namespace fuzzuf::algorithm::libfuzzer
 #endif

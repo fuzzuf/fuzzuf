@@ -1,7 +1,7 @@
 /*
  * fuzzuf
  * Copyright (C) 2021 Ricerca Security
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -18,11 +18,14 @@
 #define BOOST_TEST_MODULE algorithms.libfuzzer.dictionary
 #define BOOST_TEST_DYN_LINK
 #include "fuzzuf/algorithms/libfuzzer/dictionary.hpp"
-#include "fuzzuf/exceptions.hpp"
-#include <boost/test/unit_test.hpp>
+
 #include <config.h>
-#include <system_error>
+
+#include <boost/test/unit_test.hpp>
 #include <iostream>
+#include <system_error>
+
+#include "fuzzuf/exceptions.hpp"
 
 // テスト用の辞書からレベル0(デフォルト)以上(==全ての要素)の内容を正しく読める事を確認する
 // 辞書のエントリのkeyが 名前, '@', { 数値 }
@@ -129,43 +132,42 @@ BOOST_AUTO_TEST_CASE(DictionaryNotFound) {
 }
 // 破損した辞書を読もうとした場合にinvalid_file例外が飛ぶ事を確認する
 BOOST_AUTO_TEST_CASE(CorruptedDictionary) {
-
   fuzzuf::algorithm::libfuzzer::dictionary::StaticDictionary dict;
 
   // "が閉じていない
   BOOST_CHECK_THROW(Load(TEST_DICTIONARY_DIR "/corrupted.dict", dict, false,
                          [](std::string &&m) { std::cerr << m << std::endl; }),
-                    exceptions::invalid_file);
+                    fuzzuf::exceptions::invalid_file);
 
   // keyしかない
   BOOST_CHECK_THROW(Load(TEST_DICTIONARY_DIR "/corrupted2.dict", dict, false,
                          [](std::string &&m) { std::cerr << m << std::endl; }),
-                    exceptions::invalid_file);
+                    fuzzuf::exceptions::invalid_file);
 
   // valueの後ろにコメント以外の文字がある
   BOOST_CHECK_THROW(Load(TEST_DICTIONARY_DIR "/corrupted3.dict", dict, false,
                          [](std::string &&m) { std::cerr << m << std::endl; }),
-                    exceptions::invalid_file);
+                    fuzzuf::exceptions::invalid_file);
 
   // keyが空文字列
   BOOST_CHECK_THROW(Load(TEST_DICTIONARY_DIR "/corrupted4.dict", dict, false,
                          [](std::string &&m) { std::cerr << m << std::endl; }),
-                    exceptions::invalid_file);
+                    fuzzuf::exceptions::invalid_file);
 
   // エスケープシーケンスが途中で途切れている
   BOOST_CHECK_THROW(Load(TEST_DICTIONARY_DIR "/corrupted5.dict", dict, false,
                          [](std::string &&m) { std::cerr << m << std::endl; }),
-                    exceptions::invalid_file);
+                    fuzzuf::exceptions::invalid_file);
 
   // エスケープシーケンスが途中で途切れている
   BOOST_CHECK_THROW(Load(TEST_DICTIONARY_DIR "/corrupted6.dict", dict, false,
                          [](std::string &&m) { std::cerr << m << std::endl; }),
-                    exceptions::invalid_file);
+                    fuzzuf::exceptions::invalid_file);
 
   // エスケープシーケンスが途中で途切れている
   BOOST_CHECK_THROW(Load(TEST_DICTIONARY_DIR "/corrupted7.dict", dict, false,
                          [](std::string &&m) { std::cerr << m << std::endl; }),
-                    exceptions::invalid_file);
+                    fuzzuf::exceptions::invalid_file);
 }
 
 // 空の辞書を読むと読み込みが成功し何も追加されない事を確認する
@@ -198,7 +200,7 @@ BOOST_AUTO_TEST_CASE(StrictMode) {
   dict.clear();
   BOOST_CHECK_THROW(Load(TEST_DICTIONARY_DIR "/relaxed.dict", dict, true,
                          [](std::string &&m) { std::cerr << m << std::endl; }),
-                    exceptions::invalid_file);
+                    fuzzuf::exceptions::invalid_file);
 
   Load(TEST_DICTIONARY_DIR "/relaxed.dict", dict, false,
        [](std::string &&m) { std::cerr << m << std::endl; });

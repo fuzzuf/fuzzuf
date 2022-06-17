@@ -42,6 +42,7 @@
 #include "fuzzuf/utils/which.hpp"
 #include "fuzzuf/utils/workspace.hpp"
 
+namespace fuzzuf::executor {
 /**
  * Precondition:
  *   - A file can be created at path path_str_to_write_input.
@@ -217,14 +218,14 @@ void LinuxForkServerExecutor::Run(const u8 *buf, u32 len, u32 timeout_ms) {
   DEBUG("\n")
   //#endif
 
-  last_exit_reason = PUTExitReasonType::FAULT_NONE;
+  last_exit_reason = feedback::PUTExitReasonType::FAULT_NONE;
   last_signal = 0;
 
   // FIXME: When persistent mode is implemented, this tmp must be set to the
   // value that represent if the last execution failed for timeout.
 
   // Request creating PUT process to fork server
-  ExecutePUTAPIResponse response = this->put_channel.ExecutePUT();
+  channel::ExecutePUTAPIResponse response = this->put_channel.ExecutePUT();
 
   // NOTE: Avoids reading shared memory before PUT exit.
   /* Any subsequent operations on trace_bits must not be moved by the
@@ -236,14 +237,14 @@ void LinuxForkServerExecutor::Run(const u8 *buf, u32 len, u32 timeout_ms) {
         response.error, response.exit_code, response.signal_number);
 
   if (response.error) {
-    last_exit_reason = PUTExitReasonType::FAULT_ERROR;
+    last_exit_reason = feedback::PUTExitReasonType::FAULT_ERROR;
     return;
   }
 
   /* Report outcome to caller. */
   // FIXME: PUT実行がシグナルで止まったときにバグる。
   //  APIのレスポンスが返ったということはPUTが終了したという前提で書いた。
-  // TODO: 余裕があったら PUTExitReasonType
+  // TODO: 余裕があったら feedback::PUTExitReasonType
   // に終了コードとシグナル番号を持たせたい
   bool child_timed_out = response.signal_number == SIGKILL;
   if (response.signal_number > 0) {
@@ -251,16 +252,16 @@ void LinuxForkServerExecutor::Run(const u8 *buf, u32 len, u32 timeout_ms) {
 
     if (child_timed_out && last_signal == SIGKILL) {
       DEBUG("Reached PUT execution timeout");
-      last_exit_reason = PUTExitReasonType::FAULT_TMOUT;
+      last_exit_reason = feedback::PUTExitReasonType::FAULT_TMOUT;
     } else {
-      last_exit_reason = PUTExitReasonType::FAULT_CRASH;
+      last_exit_reason = feedback::PUTExitReasonType::FAULT_CRASH;
     }
 
     return;
   }
 
   if (uses_asan && response.exit_code == MSAN_ERROR) {
-    last_exit_reason = PUTExitReasonType::FAULT_CRASH;
+    last_exit_reason = feedback::PUTExitReasonType::FAULT_CRASH;
     return;
   }
 
@@ -287,15 +288,15 @@ int LinuxForkServerExecutor::GetBBShmID() {
   return fuzzuf_bb_coverage.GetShmID();
 }
 
-InplaceMemoryFeedback LinuxForkServerExecutor::GetAFLFeedback() {
+feedback::InplaceMemoryFeedback LinuxForkServerExecutor::GetAFLFeedback() {
   return afl_edge_coverage.GetFeedback();
 }
 
-InplaceMemoryFeedback LinuxForkServerExecutor::GetBBFeedback() {
+feedback::InplaceMemoryFeedback LinuxForkServerExecutor::GetBBFeedback() {
   return fuzzuf_bb_coverage.GetFeedback();
 }
 
-InplaceMemoryFeedback LinuxForkServerExecutor::GetStdOut() {
+feedback::InplaceMemoryFeedback LinuxForkServerExecutor::GetStdOut() {
   if (record_stdout_and_err) {
     std::string path = fuzzuf::utils::StrPrintf(
         "/dev/shm/fuzzuf-cc.forkserver.executor_id-%d.stdout", getpid());
@@ -305,11 +306,11 @@ InplaceMemoryFeedback LinuxForkServerExecutor::GetStdOut() {
     fuzzuf::utils::CloseFile(fd);
     // Deleting file `path` might be good
   }
-  return InplaceMemoryFeedback(stdout_buffer.data(), stdout_buffer.size(),
-                               lock);
+  return feedback::InplaceMemoryFeedback(stdout_buffer.data(),
+                                         stdout_buffer.size(), lock);
 }
 
-InplaceMemoryFeedback LinuxForkServerExecutor::GetStdErr() {
+feedback::InplaceMemoryFeedback LinuxForkServerExecutor::GetStdErr() {
   if (record_stdout_and_err) {
     std::string path = fuzzuf::utils::StrPrintf(
         "/dev/shm/fuzzuf-cc.forkserver.executor_id-%d.stderr", getpid());
@@ -318,12 +319,12 @@ InplaceMemoryFeedback LinuxForkServerExecutor::GetStdErr() {
     fuzzuf::utils::CloseFile(fd);
     // Deleting file `path` might be good
   }
-  return InplaceMemoryFeedback(stderr_buffer.data(), stderr_buffer.size(),
-                               lock);
+  return feedback::InplaceMemoryFeedback(stderr_buffer.data(),
+                                         stderr_buffer.size(), lock);
 }
 
-ExitStatusFeedback LinuxForkServerExecutor::GetExitStatusFeedback() {
-  return ExitStatusFeedback(last_exit_reason, last_signal);
+feedback::ExitStatusFeedback LinuxForkServerExecutor::GetExitStatusFeedback() {
+  return feedback::ExitStatusFeedback(last_exit_reason, last_signal);
 }
 
 bool LinuxForkServerExecutor::IsFeedbackLocked() {
@@ -444,3 +445,4 @@ fuzzuf::executor::output_t LinuxForkServerExecutor::MoveStdErr() {
   GetStdErr();
   return std::move(stderr_buffer);
 }
+}  // namespace fuzzuf::executor

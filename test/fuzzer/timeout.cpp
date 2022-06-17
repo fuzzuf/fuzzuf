@@ -1,7 +1,7 @@
 /*
  * fuzzuf
  * Copyright (C) 2021 Ricerca Security
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -22,11 +22,11 @@
 #include <iostream>
 #include <random>
 
+#include "config.h"
+#include "create_file.hpp"
 #include "fuzzuf/exec_input/exec_input.hpp"
 #include "fuzzuf/python/python_fuzzer.hpp"
 #include "fuzzuf/utils/filesystem.hpp"
-#include "config.h"
-#include "create_file.hpp"
 #include "move_to_program_location.hpp"
 
 // Fuzzerインスタンスが適切にPUTへ実行時間制限を課せているか確認
@@ -40,8 +40,7 @@ static void FuzzerTestTimeout(bool forksrv) {
   // Create root directory
   std::string root_dir_template("/tmp/fuzzuf_test.XXXXXX");
   const auto raw_dirname = mkdtemp(root_dir_template.data());
-  if (!raw_dirname)
-    throw -1;
+  if (!raw_dirname) throw -1;
   BOOST_CHECK(raw_dirname != nullptr);
 #ifdef HAS_CXX_STD_FILESYSTEM
   namespace fs = std::filesystem;
@@ -65,22 +64,22 @@ static void FuzzerTestTimeout(bool forksrv) {
 
   // Create fuzzer instance
   // sleep 2を制限時間1秒で実行
-  auto fuzzer =
-      PythonFuzzer({"../put_binaries/command_wrapper", "/bin/sleep", "2"},
-                   input_dir.native(), output_dir.native(), 1000, 10000,
-                   forksrv, true, true // need_afl_cov, need_bb_cov
-      );
+  auto fuzzer = fuzzuf::bindings::python::PythonFuzzer(
+      {"../put_binaries/command_wrapper", "/bin/sleep", "2"},
+      input_dir.native(), output_dir.native(), 1000, 10000, forksrv, true,
+      true  // need_afl_cov, need_bb_cov
+  );
 
   // Configurate fuzzer
   fuzzer.SuppressLog();
 
   auto id = fuzzer.AddSeed(
-      1, {1}); // どんなシードを与えようがタイムアウトして然るべき
+      1, {1});  // どんなシードを与えようがタイムアウトして然るべき
   BOOST_CHECK_EQUAL(
       id,
-      ExecInput::
-          INVALID_INPUT_ID); // FIXME:
-                             // タイムアウトとクラッシュを識別する手立てがない
+      fuzzuf::exec_input::ExecInput::
+          INVALID_INPUT_ID);  // FIXME:
+                              // タイムアウトとクラッシュを識別する手立てがない
 }
 
 BOOST_AUTO_TEST_CASE(FuzzerTestTimeoutNonForkMode) {

@@ -1,7 +1,7 @@
 /*
  * fuzzuf
  * Copyright (C) 2021 Ricerca Security
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -17,8 +17,11 @@
  */
 #include "fuzzuf/python/python_state.hpp"
 
-PythonState::PythonState(const PythonSetting &setting) 
-    : setting( setting ),
-      input_set() {}
+namespace fuzzuf::bindings::python {
+
+PythonState::PythonState(const PythonSetting &setting)
+    : setting(setting), input_set() {}
 
 PythonState::~PythonState() {}
+
+}  // namespace fuzzuf::bindings::python

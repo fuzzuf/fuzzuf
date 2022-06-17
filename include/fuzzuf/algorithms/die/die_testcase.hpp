@@ -1,7 +1,7 @@
 /*
  * fuzzuf
  * Copyright (C) 2022 Ricerca Security
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -23,10 +23,10 @@
 #pragma once
 
 #include <memory>
+
 #include "fuzzuf/algorithms/afl/afl_testcase.hpp"
 #include "fuzzuf/algorithms/die/die_option.hpp"
 #include "fuzzuf/exec_input/on_disk_exec_input.hpp"
-
 
 namespace fuzzuf::algorithm::die {
 
@@ -34,21 +34,22 @@ struct DIETestcase : public afl::AFLTestcase {
   using Tag = option::DIETag;
 
   /* Override constructor to prevent mistakes during development */
-  DIETestcase(std::shared_ptr<OnDiskExecInput> input) : AFLTestcase(input) {
+  DIETestcase(std::shared_ptr<exec_input::OnDiskExecInput> input)
+      : AFLTestcase(input) {
     using exceptions::fuzzuf_logic_error;
-    throw fuzzuf_logic_error("DIETestcase(input) is banned (DIE)",
-                             __FILE__, __LINE__);
+    throw fuzzuf_logic_error("DIETestcase(input) is banned (DIE)", __FILE__,
+                             __LINE__);
   }
 
   /* We must call this instead of the method above */
-  DIETestcase(std::shared_ptr<OnDiskExecInput> input,
-              std::shared_ptr<OnDiskExecInput> input_type)
-    : AFLTestcase(input),     // js file
-      input_type (input_type) // type file
-  {};
-  ~DIETestcase() {};
+  DIETestcase(std::shared_ptr<exec_input::OnDiskExecInput> input,
+              std::shared_ptr<exec_input::OnDiskExecInput> input_type)
+      : AFLTestcase(input),     // js file
+        input_type(input_type)  // type file
+        {};
+  ~DIETestcase(){};
 
-  std::shared_ptr<OnDiskExecInput> input_type; // type file
+  std::shared_ptr<exec_input::OnDiskExecInput> input_type;  // type file
 };
 
-} // namespace fuzzuf::algorithm::die
+}  // namespace fuzzuf::algorithm::die

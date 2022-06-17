@@ -21,12 +21,13 @@
  */
 #ifndef FUZZUF_INCLUDE_ALGORITHMS_NEZHA_CREATE_HPP
 #define FUZZUF_INCLUDE_ALGORITHMS_NEZHA_CREATE_HPP
+#include <config.h>
+
 #include "fuzzuf/algorithms/libfuzzer/create.hpp"
 #include "fuzzuf/algorithms/nezha/config.hpp"
 #include "fuzzuf/algorithms/nezha/hierarflow.hpp"
 #include "fuzzuf/algorithms/nezha/state.hpp"
 #include "fuzzuf/hierarflow/hierarflow_intermediates.hpp"
-#include <config.h>
 
 namespace fuzzuf::algorithm::nezha {
 
@@ -272,7 +273,7 @@ auto createRunone(const FuzzerCreateInfo &create_info, bool use_output,
  */
 template <typename F, typename Ord, typename Sink>
 auto create(const libfuzzer::FuzzerCreateInfo &create_info, bool use_output,
-            ExecInputSet &initial_inputs, const Sink &sink) {
+            exec_input::ExecInputSet &initial_inputs, const Sink &sink) {
   namespace lf = fuzzuf::algorithm::libfuzzer;
   namespace hf = fuzzuf::hierarflow;
 
@@ -295,5 +296,5 @@ auto create(const libfuzzer::FuzzerCreateInfo &create_info, bool use_output,
            dump_state);
   return nop1;
 }
-} // namespace fuzzuf::algorithm::nezha
+}  // namespace fuzzuf::algorithm::nezha
 #endif

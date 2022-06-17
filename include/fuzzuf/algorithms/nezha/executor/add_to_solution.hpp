@@ -1,7 +1,7 @@
 /*
  * fuzzuf
  * Copyright (C) 2021 Ricerca Security
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -21,28 +21,33 @@
  */
 #ifndef FUZZUF_INCLUDE_ALGORITHM_NEZHA_EXECUTOR_ADD_TO_SOLUTION_HPP
 #define FUZZUF_INCLUDE_ALGORITHM_NEZHA_EXECUTOR_ADD_TO_SOLUTION_HPP
-#include "fuzzuf/algorithms/nezha/state.hpp"
+#include <type_traits>
+
 #include "fuzzuf/algorithms/libfuzzer/corpus/add_to_solution.hpp"
 #include "fuzzuf/algorithms/libfuzzer/state/corpus.hpp"
 #include "fuzzuf/algorithms/libfuzzer/state/input_info.hpp"
+#include "fuzzuf/algorithms/nezha/state.hpp"
 #include "fuzzuf/utils/range_traits.hpp"
 #include "fuzzuf/utils/to_string.hpp"
-#include <type_traits>
 
 namespace fuzzuf::algorithm::nezha::executor {
 
 /**
- * @brief Insert execution result to solutions if the tuple of outputs is novel or only part of coverage tuple contain novel features and at least two targets produced diferent standard output.
+ * @brief Insert execution result to solutions if the tuple of outputs is novel
+ * or only part of coverage tuple contain novel features and at least two
+ * targets produced diferent standard output.
  * @tparam Range Contiguous Range of std::uint8_t
  * @tparam Output Range of std::uint8_t
  * @param range Input value that was passed to the executor
  * @param exec_result Execution result that was produced by the executor
- * @param trace Range of bool that indicates execution result on each targets that had been added to corpus.
+ * @param trace Range of bool that indicates execution result on each targets
+ * that had been added to corpus.
  * @param trace_hash Previously appeared value of trace
  * @param outputs Range of hash value of standard output
  * @param outputs_hash Previously appeared value of outputs
  * @param path_prefix Directory to output solutions.
- * @return Return true if the input is added to solutions. Otherwise, return false.
+ * @return Return true if the input is added to solutions. Otherwise, return
+ * false.
  */
 template <typename Range, typename Output>
 auto AddToSolution(Range &range, libfuzzer::InputInfo &exec_result,
@@ -72,16 +77,19 @@ auto AddToSolution(Range &range, libfuzzer::InputInfo &exec_result,
 }
 
 /**
- * @brief Insert execution result to solutions if the tuple of status code is novel or only part of coverage tuple contain novel features and only part of targets exited as success( status code = 0 ).
+ * @brief Insert execution result to solutions if the tuple of status code is
+ * novel or only part of coverage tuple contain novel features and only part of
+ * targets exited as success( status code = 0 ).
  *
  * Corresponding code of original Nezha implementation
  * https://github.com/nezha-dt/nezha/blob/master/Fuzzer/FuzzerLoop.cpp#L165
- * 
+ *
  * @tparam Range Contiguous Range of std::uint8_t
  * @tparam Output Range of std::uint8_t
  * @param range Input value that was passed to the executor
  * @param exec_result Execution result that was produced by the executor
- * @param trace Range of bool that indicates execution result on each targets that had been added to corpus.
+ * @param trace Range of bool that indicates execution result on each targets
+ * that had been added to corpus.
  * @param trace_hash Previously appeared value of trace
  * @param status Range of status code
  * @param status_hash Previously appeared value of status
@@ -104,7 +112,7 @@ auto AddToSolution(Range &range, libfuzzer::InputInfo &exec_result,
     bool has_zero = false;
     bool has_nonzero = false;
     for (auto v : status) {
-      if (v == PUTExitReasonType::FAULT_NONE)
+      if (v == feedback::PUTExitReasonType::FAULT_NONE)
         has_zero = true;
       else
         has_nonzero = true;
@@ -120,6 +128,6 @@ auto AddToSolution(Range &range, libfuzzer::InputInfo &exec_result,
   return false;
 }
 
-} // namespace fuzzuf::algorithm::nezha::executor
+}  // namespace fuzzuf::algorithm::nezha::executor
 
 #endif

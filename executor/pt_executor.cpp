@@ -20,6 +20,7 @@
 #include "fuzzuf/logger/logger.hpp"
 #include "fuzzuf/utils/check_crash_handling.hpp"
 
+namespace fuzzuf::executor {
 // NOTE:
 //    - PTExecutor assume it can create a file at `path_to_write_input`.
 PTExecutor::PTExecutor(const fs::path &proxy_path,
@@ -65,11 +66,11 @@ void PTExecutor::SetupEnvironmentVariablesForTarget() {
   BaseProxyExecutor::SetupEnvironmentVariablesForTarget();
 }
 
-InplaceMemoryFeedback PTExecutor::GetPathFeedback() {
+feedback::InplaceMemoryFeedback PTExecutor::GetPathFeedback() {
   return afl_pt_path_coverage.GetFeedback();
 }
 
-InplaceMemoryFeedback PTExecutor::GetFavFeedback() {
+feedback::InplaceMemoryFeedback PTExecutor::GetFavFeedback() {
   return afl_pt_path_fav.GetFeedback();
 }
 
@@ -78,3 +79,4 @@ bool PTExecutor::IsFeedbackLocked() {
          (afl_pt_path_coverage.GetLockUseCount() > 1) ||
          (afl_pt_path_fav.GetLockUseCount() > 1);
 }
+}  // namespace fuzzuf::executor

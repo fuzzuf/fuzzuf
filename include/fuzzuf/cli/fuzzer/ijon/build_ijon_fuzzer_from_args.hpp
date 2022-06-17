@@ -26,6 +26,8 @@
 #include "fuzzuf/algorithms/ijon/ijon_havoc.hpp"
 #include "fuzzuf/algorithms/ijon/ijon_option.hpp"
 #include "fuzzuf/algorithms/ijon/ijon_state.hpp"
+#include "fuzzuf/cli/fuzzer_args.hpp"
+#include "fuzzuf/cli/global_fuzzer_options.hpp"
 #include "fuzzuf/cli/put_args.hpp"
 #include "fuzzuf/exceptions.hpp"
 #include "fuzzuf/executor/linux_fork_server_executor.hpp"
@@ -89,7 +91,7 @@ std::unique_ptr<TFuzzer> BuildIJONFuzzerFromArgs(
   po::notify(vm);
 
   if (global_options.help) {
-    fuzzuf::cli::fuzzer::ijon::usage(fuzzer_args.global_options_description);
+    usage(fuzzer_args.global_options_description);
   }
 
   PutArgs put(pargs);
@@ -98,7 +100,7 @@ std::unique_ptr<TFuzzer> BuildIJONFuzzerFromArgs(
   } catch (const exceptions::cli_error &e) {
     std::cerr << "[!] " << e.what() << std::endl;
     std::cerr << "\tat " << e.file << ":" << e.line << std::endl;
-    fuzzuf::cli::fuzzer::ijon::usage(fuzzer_args.global_options_description);
+    usage(fuzzer_args.global_options_description);
   }
 
   // Trace level log
@@ -126,10 +128,9 @@ std::unique_ptr<TFuzzer> BuildIJONFuzzerFromArgs(
   // NativeLinuxExecutor needs the directory specified by "out_dir" to be
   // already set up so we need to create the directory first, and then
   // initialize Executor
-  SetupDirs(setting->out_dir.string());
+  fuzzuf::utils::SetupDirs(setting->out_dir.string());
 
   using fuzzuf::algorithm::afl::option::GetDefaultOutfile;
-  using fuzzuf::cli::ExecutorKind;
   using fuzzuf::executor::IJONExecutorInterface;
 
   std::shared_ptr<IJONExecutorInterface> executor;
@@ -137,7 +138,7 @@ std::unique_ptr<TFuzzer> BuildIJONFuzzerFromArgs(
   switch (global_options.executor) {
     case ExecutorKind::FORKSERVER: {
       auto params =
-          LinuxForkServerExecutorParameters()
+          fuzzuf::executor::LinuxForkServerExecutorParameters()
               .set_argv(setting->argv)
               .set_exec_timelimit_ms(setting->exec_timelimit_ms)
               .set_exec_memlimit(setting->exec_memlimit)
@@ -153,8 +154,8 @@ std::unique_ptr<TFuzzer> BuildIJONFuzzerFromArgs(
                   fuzzuf::algorithm::ijon::option::GetMaxMapSize<
                       fuzzuf::algorithm::ijon::option::IJONTag>());
       ijon_max_offset = params.GetIjonMaxOffset();
-      auto lfe = std::shared_ptr<LinuxForkServerExecutor>(
-          new LinuxForkServerExecutor(params.move()));
+      auto lfe = std::shared_ptr<fuzzuf::executor::LinuxForkServerExecutor>(
+          new fuzzuf::executor::LinuxForkServerExecutor(params.move()));
       executor = std::make_shared<IJONExecutorInterface>(std::move(lfe));
       break;
     }

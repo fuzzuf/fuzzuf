@@ -1,7 +1,7 @@
 /*
  * fuzzuf
  * Copyright (C) 2021 Ricerca Security
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -17,35 +17,34 @@
  */
 #pragma once
 
-#include "fuzzuf/utils/common.hpp"
-#include "fuzzuf/fuzzer/fuzzer.hpp"
 #include "fuzzuf/algorithms/afl/afl_state.hpp"
-#include "fuzzuf/optimizer/optimizer.hpp"
-
-#include "fuzzuf/hierarflow/hierarflow_routine.hpp"
-#include "fuzzuf/hierarflow/hierarflow_node.hpp"
+#include "fuzzuf/fuzzer/fuzzer.hpp"
 #include "fuzzuf/hierarflow/hierarflow_intermediates.hpp"
+#include "fuzzuf/hierarflow/hierarflow_node.hpp"
+#include "fuzzuf/hierarflow/hierarflow_routine.hpp"
+#include "fuzzuf/optimizer/optimizer.hpp"
+#include "fuzzuf/utils/common.hpp"
 
 namespace fuzzuf::algorithm::afl {
 
-template<class State>
-class AFLFuzzerTemplate : public Fuzzer {
-public:
-    explicit AFLFuzzerTemplate(std::unique_ptr<State>&& state);
-    virtual ~AFLFuzzerTemplate();
+template <class State>
+class AFLFuzzerTemplate : public fuzzer::Fuzzer {
+ public:
+  explicit AFLFuzzerTemplate(std::unique_ptr<State>&& state);
+  virtual ~AFLFuzzerTemplate();
 
-    virtual void BuildFuzzFlow(void);
-    virtual void OneLoop(void);
-    virtual void ReceiveStopSignal(void);
-    virtual bool ShouldEnd(void);
+  virtual void BuildFuzzFlow(void);
+  virtual void OneLoop(void);
+  virtual void ReceiveStopSignal(void);
+  virtual bool ShouldEnd(void);
 
-protected:
-    std::unique_ptr<State> state;
-    HierarFlowNode<void(void), void(void)> fuzz_loop;
+ protected:
+  std::unique_ptr<State> state;
+  hierarflow::HierarFlowNode<void(void), void(void)> fuzz_loop;
 };
 
 using AFLFuzzer = AFLFuzzerTemplate<AFLState>;
 
-} // namespace fuzzuf::algorithm::afl
+}  // namespace fuzzuf::algorithm::afl
 
 #include "fuzzuf/algorithms/afl/templates/afl_fuzzer.hpp"

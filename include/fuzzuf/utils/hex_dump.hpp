@@ -1,7 +1,7 @@
 /*
  * fuzzuf
  * Copyright (C) 2021 Ricerca Security
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -20,7 +20,9 @@
  * @author Ricerca Security <fuzzuf-dev@ricsec.co.jp>
  */
 #pragma once
-#include <cstdio>
 #include <cstddef>
+#include <cstdio>
+namespace fuzzuf::utils {
 // FIXME: 暗黙のLinux前提
 void HexDump(FILE *fp, unsigned char *buf, size_t len, size_t offset);
+}  // namespace fuzzuf::utils

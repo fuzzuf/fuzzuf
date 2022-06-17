@@ -23,6 +23,8 @@
 #include "fuzzuf/algorithms/afl/afl_option.hpp"
 #include "fuzzuf/algorithms/afl/afl_setting.hpp"
 #include "fuzzuf/algorithms/afl/afl_state.hpp"
+#include "fuzzuf/cli/fuzzer_args.hpp"
+#include "fuzzuf/cli/global_fuzzer_options.hpp"
 #include "fuzzuf/cli/put_args.hpp"
 #include "fuzzuf/exceptions.hpp"
 #include "fuzzuf/executor/linux_fork_server_executor.hpp"
@@ -96,10 +98,10 @@ std::unique_ptr<TFuzzer> BuildAFLFuzzerFromArgs(
   po::notify(vm);
 
   if (global_options.help) {
-    fuzzuf::cli::fuzzer::afl::usage(fuzzer_args.global_options_description);
+    usage(fuzzer_args.global_options_description);
   }
 
-  return fuzzuf::cli::fuzzer::afl::BuildFuzzer<TFuzzer, TAFLFuzzer, TExecutor>(
+  return BuildFuzzer<TFuzzer, TAFLFuzzer, TExecutor>(
       fuzzer_args.argv[0], fuzzer_args.global_options_description, afl_options,
       pargs, global_options);
 }
@@ -139,7 +141,7 @@ std::unique_ptr<TFuzzer> BuildFuzzer(
   } catch (const exceptions::cli_error &e) {
     std::cerr << "[!] " << e.what() << std::endl;
     std::cerr << "\tat " << e.file << ":" << e.line << std::endl;
-    fuzzuf::cli::fuzzer::afl::usage(option_description);
+    usage(option_description);
   }
 
   // Trace level log
@@ -164,16 +166,15 @@ std::unique_ptr<TFuzzer> BuildFuzzer(
   // NativeLinuxExecutor needs the directory specified by "out_dir" to be
   // already set up so we need to create the directory first, and then
   // initialize Executor
-  SetupDirs(setting->out_dir.string());
+  fuzzuf::utils::SetupDirs(setting->out_dir.string());
 
   using fuzzuf::algorithm::afl::option::GetDefaultOutfile;
   using fuzzuf::algorithm::afl::option::GetMapSize;
-  using fuzzuf::cli::ExecutorKind;
 
   std::shared_ptr<TExecutor> executor;
   switch (global_options.executor) {
     case ExecutorKind::NATIVE: {
-      auto nle = std::make_shared<NativeLinuxExecutor>(
+      auto nle = std::make_shared<fuzzuf::executor::NativeLinuxExecutor>(
           setting->argv, setting->exec_timelimit_ms, setting->exec_memlimit,
           setting->forksrv, setting->out_dir / GetDefaultOutfile<AFLTag>(),
           GetMapSize<AFLTag>(),  // afl_shm_size
@@ -184,23 +185,22 @@ std::unique_ptr<TFuzzer> BuildFuzzer(
     }
 
     case ExecutorKind::FORKSERVER: {
-      auto lfe =
-          std::shared_ptr<LinuxForkServerExecutor>(new LinuxForkServerExecutor{
-              LinuxForkServerExecutorParameters()
-                  .set_argv(setting->argv)
-                  .set_exec_timelimit_ms(setting->exec_timelimit_ms)
-                  .set_exec_memlimit(setting->exec_memlimit)
-                  .set_path_to_write_input(setting->out_dir /
-                                           GetDefaultOutfile<AFLTag>())
-                  .set_afl_shm_size(GetMapSize<AFLTag>())  // afl_shm_size
-                  .move()});
+      auto lfe = std::make_shared<fuzzuf::executor::LinuxForkServerExecutor>(
+          fuzzuf::executor::LinuxForkServerExecutorParameters()
+              .set_argv(setting->argv)
+              .set_exec_timelimit_ms(setting->exec_timelimit_ms)
+              .set_exec_memlimit(setting->exec_memlimit)
+              .set_path_to_write_input(setting->out_dir /
+                                       GetDefaultOutfile<AFLTag>())
+              .set_afl_shm_size(GetMapSize<AFLTag>())  // afl_shm_size
+              .move());
       executor = std::make_shared<TExecutor>(std::move(lfe));
       break;
     }
 
     case ExecutorKind::QEMU: {
       // NOTE: Assuming GetMapSize<AFLTag>() == QEMUExecutor::QEMU_SHM_SIZE
-      auto qe = std::make_shared<QEMUExecutor>(
+      auto qe = std::make_shared<fuzzuf::executor::QEMUExecutor>(
           global_options.proxy_path.value(), setting->argv,
           setting->exec_timelimit_ms, setting->exec_memlimit, setting->forksrv,
           setting->out_dir / GetDefaultOutfile<AFLTag>());
@@ -210,7 +210,7 @@ std::unique_ptr<TFuzzer> BuildFuzzer(
 
 #ifdef __aarch64__
     case ExecutorKind::CORESIGHT: {
-      auto cse = std::make_shared<CoreSightExecutor>(
+      auto cse = std::make_shared<fuzzuf::executor::CoreSightExecutor>(
           global_options.proxy_path.value(), setting->argv,
           setting->exec_timelimit_ms, setting->exec_memlimit, setting->forksrv,
           setting->out_dir / GetDefaultOutfile<AFLTag>(),

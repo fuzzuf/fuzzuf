@@ -1,7 +1,7 @@
 /*
  * fuzzuf
  * Copyright (C) 2021 Ricerca Security
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -21,12 +21,13 @@
  */
 #ifndef FUZZUF_INCLUDE_ALGORITHM_LIBFUZZER_HIERARFLOW_UPDATE_DISTRIBUTION_HPP
 #define FUZZUF_INCLUDE_ALGORITHM_LIBFUZZER_HIERARFLOW_UPDATE_DISTRIBUTION_HPP
+#include <memory>
+
 #include "fuzzuf/algorithms/libfuzzer/hierarflow/standard_end.hpp"
 #include "fuzzuf/algorithms/libfuzzer/hierarflow/standard_typedef.hpp"
 #include "fuzzuf/algorithms/libfuzzer/select_seed.hpp"
 #include "fuzzuf/hierarflow/hierarflow_routine.hpp"
 #include "fuzzuf/utils/call_with_nth.hpp"
-#include <memory>
 
 namespace fuzzuf::algorithm::libfuzzer {
 
@@ -44,8 +45,8 @@ template <typename F, Version llvm_version, typename Path>
 struct UpdateDistribution {};
 template <typename R, typename... Args, Version llvm_version, typename Path>
 struct UpdateDistribution<R(Args...), llvm_version, Path>
-    : public HierarFlowRoutine<R(Args...), R(Args...)> {
-public:
+    : public hierarflow::HierarFlowRoutine<R(Args...), R(Args...)> {
+ public:
   FUZZUF_ALGORITHM_LIBFUZZER_HIERARFLOW_STANDARD_TYPEDEFS
   /**
    * Constructor
@@ -75,7 +76,7 @@ public:
     FUZZUF_ALGORITHM_LIBFUZZER_HIERARFLOW_STANDARD_END(UpdateDistribution)
   }
 
-private:
+ private:
   std::size_t sparse_energy_updates;
   std::uint8_t max_mutation_factor;
   std::function<void(std::string &&)> sink;
@@ -88,7 +89,7 @@ template <typename F, Version llvm_version, typename Ord>
 using UpdateDistribution =
     libfuzzer::UpdateDistribution<F, llvm_version,
                                   UpdateDistributionStdArgOrderT<Ord>>;
-} // namespace standard_order
+}  // namespace standard_order
 
-} // namespace fuzzuf::algorithm::libfuzzer
+}  // namespace fuzzuf::algorithm::libfuzzer
 #endif

@@ -11,6 +11,8 @@
 
 #include "fuzzuf_cc/execute_put_api_response.h"
 
+namespace fuzzuf::channel {
+
 class FdChannel /* : public Channel */ {
  public:
   FdChannel();
@@ -42,3 +44,5 @@ class FdChannel /* : public Channel */ {
   int forksrv_write_fd;
   std::vector<const char*> raw_environment_variables;
 };
+
+}  // namespace fuzzuf::channel

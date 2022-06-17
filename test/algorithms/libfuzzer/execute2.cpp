@@ -17,6 +17,14 @@
  */
 #define BOOST_TEST_MODULE algorithms.libfuzzer.execute2
 #define BOOST_TEST_DYN_LINK
+#include <config.h>
+
+#include <array>
+#include <boost/scope_exit.hpp>
+#include <boost/test/unit_test.hpp>
+#include <iostream>
+#include <vector>
+
 #include "fuzzuf/algorithms/libfuzzer/calc_max_length.hpp"
 #include "fuzzuf/algorithms/libfuzzer/corpus/add_to_initial_exec_input_set.hpp"
 #include "fuzzuf/algorithms/libfuzzer/create.hpp"
@@ -34,12 +42,6 @@
 #include "fuzzuf/utils/not_random.hpp"
 #include "fuzzuf/utils/sha1.hpp"
 #include "fuzzuf/utils/which.hpp"
-#include <array>
-#include <boost/scope_exit.hpp>
-#include <boost/test/unit_test.hpp>
-#include <config.h>
-#include <iostream>
-#include <vector>
 
 /**
  * create()を使ってlibFuzzerを組み立て、libFuzzerのデフォルトのサイクル数だけ回し、その過程でサニタイザにかかったりabortしたりしないことを確認する
@@ -102,20 +104,20 @@ BOOST_AUTO_TEST_CASE(HierarFlowExecute) {
     const auto output_file_path = create_info.output_dir / "result";
     const auto path_to_write_seed = create_info.output_dir / "cur_input";
     std::vector<LibFuzzerExecutorInterface> executor;
-    executor.push_back(std::shared_ptr<NativeLinuxExecutor>(
-        new NativeLinuxExecutor({FUZZUF_FUZZTOYS_DIR "/fuzz_toys-brainf_ck",
-                                 output_file_path.string()},
-                                create_info.exec_timelimit_ms,
-                                create_info.exec_memlimit, create_info.forksrv,
-                                path_to_write_seed, create_info.afl_shm_size,
-                                create_info.bb_shm_size)));
+    executor.push_back(std::shared_ptr<fuzzuf::executor::NativeLinuxExecutor>(
+        new fuzzuf::executor::NativeLinuxExecutor(
+            {FUZZUF_FUZZTOYS_DIR "/fuzz_toys-brainf_ck",
+             output_file_path.string()},
+            create_info.exec_timelimit_ms, create_info.exec_memlimit,
+            create_info.forksrv, path_to_write_seed, create_info.afl_shm_size,
+            create_info.bb_shm_size)));
     vars.executor = std::move(executor);
   }
   BOOST_CHECK_EQUAL(vars.executor.size(), 1);
 
   BOOST_TEST_CHECKPOINT("after init executor");
 
-  ExecInputSet initial_inputs;
+  fuzzuf::exec_input::ExecInputSet initial_inputs;
   const auto data = std::vector<uint8_t>{'+'};
   lf::corpus::addToInitialExecInputSet(initial_inputs, data);
   if (create_info.max_input_length == 0U) {
@@ -149,8 +151,7 @@ BOOST_AUTO_TEST_CASE(HierarFlowExecute) {
             fuzzuf::utils::map_file(filename.path().string(), O_RDONLY, true);
         std::vector<std::uint8_t> input(mapped.begin(), mapped.end());
         auto sha1 = fuzzuf::utils::ToSerializedSha1(input);
-        if (sha1 != filename.path().filename().string())
-          continue;
+        if (sha1 != filename.path().filename().string()) continue;
         std::vector<std::uint8_t> output;
         std::vector<std::uint8_t> coverage;
         lf::InputInfo input_info;

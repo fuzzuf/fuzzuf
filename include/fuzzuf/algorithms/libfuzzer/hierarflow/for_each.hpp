@@ -40,11 +40,12 @@ namespace fuzzuf::algorithm::libfuzzer {
  * assignable to the value specified by the Path.
  * @tparam Path Struct path to define which value to to use.
  */
-template <typename F, typename Data, typename Path> class ForEachStaticData {};
+template <typename F, typename Data, typename Path>
+class ForEachStaticData {};
 template <typename R, typename... Args, typename Data, typename Path>
 class ForEachStaticData<R(Args...), Data, Path>
-    : public HierarFlowRoutine<R(Args...), R(Args...)> {
-public:
+    : public hierarflow::HierarFlowRoutine<R(Args...), R(Args...)> {
+ public:
   FUZZUF_ALGORITHM_LIBFUZZER_HIERARFLOW_STANDARD_TYPEDEFS
   /**
    * Constructor
@@ -78,7 +79,7 @@ public:
     return base_type::GoToDefaultNext();
   }
 
-private:
+ private:
   Data data;
 };
 
@@ -92,10 +93,11 @@ private:
  * @tparam F Function type to define what arguments passes through this node.
  * @tparam Path Struct path to define which value to to use.
  */
-template <typename F, typename Path> struct ForEachDynamicData {};
+template <typename F, typename Path>
+struct ForEachDynamicData {};
 template <typename R, typename... Args, typename Path>
 struct ForEachDynamicData<R(Args...), Path>
-    : public HierarFlowRoutine<R(Args...), R(Args...)> {
+    : public hierarflow::HierarFlowRoutine<R(Args...), R(Args...)> {
   FUZZUF_ALGORITHM_LIBFUZZER_HIERARFLOW_STANDARD_TYPEDEFS
   /**
    * This callable is called on HierarFlow execution
@@ -132,5 +134,5 @@ struct ForEachDynamicData<R(Args...), Path>
     return base_type::GoToDefaultNext();
   }
 };
-} // namespace fuzzuf::algorithm::libfuzzer
+}  // namespace fuzzuf::algorithm::libfuzzer
 #endif

@@ -20,15 +20,17 @@
  * @author Ricerca Security <fuzzuf-dev@ricsec.co.jp>
  */
 #include "fuzzuf/algorithms/libfuzzer/cli_compat/options.hpp"
+
+#include <boost/program_options.hpp>
+#include <boost/uuid/uuid_generators.hpp>
+#include <boost/uuid/uuid_io.hpp>
+
 #include "fuzzuf/algorithms/libfuzzer/calc_max_length.hpp"
 #include "fuzzuf/algorithms/libfuzzer/corpus/add_to_initial_exec_input_set.hpp"
 #include "fuzzuf/algorithms/libfuzzer/exec_input_set_range.hpp"
 #include "fuzzuf/cli/global_fuzzer_options.hpp"
 #include "fuzzuf/utils/load_inputs.hpp"
 #include "fuzzuf/utils/range_traits.hpp"
-#include <boost/program_options.hpp>
-#include <boost/uuid/uuid_generators.hpp>
-#include <boost/uuid/uuid_io.hpp>
 
 namespace fuzzuf::algorithm::libfuzzer {
 auto createOptions(Options &dest)
@@ -44,13 +46,12 @@ auto createOptions(Options &dest)
       po::value<std::vector<std::string>>(&dest.raw_symcc_targets)
           ->multitoken(),
       "Path to the target executable compiled by SymCC.")(
-      "symcc_freq",
-      po::value<unsigned int>(&dest.create_info.symcc_freq),
+      "symcc_freq", po::value<unsigned int>(&dest.create_info.symcc_freq),
       "SymCC execution frequency."
       "If 0, SymCC is never executed."
-      "Otherwise, SymCC is executed if recent n local loop blocks didn't change the corpus."
-      "Default 1."
-      )(
+      "Otherwise, SymCC is executed if recent n local loop blocks didn't "
+      "change the corpus."
+      "Default 1.")(
       "input",
       po::value<std::vector<std::string>>(&dest.input_dir)->multitoken(),
       "Provide a dictionary of input keywords; see Dictionaries."
@@ -235,7 +236,7 @@ auto createOptions(Options &dest)
 auto postProcess(
     const boost::program_options::options_description &desc,
     const boost::program_options::positional_options_description &pd, int argc,
-    const char *argv[], const GlobalFuzzerOptions &global,
+    const char *argv[], const cli::GlobalFuzzerOptions &global,
     std::function<void(std::string &&)> &&sink, Options &dest) -> bool {
   namespace po = boost::program_options;
   po::variables_map vm;
@@ -248,7 +249,7 @@ auto postProcess(
             vm);
   po::notify(vm);
 
-  if (global.logger != Logger::Stdout && global.log_file) {
+  if (global.logger != utils::Logger::Stdout && global.log_file) {
     std::shared_ptr<std::fstream> fd(new std::fstream(
         global.log_file->string(), std::ios::out | std::ios::binary));
     dest.sink = [fd = std::move(fd)](std::string &&m) {
@@ -334,8 +335,9 @@ auto postProcess(
 }
 // NOLINTEND(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays)
 
-auto loadInitialInputs(Options &dest, std::minstd_rand &rng) -> ExecInputSet {
-  ExecInputSet initial_inputs;
+auto loadInitialInputs(Options &dest, std::minstd_rand &rng)
+    -> exec_input::ExecInputSet {
+  exec_input::ExecInputSet initial_inputs;
 
   std::size_t input_count = 0U;
   std::vector<utils::mapped_file_t> temp;
@@ -371,4 +373,4 @@ auto loadInitialInputs(Options &dest, std::minstd_rand &rng) -> ExecInputSet {
 
   return initial_inputs;
 }
-} // namespace fuzzuf::algorithm::libfuzzer
+}  // namespace fuzzuf::algorithm::libfuzzer

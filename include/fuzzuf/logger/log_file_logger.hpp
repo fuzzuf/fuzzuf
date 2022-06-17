@@ -1,7 +1,7 @@
 /*
  * fuzzuf
  * Copyright (C) 2021 Ricerca Security
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -19,8 +19,8 @@
 
 #include "fuzzuf/utils/filesystem.hpp"
 
-namespace LogFileLogger {
-    void Println(std::string message);
+namespace fuzzuf::utils::LogFileLogger {
+void Println(std::string message);
 
-    void Init(fs::path log_file_path);
-}
+void Init(fs::path log_file_path);
+}  // namespace fuzzuf::utils::LogFileLogger

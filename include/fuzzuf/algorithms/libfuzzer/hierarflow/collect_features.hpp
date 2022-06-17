@@ -1,7 +1,7 @@
 /*
  * fuzzuf
  * Copyright (C) 2021 Ricerca Security
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -21,13 +21,14 @@
  */
 #ifndef FUZZUF_INCLUDE_ALGORITHM_LIBFUZZER_HIERARFLOW_COLLECT_FEATURES_HPP
 #define FUZZUF_INCLUDE_ALGORITHM_LIBFUZZER_HIERARFLOW_COLLECT_FEATURES_HPP
+#include <cstdint>
+
 #include "fuzzuf/algorithms/libfuzzer/executor/collect_features.hpp"
 #include "fuzzuf/algorithms/libfuzzer/hierarflow/standard_end.hpp"
 #include "fuzzuf/algorithms/libfuzzer/hierarflow/standard_typedef.hpp"
 #include "fuzzuf/algorithms/libfuzzer/hierarflow/trace.hpp"
 #include "fuzzuf/hierarflow/hierarflow_routine.hpp"
 #include "fuzzuf/utils/call_with_nth.hpp"
-#include <cstdint>
 
 namespace fuzzuf::algorithm::libfuzzer {
 
@@ -44,11 +45,12 @@ namespace fuzzuf::algorithm::libfuzzer {
  * @tparam F Function type to define what arguments passes through this node.
  * @tparam Path Struct path to define which value to to use.
  */
-template <typename F, typename Path> struct CollectFeatures {};
+template <typename F, typename Path>
+struct CollectFeatures {};
 template <typename R, typename... Args, typename Path>
 struct CollectFeatures<R(Args...), Path>
-    : public HierarFlowRoutine<R(Args...), R(Args...)> {
-public:
+    : public hierarflow::HierarFlowRoutine<R(Args...), R(Args...)> {
+ public:
   FUZZUF_ALGORITHM_LIBFUZZER_HIERARFLOW_STANDARD_TYPEDEFS
   /**
    * Constructor
@@ -77,17 +79,18 @@ public:
     FUZZUF_ALGORITHM_LIBFUZZER_HIERARFLOW_STANDARD_END(CollectFeatures)
   }
 
-private:
+ private:
   std::uint32_t module_offset;
 };
 namespace standard_order {
 template <typename T>
-using CollectFeaturesStdArgOrderT = decltype(
-    T::state && T::corpus && T::input && T::exec_result && T::coverage);
+using CollectFeaturesStdArgOrderT =
+    decltype(T::state && T::corpus && T::input && T::exec_result &&
+             T::coverage);
 template <typename F, typename Ord>
 using CollectFeatures =
     libfuzzer::CollectFeatures<F, CollectFeaturesStdArgOrderT<Ord>>;
-} // namespace standard_order
+}  // namespace standard_order
 
-} // namespace fuzzuf::algorithm::libfuzzer
+}  // namespace fuzzuf::algorithm::libfuzzer
 #endif

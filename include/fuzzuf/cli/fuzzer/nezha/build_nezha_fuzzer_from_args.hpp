@@ -1,7 +1,7 @@
 /*
  * fuzzuf
  * Copyright (C) 2022 Ricerca Security
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -17,19 +17,21 @@
  */
 #pragma once
 
-#include "fuzzuf/cli/fuzzer_builder_register.hpp"
 #include "fuzzuf/cli/fuzzer/nezha/build_nezha_fuzzer_from_args.hpp"
+#include "fuzzuf/cli/fuzzer_builder_register.hpp"
 #include "fuzzuf/cli/put_args.hpp"
 #include "fuzzuf/exceptions.hpp"
+
+namespace fuzzuf::cli {
 
 // Used only for CLI
 template <class TFuzzer, class TNezhaFuzzer, class TExecutor>
 std::unique_ptr<TFuzzer> BuildNezhaFuzzerFromArgs(
-    FuzzerArgs &fuzzer_args, 
-    GlobalFuzzerOptions &global_options
-) {
-    std::unique_ptr<TFuzzer> p(
-        new TNezhaFuzzer(fuzzer_args, global_options,
-                    [](std::string &&m) { std::cout << m << std::flush; }));
-    return p;
+    FuzzerArgs &fuzzer_args, GlobalFuzzerOptions &global_options) {
+  std::unique_ptr<TFuzzer> p(
+      new TNezhaFuzzer(fuzzer_args, global_options,
+                       [](std::string &&m) { std::cout << m << std::flush; }));
+  return p;
 }
+
+}  // namespace fuzzuf::cli

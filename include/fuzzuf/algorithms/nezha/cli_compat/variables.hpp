@@ -1,7 +1,7 @@
 /*
  * fuzzuf
  * Copyright (C) 2021 Ricerca Security
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -22,8 +22,8 @@
 #ifndef FUZZUF_INCLUDE_ALGORITHM_NEZHA_CLICOMPAT_VARIABLES_HPP
 #define FUZZUF_INCLUDE_ALGORITHM_NEZHA_CLICOMPAT_VARIABLES_HPP
 
-#include "fuzzuf/algorithms/nezha/state.hpp"
 #include "fuzzuf/algorithms/libfuzzer/cli_compat/variables.hpp"
+#include "fuzzuf/algorithms/nezha/state.hpp"
 
 namespace fuzzuf::algorithm::nezha {
 /**
@@ -46,12 +46,12 @@ namespace sp = utils::struct_path;
  * @brief Paths to the Nezha specific variables
  */
 struct Order
-    : public libfuzzer::Order { // almost all variables required by libFuzzer
-                                // are located in same layout to libFuzzer
+    : public libfuzzer::Order {  // almost all variables required by libFuzzer
+                                 // are located in same layout to libFuzzer
   using V = nezha::Variables;
   constexpr static auto ne =
       sp::root /
-      sp::arg<1>; // Nezha specific variables are located at second argument
+      sp::arg<1>;  // Nezha specific variables are located at second argument
   constexpr static auto output =
       ne / sp::mem<V, libfuzzer::output_t, &V::output>;
   constexpr static auto trace = ne / sp::mem<V, trace_t, &V::trace>;
@@ -63,10 +63,14 @@ struct Order
   constexpr static auto outputs = ne / sp::mem<V, outputs_t, &V::outputs>;
   constexpr static auto known_outputs =
       ne / sp::mem<V, known_outputs_t, &V::known_outputs>;
-  constexpr static auto single_status = exec_result / sp::mem<libfuzzer::InputInfo, PUTExitReasonType, &libfuzzer::InputInfo::status>;
-  constexpr static auto added_to_corpus = exec_result / sp::mem<libfuzzer::InputInfo, bool, &libfuzzer::InputInfo::added_to_corpus>;
+  constexpr static auto single_status =
+      exec_result / sp::mem<libfuzzer::InputInfo, feedback::PUTExitReasonType,
+                            &libfuzzer::InputInfo::status>;
+  constexpr static auto added_to_corpus =
+      exec_result / sp::mem<libfuzzer::InputInfo, bool,
+                            &libfuzzer::InputInfo::added_to_corpus>;
 };
 
-} // namespace fuzzuf::algorithm::nezha
+}  // namespace fuzzuf::algorithm::nezha
 
 #endif

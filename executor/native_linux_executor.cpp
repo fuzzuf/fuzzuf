@@ -41,6 +41,8 @@
 #include "fuzzuf/utils/which.hpp"
 #include "fuzzuf/utils/workspace.hpp"
 
+namespace fuzzuf::executor {
+
 bool NativeLinuxExecutor::has_setup_sighandlers = false;
 
 NativeLinuxExecutor *NativeLinuxExecutor::active_instance = nullptr;
@@ -457,7 +459,7 @@ void NativeLinuxExecutor::Run(const u8 *buf, u32 len, u32 timeout_ms) {
         else
           left_ms -= elapsed;
       }
-    } catch (const FileError &e) {
+    } catch (const utils::FileError &e) {
       ERROR("Unable to request new process from fork server (OOM?)");
     }
     if (read_buffer.size() >= 4u)
@@ -542,8 +544,9 @@ void NativeLinuxExecutor::Run(const u8 *buf, u32 len, u32 timeout_ms) {
     if (read_buffer.size() < 8u) {
       std::size_t cur_size = read_buffer.size();
       read_buffer.resize(read_size);
-      fuzzuf::utils::ReadFile(forksrv_read_fd, std::next(read_buffer.data(), cur_size),
-                     read_size - cur_size, false);
+      fuzzuf::utils::ReadFile(forksrv_read_fd,
+                              std::next(read_buffer.data(), cur_size),
+                              read_size - cur_size, false);
     }
 
     if (record_stdout_and_err) {
@@ -688,7 +691,7 @@ void NativeLinuxExecutor::Run(const u8 *buf, u32 len, u32 timeout_ms) {
   // Consider execution was failed if execv of child process failed.
   if (child_state->exec_result < 0) tb4 = EXEC_FAIL_SIG;
 
-  last_exit_reason = PUTExitReasonType::FAULT_NONE;
+  last_exit_reason = feedback::PUTExitReasonType::FAULT_NONE;
   last_signal = 0;
 
   /* Report outcome to caller. */
@@ -696,9 +699,9 @@ void NativeLinuxExecutor::Run(const u8 *buf, u32 len, u32 timeout_ms) {
     last_signal = WTERMSIG(put_status);
 
     if (child_timed_out && last_signal == SIGKILL)
-      last_exit_reason = PUTExitReasonType::FAULT_TMOUT;
+      last_exit_reason = feedback::PUTExitReasonType::FAULT_TMOUT;
     else
-      last_exit_reason = PUTExitReasonType::FAULT_CRASH;
+      last_exit_reason = feedback::PUTExitReasonType::FAULT_CRASH;
 
     return;
   }
@@ -707,16 +710,16 @@ void NativeLinuxExecutor::Run(const u8 *buf, u32 len, u32 timeout_ms) {
      must use a special exit code. */
 
   if (uses_asan && WEXITSTATUS(put_status) == MSAN_ERROR) {
-    last_exit_reason = PUTExitReasonType::FAULT_CRASH;
+    last_exit_reason = feedback::PUTExitReasonType::FAULT_CRASH;
     return;
   }
 
   if (!forksrv && tb4 == EXEC_FAIL_SIG) {
-    last_exit_reason = PUTExitReasonType::FAULT_ERROR;
+    last_exit_reason = feedback::PUTExitReasonType::FAULT_ERROR;
     return;
   }
 
-  last_exit_reason = PUTExitReasonType::FAULT_NONE;
+  last_exit_reason = feedback::PUTExitReasonType::FAULT_NONE;
   return;
 }
 
@@ -732,26 +735,26 @@ int NativeLinuxExecutor::GetAFLShmID() { return afl_edge_coverage.GetShmID(); }
 
 int NativeLinuxExecutor::GetBBShmID() { return fuzzuf_bb_coverage.GetShmID(); }
 
-InplaceMemoryFeedback NativeLinuxExecutor::GetAFLFeedback() {
+feedback::InplaceMemoryFeedback NativeLinuxExecutor::GetAFLFeedback() {
   return afl_edge_coverage.GetFeedback();
 }
 
-InplaceMemoryFeedback NativeLinuxExecutor::GetBBFeedback() {
+feedback::InplaceMemoryFeedback NativeLinuxExecutor::GetBBFeedback() {
   return fuzzuf_bb_coverage.GetFeedback();
 }
 
-InplaceMemoryFeedback NativeLinuxExecutor::GetStdOut() {
-  return InplaceMemoryFeedback(stdout_buffer.data(), stdout_buffer.size(),
-                               lock);
+feedback::InplaceMemoryFeedback NativeLinuxExecutor::GetStdOut() {
+  return feedback::InplaceMemoryFeedback(stdout_buffer.data(),
+                                         stdout_buffer.size(), lock);
 }
 
-InplaceMemoryFeedback NativeLinuxExecutor::GetStdErr() {
-  return InplaceMemoryFeedback(stderr_buffer.data(), stderr_buffer.size(),
-                               lock);
+feedback::InplaceMemoryFeedback NativeLinuxExecutor::GetStdErr() {
+  return feedback::InplaceMemoryFeedback(stderr_buffer.data(),
+                                         stderr_buffer.size(), lock);
 }
 
-ExitStatusFeedback NativeLinuxExecutor::GetExitStatusFeedback() {
-  return ExitStatusFeedback(last_exit_reason, last_signal);
+feedback::ExitStatusFeedback NativeLinuxExecutor::GetExitStatusFeedback() {
+  return feedback::ExitStatusFeedback(last_exit_reason, last_signal);
 }
 
 bool NativeLinuxExecutor::IsFeedbackLocked() {
@@ -817,17 +820,17 @@ void NativeLinuxExecutor::SetupEnvironmentVariablesForTarget() {
 
   setenv("MSAN_OPTIONS",
          fuzzuf::utils::StrPrintf("exit_code=%d:"
-                         "symbolize=0:"
-                         "abort_on_error=1:"
-                         "malloc_context_size=0:"
-                         "allocator_may_return_null=1:"
-                         "msan_track_origins=0:"
-                         "handle_segv=0:"
-                         "handle_sigbus=0:"
-                         "handle_abort=0:"
-                         "handle_sigfpe=0:"
-                         "handle_sigill=0",
-                         MSAN_ERROR)
+                                  "symbolize=0:"
+                                  "abort_on_error=1:"
+                                  "malloc_context_size=0:"
+                                  "allocator_may_return_null=1:"
+                                  "msan_track_origins=0:"
+                                  "handle_segv=0:"
+                                  "handle_sigbus=0:"
+                                  "handle_abort=0:"
+                                  "handle_sigfpe=0:"
+                                  "handle_sigill=0",
+                                  MSAN_ERROR)
              .c_str(),
          0);
 
@@ -1033,3 +1036,5 @@ fuzzuf::executor::output_t NativeLinuxExecutor::MoveStdOut() {
 fuzzuf::executor::output_t NativeLinuxExecutor::MoveStdErr() {
   return std::move(stderr_buffer);
 }
+
+}  // namespace fuzzuf::executor

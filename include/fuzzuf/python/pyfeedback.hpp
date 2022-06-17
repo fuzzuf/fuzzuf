@@ -1,7 +1,7 @@
 /*
  * fuzzuf
  * Copyright (C) 2021 Ricerca Security
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -17,27 +17,29 @@
  */
 #pragma once
 
-#include <vector>
-#include <unordered_map>
 #include <optional>
+#include <unordered_map>
+#include <vector>
+
 #include "fuzzuf/utils/common.hpp"
 
-class PyFeedback{
-public:
-    PyFeedback(
-      const std::optional<std::unordered_map<int, u8>> bb_trace,
-      const std::optional<std::unordered_map<int, u8>> afl_trace
-    );
-    PyFeedback( const PyFeedback& ) = default;
-    PyFeedback( PyFeedback&& ) = default;
-    PyFeedback &operator=( const PyFeedback& ) = default;
-    PyFeedback &operator=( PyFeedback&& ) = default;
+namespace fuzzuf::bindings::python {
 
-    std::optional<std::unordered_map<int, u8>> GetBBTrace(void);
-    std::optional<std::unordered_map<int, u8>> GetAFLTrace(void);
+class PyFeedback {
+ public:
+  PyFeedback(const std::optional<std::unordered_map<int, u8>> bb_trace,
+             const std::optional<std::unordered_map<int, u8>> afl_trace);
+  PyFeedback(const PyFeedback&) = default;
+  PyFeedback(PyFeedback&&) = default;
+  PyFeedback& operator=(const PyFeedback&) = default;
+  PyFeedback& operator=(PyFeedback&&) = default;
 
-private:
-    std::optional<std::unordered_map<int, u8>> bb_trace;
-    std::optional<std::unordered_map<int, u8>> afl_trace;
+  std::optional<std::unordered_map<int, u8>> GetBBTrace(void);
+  std::optional<std::unordered_map<int, u8>> GetAFLTrace(void);
+
+ private:
+  std::optional<std::unordered_map<int, u8>> bb_trace;
+  std::optional<std::unordered_map<int, u8>> afl_trace;
 };
 
+}  // namespace fuzzuf::bindings::python

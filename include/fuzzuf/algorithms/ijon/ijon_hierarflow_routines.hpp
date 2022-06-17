@@ -43,11 +43,12 @@ namespace other {
  * @struct
  * A HierarFlowRoutine for IJON that selects a seed to be mutated.
  */
-struct SelectSeed : public HierarFlowRoutine<void(void), bool(IJONMutator &)> {
+struct SelectSeed
+    : public hierarflow::HierarFlowRoutine<void(void), bool(IJONMutator &)> {
  public:
   SelectSeed(IJONState &state);
 
-  NullableRef<HierarFlowCallee<void(void)>> operator()(void);
+  utils::NullableRef<hierarflow::HierarFlowCallee<void(void)>> operator()(void);
 
  private:
   IJONState &state;
@@ -63,9 +64,9 @@ using IJONMidInputType = afl::routine::other::AFLMidInputType<IJONState>;
  * original implementation.
  */
 struct PrintAflIsSelected
-    : public HierarFlowRoutine<IJONMidInputType,
-                               void(void)  // has no successors
-                               > {
+    : public hierarflow::HierarFlowRoutine<IJONMidInputType,
+                                           void(void)  // has no successors
+                                           > {
  public:
   PrintAflIsSelected(void);
 
@@ -103,13 +104,14 @@ using IJONUpdOutputType = afl::routine::update::AFLUpdOutputType;
  * @struct
  * A HierarFlowRoutine for IJON that updates the internal state of IJON.
  */
-struct IJONUpdate
-    : public HierarFlowRoutine<IJONUpdInputType, IJONUpdOutputType> {
+struct IJONUpdate : public hierarflow::HierarFlowRoutine<IJONUpdInputType,
+                                                         IJONUpdOutputType> {
  public:
   IJONUpdate(IJONState &state, std::size_t offset);
 
-  IJONUpdCalleeRef operator()(const u8 *, u32, InplaceMemoryFeedback &,
-                              ExitStatusFeedback &);
+  IJONUpdCalleeRef operator()(const u8 *, u32,
+                              feedback::InplaceMemoryFeedback &,
+                              feedback::ExitStatusFeedback &);
 
  private:
   IJONState &state;

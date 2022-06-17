@@ -1,7 +1,7 @@
 /*
  * fuzzuf
  * Copyright (C) 2021 Ricerca Security
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -36,17 +36,18 @@ namespace fuzzuf::algorithm::libfuzzer {
  * @tparam F Function type to define what arguments passes through this node.
  * @tparam Path Struct path to define which value to to use.
  */
-template <typename F, typename Path = utils::struct_path::Paths<>> struct Divide {};
+template <typename F, typename Path = utils::struct_path::Paths<>>
+struct Divide {};
 template <typename R, typename... Args, typename Path>
 class Divide<R(Args...), Path>
-    : public HierarFlowRoutine<R(Args...), R(Args...)> {
-public:
+    : public hierarflow::HierarFlowRoutine<R(Args...), R(Args...)> {
+ public:
   FUZZUF_ALGORITHM_LIBFUZZER_HIERARFLOW_STANDARD_TYPEDEFS
   /**
    * Constructor
    * @param d Child nodes are invoked for each d visits
    */
-  Divide( std::size_t d ) : numerator( 0u ), denominator( d ) {}
+  Divide(std::size_t d) : numerator(0u), denominator(d) {}
   /**
    * This callable is called on HierarFlow execution
    * @param args Arguments
@@ -55,7 +56,7 @@ public:
   callee_ref_t operator()(Args... args) {
     FUZZUF_ALGORITHM_LIBFUZZER_HIERARFLOW_CHECKPOINT("Divide", enter)
     ++numerator;
-    if( numerator == denominator ) {
+    if (numerator == denominator) {
       if (this->CallSuccessors(std::forward<Args>(args)...)) {
         base_type::SetResponseValue(true);
         FUZZUF_ALGORITHM_LIBFUZZER_HIERARFLOW_CHECKPOINT("Divide", abort)
@@ -66,9 +67,10 @@ public:
     FUZZUF_ALGORITHM_LIBFUZZER_HIERARFLOW_CHECKPOINT("Divide", leave)
     return base_type::GoToDefaultNext();
   }
-private:
+
+ private:
   std::size_t numerator;
   std::size_t denominator;
 };
-} // namespace fuzzuf::algorithm::libfuzzer
+}  // namespace fuzzuf::algorithm::libfuzzer
 #endif

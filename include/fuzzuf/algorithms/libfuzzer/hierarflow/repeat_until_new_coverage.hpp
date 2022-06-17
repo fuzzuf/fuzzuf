@@ -1,7 +1,7 @@
 /*
  * fuzzuf
  * Copyright (C) 2021 Ricerca Security
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -38,11 +38,12 @@ namespace fuzzuf::algorithm::libfuzzer {
  * @tparam F Function type to define what arguments passes through this node.
  * @tparam Path Struct path to define which value to to use.
  */
-template <typename F, typename Path> struct RepeatUntilNewCoverage {};
+template <typename F, typename Path>
+struct RepeatUntilNewCoverage {};
 template <typename R, typename... Args, typename Path>
 class RepeatUntilNewCoverage<R(Args...), Path>
-    : public HierarFlowRoutine<R(Args...), R(Args...)> {
-public:
+    : public hierarflow::HierarFlowRoutine<R(Args...), R(Args...)> {
+ public:
   FUZZUF_ALGORITHM_LIBFUZZER_HIERARFLOW_STANDARD_TYPEDEFS
   /**
    * Constructor
@@ -68,10 +69,10 @@ public:
       bool break_ = false;
       Path()(
           [&](auto &&state, auto &&exec_result) {
-            if (exec_result.added_to_corpus)
-              break_ = true;
+            if (exec_result.added_to_corpus) break_ = true;
 
-            if (state.create_info.config.reduce_depth && !exec_result.found_unique_features)
+            if (state.create_info.config.reduce_depth &&
+                !exec_result.found_unique_features)
               break_ = true;
           },
           std::forward<Args>(args)...);
@@ -86,7 +87,7 @@ public:
     return base_type::GoToDefaultNext();
   }
 
-private:
+ private:
   std::size_t cycle;
 };
 namespace standard_order {
@@ -96,6 +97,6 @@ template <typename F, typename Ord>
 using RepeatUntilNewCoverage =
     libfuzzer::RepeatUntilNewCoverage<F,
                                       RepeatUntilNewCoverageStdArgOrderT<Ord>>;
-} // namespace standard_order
-} // namespace fuzzuf::algorithm::libfuzzer
+}  // namespace standard_order
+}  // namespace fuzzuf::algorithm::libfuzzer
 #endif

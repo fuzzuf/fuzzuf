@@ -20,19 +20,21 @@
  * @author Ricerca Security <fuzzuf-dev@ricsec.co.jp>
  */
 #include "fuzzuf/algorithms/nezha/cli_compat/fuzzer.hpp"
-#include "fuzzuf/algorithms/libfuzzer/cli_compat/options.hpp"
-#include "fuzzuf/algorithms/libfuzzer/config.hpp"
-#include "fuzzuf/algorithms/nezha/create.hpp"
-#include "fuzzuf/cli/fuzzer_args.hpp"
-#include "fuzzuf/cli/global_fuzzer_options.hpp"
+
 #include <boost/program_options.hpp>
 #include <cstdint>
 #include <fstream>
 #include <string>
 
+#include "fuzzuf/algorithms/libfuzzer/cli_compat/options.hpp"
+#include "fuzzuf/algorithms/libfuzzer/config.hpp"
+#include "fuzzuf/algorithms/nezha/create.hpp"
+#include "fuzzuf/cli/fuzzer_args.hpp"
+#include "fuzzuf/cli/global_fuzzer_options.hpp"
+
 namespace fuzzuf::algorithm::nezha {
-NezhaFuzzer::NezhaFuzzer(const FuzzerArgs &fuzzer_args,
-                         const GlobalFuzzerOptions &global,
+NezhaFuzzer::NezhaFuzzer(const cli::FuzzerArgs &fuzzer_args,
+                         const cli::GlobalFuzzerOptions &global,
                          std::function<void(std::string &&)> &&sink_)
     : node_tracer([this](std::string &&m) { sink("trace : " + m); }) {
   namespace po = boost::program_options;
@@ -61,7 +63,7 @@ NezhaFuzzer::NezhaFuzzer(const FuzzerArgs &fuzzer_args,
   libfuzzer_variables.state.create_info = opts.create_info;
   libfuzzer_variables.rng = std::move(opts.rng);
 
-  ExecInputSet initial_inputs =
+  exec_input::ExecInputSet initial_inputs =
       loadInitialInputs(opts, libfuzzer_variables.rng);
   libfuzzer_variables.max_input_size =
       opts.create_info.len_control ? 4u : opts.create_info.max_input_length;
@@ -73,11 +75,12 @@ NezhaFuzzer::NezhaFuzzer(const FuzzerArgs &fuzzer_args,
   const auto path_to_write_seed = create_info.output_dir / "cur_input";
   for (const auto &target_path : opts.targets) {
     libfuzzer_variables.executors.push_back(
-        std::shared_ptr<NativeLinuxExecutor>(new NativeLinuxExecutor(
-            {target_path.string(), output_file_path.string()},
-            create_info.exec_timelimit_ms, create_info.exec_memlimit,
-            create_info.forksrv, path_to_write_seed, create_info.afl_shm_size,
-            create_info.bb_shm_size, true)));
+        std::shared_ptr<fuzzuf::executor::NativeLinuxExecutor>(
+            new fuzzuf::executor::NativeLinuxExecutor(
+                {target_path.string(), output_file_path.string()},
+                create_info.exec_timelimit_ms, create_info.exec_memlimit,
+                create_info.forksrv, path_to_write_seed,
+                create_info.afl_shm_size, create_info.bb_shm_size, true)));
   }
 
   libfuzzer_variables.begin_date = std::chrono::system_clock::now();
@@ -124,4 +127,4 @@ void NezhaFuzzer::OneLoop() {
     }
   }
 }
-} // namespace fuzzuf::algorithm::nezha
+}  // namespace fuzzuf::algorithm::nezha

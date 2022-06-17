@@ -1,7 +1,7 @@
 /*
  * fuzzuf
  * Copyright (C) 2022 Ricerca Security
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -27,6 +27,7 @@
 #include <boost/test/unit_test.hpp>
 #include <iostream>
 #include <move_to_program_location.hpp>
+
 #include "fuzzuf/algorithms/afl/afl_option.hpp"
 #include "fuzzuf/algorithms/nautilus/fuzzer/fuzzer.hpp"
 #include "fuzzuf/algorithms/nautilus/fuzzer/option.hpp"
@@ -35,15 +36,13 @@
 #include "fuzzuf/utils/common.hpp"
 #include "fuzzuf/utils/filesystem.hpp"
 
-
 static void NautilusLoop(bool forksrv, size_t iter) {
   MoveToProgramLocation();
 
   /* Create root directory */
   std::string root_dir_template("/tmp/fuzzuf_test.XXXXXX");
   const auto raw_dirname = mkdtemp(root_dir_template.data());
-  if (!raw_dirname)
-    throw -1;
+  if (!raw_dirname) throw -1;
   BOOST_CHECK(raw_dirname != nullptr);
 
   fs::path root_dir = fs::path(raw_dirname);
@@ -67,32 +66,21 @@ static void NautilusLoop(bool forksrv, size_t iter) {
   using namespace fuzzuf::algorithm::nautilus::fuzzer::option;
 
   /* Create setting for Nautilus */
-  std::shared_ptr<NautilusSetting> setting(
-    new NautilusSetting(
-      args,
-      path_to_grammar,
-      output_dir,
+  std::shared_ptr<NautilusSetting> setting(new NautilusSetting(
+      args, path_to_grammar, output_dir,
       fuzzuf::algorithm::afl::option::GetExecTimeout<NautilusTag>(),
-      fuzzuf::algorithm::afl::option::GetMemLimit<NautilusTag>(),
-      forksrv,
+      fuzzuf::algorithm::afl::option::GetMemLimit<NautilusTag>(), forksrv,
       fuzzuf::utils::CPUID_BIND_WHICHEVER,
 
-      GetDefaultNumOfThreads(),
-      GetDefaultThreadSize(),
-      GetDefaultNumOfGenInputs(),
-      GetDefaultNumOfDetMuts(),
-      GetDefaultMaxTreeSize(),
-      GetDefaultBitmapSize()
-    )
-  );
+      GetDefaultNumOfThreads(), GetDefaultThreadSize(),
+      GetDefaultNumOfGenInputs(), GetDefaultNumOfDetMuts(),
+      GetDefaultMaxTreeSize(), GetDefaultBitmapSize()));
 
   /* Craete output directories */
   std::vector<std::string> folders{"signaled", "queue", "timeout", "chunks"};
-  for (auto f: folders) {
-    fs::create_directories(
-      fuzzuf::utils::StrPrintf("%s/%s", setting->path_to_workdir.c_str(), f.c_str()
-      )
-    );
+  for (auto f : folders) {
+    fs::create_directories(fuzzuf::utils::StrPrintf(
+        "%s/%s", setting->path_to_workdir.c_str(), f.c_str()));
   }
 
   using fuzzuf::algorithm::afl::option::GetDefaultOutfile;
@@ -100,16 +88,12 @@ static void NautilusLoop(bool forksrv, size_t iter) {
   using fuzzuf::executor::AFLExecutorInterface;
 
   /* Create NativeLinuxExecutor */
-  auto nle = std::make_shared<NativeLinuxExecutor>(
-    args,
-    setting->exec_timeout_ms,
-    setting->exec_memlimit,
-    setting->forksrv,
-    setting->path_to_workdir / GetDefaultOutfile<NautilusTag>(),
-    GetMapSize<NautilusTag>(), // afl_shm_size
-    0,                         // bb_shm_size
-    setting->cpuid_to_bind
-  );
+  auto nle = std::make_shared<fuzzuf::executor::NativeLinuxExecutor>(
+      args, setting->exec_timeout_ms, setting->exec_memlimit, setting->forksrv,
+      setting->path_to_workdir / GetDefaultOutfile<NautilusTag>(),
+      GetMapSize<NautilusTag>(),  // afl_shm_size
+      0,                          // bb_shm_size
+      setting->cpuid_to_bind);
 
   auto executor = std::make_shared<AFLExecutorInterface>(std::move(nle));
 

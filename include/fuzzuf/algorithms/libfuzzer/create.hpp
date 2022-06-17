@@ -21,12 +21,13 @@
  */
 #ifndef FUZZUF_INCLUDE_ALGORITHM_LIBFUZZER_CREATE_HPP
 #define FUZZUF_INCLUDE_ALGORITHM_LIBFUZZER_CREATE_HPP
+#include <config.h>
+
 #include "fuzzuf/algorithms/libfuzzer/exec_input_set_range.hpp"
 #include "fuzzuf/algorithms/libfuzzer/hierarflow.hpp"
 #include "fuzzuf/algorithms/libfuzzer/no_new_coverage.hpp"
 #include "fuzzuf/algorithms/libfuzzer/select_seed.hpp"
 #include "fuzzuf/hierarflow/hierarflow_intermediates.hpp"
-#include <config.h>
 
 namespace fuzzuf::algorithm::libfuzzer {
 
@@ -177,8 +178,8 @@ auto createSymCC(const FuzzerCreateInfo &create_info, bool force_add_to_corpus,
  */
 template <typename F, typename Ord, typename Sink>
 auto createInitialize(const FuzzerCreateInfo &create_info,
-                      ExecInputSet &initial_inputs, bool strict_match,
-                      const Sink &sink) {
+                      exec_input::ExecInputSet &initial_inputs,
+                      bool strict_match, const Sink &sink) {
   namespace hf = fuzzuf::hierarflow;
 
   auto for_each_initial_input = hf::CreateNode<ForEachStaticData<
@@ -227,7 +228,8 @@ auto createInitialize(const FuzzerCreateInfo &create_info,
  */
 template <typename F, typename Ord, typename Sink>
 auto createRunone(const FuzzerCreateInfo &create_info,
-                  ExecInputSet & /*initial_inputs*/, const Sink &sink) {
+                  exec_input::ExecInputSet & /*initial_inputs*/,
+                  const Sink &sink) {
   namespace hf = fuzzuf::hierarflow;
 
   auto increment_counter =
@@ -294,11 +296,11 @@ auto createRunone(const FuzzerCreateInfo &create_info,
 
   namespace sp = utils::struct_path;
   auto symcc = hf::CreateNode<Proxy<F>>();
-  if (create_info.symcc_target_count && create_info.symcc_freq ) {
-    if( create_info.symcc_freq >= 2u ) {
-      auto threshold =
-        hf::CreateNode<If<F, decltype(sp::root / sp::ident<std::greater_equal<unsigned int>> &&
-                                      Ord::stuck_count && Ord::symcc_freq)>>();
+  if (create_info.symcc_target_count && create_info.symcc_freq) {
+    if (create_info.symcc_freq >= 2u) {
+      auto threshold = hf::CreateNode<If<
+          F, decltype(sp::root / sp::ident<std::greater_equal<unsigned int>> &&
+                      Ord::stuck_count && Ord::symcc_freq)>>();
       auto if_no_new_coverage =
           hf::CreateNode<If<F, decltype(sp::root / sp::ident<NoNewCoverage> &&
                                         Ord::state && Ord::exec_result)>>();
@@ -306,33 +308,25 @@ auto createRunone(const FuzzerCreateInfo &create_info,
           hf::CreateNode<If<F, decltype(sp::root / sp::ident<NewCoverage> &&
                                         Ord::state && Ord::exec_result)>>();
       auto increment_stuck_count =
-        hf::CreateNode<StaticAppend<F, decltype(Ord::stuck_count)>>(1u);
+          hf::CreateNode<StaticAppend<F, decltype(Ord::stuck_count)>>(1u);
       auto reset_stuck_count1 =
-        hf::CreateNode<StaticAssign<F, decltype(Ord::stuck_count)>>(0u);
+          hf::CreateNode<StaticAssign<F, decltype(Ord::stuck_count)>>(0u);
       auto reset_stuck_count2 =
-        hf::CreateNode<StaticAssign<F, decltype(Ord::stuck_count)>>(0u);
+          hf::CreateNode<StaticAssign<F, decltype(Ord::stuck_count)>>(0u);
 
-      symcc << (
-        if_no_new_coverage << (
-	  increment_stuck_count ||
-	  threshold << (
-            reset_stuck_count1 ||
-	    createSymCC<F, Ord>(create_info, false, true, false, false, sink)
-	  )
-        ) ||
-        if_new_coverage << (
-          reset_stuck_count2
-        )
-      );
-    }
-    else {
+      symcc << (if_no_new_coverage
+                    << (increment_stuck_count ||
+                        threshold
+                            << (reset_stuck_count1 ||
+                                createSymCC<F, Ord>(create_info, false, true,
+                                                    false, false, sink))) ||
+                if_new_coverage << (reset_stuck_count2));
+    } else {
       auto if_no_new_coverage =
           hf::CreateNode<If<F, decltype(sp::root / sp::ident<NoNewCoverage> &&
                                         Ord::state && Ord::exec_result)>>();
-      symcc << (
-	if_no_new_coverage <<
-	  createSymCC<F, Ord>(create_info, false, true, false, false, sink)
-      );
+      symcc << (if_no_new_coverage << createSymCC<F, Ord>(
+                    create_info, false, true, false, false, sink));
     }
   }
 
@@ -363,8 +357,8 @@ auto createRunone(const FuzzerCreateInfo &create_info,
  * @return root node of the HierarFlow
  */
 template <typename F, typename Ord, typename Sink>
-auto create(const FuzzerCreateInfo &create_info, ExecInputSet &initial_inputs,
-            const Sink &sink) {
+auto create(const FuzzerCreateInfo &create_info,
+            exec_input::ExecInputSet &initial_inputs, const Sink &sink) {
   namespace hf = fuzzuf::hierarflow;
 
   auto global_loop =
@@ -386,5 +380,5 @@ auto create(const FuzzerCreateInfo &create_info, ExecInputSet &initial_inputs,
   return nop1;
 }
 
-} // namespace fuzzuf::algorithm::libfuzzer
+}  // namespace fuzzuf::algorithm::libfuzzer
 #endif

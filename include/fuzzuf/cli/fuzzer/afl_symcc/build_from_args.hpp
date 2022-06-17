@@ -17,13 +17,14 @@
  */
 #ifndef FUZZUF_INCLUDE_CLI_FUZZER_AFL_SYMCC_BUILD_AFL_SYMCC_FUZZER_FROM_ARGS_HPP
 #define FUZZUF_INCLUDE_CLI_FUZZER_AFL_SYMCC_BUILD_AFL_SYMCC_FUZZER_FROM_ARGS_HPP
+#include <cstddef>
+#include <memory>
+#include <string>
+
 #include "fuzzuf/cli/fuzzer_args.hpp"
 #include "fuzzuf/cli/global_fuzzer_options.hpp"
 #include "fuzzuf/cli/put_args.hpp"
 #include "fuzzuf/fuzzer/fuzzer.hpp"
-#include <cstddef>
-#include <memory>
-#include <string>
 
 namespace fuzzuf::cli::fuzzer::afl_symcc {
 struct SymCCOptions {
@@ -32,10 +33,9 @@ struct SymCCOptions {
 };
 
 // Used only for CLI
-std::unique_ptr<Fuzzer>
-BuildFromArgs(const FuzzerArgs &fuzzer_args,
-              const GlobalFuzzerOptions &global_options);
+std::unique_ptr<fuzzuf::fuzzer::Fuzzer> BuildFromArgs(
+    const FuzzerArgs &fuzzer_args, const GlobalFuzzerOptions &global_options);
 
-} // namespace fuzzuf::cli::fuzzer::afl_symcc
+}  // namespace fuzzuf::cli::fuzzer::afl_symcc
 
 #endif

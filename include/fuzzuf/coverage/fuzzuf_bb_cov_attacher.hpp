@@ -26,13 +26,16 @@
 
 #include "fuzzuf/coverage/shm_cov_attacher.hpp"
 
+namespace fuzzuf::coverage {
+
 /**
  * @class FuzzufBBCovAttacher
  * @brief fuzzuf-specific basic block coverage attacher.
  */
 class FuzzufBBCovAttacher : public ShmCovAttacher {
-public:
-  // FIXME: we have to modify fuzzuf-cc to change __WYVERN_SHM_ID to __FUZZUF_SHM_ID
+ public:
+  // FIXME: we have to modify fuzzuf-cc to change __WYVERN_SHM_ID to
+  // __FUZZUF_SHM_ID
   static constexpr const char* SHM_ENV_VAR = "__WYVERN_SHM_ID";
 
   FuzzufBBCovAttacher(u32 map_size) : ShmCovAttacher(map_size) {}
@@ -41,4 +44,6 @@ public:
   }
 };
 
-#endif // FUZZUF_INCLUDE_COVERAGE_FUZZUF_BB_COV_ATTACHER_HPP
+}  // namespace fuzzuf::coverage
+
+#endif  // FUZZUF_INCLUDE_COVERAGE_FUZZUF_BB_COV_ATTACHER_HPP

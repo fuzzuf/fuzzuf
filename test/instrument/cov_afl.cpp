@@ -1,7 +1,7 @@
 /*
  * fuzzuf
  * Copyright (C) 2021 Ricerca Security
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -22,11 +22,11 @@
 #include <iostream>
 #include <random>
 
+#include "config.h"
+#include "create_file.hpp"
 #include "fuzzuf/exec_input/exec_input.hpp"
 #include "fuzzuf/python/python_fuzzer.hpp"
 #include "fuzzuf/utils/filesystem.hpp"
-#include "config.h"
-#include "create_file.hpp"
 #include "move_to_program_location.hpp"
 
 struct DiffInfo {
@@ -41,7 +41,8 @@ struct DiffInfo {
    the follwing comments, sometimes we refer seeds like "the seed corresponding
    to 4"
  */
-std::unordered_map<int, u8> GetCoverage(PythonFuzzer &fuzzer, int bit_seq) {
+std::unordered_map<int, u8> GetCoverage(
+    fuzzuf::bindings::python::PythonFuzzer &fuzzer, int bit_seq) {
   // create seed corresponding to bit_seq
   std::vector<u8> buf;
   for (int i = 0; i < 8; i++) {
@@ -50,7 +51,7 @@ std::unordered_map<int, u8> GetCoverage(PythonFuzzer &fuzzer, int bit_seq) {
   }
 
   auto id = fuzzer.AddSeed(8, buf);
-  BOOST_CHECK(id != ExecInput::INVALID_INPUT_ID);
+  BOOST_CHECK(id != fuzzuf::exec_input::ExecInput::INVALID_INPUT_ID);
   auto pyseed_optional = fuzzer.GetPySeed(id);
   BOOST_CHECK(pyseed_optional.has_value());
   auto trace_optional = pyseed_optional->GetFeedback().GetAFLTrace();
@@ -69,8 +70,7 @@ static void InstrumentCovAFL(bool forksrv, bool need_bb_cov) {
   // Create root directory
   std::string root_dir_template("/tmp/fuzzuf_test.XXXXXX");
   const auto raw_dirname = mkdtemp(root_dir_template.data());
-  if (!raw_dirname)
-    throw -1;
+  if (!raw_dirname) throw -1;
   BOOST_CHECK(raw_dirname != nullptr);
 #ifdef HAS_CXX_STD_FILESYSTEM
   namespace fs = std::filesystem;
@@ -93,9 +93,10 @@ static void InstrumentCovAFL(bool forksrv, bool need_bb_cov) {
               "this seed is just nothing. we add more seeds later");
 
   // Create fuzzer instance
-  auto fuzzer = PythonFuzzer({"../put_binaries/zeroone"}, input_dir.native(),
-                             output_dir.native(), 1000, 10000, forksrv, true,
-                             need_bb_cov // need_afl_cov, need_bb_cov
+  auto fuzzer = fuzzuf::bindings::python::PythonFuzzer(
+      {"../put_binaries/zeroone"}, input_dir.native(), output_dir.native(),
+      1000, 10000, forksrv, true,
+      need_bb_cov  // need_afl_cov, need_bb_cov
   );
 
   // Configurate fuzzer
@@ -116,14 +117,12 @@ static void InstrumentCovAFL(bool forksrv, bool need_bb_cov) {
     // into DiffInfo::passed, append basic blocks which the seed corresponding
     // to (1 << i) passes, but which the seed corresponding to 0 doesn't pass
     for (const auto &itr : cov) {
-      if (!base_cov.count(itr.first))
-        diffs[i].passed.emplace_back(itr.first);
+      if (!base_cov.count(itr.first)) diffs[i].passed.emplace_back(itr.first);
     }
     // into DiffInfo::ignored, append basic blocks which the seed corresponding
     // to (1 << i) doesn't pass, but which the seed corresponding to 0 passes
     for (const auto &itr : base_cov) {
-      if (!cov.count(itr.first))
-        diffs[i].ignored.emplace_back(itr.first);
+      if (!cov.count(itr.first)) diffs[i].ignored.emplace_back(itr.first);
     }
 
     std::string name(8, '0');

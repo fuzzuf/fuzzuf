@@ -31,6 +31,8 @@
 #include "fuzzuf/feedback/put_exit_reason_type.hpp"
 #include "fuzzuf/logger/logger.hpp"
 
+namespace fuzzuf::executor {
+
 Executor::Executor(  
     const std::vector<std::string> &argv,
     u32 exec_timelimit_ms,
@@ -101,3 +103,6 @@ void Executor::KillChildWithoutWait() {
         child_pid = -1;
     }
 }
+
+}
+

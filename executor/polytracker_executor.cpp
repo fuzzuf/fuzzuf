@@ -26,6 +26,7 @@
 
 #include "fuzzuf/utils/check_crash_handling.hpp"
 
+namespace fuzzuf::executor {
 PolyTrackerExecutor::PolyTrackerExecutor(
     const fs::path &path_to_executor, const fs::path &path_to_inst_bin,
     const fs::path &path_to_db, const fs::path &path_to_output,
@@ -83,3 +84,4 @@ void PolyTrackerExecutor::SetCArgvAndDecideInputMode() {
 
   cargv.emplace_back(nullptr);
 }
+}  // namespace fuzzuf::executor

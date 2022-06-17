@@ -1,7 +1,7 @@
 /*
  * fuzzuf
  * Copyright (C) 2021 Ricerca Security
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -54,11 +54,11 @@ BOOST_AUTO_TEST_CASE(NativeLinuxExecutorNativeRun) {
 
   // Create executor instance
   long val = sysconf(_SC_PAGESIZE);
-  BOOST_CHECK(val != -1); // Make sure sysconf succeeds
+  BOOST_CHECK(val != -1);  // Make sure sysconf succeeds
   u32 PAGE_SIZE = (u32)val;
 
   auto path_to_write_seed = output_dir / "cur_input";
-  NativeLinuxExecutor executor(
+  fuzzuf::executor::NativeLinuxExecutor executor(
       {TEST_BINARY_DIR "/put_binaries/command_wrapper", "/bin/cat", "@@"}, 1000,
       10000, true, path_to_write_seed, PAGE_SIZE, PAGE_SIZE,
       true /* record_stdout_and_err */
@@ -71,9 +71,9 @@ BOOST_AUTO_TEST_CASE(NativeLinuxExecutorNativeRun) {
 
   // Check normality
   // (1) 正常実行されたこと → feedbackのexit_reason が
-  // PUTExitReasonType::FAULT_NONE であることを確認する
+  // fuzzuf::feedback::PUTExitReasonType::FAULT_NONE であることを確認する
   BOOST_CHECK_EQUAL(executor.GetExitStatusFeedback().exit_reason,
-                    PUTExitReasonType::FAULT_NONE);
+                    fuzzuf::feedback::PUTExitReasonType::FAULT_NONE);
 
   // (2) 標準入力によってファズが受け渡されたこと →
   // 標準入力と同じ内容がファイルに保存されたことを確認する
@@ -84,7 +84,8 @@ BOOST_AUTO_TEST_CASE(NativeLinuxExecutorNativeRun) {
     BOOST_CHECK_EQUAL_COLLECTIONS(ptr, ptr + len, expected_stdout.begin(),
                                   expected_stdout.end());
   });
-  InplaceMemoryFeedback::DiscardActive(std::move(stdout_buffer_feedback));
+  fuzzuf::feedback::InplaceMemoryFeedback::DiscardActive(
+      std::move(stdout_buffer_feedback));
 
   auto stderr_buffer_feedback = executor.GetStdErr();
   stderr_buffer_feedback.ShowMemoryToFunc([](const u8 *ptr, u32 len) {
@@ -93,7 +94,8 @@ BOOST_AUTO_TEST_CASE(NativeLinuxExecutorNativeRun) {
     BOOST_CHECK_EQUAL_COLLECTIONS(ptr, ptr + len, expected_stderr.begin(),
                                   expected_stderr.end());
   });
-  InplaceMemoryFeedback::DiscardActive(std::move(stderr_buffer_feedback));
+  fuzzuf::feedback::InplaceMemoryFeedback::DiscardActive(
+      std::move(stderr_buffer_feedback));
 
   // (3) Check if executor correctly clears stdout_buffer before a new
   // execution. Otherwise the output from stdout during the previous execution
@@ -117,8 +119,7 @@ BOOST_AUTO_TEST_CASE(NativeLinuxExecutorNativeRunTooMuchOutput,
   std::string root_dir_template("/tmp/fuzzuf_test.XXXXXX");
 
   const auto raw_dirname = mkdtemp(root_dir_template.data());
-  if (!raw_dirname)
-    throw -1;
+  if (!raw_dirname) throw -1;
   BOOST_CHECK(raw_dirname != nullptr);
 
   auto root_dir = fs::path(raw_dirname);
@@ -133,11 +134,11 @@ BOOST_AUTO_TEST_CASE(NativeLinuxExecutorNativeRunTooMuchOutput,
 
   // Create executor instance
   long val = sysconf(_SC_PAGESIZE);
-  BOOST_CHECK(val != -1); // Make sure sysconf succeeds
+  BOOST_CHECK(val != -1);  // Make sure sysconf succeeds
   u32 PAGE_SIZE = (u32)val;
 
   auto path_to_write_seed = output_dir / "cur_input";
-  NativeLinuxExecutor executor(
+  fuzzuf::executor::NativeLinuxExecutor executor(
       {TEST_BINARY_DIR "/put_binaries/command_wrapper",
        TEST_BINARY_DIR "/executor/too_much_output"},
       1000, 10000, true, path_to_write_seed, PAGE_SIZE, PAGE_SIZE,
@@ -149,6 +150,6 @@ BOOST_AUTO_TEST_CASE(NativeLinuxExecutorNativeRunTooMuchOutput,
   std::string input;
   executor.Run(reinterpret_cast<const u8 *>(input.c_str()), input.size());
   BOOST_CHECK_EQUAL(executor.GetExitStatusFeedback().exit_reason,
-                    PUTExitReasonType::FAULT_TMOUT);
+                    fuzzuf::feedback::PUTExitReasonType::FAULT_TMOUT);
   BOOST_CHECK_EQUAL(executor.GetExitStatusFeedback().signal, SIGKILL);
 }

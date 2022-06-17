@@ -1,7 +1,7 @@
 /*
  * fuzzuf
  * Copyright (C) 2021 Ricerca Security
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -42,10 +42,11 @@ namespace fuzzuf::algorithm::libfuzzer {
  * @tparam Mask Mask container type.
  * @tparam Path Struct path to define which value to to use.
  */
-template <typename F, typename Mask, typename Path> struct StaticMask {};
+template <typename F, typename Mask, typename Path>
+struct StaticMask {};
 template <typename R, typename... Args, typename Mask, typename Path>
 struct StaticMask<R(Args...), Mask, Path>
-    : public HierarFlowRoutine<R(Args...), R(Args...)> {
+    : public hierarflow::HierarFlowRoutine<R(Args...), R(Args...)> {
   FUZZUF_ALGORITHM_LIBFUZZER_HIERARFLOW_STANDARD_TYPEDEFS
   /**
    * Constructor
@@ -87,14 +88,15 @@ struct StaticMask<R(Args...), Mask, Path>
     return base_type::GoToDefaultNext();
   }
 
-private:
+ private:
   Mask mask;
 };
 namespace standard_order {
-template <typename T> using StaticMaskStdArgOrderT = decltype(T::input);
+template <typename T>
+using StaticMaskStdArgOrderT = decltype(T::input);
 template <typename F, typename Mask, typename Ord>
 using StaticMask = libfuzzer::StaticMask<F, Mask, StaticMaskStdArgOrderT<Ord>>;
-} // namespace standard_order
+}  // namespace standard_order
 
 /**
  * @class DynamicMask
@@ -106,10 +108,11 @@ using StaticMask = libfuzzer::StaticMask<F, Mask, StaticMaskStdArgOrderT<Ord>>;
  * @tparam Mask Mask container type.
  * @tparam Path Struct path to define which value to to use.
  */
-template <typename F, typename Path> struct DynamicMask {};
+template <typename F, typename Path>
+struct DynamicMask {};
 template <typename R, typename... Args, typename Path>
 struct DynamicMask<R(Args...), Path>
-    : public HierarFlowRoutine<R(Args...), R(Args...)> {
+    : public hierarflow::HierarFlowRoutine<R(Args...), R(Args...)> {
   FUZZUF_ALGORITHM_LIBFUZZER_HIERARFLOW_STANDARD_TYPEDEFS
   /**
    * This callable is called on HierarFlow execution
@@ -154,7 +157,7 @@ template <typename T>
 using DynamicMaskStdArgOrderT = decltype(T::mask && T::input);
 template <typename F, typename Ord>
 using DynamicMask = libfuzzer::DynamicMask<F, DynamicMaskStdArgOrderT<Ord>>;
-} // namespace standard_order
+}  // namespace standard_order
 
-} // namespace fuzzuf::algorithm::libfuzzer
+}  // namespace fuzzuf::algorithm::libfuzzer
 #endif

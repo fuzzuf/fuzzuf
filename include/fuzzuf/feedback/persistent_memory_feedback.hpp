@@ -1,7 +1,7 @@
 /*
  * fuzzuf
  * Copyright (C) 2021 Ricerca Security
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -19,34 +19,39 @@
 
 #include <memory>
 #include <unordered_map>
-#include "fuzzuf/utils/common.hpp"
+
 #include "fuzzuf/feedback/put_exit_reason_type.hpp"
+#include "fuzzuf/utils/common.hpp"
+
+namespace fuzzuf::feedback {
 
 // InplaceMemoryFeedbackはライフタイムがExecutorに縛られているため、それを回避したい場合こちらを使う
 // InplaceMemoryFeedback::ConvertToPersistentで変換可能
 class PersistentMemoryFeedback {
-public:
-    PersistentMemoryFeedback();
+ public:
+  PersistentMemoryFeedback();
 
-    // prohibit copies
-    PersistentMemoryFeedback(const PersistentMemoryFeedback&) = delete;
-    PersistentMemoryFeedback& operator=(const PersistentMemoryFeedback&) = delete;
+  // prohibit copies
+  PersistentMemoryFeedback(const PersistentMemoryFeedback&) = delete;
+  PersistentMemoryFeedback& operator=(const PersistentMemoryFeedback&) = delete;
 
-    // allow moves
-    PersistentMemoryFeedback(PersistentMemoryFeedback&&);
-    PersistentMemoryFeedback& operator=(PersistentMemoryFeedback&&);
+  // allow moves
+  PersistentMemoryFeedback(PersistentMemoryFeedback&&);
+  PersistentMemoryFeedback& operator=(PersistentMemoryFeedback&&);
 
-    explicit PersistentMemoryFeedback(const u8* mem, u32 len);
+  explicit PersistentMemoryFeedback(const u8* mem, u32 len);
 
-    u32 CalcCksum32() const;
-    u32 CountNonZeroBytes() const;
+  u32 CalcCksum32() const;
+  u32 CountNonZeroBytes() const;
 
-    // 主にPythonFuzzer向けのメソッド。cppのTODO参照
-    std::unordered_map<int, u8> GetTrace(void);
+  // 主にPythonFuzzer向けのメソッド。cppのTODO参照
+  std::unordered_map<int, u8> GetTrace(void);
 
-    std::unique_ptr<u8[]> mem;
-    u32 len;
+  std::unique_ptr<u8[]> mem;
+  u32 len;
 
-    // 主にPythonFuzzer向けの要素。cppのTODO参照
-    std::unordered_map<int, u8> trace;
+  // 主にPythonFuzzer向けの要素。cppのTODO参照
+  std::unordered_map<int, u8> trace;
 };
+
+}  // namespace fuzzuf::feedback

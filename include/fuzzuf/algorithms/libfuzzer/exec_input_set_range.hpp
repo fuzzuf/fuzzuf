@@ -1,7 +1,7 @@
 /*
  * fuzzuf
  * Copyright (C) 2021 Ricerca Security
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -21,89 +21,92 @@
  */
 #ifndef FUZZUF_INCLUDE_ALGORITHM_LIBFUZZER_EXEC_INPUT_SET_RANGE_HPP
 #define FUZZUF_INCLUDE_ALGORITHM_LIBFUZZER_EXEC_INPUT_SET_RANGE_HPP
-#include "fuzzuf/exec_input/exec_input_set.hpp"
 #include <boost/range/iterator_range.hpp>
 #include <cctype>
 #include <type_traits>
 
+#include "fuzzuf/exec_input/exec_input_set.hpp"
+
 namespace fuzzuf::algorithm::libfuzzer {
 
-#define FUZZUF_ALGORITHM_LIBFUZZER_EXEC_INPUT_SET_RANGE_ITERATOR_OPS           \
-  BasicExecInputSetIterator(base_iter_t b, ExecInputSet &s)                    \
-      : base(b), set(s) {}                                                     \
-                                                                               \
-  base_iter_t &get() { return base; }                                          \
-  const base_iter_t &get() const { return base; }                              \
-                                                                               \
-  self_type_t &operator++() {                                                  \
-    ++base;                                                                    \
-    return *this;                                                              \
-  }                                                                            \
-                                                                               \
-  self_type_t &operator++(int) {                                               \
-    auto old = *this;                                                          \
-    base++;                                                                    \
-    return old;                                                                \
-  }                                                                            \
-                                                                               \
-  bool operator==(const self_type_t &r) const { return base == r.base; }       \
-                                                                               \
-  bool operator!=(const self_type_t &r) const { return base != r.base; }       \
-                                                                               \
-  self_type_t &operator--() {                                                  \
-    --base;                                                                    \
-    return *this;                                                              \
-  }                                                                            \
-                                                                               \
-  self_type_t operator--(int) {                                                \
-    auto old = *this;                                                          \
-    base--;                                                                    \
-    return old;                                                                \
-  }                                                                            \
-                                                                               \
-  self_type_t &operator+=(difference_type n) {                                 \
-    base += n;                                                                 \
-    return *this;                                                              \
-  }                                                                            \
-                                                                               \
-  self_type_t &operator-=(difference_type n) {                                 \
-    base -= n;                                                                 \
-    return *this;                                                              \
-  }                                                                            \
-                                                                               \
-  self_type_t operator+(difference_type n) const {                             \
-    return self_type_t(base + n, set);                                         \
-  }                                                                            \
-                                                                               \
-  self_type_t operator-(difference_type n) const {                             \
-    return self_type_t(base - n, set);                                         \
-  }                                                                            \
-                                                                               \
-  difference_type operator-(const self_type_t &r) const {                      \
-    return base - r.base;                                                      \
-  }                                                                            \
-                                                                               \
-private:                                                                       \
-  base_iter_t base;                                                            \
-  ExecInputSet &set;
+#define FUZZUF_ALGORITHM_LIBFUZZER_EXEC_INPUT_SET_RANGE_ITERATOR_OPS     \
+  BasicExecInputSetIterator(base_iter_t b, exec_input::ExecInputSet &s)  \
+      : base(b), set(s) {}                                               \
+                                                                         \
+  base_iter_t &get() { return base; }                                    \
+  const base_iter_t &get() const { return base; }                        \
+                                                                         \
+  self_type_t &operator++() {                                            \
+    ++base;                                                              \
+    return *this;                                                        \
+  }                                                                      \
+                                                                         \
+  self_type_t &operator++(int) {                                         \
+    auto old = *this;                                                    \
+    base++;                                                              \
+    return old;                                                          \
+  }                                                                      \
+                                                                         \
+  bool operator==(const self_type_t &r) const { return base == r.base; } \
+                                                                         \
+  bool operator!=(const self_type_t &r) const { return base != r.base; } \
+                                                                         \
+  self_type_t &operator--() {                                            \
+    --base;                                                              \
+    return *this;                                                        \
+  }                                                                      \
+                                                                         \
+  self_type_t operator--(int) {                                          \
+    auto old = *this;                                                    \
+    base--;                                                              \
+    return old;                                                          \
+  }                                                                      \
+                                                                         \
+  self_type_t &operator+=(difference_type n) {                           \
+    base += n;                                                           \
+    return *this;                                                        \
+  }                                                                      \
+                                                                         \
+  self_type_t &operator-=(difference_type n) {                           \
+    base -= n;                                                           \
+    return *this;                                                        \
+  }                                                                      \
+                                                                         \
+  self_type_t operator+(difference_type n) const {                       \
+    return self_type_t(base + n, set);                                   \
+  }                                                                      \
+                                                                         \
+  self_type_t operator-(difference_type n) const {                       \
+    return self_type_t(base - n, set);                                   \
+  }                                                                      \
+                                                                         \
+  difference_type operator-(const self_type_t &r) const {                \
+    return base - r.base;                                                \
+  }                                                                      \
+                                                                         \
+ private:                                                                \
+  base_iter_t base;                                                      \
+  exec_input::ExecInputSet &set;
 
 /**
  * @class BasicExecInputSetIterator
- * C++ Random access iterator compliant adaptor to traverse ExecInputSet elements.
+ * C++ Random access iterator compliant adaptor to traverse ExecInputSet
+ * elements.
  * @tparam unwrap
  * If true, dereferenced value is range of std::uint8_t.
  * Otherwise, dereferenced value is reference to ExecInput.
  * @tparam Reference Reference type to an element.
  */
-template <bool unwrap, typename Reference> class BasicExecInputSetIterator {};
+template <bool unwrap, typename Reference>
+class BasicExecInputSetIterator {};
 template <typename Reference>
 class BasicExecInputSetIterator<false, Reference> {
   using self_type_t = BasicExecInputSetIterator<false, Reference>;
 
-public:
+ public:
   using iterator_category = std::random_access_iterator_tag;
   using reference = Reference;
-  using value_type = ExecInput;
+  using value_type = exec_input::ExecInput;
   using base_iter_t = std::vector<std::uint64_t>::iterator;
   using difference_type =
       decltype(std::declval<base_iter_t>() - std::declval<base_iter_t>());
@@ -118,10 +121,11 @@ public:
   FUZZUF_ALGORITHM_LIBFUZZER_EXEC_INPUT_SET_RANGE_ITERATOR_OPS
 };
 
-template <typename Reference> class BasicExecInputSetIterator<true, Reference> {
+template <typename Reference>
+class BasicExecInputSetIterator<true, Reference> {
   using self_type_t = BasicExecInputSetIterator<true, Reference>;
 
-public:
+ public:
   using iterator_category = std::input_iterator_tag;
   using value_type = boost::iterator_range<std::uint8_t *>;
   using reference = value_type;
@@ -146,19 +150,20 @@ public:
 };
 
 template <bool unwrap>
-using ExecInputSetIterator = BasicExecInputSetIterator<unwrap, ExecInput &>;
+using ExecInputSetIterator =
+    BasicExecInputSetIterator<unwrap, exec_input::ExecInput &>;
 template <bool unwrap>
 using ConstExecInputSetIterator =
-    BasicExecInputSetIterator<unwrap, const ExecInput &>;
+    BasicExecInputSetIterator<unwrap, const exec_input::ExecInput &>;
 
 /**
  * @enum ExecInputSetRangeInsertMode
  * Enums to indicate behaviour of insertion to ExecInputSetRange
  */
 enum class ExecInputSetRangeInsertMode {
-  NONE,      // insert() is not available
-  IN_MEMORY, // insert() causes inserting value using CreateOnMemory()
-  ON_DISK    // insert() causes inserting value using CreateOnDisk()
+  NONE,       // insert() is not available
+  IN_MEMORY,  // insert() causes inserting value using CreateOnMemory()
+  ON_DISK     // insert() causes inserting value using CreateOnDisk()
 };
 
 /**
@@ -171,7 +176,7 @@ enum class ExecInputSetRangeInsertMode {
  */
 template <bool unwrap, ExecInputSetRangeInsertMode mode>
 class ExecInputSetRange {
-public:
+ public:
   using value_type = typename ExecInputSetIterator<unwrap>::value_type;
   using reference = typename ExecInputSetIterator<unwrap>::reference;
   using const_reference = const reference;
@@ -180,7 +185,7 @@ public:
       typename ExecInputSetIterator<unwrap>::difference_type;
   using iterator = ExecInputSetIterator<unwrap>;
   using const_iterator = ConstExecInputSetIterator<unwrap>;
-  ExecInputSetRange(ExecInputSet &s) : set(s) {
+  ExecInputSetRange(exec_input::ExecInputSet &s) : set(s) {
     auto ids_ = set.get_ids();
     ids.reset(new std::vector<std::uint64_t>(ids_.begin(), ids_.end()));
   }
@@ -197,7 +202,7 @@ public:
       -> std::enable_if_t<mode_ != ExecInputSetRangeInsertMode::NONE,
                           std::pair<iterator, bool>> {
     if constexpr (mode == ExecInputSetRangeInsertMode::IN_MEMORY) {
-      OnMemoryExecInput elem(std::move(args)...);
+      exec_input::OnMemoryExecInput elem(std::move(args)...);
       const auto id = elem.GetID();
       const auto existing =
           std::find(set.get_ids().begin(), set.get_ids().end(), id) !=
@@ -208,7 +213,7 @@ public:
       ids.reset(new std::vector<std::uint64_t>(ids_.begin(), ids_.end()));
       return std::make_pair(iterator(created, set), existing);
     } else if constexpr (mode == ExecInputSetRangeInsertMode::ON_DISK) {
-      OnDiskExecInput elem(std::move(args)...);
+      exec_input::OnDiskExecInput elem(std::move(args)...);
       const auto id = elem.GetID();
       const auto existing =
           std::find(set.get_ids().begin(), set.get_ids().end(), id) !=
@@ -247,8 +252,8 @@ public:
     return operator[](pos);
   }
 
-private:
-  ExecInputSet &set;
+ private:
+  exec_input::ExecInputSet &set;
   std::shared_ptr<std::vector<std::uint64_t>> ids;
 };
 
@@ -274,8 +279,8 @@ auto operator|(T &p, const ExecInputSetRangeT<unwrap, mode> &)
         std::declval<T &>())) {
   return fuzzuf::algorithm::libfuzzer::ExecInputSetRange<unwrap, mode>(p);
 }
-} // namespace adaptor
+}  // namespace adaptor
 
-} // namespace fuzzuf::algorithm::libfuzzer
+}  // namespace fuzzuf::algorithm::libfuzzer
 
 #endif

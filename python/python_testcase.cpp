@@ -1,7 +1,7 @@
 /*
  * fuzzuf
  * Copyright (C) 2021 Ricerca Security
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -16,14 +16,19 @@
  * along with this program.  If not, see http://www.gnu.org/licenses/.
  */
 #include "fuzzuf/python/python_testcase.hpp"
+
 #include "fuzzuf/feedback/persistent_memory_feedback.hpp"
 
+namespace fuzzuf::bindings::python {
+
 PythonTestcase::PythonTestcase(
-    std::shared_ptr<OnMemoryExecInput> input,
-    PersistentMemoryFeedback&& afl_feed,
-    PersistentMemoryFeedback&&  bb_feed
-) : input(input),
-    afl_feed(std::move(afl_feed)),
-    bb_feed(std::move(bb_feed)) {}
+    std::shared_ptr<fuzzuf::exec_input::OnMemoryExecInput> input,
+    feedback::PersistentMemoryFeedback&& afl_feed,
+    feedback::PersistentMemoryFeedback&& bb_feed)
+    : input(input),
+      afl_feed(std::move(afl_feed)),
+      bb_feed(std::move(bb_feed)) {}
 
 PythonTestcase::~PythonTestcase() {}
+
+}  // namespace fuzzuf::bindings::python

@@ -68,8 +68,8 @@ BOOST_AUTO_TEST_CASE(LinuxForkServerExecutorVariableShm) {
 
   for (u32 afl : checked_sizes) {
     for (u32 bb : checked_sizes) {
-      LinuxForkServerExecutor executor(
-          LinuxForkServerExecutorParameters()
+      fuzzuf::executor::LinuxForkServerExecutor executor(
+          fuzzuf::executor::LinuxForkServerExecutorParameters()
               .set_argv(
                   std::vector<std::string>{TEST_SOURCE_DIR "/put_binaries/cat"})
               .set_exec_timelimit_ms(1000)
@@ -104,7 +104,7 @@ BOOST_AUTO_TEST_CASE(LinuxForkServerExecutorVariableShm) {
       // (2) Check if coverage store is allocated as intended
       if (afl == 0) {
         BOOST_CHECK_EQUAL(executor.GetAFLShmID(),
-                          ShmCovAttacher::INVALID_SHMID);
+                          fuzzuf::coverage::ShmCovAttacher::INVALID_SHMID);
       } else {
         struct shmid_ds info;
         int res = shmctl(executor.GetAFLShmID(), IPC_STAT, &info);
@@ -113,7 +113,8 @@ BOOST_AUTO_TEST_CASE(LinuxForkServerExecutorVariableShm) {
       }
 
       if (bb == 0) {
-        BOOST_CHECK_EQUAL(executor.GetBBShmID(), ShmCovAttacher::INVALID_SHMID);
+        BOOST_CHECK_EQUAL(executor.GetBBShmID(),
+                          fuzzuf::coverage::ShmCovAttacher::INVALID_SHMID);
       } else {
         struct shmid_ds info;
         int res = shmctl(executor.GetBBShmID(), IPC_STAT, &info);

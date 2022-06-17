@@ -38,6 +38,7 @@
 #include "fuzzuf/utils/setter.hpp"
 #include "fuzzuf/utils/vfs/local_filesystem.hpp"
 
+namespace fuzzuf::executor {
 /**
  * @brief Parameters required to create LinuxForkServerExecutor
  */
@@ -66,13 +67,13 @@ struct LinuxForkServerExecutorParameters {
    */
   u32 GetIjonMaxOffset() const {
     return fuzzuf::utils::get_aligned_addr(
-        GetIjonCounterOffset() + ijon_counter_shm_size,
-        alignof(std::uint64_t));
+        GetIjonCounterOffset() + ijon_counter_shm_size, alignof(std::uint64_t));
   }
   /*
    * Calculate total required shared memory size.
-   * Note that this is not AFL coverage size in IJON, but sum of all required buffer size.
-   * During such extra buffers are not in use, the value is equal to AFL coverage size.
+   * Note that this is not AFL coverage size in IJON, but sum of all required
+   * buffer size. During such extra buffers are not in use, the value is equal
+   * to AFL coverage size.
    */
   u32 GetAflCoverageSize() const {
     return fuzzuf::utils::get_aligned_addr(
@@ -81,11 +82,11 @@ struct LinuxForkServerExecutorParameters {
   /**
    * Convert afl_coverage_size to environment variable string.
    * If IJON related values are specified, those values are serialized too.
-   * Since the function just add environment variables above and never erase existing one, the function should called just once.
+   * Since the function just add environment variables above and never erase
+   * existing one, the function should called just once.
    * @returns *this in reference
    */
-  LinuxForkServerExecutorParameters &
-  AflCoverageSizeToEnvironmentVariables() {
+  LinuxForkServerExecutorParameters &AflCoverageSizeToEnvironmentVariables() {
     std::string afl_coverage_size_str("__AFL_SIZE=");
     afl_coverage_size_str += std::to_string(GetIjonCounterOffset());
     environment_variables.emplace_back(std::move(afl_coverage_size_str));
@@ -144,8 +145,8 @@ class LinuxForkServerExecutor : public Executor {
   const bool uses_asan = false;  // May become one of the available options in
                                  // the future, but currently not anticipated
 
-  AFLEdgeCovAttacher afl_edge_coverage;
-  FuzzufBBCovAttacher fuzzuf_bb_coverage;
+  coverage::AFLEdgeCovAttacher afl_edge_coverage;
+  coverage::FuzzufBBCovAttacher fuzzuf_bb_coverage;
 
   LinuxForkServerExecutor(LinuxForkServerExecutorParameters &&args);
   ~LinuxForkServerExecutor();
@@ -168,11 +169,11 @@ class LinuxForkServerExecutor : public Executor {
   int GetAFLShmID();
   int GetBBShmID();
 
-  InplaceMemoryFeedback GetAFLFeedback();
-  InplaceMemoryFeedback GetBBFeedback();
-  InplaceMemoryFeedback GetStdOut();
-  InplaceMemoryFeedback GetStdErr();
-  ExitStatusFeedback GetExitStatusFeedback();
+  feedback::InplaceMemoryFeedback GetAFLFeedback();
+  feedback::InplaceMemoryFeedback GetBBFeedback();
+  feedback::InplaceMemoryFeedback GetStdOut();
+  feedback::InplaceMemoryFeedback GetStdErr();
+  feedback::ExitStatusFeedback GetExitStatusFeedback();
 
   virtual bool IsFeedbackLocked();
 
@@ -204,7 +205,7 @@ class LinuxForkServerExecutor : public Executor {
   void CreateJoinedEnvironmentVariables(std::vector<std::string> &&extra);
 
   u32 last_timeout_ms;
-  PUTExitReasonType last_exit_reason;
+  feedback::PUTExitReasonType last_exit_reason;
   u8 last_signal;
   fuzzuf::executor::output_t stdout_buffer;
   fuzzuf::executor::output_t stderr_buffer;
@@ -234,5 +235,6 @@ class LinuxForkServerExecutor : public Executor {
 
   fuzzuf::utils::vfs::LocalFilesystem filesystem;
 
-  FdChannel put_channel;
+  channel::FdChannel put_channel;
 };
+}  // namespace fuzzuf::executor

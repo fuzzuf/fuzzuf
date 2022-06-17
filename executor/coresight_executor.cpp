@@ -19,6 +19,7 @@
 
 #include "fuzzuf/utils/check_crash_handling.hpp"
 
+namespace fuzzuf::executor {
 /**
  * Precondition:
  *    - A file can be created at path path_str_to_write_input.
@@ -38,3 +39,4 @@ CoreSightExecutor::CoreSightExecutor(const fs::path &proxy_path,
   ProxyExecutor::SetCArgvAndDecideInputMode();
   ProxyExecutor::Initilize();
 }
+}  // namespace fuzzuf::executor

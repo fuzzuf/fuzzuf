@@ -18,6 +18,11 @@
 #ifndef FUZZUF_INCLUDE_ALGORITHM_AFL_SYMCC_FUZZER_HPP
 #define FUZZUF_INCLUDE_ALGORITHM_AFL_SYMCC_FUZZER_HPP
 
+#include <array>
+#include <memory>
+#include <unordered_set>
+#include <vector>
+
 #include "fuzzuf/algorithms/afl/afl_state.hpp"
 #include "fuzzuf/executor/afl_symcc_executor_interface.hpp"
 #include "fuzzuf/fuzzer/fuzzer.hpp"
@@ -28,10 +33,6 @@
 #include "fuzzuf/utils/map_file.hpp"
 #include "fuzzuf/utils/sha1.hpp"
 #include "fuzzuf/utils/vfs/read_once.hpp"
-#include <array>
-#include <memory>
-#include <unordered_set>
-#include <vector>
 
 namespace fuzzuf::algorithm::afl_symcc {
 
@@ -86,8 +87,9 @@ struct AFLFuzzerTemplate : public afl::AFLFuzzerTemplate<State> {
  * @tparam State AFL state type. The type is passed to afl::AFLFuzzerTemplate
  * straightforward.
  */
-template <typename State> class AFLSymCCFuzzerTemplate : public Fuzzer {
-public:
+template <typename State>
+class AFLSymCCFuzzerTemplate : public fuzzer::Fuzzer {
+ public:
   /**
    * @param afl_ AFL fuzzer instance
    * @param options_ SymCC parameters
@@ -97,7 +99,9 @@ public:
       std::unique_ptr<AFLFuzzerTemplate<State>> &&afl_,
       fuzzuf::cli::fuzzer::afl_symcc::SymCCOptions &&options_,
       std::shared_ptr<fuzzuf::executor::AFLSymCCExecutorInterface> &&executor_)
-      : afl(std::move(afl_)), cycle(0u), options(std::move(options_)),
+      : afl(std::move(afl_)),
+        cycle(0u),
+        options(std::move(options_)),
         executor(std::move(executor_)) {}
   /**
    * Call AFLFuzzerTemplate::BuildFuzzFlow()
@@ -123,7 +127,7 @@ public:
    */
   virtual bool ShouldEnd() { return afl->ShouldEnd(); }
 
-private:
+ private:
   /**
    * Execute SymCC
    */
@@ -159,6 +163,6 @@ private:
 
 using AFLSymCCFuzzer = AFLSymCCFuzzerTemplate<fuzzuf::algorithm::afl::AFLState>;
 
-} // namespace fuzzuf::algorithm::afl_symcc
+}  // namespace fuzzuf::algorithm::afl_symcc
 
 #endif

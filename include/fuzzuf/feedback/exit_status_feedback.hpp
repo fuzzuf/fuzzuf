@@ -1,7 +1,7 @@
 /*
  * fuzzuf
  * Copyright (C) 2021 Ricerca Security
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -19,18 +19,24 @@
 
 #include <memory>
 #include <unordered_map>
-#include "fuzzuf/utils/common.hpp"
+
 #include "fuzzuf/feedback/put_exit_reason_type.hpp"
+#include "fuzzuf/utils/common.hpp"
+
+namespace fuzzuf::feedback {
 
 class ExitStatusFeedback {
-public:
-    ExitStatusFeedback();
-    
-    ExitStatusFeedback(const ExitStatusFeedback&);
-    ExitStatusFeedback& operator=(const ExitStatusFeedback&);
+ public:
+  ExitStatusFeedback();
 
-    explicit ExitStatusFeedback(PUTExitReasonType exit_reason, u8 signal);
+  ExitStatusFeedback(const ExitStatusFeedback&);
+  ExitStatusFeedback& operator=(const ExitStatusFeedback&);
 
-    PUTExitReasonType exit_reason;
-    u8 signal;
+  explicit ExitStatusFeedback(feedback::PUTExitReasonType exit_reason,
+                              u8 signal);
+
+  feedback::PUTExitReasonType exit_reason;
+  u8 signal;
 };
+
+}  // namespace fuzzuf::feedback

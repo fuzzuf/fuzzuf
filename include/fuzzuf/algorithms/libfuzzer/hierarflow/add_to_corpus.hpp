@@ -1,7 +1,7 @@
 /*
  * fuzzuf
  * Copyright (C) 2021 Ricerca Security
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -40,11 +40,12 @@ namespace fuzzuf::algorithm::libfuzzer {
  * @tparam F Function type to define what arguments passes through this node.
  * @tparam Path Struct path to define which value to to use.
  */
-template <typename F, typename Path> class AddToCorpus {};
+template <typename F, typename Path>
+class AddToCorpus {};
 template <typename R, typename... Args, typename Path>
 class AddToCorpus<R(Args...), Path>
-    : public HierarFlowRoutine<R(Args...), R(Args...)> {
-public:
+    : public hierarflow::HierarFlowRoutine<R(Args...), R(Args...)> {
+ public:
   FUZZUF_ALGORITHM_LIBFUZZER_HIERARFLOW_STANDARD_TYPEDEFS
   /**
    * Constructor
@@ -66,8 +67,10 @@ public:
               const fs::path &path_prefix_,
               std::function<void(std::string &&)> &&sink_)
       : force_add_to_corpus(force_add_to_corpus_),
-        may_delete_file(may_delete_file_), persistent(persistent_),
-        strict_match(strict_match_), path_prefix(path_prefix_),
+        may_delete_file(may_delete_file_),
+        persistent(persistent_),
+        strict_match(strict_match_),
+        path_prefix(path_prefix_),
         sink(std::move(sink_)) {}
   /**
    * This callable is called on HierarFlow execution
@@ -85,7 +88,7 @@ public:
     FUZZUF_ALGORITHM_LIBFUZZER_HIERARFLOW_STANDARD_END(AddToCorpus)
   }
 
-private:
+ private:
   bool force_add_to_corpus;
   bool may_delete_file;
   bool persistent;
@@ -99,7 +102,7 @@ using AddToCorpusStdArgOrderT =
     decltype(T::state && T::corpus && T::input && T::exec_result);
 template <typename F, typename Ord>
 using AddToCorpus = libfuzzer::AddToCorpus<F, AddToCorpusStdArgOrderT<Ord>>;
-} // namespace standard_order
+}  // namespace standard_order
 
-} // namespace fuzzuf::algorithm::libfuzzer
+}  // namespace fuzzuf::algorithm::libfuzzer
 #endif

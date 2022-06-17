@@ -1,7 +1,7 @@
 /*
  * fuzzuf
  * Copyright (C) 2021 Ricerca Security
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -42,11 +42,12 @@ using ChooseRandomSeedStdArgOrderT =
  * @tparam F Function type to define what arguments passes through this node.
  * @tparam Path Struct path to define which value to to use.
  */
-template <typename F, typename Path> struct ChooseRandomSeed {};
+template <typename F, typename Path>
+struct ChooseRandomSeed {};
 template <typename R, typename... Args, typename Path>
 struct ChooseRandomSeed<R(Args...), Path>
-    : public HierarFlowRoutine<bool(Args...), bool(Args...)> {
-public:
+    : public hierarflow::HierarFlowRoutine<bool(Args...), bool(Args...)> {
+ public:
   FUZZUF_ALGORITHM_LIBFUZZER_HIERARFLOW_STANDARD_TYPEDEFS
   /**
    * Constructor
@@ -70,7 +71,7 @@ public:
     FUZZUF_ALGORITHM_LIBFUZZER_HIERARFLOW_STANDARD_END(ChooseRandomSeed)
   }
 
-private:
+ private:
   bool uniform_dist;
 };
 namespace standard_order {
@@ -80,7 +81,7 @@ using ChooseRandomSeedStdArgOrderT =
 template <typename F, typename Ord>
 using ChooseRandomSeed =
     libfuzzer::ChooseRandomSeed<F, ChooseRandomSeedStdArgOrderT<Ord>>;
-} // namespace standard_order
+}  // namespace standard_order
 
-} // namespace fuzzuf::algorithm::libfuzzer
+}  // namespace fuzzuf::algorithm::libfuzzer
 #endif

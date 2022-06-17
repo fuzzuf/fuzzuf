@@ -1,7 +1,7 @@
 /*
  * fuzzuf
  * Copyright (C) 2022 Ricerca Security
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -23,49 +23,44 @@
 #pragma once
 
 #include <memory>
+
 #include "fuzzuf/algorithms/afl/afl_state.hpp"
 #include "fuzzuf/algorithms/die/die_option.hpp"
 #include "fuzzuf/algorithms/die/die_setting.hpp"
 #include "fuzzuf/algorithms/die/die_testcase.hpp"
 #include "fuzzuf/exceptions.hpp"
 
-
 namespace fuzzuf::algorithm::die {
 
 struct DIEState : public afl::AFLStateTemplate<DIETestcase> {
-  explicit DIEState(
-    std::shared_ptr<const DIESetting> setting,
-    std::shared_ptr<executor::AFLExecutorInterface> executor
-  ) : AFLStateTemplate<DIETestcase>(setting, executor, nullptr),
-      setting(setting) {};
+  explicit DIEState(std::shared_ptr<const DIESetting> setting,
+                    std::shared_ptr<executor::AFLExecutorInterface> executor)
+      : AFLStateTemplate<DIETestcase>(setting, executor, nullptr),
+        setting(setting){};
 
   /* Override these methods to prevent mistakes during development */
-  std::shared_ptr<DIETestcase> AddToQueue(
-    const std::string&, const u8*, u32, bool
-  ) {
+  std::shared_ptr<DIETestcase> AddToQueue(const std::string&, const u8*, u32,
+                                          bool) {
     using exceptions::fuzzuf_logic_error;
-    throw fuzzuf_logic_error("AddToQueue is banned (DIE)",
-                             __FILE__, __LINE__);
+    throw fuzzuf_logic_error("AddToQueue is banned (DIE)", __FILE__, __LINE__);
   }
-  bool SaveIfInteresting(
-    const u8*, u32, InplaceMemoryFeedback&, ExitStatusFeedback&
-  ) {
+  bool SaveIfInteresting(const u8*, u32, feedback::InplaceMemoryFeedback&,
+                         feedback::ExitStatusFeedback&) {
     using exceptions::fuzzuf_logic_error;
-    throw fuzzuf_logic_error("SaveIfInteresting is banned (DIE)",
-                             __FILE__, __LINE__);
+    throw fuzzuf_logic_error("SaveIfInteresting is banned (DIE)", __FILE__,
+                             __LINE__);
   };
 
   /* We must call these instead of the methods above */
-  std::shared_ptr<DIETestcase> AddToQueue(
-    const std::string&, const u8*, u32, // js file
-    const std::string&, const u8*, u32, // type file
-    bool
-  );
-  bool SaveIfInteresting(
-    const u8*, u32, // js file
-    const u8*, u32, // type file
-    InplaceMemoryFeedback&, ExitStatusFeedback&
-  );
+  std::shared_ptr<DIETestcase> AddToQueue(const std::string&, const u8*,
+                                          u32,  // js file
+                                          const std::string&, const u8*,
+                                          u32,  // type file
+                                          bool);
+  bool SaveIfInteresting(const u8*, u32,  // js file
+                         const u8*, u32,  // type file
+                         feedback::InplaceMemoryFeedback&,
+                         feedback::ExitStatusFeedback&);
 
   /* Override methods that call the methods above */
   void ReadTestcases(void);
@@ -78,4 +73,4 @@ struct DIEState : public afl::AFLStateTemplate<DIETestcase> {
   std::shared_ptr<const DIESetting> setting;
 };
 
-} // namespace fuzzuf::algorithm::die
+}  // namespace fuzzuf::algorithm::die

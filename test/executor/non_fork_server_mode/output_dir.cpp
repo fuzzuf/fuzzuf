@@ -45,17 +45,18 @@ BOOST_AUTO_TEST_CASE(RetriveGeneratedFiles) {
   auto output_files_dir = root_dir / "output_files";
 
   // Create executor
-  NativeLinuxExecutor executor(
+  fuzzuf::executor::NativeLinuxExecutor executor(
       {TEST_BINARY_DIR "/executor/generate_outputs"}, 1000, 10000, false,
       path_to_write_seed, 0, 0, true,
-      {std::string("OUTPUT_DIR=") + output_files_dir.string()}, {output_files_dir});
+      {std::string("OUTPUT_DIR=") + output_files_dir.string()},
+      {output_files_dir});
 
   // Run executor
   executor.Run(nullptr, 0);
 
   // The execution should success
   BOOST_CHECK_EQUAL(executor.GetExitStatusFeedback().exit_reason,
-                    PUTExitReasonType::FAULT_NONE);
+                    fuzzuf::feedback::PUTExitReasonType::FAULT_NONE);
 
   // Check if retrived files have valid content
   const std::map<fs::path, std::size_t> expected_data{
@@ -63,7 +64,9 @@ BOOST_AUTO_TEST_CASE(RetriveGeneratedFiles) {
       {output_files_dir / "bar", std::hash<std::string>()("Hello, bar\n")},
       {output_files_dir / "moo", std::hash<std::string>()("Hello, moo\n")}};
   std::map<fs::path, std::size_t> data;
-  const auto files = ( executor.Filesystem()|fuzzuf::utils::vfs::adaptor::read_once ).MmapAll();
+  const auto files =
+      (executor.Filesystem() | fuzzuf::utils::vfs::adaptor::read_once)
+          .MmapAll();
   std::transform(files.begin(), files.end(), std::inserter(data, data.end()),
                  [](const auto &v) {
                    return std::make_pair(
@@ -77,10 +80,11 @@ BOOST_AUTO_TEST_CASE(RetriveGeneratedFiles) {
   // Check if RemoveAll removes unretrived files.
   executor.Run(nullptr, 0);
   BOOST_CHECK_EQUAL(executor.GetExitStatusFeedback().exit_reason,
-                    PUTExitReasonType::FAULT_NONE);
-  ( executor.Filesystem()|fuzzuf::utils::vfs::adaptor::read_once ).RemoveAll();
+                    fuzzuf::feedback::PUTExitReasonType::FAULT_NONE);
+  (executor.Filesystem() | fuzzuf::utils::vfs::adaptor::read_once).RemoveAll();
   executor.Run(nullptr, 0);
-  // Since generate_outputs aborts if output files exist, it can be checked using exit status.
+  // Since generate_outputs aborts if output files exist, it can be checked
+  // using exit status.
   BOOST_CHECK_EQUAL(executor.GetExitStatusFeedback().exit_reason,
-                    PUTExitReasonType::FAULT_NONE);
+                    fuzzuf::feedback::PUTExitReasonType::FAULT_NONE);
 }
