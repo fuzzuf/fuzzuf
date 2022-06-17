@@ -54,11 +54,13 @@ else
   pushd ${BUILD_DIR}
   cmake ../ ${@:4} || die "cmakeできない"
   make -j8 || die "makeできない"
+#  ./test/algorithms/afl/test-afl-partial_cli --log_level=all
+  rm -f fuzzuf-cc.forkserver.log
   ./test/algorithms/ijon/test-ijon-cli --log_level=all
+  cat fuzzuf-cc.forkserver.log
+  rm -f fuzzuf-cc.forkserver.log
   ./test/algorithms/ijon/test-ijon-cli --log_level=all
-  ./test/algorithms/ijon/test-ijon-cli --log_level=all
-  ./test/algorithms/afl/test-algorithms-afl-dictionary --log_level=all
-  ./test/algorithms/ijon/test-ijon-cli --log_level=all
+  cat fuzzuf-cc.forkserver.log
   CTEST_OUTPUT_ON_FAILURE=1 make test || die "testが失敗した"
   make fuzzuf_doc >doxygen.log || die "ドキュメントを作れない"
   make package || die "パッケージを作れない"

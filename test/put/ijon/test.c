@@ -20,14 +20,14 @@ int main(int argc, char** argv) {
   int b = 0;
   if (read(0, &a, sizeof(a)) != sizeof(a)) {
     printf("failed to read input\n");
-    exit(1);
+    exit(10);
   } else {
     printf("read %d\n", a);
   }
 
   if (read(0, &b, sizeof(b)) != sizeof(b)) {
     printf("failed to read input\n");
-    exit(1);
+    exit(11);
   } else {
     printf("read %d\n", b);
   }

@@ -96,3 +96,63 @@ endif()
 if( ENABLE_HEAVY_TEST )
 add_test( NAME "afl.loop_with_dict" COMMAND test-afl-loop_with_dict )
 endif()
+
+add_executable( test-afl-cli cli.cpp )
+target_link_libraries(
+  test-afl-cli
+  test-common
+  fuzzuf
+  fuzzuf-cli-lib
+  ${FUZZUF_LIBRARIES}
+  Boost::unit_test_framework
+)
+target_include_directories(
+  test-afl-cli
+  PRIVATE
+  ${FUZZUF_INCLUDE_DIRS}
+  ${CMAKE_SOURCE_DIR}/test/common
+)
+set_target_properties(
+  test-afl-cli
+  PROPERTIES COMPILE_FLAGS "${ADDITIONAL_COMPILE_FLAGS_STR}"
+)
+set_target_properties(
+  test-afl-cli
+  PROPERTIES LINK_FLAGS "${ADDITIONAL_COMPILE_FLAGS_STR}"
+)
+if( ENABLE_CLANG_TIDY )
+  set_target_properties(
+    test-afl-cli
+    PROPERTIES
+    CXX_CLANG_TIDY "${CLANG_TIDY};${CLANG_TIDY_CONFIG_FOR_TEST}"
+  )
+endif()
+if( FUZZUF_CC_FOUND )
+add_test( NAME "afl.cli" COMMAND test-afl-cli )
+endif()
+
+
+add_executable( test-afl-partial_cli partial_cli.cpp )
+target_link_libraries(
+  test-afl-partial_cli
+  test-common
+  fuzzuf
+  fuzzuf-cli-lib
+  ${FUZZUF_LIBRARIES}
+  Boost::unit_test_framework
+)
+target_include_directories(
+  test-afl-partial_cli
+  PRIVATE
+  ${FUZZUF_INCLUDE_DIRS}
+  ${CMAKE_SOURCE_DIR}/test/common
+)
+set_target_properties(
+  test-afl-partial_cli
+  PROPERTIES COMPILE_FLAGS "${ADDITIONAL_COMPILE_FLAGS_STR}"
+)
+set_target_properties(
+  test-afl-partial_cli
+  PROPERTIES LINK_FLAGS "${ADDITIONAL_COMPILE_FLAGS_STR}"
+)
+

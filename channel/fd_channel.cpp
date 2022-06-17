@@ -56,15 +56,19 @@ ssize_t FdChannel::Recv(void *buf, size_t size, const char *comment) {
 //  そのとき、FdChannelはforkserverは生きていると思っていて、APIの返答を待つ。これはまずい。
 ExecutePUTAPIResponse FdChannel::ExecutePUT() {
   ForkServerAPI command = ExecutePUTCommand;
+  std::cout << __FILE__ << " " << __LINE__ << std::endl;
   Send((void *)&command, sizeof(command), __func__);
 
+  std::cout << __FILE__ << " " << __LINE__ << std::endl;
   ExecutePUTAPIResponse response;
   Recv((void *)&response, sizeof(response), __func__);
 
+  std::cout << __FILE__ << " " << __LINE__ << std::endl;
   DEBUG("Response { error=%d, exit_code=%d, signal_number=%d }", response.error,
         response.exit_code, response.signal_number);
   assert(response.error == ExecutePUTError::None);
 
+  std::cout << __FILE__ << " " << __LINE__ << std::endl;
   return response;
 }
 

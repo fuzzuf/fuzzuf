@@ -188,10 +188,12 @@ void LinuxForkServerExecutor::TerminateForkServer() {
  */
 void LinuxForkServerExecutor::Run(const u8 *buf, u32 len, u32 timeout_ms) {
   // locked until std::shared_ptr<u8> lock is used in other places
+  std::cout << __FILE__ << " " << __LINE__ << std::endl;
   while (IsFeedbackLocked()) {
     usleep(100);
   }
 
+  std::cout << __FILE__ << " " << __LINE__ << std::endl;
   if (timeout_ms == 0) {
     // if timeout_ms is 0, then we use exec_timelimit_ms;
     timeout_ms = exec_timelimit_ms;
@@ -201,9 +203,12 @@ void LinuxForkServerExecutor::Run(const u8 *buf, u32 len, u32 timeout_ms) {
     put_channel.SetPUTExecutionTimeout(timeout_ms * 1000);
     last_timeout_ms = timeout_ms;
   }
+  std::cout << __FILE__ << " " << __LINE__ << std::endl;
 
   // Aliases
   ResetSharedMemories();
+
+  std::cout << __FILE__ << " " << __LINE__ << std::endl;
 
   WriteTestInputToFile(buf, len);
 
@@ -217,6 +222,8 @@ void LinuxForkServerExecutor::Run(const u8 *buf, u32 len, u32 timeout_ms) {
   DEBUG("\n")
   //#endif
 
+  std::cout << __FILE__ << " " << __LINE__ << std::endl;
+
   last_exit_reason = PUTExitReasonType::FAULT_NONE;
   last_signal = 0;
 
@@ -224,6 +231,7 @@ void LinuxForkServerExecutor::Run(const u8 *buf, u32 len, u32 timeout_ms) {
   // value that represent if the last execution failed for timeout.
 
   // Request creating PUT process to fork server
+  std::cout << __FILE__ << " " << __LINE__ << std::endl;
   ExecutePUTAPIResponse response = this->put_channel.ExecutePUT();
 
   // NOTE: Avoids reading shared memory before PUT exit.
@@ -235,7 +243,10 @@ void LinuxForkServerExecutor::Run(const u8 *buf, u32 len, u32 timeout_ms) {
   DEBUG("Response { error=%d, exit_status=%d, signal_number=%d }\n",
         response.error, response.exit_code, response.signal_number);
 
+  std::cout << __FILE__ << " " << __LINE__ << " " << int(response.error)
+            << std::endl;
   if (response.error) {
+    std::cout << __FILE__ << " " << __LINE__ << " " << std::endl;
     last_exit_reason = PUTExitReasonType::FAULT_ERROR;
     return;
   }
@@ -246,6 +257,8 @@ void LinuxForkServerExecutor::Run(const u8 *buf, u32 len, u32 timeout_ms) {
   // TODO: 余裕があったら PUTExitReasonType
   // に終了コードとシグナル番号を持たせたい
   bool child_timed_out = response.signal_number == SIGKILL;
+  std::cout << __FILE__ << " " << __LINE__ << " " << int(response.signal_number)
+            << std::endl;
   if (response.signal_number > 0) {
     last_signal = response.signal_number;
 
@@ -256,13 +269,21 @@ void LinuxForkServerExecutor::Run(const u8 *buf, u32 len, u32 timeout_ms) {
       last_exit_reason = PUTExitReasonType::FAULT_CRASH;
     }
 
+    std::cout << __FILE__ << " " << __LINE__ << " "
+              << int(response.signal_number) << std::endl;
     return;
   }
 
+  std::cout << __FILE__ << " " << __LINE__ << " " << uses_asan << " "
+            << (response.exit_code == MSAN_ERROR) << std::endl;
   if (uses_asan && response.exit_code == MSAN_ERROR) {
+    std::cout << __FILE__ << " " << __LINE__ << " "
+              << int(response.signal_number) << std::endl;
     last_exit_reason = PUTExitReasonType::FAULT_CRASH;
     return;
   }
+  std::cout << __FILE__ << " " << __LINE__ << " " << int(last_exit_reason)
+            << std::endl;
 
   return;
 }
