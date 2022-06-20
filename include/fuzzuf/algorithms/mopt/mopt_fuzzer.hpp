@@ -38,10 +38,6 @@ public:
 
 private:
     bool MOptShouldSchedule(void);
-
-    HierarFlowNode<void(void), void(void)> pilot_fuzzing_loop;
-    HierarFlowNode<void(void), void(void)> core_fuzzing_loop;
-    HierarFlowNode<void(void), void(void)> pso_updating_loop;
 };
 
 } // namespace fuzzuf::algorithm::mopt

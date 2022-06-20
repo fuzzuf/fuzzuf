@@ -7,17 +7,12 @@
 
 namespace fuzzuf::optimizer {
 
-
-MOptParticle::MOptParticle() {
-    // init
-}
-
+MOptParticle::MOptParticle() {}
 MOptParticle::~MOptParticle() {}
 
-
-//MOptOptimizer::MOptOptimizer() {
-    // init
-//}
+MOptOptimizer::MOptOptimizer() : PSO(P_MIN, P_MAX, 0, 0, 0, 1, 1) {
+    UpdateInertia();
+}
 
 MOptOptimizer::~MOptOptimizer() {}
 
@@ -46,6 +41,7 @@ void MOptOptimizer::UpdateLocalBest() {
 
 void MOptOptimizer::UpdateGlobalBest() {
     if (unlikely(time == 0)) {
+        // TODO?
     }
 
     auto havoc_operator_finds = fuzzuf::optimizer::Store::GetInstance().Get(fuzzuf::optimizer::keys::HavocOperatorFinds);
@@ -62,6 +58,11 @@ void MOptOptimizer::UpdateGlobalBest() {
     for (size_t i = 0; i < prob.size(); i++) {
         best_position[i] = prob[i];
     }
+}
+
+void MOptOptimizer::UpdateInertia() {
+    PSO::w = (W_INIT - W_END) * (G_MAX - g_now) / G_MAX + W_END;
+    ++g_now %= G_MAX;
 }
 
 

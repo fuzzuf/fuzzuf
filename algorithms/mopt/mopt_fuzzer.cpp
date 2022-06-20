@@ -15,6 +15,8 @@ MOptFuzzer::MOptFuzzer(std::unique_ptr<MOptState>&& moved_state)
     : AFLFuzzerTemplate<MOptState>(std::move(moved_state)) 
 {}
 
+MOptFuzzer::~MOptFuzzer() {}
+
 void MOptFuzzer::BuildFuzzFlow(void) {
     {
         using namespace afl::routine::other;

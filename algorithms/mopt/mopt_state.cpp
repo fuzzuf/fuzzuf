@@ -11,11 +11,13 @@ MOptState::MOptState(
     std::unique_ptr<optimizer::Optimizer<u32>>&& mutop_optimizer
 ) : afl::AFLStateTemplate<MOptTestcase>(setting, executor, std::move(mutop_optimizer))
 {
-    UpdateSpliceCycles();
+    UpdateSpliceCycles(); // init
 }
 
+MOptState::~MOptState() {}
+
 void MOptState::UpdateSpliceCycles() {
-    splice_cycles_limit = fuzzuf::utils::random::Random<u32>(option::GetSpliceCyclesLow(), option::GetSpliceCyclesUp());
+    splice_cycles_limit = fuzzuf::utils::random::Random<u32>(option::GetSpliceCyclesLow<option::MOptTag>(), option::GetSpliceCyclesUp<option::MOptTag>());
 }
 
 }

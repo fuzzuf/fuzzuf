@@ -10,6 +10,12 @@
 
 namespace fuzzuf::optimizer {
 
+template<size_t Demention>
+Particle<Demention>::Particle(){};
+
+template<size_t Demention>
+Particle<Demention>::~Particle(){};
+
 template<size_t Demention, size_t ParticleNum>
 PSO<Demention, ParticleNum>::PSO(
     double min_position,

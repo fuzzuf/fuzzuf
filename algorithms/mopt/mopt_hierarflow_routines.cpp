@@ -9,6 +9,7 @@ namespace fuzzuf::algorithm::mopt::routine {
 
 namespace other {
 
+MOptUpdate::MOptUpdate(MOptState& state) : state(state) {}
 
 MOptMidCalleeRef MOptUpdate::operator()(
     std::shared_ptr<MOptTestcase> testcase

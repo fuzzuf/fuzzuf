@@ -30,8 +30,6 @@ namespace fuzzuf::optimizer::keys {
 
 using MOptHavocCaseDistrib = fuzzuf::algorithm::mopt::havoc::MOptHavocCaseDistrib;
 
-
-
 } // namespace fuzzuf::optimizer::keys
 
 

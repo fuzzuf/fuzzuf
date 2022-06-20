@@ -312,6 +312,7 @@ set(
   algorithms/mopt/mopt_hierarflow_routines.cpp
   algorithms/mopt/mopt_optimizer.cpp
   algorithms/mopt/mopt_state.cpp
+  algorithms/mopt/mopt_testcase.cpp
   algorithms/nautilus/fuzzer/fuzzer.cpp
   algorithms/nautilus/fuzzer/mutation_hierarflow_routines.cpp
   algorithms/nautilus/fuzzer/other_hierarflow_routines.cpp
