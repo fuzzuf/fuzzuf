@@ -22,7 +22,7 @@ then
   exit 1
 fi
 
-PYENV_VERSION=${1}
+PYENV_NAME=${1}
 PYENV_ROOT=${2}
 BUILD_DIR=${3}
 
@@ -32,9 +32,9 @@ function die(){
 }
 
 mkdir -p ${BUILD_DIR}
-if [ "${PYENV_VERSION}" != "native" ]
+if [ "${PYENV_NAME}" != "native" ]
 then
-  BUILD_SUFFIX=${PYENV_VERSION}-$(echo ${PYENV_ROOT}|sha256sum|sed -e 's/\s\+.*//')
+  BUILD_SUFFIX=${PYENV_NAME}-$(echo ${PYENV_ROOT}|sha256sum|sed -e 's/\s\+.*//')
   if [ ! -d "${PYENV_ROOT}" ]
   then
     git clone --depth 1 https://github.com/pyenv/pyenv.git ${PYENV_ROOT} || die "pyenvをcloneできない"
@@ -42,18 +42,19 @@ then
   export PYENV_ROOT="${PYENV_ROOT}"
   export PATH="${PYENV_ROOT}/bin:${PATH}"
   eval "$(pyenv init -)"
-  CFLAGS="-fPIC" PYTHON_CONFIGURE_OPTS="--enable-shared" pyenv install -s ${PYENV_VERSION} || die "Python-${PYENV_VERSION}をインストールできない"
-  pyenv local ${PYENV_VERSION} || die "Python-${1}に切り替えられない"
+  CFLAGS="-fPIC" PYTHON_CONFIGURE_OPTS="--enable-shared" pyenv install -s ${PYENV_NAME} || die "Python-${PYENV_NAME}をインストールできない"
+  pyenv local ${PYENV_NAME} || die "Python-${1}に切り替えられない"
   mkdir -p ${BUILD_DIR}-${BUILD_SUFFIX}
   pushd ${BUILD_DIR}-${BUILD_SUFFIX}
   cmake ../ ${@:4} || die "cmakeできない"
   make -j8 || die "makeできない"
-  make test || die "testが失敗した"
+  CTEST_OUTPUT_ON_FAILURE=1 make test || die "testが失敗した"
 else
+  unset PYENV_NAME
   pushd ${BUILD_DIR}
   cmake ../ ${@:4} || die "cmakeできない"
   make -j8 || die "makeできない"
-  make test || die "testが失敗した"
+  CTEST_OUTPUT_ON_FAILURE=1 make test || die "testが失敗した"
   make fuzzuf_doc >doxygen.log || die "ドキュメントを作れない"
   make package || die "パッケージを作れない"
   COMMIT_ID=$(git log --format="%H" -n 1)
@@ -75,3 +76,4 @@ else
   popd
   popd
 fi
+

@@ -14,10 +14,10 @@ atla_branch_build2( 'fuzzuf', 'atla', "${BRANCH}" ) {
         }
       }
       stage( 'build' ) {
-        sh "./jenkins/fuzzuf-branch_build/build.sh ${PYENV_VERSION} ${PYENV_DIR} build_"+dist_info[ "type" ]+'_'+dist_info[ "version" ]+" -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr -DPATTR_USER=jenkins -DPATTR_BRANCH=${BRANCH} -DPATTR_VERSION_RELEASE=${REVISION_OFFSET}+${BUILD_NUMBER} -DENABLE_HEAVY_TEST=OFF -DENABLE_DANGEROUS_STACK_TRACE_OUTPUT=ON -DENABLE_DOXYGEN=ON -DPIN_ROOT=/opt/pin/3.7"
+        sh "./jenkins/fuzzuf-branch_build/build.sh ${PYENV_NAME} ${PYENV_DIR} build_"+dist_info[ "type" ]+'_'+dist_info[ "version" ]+" -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr -DPATTR_USER=jenkins -DPATTR_BRANCH=${BRANCH} -DPATTR_VERSION_RELEASE=${REVISION_OFFSET}+${BUILD_NUMBER} -DENABLE_HEAVY_TEST=OFF -DENABLE_DANGEROUS_STACK_TRACE_OUTPUT=ON -DENABLE_DOXYGEN=ON -DPIN_ROOT=/opt/pin/3.7"
       }
       if( env.PUBLISH == "true" ) {
-        if( env.PYENV_VERSION == "native" ) {
+        if( env.PYENV_NAME == "native" ) {
           stage( 'deploy' ) {
             atla_publish( dist_info, "${BRANCH}" )
           }
