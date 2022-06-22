@@ -19,7 +19,6 @@
 #include <iostream>
 
 #include "fuzzuf/cli/create_fuzzer_instance_from_argv.hpp"
-#include "fuzzuf/cli/fuzzer/afl/build_afl_fuzzer_from_args.hpp"
 #include "fuzzuf/cli/fuzzer_builder_register.hpp"
 #include "fuzzuf/cli/global_args.hpp"
 #include "fuzzuf/cli/parse_global_options_for_fuzzer.hpp"

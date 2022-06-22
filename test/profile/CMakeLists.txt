@@ -19,7 +19,7 @@ set_target_properties(
 )
 set_target_properties(
   profile-add-seed
-  PROPERTIES LINK_FLAGS "${ADDITIONAL_COMPILE_FLAGS_STR}"
+  PROPERTIES LINK_FLAGS "${ADDITIONAL_LINK_FLAGS_STR}"
 )
 
 set(CMAKE_CXX_FLAGS "-pg -g")

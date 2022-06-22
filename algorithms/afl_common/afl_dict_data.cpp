@@ -1,7 +1,7 @@
 /*
  * fuzzuf
  * Copyright (C) 2021 Ricerca Security
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -16,8 +16,8 @@
  * along with this program.  If not, see http://www.gnu.org/licenses/.
  */
 #include <algorithm>
-#include <fuzzuf/utils/afl_dict_parser.hpp>
 #include <fuzzuf/algorithms/afl/afl_dict_data.hpp>
+#include <fuzzuf/utils/afl_dict_parser.hpp>
 
 namespace fuzzuf::algorithm::afl::dictionary {
 
@@ -27,27 +27,18 @@ namespace fuzzuf::algorithm::afl::dictionary {
  * @brief Load AFL dictionary specified by filename to dest
  * @param filename The name of the file
  * @param dest Where to output the content loaded
- * @param eout A callback called with an error message as a string when failed to parse file
+ * @param eout A callback called with an error message as a string when failed
+ * to parse file
  */
-void load(
-  const std::string &filename_,
-  std::vector< AFLDictData > &dest,
-  bool strict,
-  const std::function< void( std::string&& ) > &eout
-) {
-  utils::dictionary::LoadAFLDictionary( filename_, dest, strict, eout );
+void load(const std::string &filename_, std::vector<AFLDictData> &dest,
+          bool strict, const std::function<void(std::string &&)> &eout) {
+  utils::dictionary::LoadAFLDictionary(filename_, dest, strict, eout);
 }
 
-void SortDictByLength(
-  std::vector< AFLDictData > &dict
-) {
-  std::sort(
-    dict.begin(),
-    dict.end(),
-    []( const auto &l, const auto &r ) {
-      return l.data.size() < r.data.size();
-    }
-  );
+void SortDictByLength(std::vector<AFLDictData> &dict) {
+  std::sort(dict.begin(), dict.end(), [](const auto &l, const auto &r) {
+    return l.data.size() < r.data.size();
+  });
 }
 
-}
+}  // namespace fuzzuf::algorithm::afl::dictionary

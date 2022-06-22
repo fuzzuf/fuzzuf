@@ -2,6 +2,7 @@
 
 #include <boost/program_options.hpp>
 #include <cstdint>
+#include <iostream>
 #include <string>
 #include <vector>
 
@@ -52,10 +53,14 @@ std::unique_ptr<fuzzuf::fuzzer::Fuzzer> BuildFromArgs(
   po::notify(vm);
 
   if (global_options.help) {
-    fuzzuf::cli::fuzzer::afl::usage(fuzzer_desc);
+    std::cout << "Help:" << std::endl;
+    std::cout << fuzzer_desc << std::endl;
+    std::exit(1);
   }
   if (!vm.count("symcc_target")) {
-    fuzzuf::cli::fuzzer::afl::usage(fuzzer_desc);
+    std::cout << "Help:" << std::endl;
+    std::cout << fuzzer_desc << std::endl;
+    std::exit(1);
   }
   std::vector<std::string> symcc_args(pargs.begin(), pargs.end());
   if (symcc_args.empty())

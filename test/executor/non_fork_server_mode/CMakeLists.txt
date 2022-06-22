@@ -2,7 +2,7 @@ add_executable( test-executor-run-non-fork run.cpp )
 target_link_libraries(
   test-executor-run-non-fork
   test-common
-  fuzzuf
+  fuzzuf_core
   ${FUZZUF_LIBRARIES}
   Boost::unit_test_framework
 )
@@ -18,7 +18,7 @@ set_target_properties(
 )
 set_target_properties(
   test-executor-run-non-fork
-  PROPERTIES LINK_FLAGS "${ADDITIONAL_COMPILE_FLAGS_STR}"
+  PROPERTIES LINK_FLAGS "${ADDITIONAL_LINK_FLAGS_STR}"
 )
 if( ENABLE_CLANG_TIDY )
   set_target_properties(
@@ -34,7 +34,7 @@ add_executable( test-executor-non_fork_server_mode-environment_variables environ
 target_link_libraries(
   test-executor-non_fork_server_mode-environment_variables
   test-common
-  fuzzuf
+  fuzzuf_core
   ${FUZZUF_LIBRARIES}
   Boost::unit_test_framework
 )
@@ -50,7 +50,7 @@ set_target_properties(
 )
 set_target_properties(
   test-executor-non_fork_server_mode-environment_variables
-  PROPERTIES LINK_FLAGS "${ADDITIONAL_COMPILE_FLAGS_STR}"
+  PROPERTIES LINK_FLAGS "${ADDITIONAL_LINK_FLAGS_STR}"
 )
 if( ENABLE_CLANG_TIDY )
   set_target_properties(
@@ -66,7 +66,7 @@ add_executable( test-executor-non_fork_server_mode-output_dir output_dir.cpp )
 target_link_libraries(
   test-executor-non_fork_server_mode-output_dir
   test-common
-  fuzzuf
+  fuzzuf_core
   ${FUZZUF_LIBRARIES}
   Boost::unit_test_framework
 )
@@ -82,7 +82,7 @@ set_target_properties(
 )
 set_target_properties(
   test-executor-non_fork_server_mode-output_dir
-  PROPERTIES LINK_FLAGS "${ADDITIONAL_COMPILE_FLAGS_STR}"
+  PROPERTIES LINK_FLAGS "${ADDITIONAL_LINK_FLAGS_STR}"
 )
 if( ENABLE_CLANG_TIDY )
   set_target_properties(

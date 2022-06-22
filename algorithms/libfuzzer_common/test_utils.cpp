@@ -1,7 +1,7 @@
 /*
  * fuzzuf
  * Copyright (C) 2021 Ricerca Security
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -16,25 +16,27 @@
  * along with this program.  If not, see http://www.gnu.org/licenses/.
  */
 /**
- * @file utils.cpp
+ * @file test_utils.cpp
  * @author Ricerca Security <fuzzuf-dev@ricsec.co.jp>
  */
-#include "fuzzuf/algorithms/libfuzzer/utils.hpp"
-#include <boost/spirit/include/karma.hpp>
-#include <cstddef>
-#include <cstdint>
+#include "fuzzuf/algorithms/libfuzzer/test_utils.hpp"
 
-namespace fuzzuf::algorithm::libfuzzer {
+#include <iostream>
 
-/**
- * Roughly calculate log2 of integer value using number of leading zeros.
- * Corresponding code of original libFuzzer implementation
- * https://github.com/llvm/llvm-project/blob/llvmorg-12.0.1/compiler-rt/lib/fuzzer/FuzzerUtil.h#L93
- * @param x value to calculate log2
- * @return calculated value
- */
-auto lflog(std::size_t x) -> std::size_t {
-  return sizeof(x) * 8u - __builtin_clzll(x) - 1U;
+namespace fuzzuf::algorithm::libfuzzer::test {
+
+auto getSeed1() -> Range {
+  return Range{'T', 'h', 'e', ' ', 'q', 'u', 'i', 'c', 'k', ' ',
+               'b', 'r', 'o', 'w', 'n', ' ', 'f', 'o', 'x'};
+}
+auto getSeed2() -> Range {
+  return Range{'j', 'u', 'm', 'p', 's', ' ', 'o', 'v', 'e', 'r', ' ', 't',
+               'h', 'e', ' ', 'l', 'a', 'z', 'y', ' ', 'd', 'o', 'g'};
+}
+void LoadDictionary(
+    fuzzuf::algorithm::libfuzzer::dictionary::StaticDictionary &dict) {
+  Load(TEST_DICTIONARY_DIR "/test.dict", dict, false,
+       [](std::string &&m) { std::cerr << m << std::endl; });
 }
 
-} // namespace fuzzuf::algorithm::libfuzzer
+}  // namespace fuzzuf::algorithm::libfuzzer::test

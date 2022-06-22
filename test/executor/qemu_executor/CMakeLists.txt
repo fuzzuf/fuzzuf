@@ -2,7 +2,7 @@ add_executable( test-qemu-executor-run run.cpp )
 target_link_libraries(
   test-qemu-executor-run
   test-common
-  fuzzuf
+  fuzzuf_core
   ${FUZZUF_LIBRARIES}
   Boost::unit_test_framework
 )
@@ -18,7 +18,7 @@ set_target_properties(
 )
 set_target_properties(
   test-qemu-executor-run
-  PROPERTIES LINK_FLAGS "${ADDITIONAL_COMPILE_FLAGS_STR}"
+  PROPERTIES LINK_FLAGS "${ADDITIONAL_LINK_FLAGS_STR}"
 )
 if(QEMU_FOUND)
   add_test(

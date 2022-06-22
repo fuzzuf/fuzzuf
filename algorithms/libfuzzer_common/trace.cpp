@@ -1,7 +1,7 @@
 /*
  * fuzzuf
  * Copyright (C) 2021 Ricerca Security
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -16,26 +16,18 @@
  * along with this program.  If not, see http://www.gnu.org/licenses/.
  */
 /**
- * @file test_utils.cpp
+ * @file trace.cpp
  * @author Ricerca Security <fuzzuf-dev@ricsec.co.jp>
  */
-#include "fuzzuf/algorithms/libfuzzer/test_utils.hpp"
-#include <iostream>
+#include "fuzzuf/utils/node_tracer.hpp"
 
-namespace fuzzuf::algorithm::libfuzzer::test {
-
-auto getSeed1() -> Range {
-  return Range{'T', 'h', 'e', ' ', 'q', 'u', 'i', 'c', 'k', ' ',
-               'b', 'r', 'o', 'w', 'n', ' ', 'f', 'o', 'x'};
+namespace fuzzuf::utils {
+void DumpTracer::operator()(const std::string &v) const {
+  sink(std::string(v) + "\n");
 }
-auto getSeed2() -> Range {
-  return Range{'j', 'u', 'm', 'p', 's', ' ', 'o', 'v', 'e', 'r', ' ', 't',
-               'h', 'e', ' ', 'l', 'a', 'z', 'y', ' ', 'd', 'o', 'g'};
+void DumpTracer::operator()(const char *v) const {
+  std::string m(v != nullptr ? v : "(null)");
+  m += "\n";
+  sink(std::move(m));
 }
-void LoadDictionary(
-    fuzzuf::algorithm::libfuzzer::dictionary::StaticDictionary &dict) {
-  Load(TEST_DICTIONARY_DIR "/test.dict", dict, false,
-       [](std::string &&m) { std::cerr << m << std::endl; });
-}
-
-} // namespace fuzzuf::algorithm::libfuzzer::test
+}  // namespace fuzzuf::utils

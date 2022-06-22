@@ -3,7 +3,7 @@ if("${CMAKE_SYSTEM_PROCESSOR}" STREQUAL "x86_64")
   target_link_libraries(
     test-pt-executor-run
     test-common
-    fuzzuf
+    fuzzuf_core
     ${FUZZUF_LIBRARIES}
     Boost::unit_test_framework
   )
@@ -19,7 +19,7 @@ if("${CMAKE_SYSTEM_PROCESSOR}" STREQUAL "x86_64")
   )
   set_target_properties(
     test-pt-executor-run
-    PROPERTIES LINK_FLAGS "${ADDITIONAL_COMPILE_FLAGS_STR}"
+    PROPERTIES LINK_FLAGS "${ADDITIONAL_LINK_FLAGS_STR}"
   )
 endif()
 

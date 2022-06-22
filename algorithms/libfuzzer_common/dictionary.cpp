@@ -1,7 +1,7 @@
 /*
  * fuzzuf
  * Copyright (C) 2021 Ricerca Security
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -20,18 +20,21 @@
  * @author Ricerca Security <fuzzuf-dev@ricsec.co.jp>
  */
 #include "fuzzuf/algorithms/libfuzzer/dictionary.hpp"
-#include "fuzzuf/utils/afl_dict_parser.hpp"
 
 #include <iostream>
+
+#include "fuzzuf/utils/afl_dict_parser.hpp"
 
 namespace fuzzuf::algorithm::libfuzzer::dictionary {
 
 /**
  * Load AFL compatible dictionary from specified file.
- * If dest has initial values, loaded contents are inserted at end of existing entries.
+ * If dest has initial values, loaded contents are inserted at end of existing
+ * entries.
  * @param filename Filename of dictionary
  * @param dest Static dictionary to store loaded entries
- * @param eout Callable with one string argument to display error message on parse failure
+ * @param eout Callable with one string argument to display error message on
+ * parse failure
  */
 void Load(const std::string &filename_, StaticDictionary &dest, bool strict,
           const std::function<void(std::string &&)> &eout) {
@@ -40,10 +43,12 @@ void Load(const std::string &filename_, StaticDictionary &dest, bool strict,
 
 /**
  * Load AFL compatible dictionary from specified file.
- * If dest has initial values, loaded contents are inserted at end of existing entries.
+ * If dest has initial values, loaded contents are inserted at end of existing
+ * entries.
  * @param filename Filename of dictionary
  * @param dest Dynamic dictionary to store loaded entries
- * @param eout Callable with one string argument to display error message on parse failure
+ * @param eout Callable with one string argument to display error message on
+ * parse failure
  */
 void Load(const std::string &filename_, DynamicDictionary &dest, bool strict,
           const std::function<void(std::string &&)> &eout) {
@@ -52,10 +57,12 @@ void Load(const std::string &filename_, DynamicDictionary &dest, bool strict,
 
 /**
  * Load AFL compatible dictionary files specified by paths.
- * If dest has initial values, loaded contents are inserted at end of existing entries.
+ * If dest has initial values, loaded contents are inserted at end of existing
+ * entries.
  * @param paths Range of path to dictionary file
  * @param dest Static dictionary to store loaded entries
- * @param eout Callable with one string argument to display error message on parse failure
+ * @param eout Callable with one string argument to display error message on
+ * parse failure
  */
 void Load(const std::vector<fs::path> &paths, StaticDictionary &dest,
           bool strict, const std::function<void(std::string &&)> &eout) {
@@ -66,10 +73,12 @@ void Load(const std::vector<fs::path> &paths, StaticDictionary &dest,
 
 /**
  * Load AFL compatible dictionary files specified by paths.
- * If dest has initial values, loaded contents are inserted at end of existing entries.
+ * If dest has initial values, loaded contents are inserted at end of existing
+ * entries.
  * @param paths Range of path to dictionary file
  * @param dest Dynamic dictionary to store loaded entries
- * @param eout Callable with one string argument to display error message on parse failure
+ * @param eout Callable with one string argument to display error message on
+ * parse failure
  */
 void Load(const std::vector<fs::path> &paths, DynamicDictionary &dest,
           bool strict, const std::function<void(std::string &&)> &eout) {
@@ -78,4 +87,4 @@ void Load(const std::vector<fs::path> &paths, DynamicDictionary &dest,
   }
 }
 
-} // namespace fuzzuf::algorithm::libfuzzer::dictionary
+}  // namespace fuzzuf::algorithm::libfuzzer::dictionary

@@ -5,7 +5,7 @@ add_executable( test-nautilus-loop loop.cpp )
 target_link_libraries(
   test-nautilus-loop
   test-common
-  fuzzuf
+  fuzzuf_core
   ${FUZZUF_LIBRARIES}
   Boost::unit_test_framework
 )
@@ -21,7 +21,7 @@ set_target_properties(
 )
 set_target_properties(
   test-nautilus-loop
-  PROPERTIES LINK_FLAGS "${ADDITIONAL_COMPILE_FLAGS_STR}"
+  PROPERTIES LINK_FLAGS "${ADDITIONAL_LINK_FLAGS_STR}"
 )
 if( ENABLE_HEAVY_TEST )
 add_test( NAME "nautilus.loop" COMMAND test-nautilus-loop )
@@ -31,7 +31,7 @@ add_executable( test-nautilus-newtypes newtypes.cpp )
 target_link_libraries(
   test-nautilus-newtypes
   test-common
-  fuzzuf
+  fuzzuf_core
   ${FUZZUF_LIBRARIES}
   Boost::unit_test_framework
 )
@@ -47,7 +47,7 @@ set_target_properties(
 )
 set_target_properties(
   test-nautilus-newtypes
-  PROPERTIES LINK_FLAGS "${ADDITIONAL_COMPILE_FLAGS_STR}"
+  PROPERTIES LINK_FLAGS "${ADDITIONAL_LINK_FLAGS_STR}"
 )
 if( ENABLE_HEAVY_TEST )
 add_test( NAME "nautilus.newtypes" COMMAND test-nautilus-newtypes )
@@ -57,7 +57,7 @@ add_executable( test-nautilus-context context.cpp )
 target_link_libraries(
   test-nautilus-context
   test-common
-  fuzzuf
+  fuzzuf_core
   ${FUZZUF_LIBRARIES}
   Boost::unit_test_framework
 )
@@ -73,7 +73,7 @@ set_target_properties(
 )
 set_target_properties(
   test-nautilus-context
-  PROPERTIES LINK_FLAGS "${ADDITIONAL_COMPILE_FLAGS_STR}"
+  PROPERTIES LINK_FLAGS "${ADDITIONAL_LINK_FLAGS_STR}"
 )
 if( ENABLE_HEAVY_TEST )
 add_test( NAME "nautilus.context" COMMAND test-nautilus-context )
@@ -83,7 +83,7 @@ add_executable( test-nautilus-tree tree.cpp )
 target_link_libraries(
   test-nautilus-tree
   test-common
-  fuzzuf
+  fuzzuf_core
   ${FUZZUF_LIBRARIES}
   Boost::unit_test_framework
 )
@@ -99,7 +99,7 @@ set_target_properties(
 )
 set_target_properties(
   test-nautilus-tree
-  PROPERTIES LINK_FLAGS "${ADDITIONAL_COMPILE_FLAGS_STR}"
+  PROPERTIES LINK_FLAGS "${ADDITIONAL_LINK_FLAGS_STR}"
 )
 if( ENABLE_HEAVY_TEST )
 add_test( NAME "nautilus.tree" COMMAND test-nautilus-tree )
@@ -109,7 +109,7 @@ add_executable( test-nautilus-mutator mutator.cpp )
 target_link_libraries(
   test-nautilus-mutator
   test-common
-  fuzzuf
+  fuzzuf_core
   ${FUZZUF_LIBRARIES}
   Boost::unit_test_framework
 )
@@ -125,7 +125,7 @@ set_target_properties(
 )
 set_target_properties(
   test-nautilus-mutator
-  PROPERTIES LINK_FLAGS "${ADDITIONAL_COMPILE_FLAGS_STR}"
+  PROPERTIES LINK_FLAGS "${ADDITIONAL_LINK_FLAGS_STR}"
 )
 if( ENABLE_HEAVY_TEST )
 add_test( NAME "nautilus.mutator" COMMAND test-nautilus-mutator )
@@ -135,7 +135,7 @@ add_executable( test-nautilus-chunkstore chunkstore.cpp )
 target_link_libraries(
   test-nautilus-chunkstore
   test-common
-  fuzzuf
+  fuzzuf_core
   ${FUZZUF_LIBRARIES}
   Boost::unit_test_framework
 )
@@ -151,7 +151,7 @@ set_target_properties(
 )
 set_target_properties(
   test-nautilus-chunkstore
-  PROPERTIES LINK_FLAGS "${ADDITIONAL_COMPILE_FLAGS_STR}"
+  PROPERTIES LINK_FLAGS "${ADDITIONAL_LINK_FLAGS_STR}"
 )
 if( ENABLE_HEAVY_TEST )
 add_test( NAME "nautilus.chunkstore" COMMAND test-nautilus-chunkstore )
