@@ -5,13 +5,23 @@ subdirs(
   common
   exec_input
   executor
-  fuzzer
   hierarflow
-  instrument
-  mutator
-  profile
   put_binaries
-  python
   util
   put
 )
+algorithm_enabled( python_wrapper_enabled ${ALGORITHMS} "python" )
+if( python_wrapper_enabled )
+subdirs(
+  fuzzer
+  instrument
+  profile
+  python
+)
+endif()
+afl_common_is_required( enable_afl_common ${ALGORITHMS} )
+if( enable_afl_common )
+subdirs(
+  mutator
+)
+endif()

@@ -2,7 +2,7 @@ add_executable( test-die-loop loop.cpp )
 target_link_libraries(
   test-die-loop
   test-common
-  fuzzuf
+  fuzzuf_core
   ${FUZZUF_LIBRARIES}
   Boost::unit_test_framework
 )
@@ -18,7 +18,7 @@ set_target_properties(
 )
 set_target_properties(
   test-die-loop
-  PROPERTIES LINK_FLAGS "${ADDITIONAL_COMPILE_FLAGS_STR}"
+  PROPERTIES LINK_FLAGS "${ADDITIONAL_LINK_FLAGS_STR}"
 )
 if( ENABLE_HEAVY_TEST )
 add_test( NAME "die.loop" COMMAND test-die-loop )

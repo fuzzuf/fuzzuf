@@ -2,7 +2,7 @@ add_executable( test-nativelinux-run native_linux_run.cpp )
 target_link_libraries(
   test-nativelinux-run
   test-common
-  fuzzuf
+  fuzzuf_core
   ${FUZZUF_LIBRARIES}
   Boost::unit_test_framework
 )
@@ -18,7 +18,7 @@ set_target_properties(
 )
 set_target_properties(
   test-nativelinux-run
-  PROPERTIES LINK_FLAGS "${ADDITIONAL_COMPILE_FLAGS_STR}"
+  PROPERTIES LINK_FLAGS "${ADDITIONAL_LINK_FLAGS_STR}"
 )
 if( ENABLE_CLANG_TIDY )
   set_target_properties(
@@ -33,7 +33,7 @@ add_executable( test-linuxforkserver-run linux_fork_server_run.cpp )
 target_link_libraries(
   test-linuxforkserver-run
   test-common
-  fuzzuf
+  fuzzuf_core
   ${FUZZUF_LIBRARIES}
   Boost::unit_test_framework
 )
@@ -49,7 +49,7 @@ set_target_properties(
 )
 set_target_properties(
   test-linuxforkserver-run
-  PROPERTIES LINK_FLAGS "${ADDITIONAL_COMPILE_FLAGS_STR}"
+  PROPERTIES LINK_FLAGS "${ADDITIONAL_LINK_FLAGS_STR}"
 )
 if( ENABLE_CLANG_TIDY )
   set_target_properties(
@@ -103,7 +103,7 @@ add_executable( test-pintool-run pintool_run.cpp )
 target_link_libraries(
   test-pintool-run
   test-common
-  fuzzuf
+  fuzzuf_core
   ${FUZZUF_LIBRARIES}
   Boost::unit_test_framework
 )
@@ -119,7 +119,7 @@ set_target_properties(
 )
 set_target_properties(
   test-pintool-run
-  PROPERTIES LINK_FLAGS "${ADDITIONAL_COMPILE_FLAGS_STR}"
+  PROPERTIES LINK_FLAGS "${ADDITIONAL_LINK_FLAGS_STR}"
 )
 if( ENABLE_CLANG_TIDY )
   set_target_properties(
@@ -135,7 +135,7 @@ add_executable( test-executor-ijon ijon.cpp )
 target_link_libraries(
   test-executor-ijon
   test-common
-  fuzzuf
+  fuzzuf_core
   ${FUZZUF_LIBRARIES}
   Boost::unit_test_framework
 )
@@ -151,7 +151,7 @@ set_target_properties(
 )
 set_target_properties(
   test-executor-ijon
-  PROPERTIES LINK_FLAGS "${ADDITIONAL_COMPILE_FLAGS_STR}"
+  PROPERTIES LINK_FLAGS "${ADDITIONAL_LINK_FLAGS_STR}"
 )
 if( ENABLE_CLANG_TIDY )
   set_target_properties(

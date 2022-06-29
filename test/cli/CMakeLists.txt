@@ -17,7 +17,7 @@ set_target_properties(
 )
 set_target_properties(
   test-cli-parser
-  PROPERTIES LINK_FLAGS "${ADDITIONAL_COMPILE_FLAGS_STR}"
+  PROPERTIES LINK_FLAGS "${ADDITIONAL_LINK_FLAGS_STR}"
 )
 if( ENABLE_CLANG_TIDY )
   set_target_properties(

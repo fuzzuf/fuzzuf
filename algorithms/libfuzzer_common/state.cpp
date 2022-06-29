@@ -1,7 +1,7 @@
 /*
  * fuzzuf
  * Copyright (C) 2021 Ricerca Security
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -20,6 +20,7 @@
  * @author Ricerca Security <fuzzuf-dev@ricsec.co.jp>
  */
 #include "fuzzuf/algorithms/libfuzzer/state/state.hpp"
+
 #include "fuzzuf/algorithms/libfuzzer/utils.hpp"
 
 namespace fuzzuf::algorithm::libfuzzer {
@@ -41,4 +42,4 @@ auto toString(std::string &dest, const State &value, std::size_t indent_count,
   return true;
 }
 
-} // namespace fuzzuf::algorithm::libfuzzer
+}  // namespace fuzzuf::algorithm::libfuzzer

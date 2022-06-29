@@ -1,7 +1,7 @@
 /*
  * fuzzuf
  * Copyright (C) 2021 Ricerca Security
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -16,18 +16,26 @@
  * along with this program.  If not, see http://www.gnu.org/licenses/.
  */
 /**
- * @file trace.cpp
+ * @file utils.cpp
  * @author Ricerca Security <fuzzuf-dev@ricsec.co.jp>
  */
-#include "fuzzuf/utils/node_tracer.hpp"
+#include "fuzzuf/algorithms/libfuzzer/utils.hpp"
 
-namespace fuzzuf::utils {
-void DumpTracer::operator()(const std::string &v) const {
-  sink(std::string(v) + "\n");
+#include <boost/spirit/include/karma.hpp>
+#include <cstddef>
+#include <cstdint>
+
+namespace fuzzuf::algorithm::libfuzzer {
+
+/**
+ * Roughly calculate log2 of integer value using number of leading zeros.
+ * Corresponding code of original libFuzzer implementation
+ * https://github.com/llvm/llvm-project/blob/llvmorg-12.0.1/compiler-rt/lib/fuzzer/FuzzerUtil.h#L93
+ * @param x value to calculate log2
+ * @return calculated value
+ */
+auto lflog(std::size_t x) -> std::size_t {
+  return sizeof(x) * 8u - __builtin_clzll(x) - 1U;
 }
-void DumpTracer::operator()(const char *v) const {
-  std::string m(v != nullptr ? v : "(null)");
-  m += "\n";
-  sink(std::move(m));
-}
-} // namespace fuzzuf::utils
+
+}  // namespace fuzzuf::algorithm::libfuzzer

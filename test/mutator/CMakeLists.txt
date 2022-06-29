@@ -2,7 +2,8 @@ add_executable( test-mutator-mutator mutator.cpp )
 target_link_libraries(
         test-mutator-mutator
         test-common
-        fuzzuf
+        fuzzuf_core
+	fuzzuf_core_afl_common
         ${FUZZUF_LIBRARIES}
         Boost::unit_test_framework
 )
@@ -18,7 +19,7 @@ set_target_properties(
 )
 set_target_properties(
   test-mutator-mutator
-  PROPERTIES LINK_FLAGS "${ADDITIONAL_COMPILE_FLAGS_STR}"
+  PROPERTIES LINK_FLAGS "${ADDITIONAL_LINK_FLAGS_STR}"
 )
 if( ENABLE_CLANG_TIDY )
   set_target_properties(
@@ -33,7 +34,8 @@ add_executable( test-mutator-havoc havoc.cpp )
 target_link_libraries(
         test-mutator-havoc
         test-common
-        fuzzuf
+        fuzzuf_core
+	fuzzuf_core_afl_common
         ${FUZZUF_LIBRARIES}
         Boost::unit_test_framework
 )
@@ -49,7 +51,7 @@ set_target_properties(
 )
 set_target_properties(
   test-mutator-havoc
-  PROPERTIES LINK_FLAGS "${ADDITIONAL_COMPILE_FLAGS_STR}"
+  PROPERTIES LINK_FLAGS "${ADDITIONAL_LINK_FLAGS_STR}"
 )
 if( ENABLE_CLANG_TIDY )
   set_target_properties(

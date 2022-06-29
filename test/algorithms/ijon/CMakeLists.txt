@@ -2,7 +2,7 @@ add_executable( test-ijon-cli cli.cpp )
 target_link_libraries(
   test-ijon-cli
   test-common
-  fuzzuf
+  fuzzuf_core
   fuzzuf-cli-lib
   ${FUZZUF_LIBRARIES}
   Boost::unit_test_framework
@@ -19,7 +19,7 @@ set_target_properties(
 )
 set_target_properties(
   test-ijon-cli
-  PROPERTIES LINK_FLAGS "${ADDITIONAL_COMPILE_FLAGS_STR}"
+  PROPERTIES LINK_FLAGS "${ADDITIONAL_LINK_FLAGS_STR}"
 )
 if( ENABLE_CLANG_TIDY )
   set_target_properties(
@@ -29,8 +29,6 @@ if( ENABLE_CLANG_TIDY )
   )
 endif()
 if( FUZZUF_CC_FOUND )
-if( ENABLE_HEAVY_TEST )
 add_test( NAME "ijon.cli" COMMAND test-ijon-cli )
-endif()
 endif()
 

@@ -51,10 +51,6 @@ struct AFLFuzzerOptions {
   AFLFuzzerOptions() : forksrv(true), frida_mode(false){};
 };
 
-// Fuzzer specific help
-// TODO: Provide better help message
-[[noreturn]] void usage(const po::options_description &desc);
-
 template <class TFuzzer, class TAFLFuzzer, class TExecutor>
 std::unique_ptr<TFuzzer> BuildFuzzer(
     const char *prog_name,
@@ -98,7 +94,9 @@ std::unique_ptr<TFuzzer> BuildAFLFuzzerFromArgs(
   po::notify(vm);
 
   if (global_options.help) {
-    usage(fuzzer_args.global_options_description);
+    std::cout << "Help:" << std::endl;
+    std::cout << fuzzer_args.global_options_description << std::endl;
+    std::exit(1);
   }
 
   return BuildFuzzer<TFuzzer, TAFLFuzzer, TExecutor>(
@@ -141,7 +139,9 @@ std::unique_ptr<TFuzzer> BuildFuzzer(
   } catch (const exceptions::cli_error &e) {
     std::cerr << "[!] " << e.what() << std::endl;
     std::cerr << "\tat " << e.file << ":" << e.line << std::endl;
-    usage(option_description);
+    std::cout << "Help:" << std::endl;
+    std::cout << option_description << std::endl;
+    std::exit(1);
   }
 
   // Trace level log

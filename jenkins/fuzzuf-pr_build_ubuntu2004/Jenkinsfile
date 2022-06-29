@@ -14,8 +14,17 @@ pipeline {
     stage('Build') {
       steps {
         atla_checkout2( "${GIT_URL}", "${sha1}", true )
-        sh "mount"
-        cmakeBuild buildDir: 'build', cmakeArgs: '-DENABLE_ADDRSAN=ON -DENABLE_LEAKSAN=ON -DENABLE_UBSAN=ON -DENABLE_HEAVY_TEST=OFF -DPIN_ROOT=/opt/pin/3.7  -DENABLE_NODE_TRACER=OFF', buildType: 'Release', installation: 'InSearchPath', steps: [[args: '-j4 all'],[args: 'test ARGS="-V"']]
+        script {
+          algs = sh( script: 'find include/fuzzuf/algorithms/ -mindepth 1 -maxdepth 1|sed -e \'s%.*/%%\'|sort', returnStdout: true ).trim().split( "\n" )
+          algs.each { alg ->
+            stage( alg ) {
+              cmakeBuild buildDir: 'build', cmakeArgs: '-DENABLE_ADDRSAN=ON -DENABLE_LEAKSAN=ON -DENABLE_UBSAN=ON -DENABLE_HEAVY_TEST=OFF -DPIN_ROOT=/opt/pin/3.7  -DENABLE_NODE_TRACER=OFF -DENABLE_ALGORITHMS='+alg, buildType: 'Release', installation: 'InSearchPath', steps: [[args: '-j4 all']]
+            }
+          }
+          stage( "all" ) {
+            cmakeBuild buildDir: 'build', cmakeArgs: '-DENABLE_ADDRSAN=ON -DENABLE_LEAKSAN=ON -DENABLE_UBSAN=ON -DENABLE_HEAVY_TEST=OFF -DPIN_ROOT=/opt/pin/3.7  -DENABLE_NODE_TRACER=OFF -DENABLE_ALGORITHMS=all', buildType: 'Release', installation: 'InSearchPath', steps: [[args: '-j4 all'],[args: 'test ARGS="-V"']]
+          }
+        }
       }
     }
   }
