@@ -16,7 +16,7 @@ namespace other {
 using MOptMidCalleeRef = fuzzuf::algorithm::afl::routine::other::AFLMidCalleeRef<MOptState>;
 using MOptMidInputType = fuzzuf::algorithm::afl::routine::other::AFLMidInputType<MOptState>;
 using MOptMidOutputType = fuzzuf::algorithm::afl::routine::other::AFLMidOutputType<MOptState>;
-
+using fuzzuf::hierarflow::HierarFlowRoutine;
 
 struct MOptUpdate
     : public HierarFlowRoutine<

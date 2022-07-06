@@ -8,6 +8,8 @@
 
 namespace fuzzuf::algorithm::mopt {
 
+using fuzzuf::exec_input::OnDiskExecInput;
+
 struct MOptTestcase : public afl::AFLTestcase {
     using Tag = fuzzuf::algorithm::mopt::option::MOptTag;
 

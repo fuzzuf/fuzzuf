@@ -61,7 +61,7 @@ CheckPacemakerThreshold::CheckPacemakerThreshold(
 MOptMidCalleeRef CheckPacemakerThreshold::operator()(
     std::shared_ptr<MOptTestcase> testcase
 ) {
-    u64 cur_ms_lv = Util::GetCurTimeMs();
+    u64 cur_ms_lv = fuzzuf::utils::GetCurTimeMs();
     if (!(state.pacemaker_mode == false
             && ((cur_ms_lv - state.last_path_time < state.setting->limit_time_puppet)
                 || (state.last_crash_time != 0 && cur_ms_lv - state.last_crash_time < state.setting->limit_time_puppet)
@@ -209,7 +209,7 @@ MOptMutCalleeRef Splicing::operator()(
         if (this->DoHavoc(mutator,
                     *state.mutop_optimizer,
                     [](int, u8*&, u32&, const std::vector<AFLDictData>&, const std::vector<AFLDictData>&){},
-                    Util::StrPrintf("splice %u", splice_cycle),
+                    fuzzuf::utils::StrPrintf("splice %u", splice_cycle),
                     "splice",
                     state.orig_perf, afl::option::GetSpliceHavoc(state),
                     afl::option::STAGE_SPLICE)) {

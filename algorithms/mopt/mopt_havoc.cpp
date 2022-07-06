@@ -6,6 +6,10 @@
 
 namespace fuzzuf::algorithm::mopt::havoc {
 
+using fuzzuf::mutator::INSERT_EXTRA;
+using fuzzuf::mutator::INSERT_AEXTRA;
+using fuzzuf::mutator::OVERWRITE_WITH_EXTRA;
+using fuzzuf::mutator::OVERWRITE_WITH_AEXTRA;
 
 /**
  * @fn
