@@ -1,7 +1,7 @@
 /*
  * fuzzuf
  * Copyright (C) 2022 Ricerca Security
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -19,30 +19,29 @@
 #ifndef FUZZUF_INCLUDE_ALGORITHM_IJON_IJON_FUZZER_HPP
 #define FUZZUF_INCLUDE_ALGORITHM_IJON_IJON_FUZZER_HPP
 
-#include <vector>
-#include <string>
-
-#include "fuzzuf/utils/common.hpp"
-#include "fuzzuf/hierarflow/hierarflow_node.hpp"
 #include "fuzzuf/algorithms/afl/afl_fuzzer.hpp"
 #include "fuzzuf/algorithms/ijon/ijon_state.hpp"
+#include "fuzzuf/hierarflow/hierarflow_node.hpp"
 
 namespace fuzzuf::algorithm::ijon {
-
+/**
+ * @brief CLI compatible interface for IJON
+ */
 class IJONFuzzer : public afl::AFLFuzzerTemplate<IJONState> {
-public:
-    explicit IJONFuzzer(std::unique_ptr<IJONState>&& state);
-    ~IJONFuzzer();
+ public:
+  explicit IJONFuzzer(std::unique_ptr<IJONState>&& state, u32 ijon_max_offset);
+  ~IJONFuzzer();
 
-    void BuildFuzzFlow(void) override;
-    void OneLoop(void) override;
+  void BuildFuzzFlow(void) override;
+  void OneLoop(void) override;
 
-private:
-    bool IjonShouldSchedule(void);
+ private:
+  bool IjonShouldSchedule(void);
 
-    HierarFlowNode<void(void), void(void)> ijon_fuzz_loop;
+  hierarflow::HierarFlowNode<void(void), void(void)> ijon_fuzz_loop;
+  u32 ijon_max_offset;
 };
 
-} // namespace fuzzuf::algorithm::ijon
+}  // namespace fuzzuf::algorithm::ijon
 
 #endif

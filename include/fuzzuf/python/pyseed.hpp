@@ -1,7 +1,7 @@
 /*
  * fuzzuf
  * Copyright (C) 2021 Ricerca Security
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -17,31 +17,33 @@
  */
 #pragma once
 
-#include <vector>
-#include <unordered_map>
 #include <optional>
-#include "fuzzuf/utils/common.hpp"
+#include <unordered_map>
+#include <vector>
+
 #include "fuzzuf/python/pyfeedback.hpp"
+#include "fuzzuf/utils/common.hpp"
+
+namespace fuzzuf::bindings::python {
 
 class PySeed {
-public:
-    PySeed(
-      const u64 id,
-      const std::vector<u8> buf,
-      const std::optional<std::unordered_map<int, u8>> bb_trace,
-      const std::optional<std::unordered_map<int, u8>> afl_trace
-    );
-    PySeed( const PySeed& ) = delete;
-    PySeed( PySeed&& ) = default;
-    PySeed &operator=( const PySeed& ) = delete;
-    PySeed &operator=( PySeed&& ) = default;
+ public:
+  PySeed(const u64 id, const std::vector<u8> buf,
+         const std::optional<std::unordered_map<int, u8>> bb_trace,
+         const std::optional<std::unordered_map<int, u8>> afl_trace);
+  PySeed(const PySeed&) = delete;
+  PySeed(PySeed&&) = default;
+  PySeed& operator=(const PySeed&) = delete;
+  PySeed& operator=(PySeed&&) = default;
 
-    std::vector<u8> GetBuf(void) const;
-    PyFeedback GetFeedback(void) const;
-    u64 GetID(void) const;
+  std::vector<u8> GetBuf(void) const;
+  PyFeedback GetFeedback(void) const;
+  u64 GetID(void) const;
 
-private:
-    u64 id;
-    std::vector<u8> buf;
-    PyFeedback pyfeedback;
+ private:
+  u64 id;
+  std::vector<u8> buf;
+  PyFeedback pyfeedback;
 };
+
+}  // namespace fuzzuf::bindings::python

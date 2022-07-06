@@ -1,7 +1,7 @@
 /*
  * fuzzuf
  * Copyright (C) 2021 Ricerca Security
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -17,18 +17,23 @@
  */
 #pragma once
 
-#include <memory>
 #include <functional>
+#include <memory>
+
+namespace fuzzuf::fuzzer {
 
 class Fuzzer {
-public:
-    virtual ~Fuzzer() {}
+ public:
+  virtual ~Fuzzer() {}
 
-    virtual void BuildFuzzFlow(void) {}
-    virtual void OneLoop(void) {}
+  virtual void BuildFuzzFlow(void) {}
+  virtual void OneLoop(void) {}
 
-    // do not call non aync-signal-safe functions inside because this function can be called during signal handling
-    virtual void ReceiveStopSignal(void) = 0;
+  // do not call non aync-signal-safe functions inside because this function can
+  // be called during signal handling
+  virtual void ReceiveStopSignal(void) = 0;
 
-    virtual bool ShouldEnd(void) { return false; }
+  virtual bool ShouldEnd(void) { return false; }
 };
+
+}  // namespace fuzzuf::fuzzer

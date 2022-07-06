@@ -31,7 +31,7 @@ BOOST_AUTO_TEST_CASE(UtilLocateDiffs1) {
     0x9f, 0xad, 0xf0, 0xbf, 0x42, 0xec, 0x0, 0xf8,
     0xce, 0x87, 0x00, 0xbb, 0xc0, 0xd9, 0x2e, 0x00
   };
-  const auto [first,last] = Util::LocateDiffs( a.data(), b.data(), a.size() );
+  const auto [first,last] = fuzzuf::utils::LocateDiffs( a.data(), b.data(), a.size() );
   BOOST_CHECK_EQUAL( first, 3 );
   BOOST_CHECK_EQUAL( last, 12 );
 }
@@ -45,7 +45,7 @@ BOOST_AUTO_TEST_CASE(UtilLocateDiffs2) {
     0x9f, 0xad, 0xf0, 0xbe, 0x42, 0xec, 0x0, 0xf8,
     0xce, 0x87, 0x00, 0xbb, 0xcc, 0xd9, 0x2e, 0x00
   };
-  const auto [first,last] = Util::LocateDiffs( a.data(), b.data(), a.size() );
+  const auto [first,last] = fuzzuf::utils::LocateDiffs( a.data(), b.data(), a.size() );
   BOOST_CHECK_EQUAL( first, 0 );
   BOOST_CHECK_EQUAL( last, 15 );
 }
@@ -59,7 +59,7 @@ BOOST_AUTO_TEST_CASE(UtilLocateDiffs3) {
     0x9f, 0xad, 0xf0, 0xbe, 0x42, 0xec, 0x0, 0xf8,
     0xce, 0x87, 0x00, 0xbb, 0xcc, 0xd9, 0x2e, 0x00
   };
-  const auto [first,last] = Util::LocateDiffs( a.data(), b.data(), a.size() );
+  const auto [first,last] = fuzzuf::utils::LocateDiffs( a.data(), b.data(), a.size() );
   BOOST_CHECK_EQUAL( first, -1 );
   BOOST_CHECK_EQUAL( last, -1 );
 }

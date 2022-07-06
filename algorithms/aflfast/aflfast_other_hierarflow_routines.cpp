@@ -15,7 +15,7 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see http://www.gnu.org/licenses/.
  */
-#include "fuzzuf/algorithms/afl/afl_other_hierarflow_routines.hpp"
+#include "fuzzuf/algorithms/aflfast/aflfast_other_hierarflow_routines.hpp"
 #include "fuzzuf/algorithms/aflfast/aflfast_state.hpp"
 #include "fuzzuf/algorithms/aflfast/aflfast_testcase.hpp"
 
@@ -34,7 +34,7 @@ AFLMidCalleeRef<AFLFastState> ApplyDetMutsTemplate<AFLFastState>::operator()(
     // So we can reload the file with mmap.
     testcase->input->LoadByMmap(); // no need to Unload
 
-    if (state.orig_perf && state.queued_paths > 10) {
+    if (state.orig_perf == 0 && state.queued_paths > 10) {
         this->SetResponseValue(true);
         return abandon_entry;
     }

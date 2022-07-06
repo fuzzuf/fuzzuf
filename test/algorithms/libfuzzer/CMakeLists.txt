@@ -2,7 +2,7 @@ add_executable( test-algorithms-libfuzzer-mutator mutator.cpp )
 target_link_libraries(
   test-algorithms-libfuzzer-mutator
   test-common
-  fuzzuf
+  fuzzuf_core
   ${FUZZUF_LIBRARIES}
   Boost::unit_test_framework
 )
@@ -18,7 +18,7 @@ set_target_properties(
 )
 set_target_properties(
   test-algorithms-libfuzzer-mutator
-  PROPERTIES LINK_FLAGS "${ADDITIONAL_COMPILE_FLAGS_STR}"
+  PROPERTIES LINK_FLAGS "${ADDITIONAL_LINK_FLAGS_STR}"
 )
 if( ENABLE_CLANG_TIDY )
   set_target_properties(
@@ -33,7 +33,7 @@ add_executable( test-algorithms-libfuzzer-dictionary dictionary.cpp )
 target_link_libraries(
   test-algorithms-libfuzzer-dictionary
   test-common
-  fuzzuf
+  fuzzuf_core
   ${FUZZUF_LIBRARIES}
   Boost::unit_test_framework
 )
@@ -49,7 +49,7 @@ set_target_properties(
 )
 set_target_properties(
   test-algorithms-libfuzzer-dictionary
-  PROPERTIES LINK_FLAGS "${ADDITIONAL_COMPILE_FLAGS_STR}"
+  PROPERTIES LINK_FLAGS "${ADDITIONAL_LINK_FLAGS_STR}"
 )
 if( ENABLE_CLANG_TIDY )
   set_target_properties(
@@ -65,7 +65,7 @@ add_executable( test-algorithms-libfuzzer-select_seed select_seed.cpp )
 target_link_libraries(
   test-algorithms-libfuzzer-select_seed
   test-common
-  fuzzuf
+  fuzzuf_core
   ${FUZZUF_LIBRARIES}
   Boost::unit_test_framework
 )
@@ -81,7 +81,7 @@ set_target_properties(
 )
 set_target_properties(
   test-algorithms-libfuzzer-select_seed
-  PROPERTIES LINK_FLAGS "${ADDITIONAL_COMPILE_FLAGS_STR}"
+  PROPERTIES LINK_FLAGS "${ADDITIONAL_LINK_FLAGS_STR}"
 )
 if( ENABLE_CLANG_TIDY )
   set_target_properties(
@@ -96,7 +96,7 @@ add_executable( test-algorithms-libfuzzer-feature feature.cpp )
 target_link_libraries(
   test-algorithms-libfuzzer-feature
   test-common
-  fuzzuf
+  fuzzuf_core
   ${FUZZUF_LIBRARIES}
   Boost::unit_test_framework
 )
@@ -112,7 +112,7 @@ set_target_properties(
 )
 set_target_properties(
   test-algorithms-libfuzzer-feature
-  PROPERTIES LINK_FLAGS "${ADDITIONAL_COMPILE_FLAGS_STR}"
+  PROPERTIES LINK_FLAGS "${ADDITIONAL_LINK_FLAGS_STR}"
 )
 if( ENABLE_CLANG_TIDY )
   set_target_properties(
@@ -127,7 +127,7 @@ add_executable( test-algorithms-libfuzzer-execute2 execute2.cpp )
 target_link_libraries(
   test-algorithms-libfuzzer-execute2
   test-common
-  fuzzuf
+  fuzzuf_core
   ${FUZZUF_LIBRARIES}
   Boost::unit_test_framework
 )
@@ -143,7 +143,7 @@ set_target_properties(
 )
 set_target_properties(
   test-algorithms-libfuzzer-execute2
-  PROPERTIES LINK_FLAGS "${ADDITIONAL_COMPILE_FLAGS_STR}"
+  PROPERTIES LINK_FLAGS "${ADDITIONAL_LINK_FLAGS_STR}"
 )
 if( ENABLE_CLANG_TIDY )
   set_target_properties(
@@ -159,7 +159,7 @@ add_executable( test-algorithms-libfuzzer-execute3 execute3.cpp )
 target_link_libraries(
   test-algorithms-libfuzzer-execute3
   test-common
-  fuzzuf
+  fuzzuf_core
   ${FUZZUF_LIBRARIES}
   Boost::unit_test_framework
 )
@@ -175,7 +175,7 @@ set_target_properties(
 )
 set_target_properties(
   test-algorithms-libfuzzer-execute3
-  PROPERTIES LINK_FLAGS "${ADDITIONAL_COMPILE_FLAGS_STR}"
+  PROPERTIES LINK_FLAGS "${ADDITIONAL_LINK_FLAGS_STR}"
 )
 if( ENABLE_CLANG_TIDY )
   set_target_properties(
@@ -191,7 +191,7 @@ add_executable( test-algorithms-libfuzzer-initialize initialize.cpp )
 target_link_libraries(
   test-algorithms-libfuzzer-initialize
   test-common
-  fuzzuf
+  fuzzuf_core
   ${FUZZUF_LIBRARIES}
   Boost::unit_test_framework
 )
@@ -207,7 +207,7 @@ set_target_properties(
 )
 set_target_properties(
   test-algorithms-libfuzzer-initialize
-  PROPERTIES LINK_FLAGS "${ADDITIONAL_COMPILE_FLAGS_STR}"
+  PROPERTIES LINK_FLAGS "${ADDITIONAL_LINK_FLAGS_STR}"
 )
 if( ENABLE_CLANG_TIDY )
   set_target_properties(
@@ -223,7 +223,7 @@ add_executable( test-algorithms-libfuzzer-symcc symcc.cpp )
 target_link_libraries(
   test-algorithms-libfuzzer-symcc
   test-common
-  fuzzuf
+  fuzzuf_core
   ${FUZZUF_LIBRARIES}
   Boost::unit_test_framework
 )
@@ -239,7 +239,7 @@ set_target_properties(
 )
 set_target_properties(
   test-algorithms-libfuzzer-symcc
-  PROPERTIES LINK_FLAGS "${ADDITIONAL_COMPILE_FLAGS_STR}"
+  PROPERTIES LINK_FLAGS "${ADDITIONAL_LINK_FLAGS_STR}"
 )
 if( ENABLE_CLANG_TIDY )
   set_target_properties(

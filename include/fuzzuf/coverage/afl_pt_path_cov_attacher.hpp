@@ -26,12 +26,14 @@
 
 #include "fuzzuf/coverage/shm_cov_attacher.hpp"
 
+namespace fuzzuf::coverage {
+
 /**
  * @class AFLPTPathCovAttacher
  * @brief Intel PT based PTrix-specific path sensitive bitmap attacher.
  */
 class AFLPTPathCovAttacher : public ShmCovAttacher {
-public:
+ public:
   static constexpr const char* SHM_ENV_VAR = "__AFL_SHM_ID";
 
   AFLPTPathCovAttacher(u32 map_size) : ShmCovAttacher(map_size) {}
@@ -40,4 +42,6 @@ public:
   }
 };
 
-#endif // FUZZUF_INCLUDE_COVERAGE_AFL_PT_PATH_COV_ATTACHER_HPP
+}  // namespace fuzzuf::coverage
+
+#endif  // FUZZUF_INCLUDE_COVERAGE_AFL_PT_PATH_COV_ATTACHER_HPP

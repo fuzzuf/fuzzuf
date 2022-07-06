@@ -56,8 +56,8 @@ static void AFLLoop(bool forksrv) {
   auto output_dir_opt = "--out_dir=" + output_dir.string();
   const char *forksrv_opt = forksrv ? "--forksrv=1" : "--forksrv=0";
 
-  int argc = 7;
-  const char *argv[] = {"fuzzuf", "aflfast", input_dir_opt.c_str(), output_dir_opt.c_str(), forksrv_opt, "../../put_binaries/libjpeg/libjpeg_turbo_fuzzer", "@@"};
+  const char *argv[] = {"fuzzuf", "aflfast", input_dir_opt.c_str(), output_dir_opt.c_str(), forksrv_opt, "../../put_binaries/libjpeg/libjpeg_turbo_fuzzer", "@@", nullptr};
+  int argc = static_cast<int>(sizeof(argv) / sizeof(const char *)) - 1; // subtract 1 for nullptr
   auto fuzzer = fuzzuf::cli::CreateFuzzerInstanceFromArgv(argc, argv);
 
   for (int i = 0; i < 1; i++) {

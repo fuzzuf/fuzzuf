@@ -1,7 +1,7 @@
 /*
  * fuzzuf
  * Copyright (C) 2021 Ricerca Security
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -28,37 +28,42 @@
 
 namespace fuzzuf::cli {
 
-std::unique_ptr<Fuzzer> CreateFuzzerInstanceFromArgv(int argc, const char **argv) {
-    // Explicitly enable logging to stdout as Logger does not get confirmed before parsing command line options
-    StdoutLogger::Enable();
+std::unique_ptr<fuzzer::Fuzzer> CreateFuzzerInstanceFromArgv(
+    int argc, const char **argv) {
+  // Explicitly enable logging to stdout as Logger does not get confirmed before
+  // parsing command line options
+  utils::StdoutLogger::Enable();
 
-    GlobalFuzzerOptions global_options;
+  GlobalFuzzerOptions global_options;
 
-    GlobalArgs global_args = {.argc = argc, .argv = argv};
-    FuzzerArgs fuzzer_args =
-        ParseGlobalOptionsForFuzzer(global_args, /* &mut */ global_options);
+  GlobalArgs global_args = {.argc = argc, .argv = argv};
+  FuzzerArgs fuzzer_args =
+      ParseGlobalOptionsForFuzzer(global_args, /* &mut */ global_options);
 
-    // Follow the command line, and initialize a logger instance which gets and saves the logs
-    StdoutLogger::Disable();
-    if (global_options.logger == Logger::Stdout) {
-        StdoutLogger::Enable();
-    } else if (global_options.logger == Logger::LogFile) {
-        if (global_options.log_file.has_value()) {
-            DEBUG("LogFile logger is enabled");
-            LogFileLogger::Init(global_options.log_file.value());
-        } else {
-            throw exceptions::cli_error("LogFile logger is specified, but log_file "
-                                        "is not specified. May be logic bug",
-                                        __FILE__, __LINE__);
-        }
+  // Follow the command line, and initialize a logger instance which gets and
+  // saves the logs
+  utils::StdoutLogger::Disable();
+  if (global_options.logger == utils::Logger::Stdout) {
+    utils::StdoutLogger::Enable();
+  } else if (global_options.logger == utils::Logger::LogFile) {
+    if (global_options.log_file.has_value()) {
+      DEBUG("LogFile logger is enabled");
+      utils::LogFileLogger::Init(global_options.log_file.value());
     } else {
-        throw exceptions::cli_error("Unsupported logger: " +
-                                      to_string(global_options.logger),
-                                    __FILE__, __LINE__);
+      throw exceptions::cli_error(
+          "LogFile logger is specified, but log_file "
+          "is not specified. May be logic bug",
+          __FILE__, __LINE__);
     }
+  } else {
+    throw exceptions::cli_error(
+        "Unsupported logger: " + to_string(global_options.logger), __FILE__,
+        __LINE__);
+  }
 
-    // Prepare a fuzzer specified by the command line as it states
-    return FuzzerBuilderRegister::Get(global_options.fuzzer)(fuzzer_args, global_options);
+  // Prepare a fuzzer specified by the command line as it states
+  return FuzzerBuilderRegister::Get(global_options.fuzzer)(fuzzer_args,
+                                                           global_options);
 }
 
-} // namespace fuzzuf::cli
+}  // namespace fuzzuf::cli

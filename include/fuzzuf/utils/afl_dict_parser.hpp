@@ -30,6 +30,8 @@
 #include "fuzzuf/utils/void_t.hpp"
 #include <boost/phoenix.hpp>
 #include <boost/spirit/include/qi.hpp>
+#include <boost/version.hpp>
+#include <boost/spirit/home/support/char_encoding/standard.hpp>
 #include <cstdint>
 #include <fcntl.h>
 #include <functional>
@@ -90,10 +92,10 @@ public:
       comment = ('#' >> *(qi::standard::blank |
                           qi::standard::graph))[qi::_pass = true];
     } else {
-      escaped_text = qi::as_string[*((qi::char_ - '"' - '\\') | escape)];
-      name = qi::as_string[+(qi::standard::char_ - '@' - '=' - '"' - '#' -
-                             qi::standard::space)];
-      comment = ('#' >> *(qi::standard::char_ - qi::eol))[qi::_pass = true];
+      escaped_text = qi::as_string[*((qi::byte_ - '"' - '\\') | escape)];
+      name = qi::as_string[+(qi::byte_ - '@' - '=' - '"' - '#' -
+                             ' ' - qi::eol )];
+      comment = ('#' >> *(qi::byte_ - qi::eol))[qi::_pass = true];
     }
 
     quoted_text =
@@ -191,6 +193,28 @@ auto LoadAFLDictionary(const std::string &filename_, T &dest, bool strict,
   const AFLDictRule<uint8_t *, T> rule(level, strict, eout);
   auto iter = mapped_file.begin().get();
   const auto end = mapped_file.end().get();
+#if BOOST_VERSION >= 107200
+  /**
+   * Since boost 1.72.0, Boost.Spirt requires input characters casted to int
+   * are in the range of 0x00 to 0xff. Otherwise, any qi::standard::* rules
+   * cause abort().
+   * As Boost.Spirit casts input characters to signed char internally before
+   * it casts to int, 8bit characters higher than 0x7f causes crash.
+   * According by the implementation, it looks like a unexpected behaviour yet
+   * it need to be avoided.
+   */
+  if( strict ) {
+    if( std::find_if(
+      iter,
+      end,
+      []( char ch ) {
+        return !boost::spirit::char_encoding::standard::strict_ischar( ch );
+      }
+    ) != end )
+      throw exceptions::invalid_file("invalid dictionary file", __FILE__,
+                                     __LINE__);
+  }
+#endif
   T temp;
   if (!qi::parse(iter, end, rule, temp) || iter != end)
     throw exceptions::invalid_file("invalid dictionary file", __FILE__,

@@ -1,7 +1,7 @@
 /*
  * fuzzuf
  * Copyright (C) 2021 Ricerca Security
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -22,16 +22,11 @@
 #pragma once
 #include <string>
 
+namespace fuzzuf::utils {
 // Check if non-decimal charactors does not exists to perform strict string to
 // int conversion
-bool CheckIfStringIsDecimal(std::string &str) {
-  if (str.find_first_not_of("0123456789") != std::string::npos) {
-    return false;
-  }
-  return true;
-}
+bool CheckIfStringIsDecimal(std::string &str);
 
-bool CheckIfStringIsDecimal(const char *cstr) {
-  std::string str(cstr);
-  return CheckIfStringIsDecimal(str);
-}
+bool CheckIfStringIsDecimal(const char *cstr);
+
+}  // namespace fuzzuf::utils

@@ -1,7 +1,7 @@
 /*
  * fuzzuf
  * Copyright (C) 2021 Ricerca Security
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -17,37 +17,39 @@
  */
 #include "fuzzuf/exec_input/exec_input_set.hpp"
 
+namespace fuzzuf::exec_input {
+
 ExecInputSet::ExecInputSet() {}
 
 ExecInputSet::~ExecInputSet() {}
 
-size_t ExecInputSet::size(void) {
-    return elems.size();
-}
+size_t ExecInputSet::size(void) { return elems.size(); }
 
-NullableRef<ExecInput> ExecInputSet::get_ref(u64 id) {
-    auto itr = elems.find(id);
-    if (itr == elems.end()) return std::nullopt;
-    return *itr->second;
+utils::NullableRef<ExecInput> ExecInputSet::get_ref(u64 id) {
+  auto itr = elems.find(id);
+  if (itr == elems.end()) return std::nullopt;
+  return *itr->second;
 }
 
 std::shared_ptr<ExecInput> ExecInputSet::get_shared(u64 id) {
-    auto itr = elems.find(id);
-    if (itr == elems.end()) return nullptr;
-    return itr->second;
+  auto itr = elems.find(id);
+  if (itr == elems.end()) return nullptr;
+  return itr->second;
 }
 
 void ExecInputSet::erase(u64 id) {
-    auto itr = elems.find(id);
-    if (itr == elems.end()) return;
+  auto itr = elems.find(id);
+  if (itr == elems.end()) return;
 
-    elems.erase(itr);
+  elems.erase(itr);
 }
 
 std::vector<u64> ExecInputSet::get_ids(void) {
-    std::vector<u64> ids;
-    for (auto& itr : elems) {
-        ids.emplace_back(itr.first);
-    }
-    return ids;
+  std::vector<u64> ids;
+  for (auto& itr : elems) {
+    ids.emplace_back(itr.first);
+  }
+  return ids;
 }
+
+}  // namespace fuzzuf::exec_input

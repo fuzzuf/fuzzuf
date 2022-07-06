@@ -1,7 +1,7 @@
 /*
  * fuzzuf
  * Copyright (C) 2022 Ricerca Security
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -24,11 +24,11 @@
 #define FUZZUF_INCLUDE_ALGORITHMS_NAUTILUS_FUZZER_UPDATE_HIERARFLOW_ROUTINES_HPP
 
 #include <memory>
+
 #include "fuzzuf/algorithms/nautilus/fuzzer/state.hpp"
 #include "fuzzuf/hierarflow/hierarflow_intermediates.hpp"
 #include "fuzzuf/hierarflow/hierarflow_node.hpp"
 #include "fuzzuf/hierarflow/hierarflow_routine.hpp"
-
 
 namespace fuzzuf::algorithm::nautilus::fuzzer::routine::update {
 
@@ -37,19 +37,20 @@ namespace fuzzuf::algorithm::nautilus::fuzzer::routine::update {
  */
 // FuzzLoop <--> UpdateState
 using IUpdateState = void(void);
-using RUpdateState = NullableRef<HierarFlowCallee<IUpdateState>>;
+using RUpdateState =
+    utils::NullableRef<hierarflow::HierarFlowCallee<IUpdateState>>;
 // UpdateState <--> N/A
 using OUpdateState = void(void);
 
 /* update_state */
-struct UpdateState : HierarFlowRoutine<IUpdateState, OUpdateState> {
+struct UpdateState : hierarflow::HierarFlowRoutine<IUpdateState, OUpdateState> {
   UpdateState(NautilusState& state) : state(state) {}
   RUpdateState operator()(void);
 
-private:
+ private:
   NautilusState& state;
 };
 
-} // namespace fuzzuf::algorithm::nautilus::fuzzer::routine::update
+}  // namespace fuzzuf::algorithm::nautilus::fuzzer::routine::update
 
 #endif

@@ -334,9 +334,9 @@ constexpr u32 GetTminSetSteps(State&) {
 }
 
 /* Maximum dictionary token size (-x), in bytes: */
-template<class State>
-constexpr u32 GetMaxDictFile(State&) { 
-    return 128;
+template<class Testcase>
+constexpr u32 GetMaxDictFile( AFLStateTemplate<Testcase> &state ) { 
+    return state.extras.empty() ? 0u : u32( state.extras.back().data.size() );
 }
 
 /* Length limits for auto-detected dictionary tokens: */

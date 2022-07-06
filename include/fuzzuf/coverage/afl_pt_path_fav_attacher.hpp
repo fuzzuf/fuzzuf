@@ -26,12 +26,15 @@
 
 #include "fuzzuf/coverage/shm_cov_attacher.hpp"
 
+namespace fuzzuf::coverage {
+
 /**
  * @class AFLPTPathFavAttacher
- * @brief Intel PT-based PTrix-specific bitmap attacher used for calculating favorite seeds.
+ * @brief Intel PT-based PTrix-specific bitmap attacher used for calculating
+ * favorite seeds.
  */
 class AFLPTPathFavAttacher : public ShmCovAttacher {
-public:
+ public:
   static constexpr const char* SHM_ENV_VAR = "__AFL_PTFAV_SHM_ID";
 
   AFLPTPathFavAttacher(u32 map_size) : ShmCovAttacher(map_size) {}
@@ -40,4 +43,6 @@ public:
   }
 };
 
-#endif // FUZZUF_INCLUDE_COVERAGE_AFL_PT_PATH_FAV_ATTACHER_HPP
+}  // namespace fuzzuf::coverage
+
+#endif  // FUZZUF_INCLUDE_COVERAGE_AFL_PT_PATH_FAV_ATTACHER_HPP

@@ -23,8 +23,8 @@
 #include "fuzzuf/utils/common.hpp"
 #include "random_data.hpp"
 BOOST_AUTO_TEST_CASE(UtilCountBytes) {
-  BOOST_CHECK_EQUAL( ( Util::CountNon255Bytes( random_data1.data(), random_data1.size() ) ), 65260 );
-  BOOST_CHECK_EQUAL( ( Util::CountNon255Bytes( random_data2.data(), random_data2.size() ) ), 478 );
-  BOOST_CHECK_EQUAL( ( Util::CountNon255Bytes( random_data3.data(), random_data3.size() ) ), 111 );
+  BOOST_CHECK_EQUAL( ( fuzzuf::utils::CountNon255Bytes( random_data1.data(), random_data1.size() ) ), 65260 );
+  BOOST_CHECK_EQUAL( ( fuzzuf::utils::CountNon255Bytes( random_data2.data(), random_data2.size() ) ), 478 );
+  BOOST_CHECK_EQUAL( ( fuzzuf::utils::CountNon255Bytes( random_data3.data(), random_data3.size() ) ), 111 );
 }
 

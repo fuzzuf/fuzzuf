@@ -20,9 +20,9 @@
 
 namespace fuzzuf::algorithm::ijon {
 
-IJONTestcase::IJONTestcase(std::shared_ptr<OnDiskExecInput> input)
+IJONTestcase::IJONTestcase(std::shared_ptr<exec_input::OnDiskExecInput> input)
     : AFLTestcase(input) {}
 
 IJONTestcase::~IJONTestcase() {}
 
-} // namespace fuzzuf::algorithm::ijon
+}  // namespace fuzzuf::algorithm::ijon

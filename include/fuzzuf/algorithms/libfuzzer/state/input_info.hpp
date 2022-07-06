@@ -1,7 +1,7 @@
 /*
  * fuzzuf
  * Copyright (C) 2021 Ricerca Security
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -21,10 +21,6 @@
  */
 #ifndef FUZZUF_INCLUDE_ALGORITHM_LIBFUZZER_STATE_INPUT_INFO_HPP
 #define FUZZUF_INCLUDE_ALGORITHM_LIBFUZZER_STATE_INPUT_INFO_HPP
-#include "fuzzuf/algorithms/libfuzzer/state/testcase_id.hpp"
-#include "fuzzuf/feedback/exit_status_feedback.hpp"
-#include "fuzzuf/utils/range_traits.hpp"
-#include "fuzzuf/utils/void_t.hpp"
 #include <chrono>
 #include <cstddef>
 #include <cstdint>
@@ -34,13 +30,20 @@
 #include <utility>
 #include <vector>
 
+#include "fuzzuf/algorithms/libfuzzer/state/testcase_id.hpp"
+#include "fuzzuf/feedback/exit_status_feedback.hpp"
+#include "fuzzuf/utils/range_traits.hpp"
+#include "fuzzuf/utils/void_t.hpp"
+
 namespace fuzzuf::algorithm::libfuzzer {
 
 /**
  * @class InputInfo
  * @brief execution result
- * This class contains values retrived from executor and scratch values to calculate weight
- * All values in Input Info of original implementation has been ported, yet some of them are not used due to some functionalities are not ported.
+ * This class contains values retrived from executor and scratch values to
+ * calculate weight All values in Input Info of original implementation has been
+ * ported, yet some of them are not used due to some functionalities are not
+ * ported.
  *
  * Corresponding code of original libFuzzer implementation
  * https://github.com/llvm/llvm-project/blob/llvmorg-12.0.1/compiler-rt/lib/fuzzer/FuzzerCorpus.h#L28
@@ -88,7 +91,8 @@ struct InputInfo {
   bool has_focus_function = false;
   /// this execution result replaced existing one
   bool reduced = false;
-  /// If true, since values affecting to the energy has changed, energy need to be recalculated.
+  /// If true, since values affecting to the energy has changed, energy need to
+  /// be recalculated.
   bool needs_energy_update = false;
   /**
    * Importance of this execution result.
@@ -106,7 +110,7 @@ struct InputInfo {
    * fuzzuf specific variables
    * status code of the target execution
    */
-  PUTExitReasonType status = PUTExitReasonType::FAULT_NONE;
+  feedback::PUTExitReasonType status = feedback::PUTExitReasonType::FAULT_NONE;
   /// signal number that caused the target to terminate
   unsigned int signal = 0;
   /// weight of this execution result
@@ -122,8 +126,9 @@ struct InputInfo {
   std::string sha1;
   /**
    * Name of the input value
-   * If the input value has name and requested to make persistent, the name is used as the filename.
-   * If the input value doesn't have name but requested to make persistent, the sha1 is used as the filename.
+   * If the input value has name and requested to make persistent, the name is
+   * used as the filename. If the input value doesn't have name but requested to
+   * make persistent, the sha1 is used as the filename.
    */
   std::string name;
   /// The length of input value.
@@ -145,56 +150,56 @@ struct is_input_info<
         std::is_same_v<
             utils::type_traits::RemoveCvrT<decltype(std::declval<T &>().id)>,
             testcase_id_t> &&
-        std::is_same_v<utils::type_traits::RemoveCvrT<decltype(
-                           std::declval<T &>().enabled)>,
+        std::is_same_v<utils::type_traits::RemoveCvrT<
+                           decltype(std::declval<T &>().enabled)>,
                        bool> &&
-        std::is_void_v<utils::void_t<decltype(
-            std::chrono::duration_cast<std::chrono::microseconds>(
-                std::declval<utils::type_traits::RemoveCvrT<decltype(
-                    std::declval<T &>().time_of_unit)>>()))>> &&
-        std::is_integral_v<utils::type_traits::RemoveCvrT<decltype(
-            std::declval<T &>().features_count)>> &&
-        std::is_integral_v<utils::type_traits::RemoveCvrT<decltype(
-            std::declval<T &>().executed_mutations_count)>> &&
-        std::is_same_v<utils::type_traits::RemoveCvrT<decltype(
-                           std::declval<T &>().never_reduce)>,
+        std::is_void_v<utils::void_t<
+            decltype(std::chrono::duration_cast<std::chrono::microseconds>(
+                std::declval<utils::type_traits::RemoveCvrT<
+                    decltype(std::declval<T &>().time_of_unit)>>()))>> &&
+        std::is_integral_v<utils::type_traits::RemoveCvrT<
+            decltype(std::declval<T &>().features_count)>> &&
+        std::is_integral_v<utils::type_traits::RemoveCvrT<
+            decltype(std::declval<T &>().executed_mutations_count)>> &&
+        std::is_same_v<utils::type_traits::RemoveCvrT<
+                           decltype(std::declval<T &>().never_reduce)>,
                        bool> &&
-        std::is_same_v<utils::type_traits::RemoveCvrT<decltype(
-                           std::declval<T &>().may_delete_file)>,
+        std::is_same_v<utils::type_traits::RemoveCvrT<
+                           decltype(std::declval<T &>().may_delete_file)>,
                        bool> &&
-        std::is_same_v<utils::type_traits::RemoveCvrT<decltype(
-                           std::declval<T &>().has_focus_function)>,
+        std::is_same_v<utils::type_traits::RemoveCvrT<
+                           decltype(std::declval<T &>().has_focus_function)>,
                        bool> &&
-        std::is_same_v<utils::type_traits::RemoveCvrT<decltype(
-                           std::declval<T &>().reduced)>,
+        std::is_same_v<utils::type_traits::RemoveCvrT<
+                           decltype(std::declval<T &>().reduced)>,
                        bool> &&
-        std::is_same_v<utils::type_traits::RemoveCvrT<decltype(
-                           std::declval<T &>().needs_energy_update)>,
+        std::is_same_v<utils::type_traits::RemoveCvrT<
+                           decltype(std::declval<T &>().needs_energy_update)>,
                        bool> &&
-        std::is_floating_point_v<utils::type_traits::RemoveCvrT<decltype(
-            std::declval<T &>().energy)>> &&
-        std::is_floating_point_v<utils::type_traits::RemoveCvrT<decltype(
-            std::declval<T &>().sum_incidence)>> &&
+        std::is_floating_point_v<utils::type_traits::RemoveCvrT<
+            decltype(std::declval<T &>().energy)>> &&
+        std::is_floating_point_v<utils::type_traits::RemoveCvrT<
+            decltype(std::declval<T &>().sum_incidence)>> &&
         std::is_integral_v<
-            utils::range::RangeValueT<utils::type_traits::RemoveCvrT<decltype(
-                std::declval<T &>().unique_feature_set)>>> &&
-        std::is_same_v<utils::type_traits::RemoveCvrT<decltype(
-                           std::declval<T &>().status)>,
-                       PUTExitReasonType> &&
-        std::is_integral_v<utils::type_traits::RemoveCvrT<decltype(
-            std::declval<T &>().signal)>> &&
-        std::is_floating_point_v<utils::type_traits::RemoveCvrT<decltype(
-            std::declval<T &>().weight)>> &&
-        std::is_integral_v<utils::type_traits::RemoveCvrT<decltype(
-            std::declval<T &>().found_unique_features)>> &&
-        std::is_same_v<utils::type_traits::RemoveCvrT<decltype(
-                           std::declval<T &>().added_to_corpus)>,
+            utils::range::RangeValueT<utils::type_traits::RemoveCvrT<
+                decltype(std::declval<T &>().unique_feature_set)>>> &&
+        std::is_same_v<utils::type_traits::RemoveCvrT<
+                           decltype(std::declval<T &>().status)>,
+                       feedback::PUTExitReasonType> &&
+        std::is_integral_v<utils::type_traits::RemoveCvrT<
+            decltype(std::declval<T &>().signal)>> &&
+        std::is_floating_point_v<utils::type_traits::RemoveCvrT<
+            decltype(std::declval<T &>().weight)>> &&
+        std::is_integral_v<utils::type_traits::RemoveCvrT<
+            decltype(std::declval<T &>().found_unique_features)>> &&
+        std::is_same_v<utils::type_traits::RemoveCvrT<
+                           decltype(std::declval<T &>().added_to_corpus)>,
                        bool> &&
         std::is_same_v<
             utils::type_traits::RemoveCvrT<decltype(std::declval<T &>().sha1)>,
             std::string> &&
-        std::is_integral_v<utils::type_traits::RemoveCvrT<decltype(
-            std::declval<T &>().input_size)>> &&
+        std::is_integral_v<utils::type_traits::RemoveCvrT<
+            decltype(std::declval<T &>().input_size)>> &&
         std::is_void_v<utils::void_t<decltype(std::declval<T &>().updateEnergy(
             std::declval<std::size_t>(), std::declval<bool>(),
             std::declval<std::chrono::microseconds>()))>> &&
@@ -205,7 +210,8 @@ struct is_input_info<
             utils::void_t<decltype(std::declval<T &>().updateFeatureFrequency(
                 std::declval<std::uint32_t>()))>> &&
         std::is_convertible_v<T, bool>>> : public std::true_type {};
-template <typename T> constexpr bool is_input_info_v = is_input_info<T>::value;
+template <typename T>
+constexpr bool is_input_info_v = is_input_info<T>::value;
 
 /**
  * Serialize InputInfo into string
@@ -217,6 +223,6 @@ template <typename T> constexpr bool is_input_info_v = is_input_info<T>::value;
 auto toString(std::string &dest, const InputInfo &value,
               std::size_t indent_count, const std::string &indent) -> bool;
 
-} // namespace fuzzuf::algorithm::libfuzzer
+}  // namespace fuzzuf::algorithm::libfuzzer
 
 #endif

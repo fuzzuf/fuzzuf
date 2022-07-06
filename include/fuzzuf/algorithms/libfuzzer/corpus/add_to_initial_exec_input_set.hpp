@@ -1,7 +1,7 @@
 /*
  * fuzzuf
  * Copyright (C) 2021 Ricerca Security
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -21,10 +21,11 @@
  */
 #ifndef FUZZUF_INCLUDE_ALGORITHM_LIBFUZZER_CORPUS_ADD_TO_INITIAL_INPUT_SET_HPP
 #define FUZZUF_INCLUDE_ALGORITHM_LIBFUZZER_CORPUS_ADD_TO_INITIAL_INPUT_SET_HPP
-#include "fuzzuf/exec_input/exec_input_set.hpp"
-#include "fuzzuf/utils/range_traits.hpp"
 #include <cassert>
 #include <type_traits>
+
+#include "fuzzuf/exec_input/exec_input_set.hpp"
+#include "fuzzuf/utils/range_traits.hpp"
 
 namespace fuzzuf::algorithm::libfuzzer::corpus {
 
@@ -37,7 +38,7 @@ namespace fuzzuf::algorithm::libfuzzer::corpus {
  * @param range Initial Input value to be inserted
  */
 template <typename Range>
-auto addToInitialExecInputSet(ExecInputSet &initial_exec_input_set,
+auto addToInitialExecInputSet(exec_input::ExecInputSet &initial_exec_input_set,
                               const Range &range)
     -> std::enable_if_t<utils::range::has_data_v<Range>> {
   assert(!utils::range::rangeEmpty(range));
@@ -56,7 +57,7 @@ auto addToInitialExecInputSet(ExecInputSet &initial_exec_input_set,
  * @param range Initial Input value to be inserted
  */
 template <typename Range>
-auto addToInitialExecInputSet(ExecInputSet &initial_exec_input_set,
+auto addToInitialExecInputSet(exec_input::ExecInputSet &initial_exec_input_set,
                               const Range &range)
     -> std::enable_if_t<!utils::range::has_data_v<Range>> {
   assert(!utils::range::rangeEmpty(range));
@@ -67,6 +68,6 @@ auto addToInitialExecInputSet(ExecInputSet &initial_exec_input_set,
   assert(exec_input);
 }
 
-} // namespace fuzzuf::algorithm::libfuzzer::corpus
+}  // namespace fuzzuf::algorithm::libfuzzer::corpus
 
 #endif

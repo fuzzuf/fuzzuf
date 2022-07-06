@@ -31,6 +31,8 @@
 #include "fuzzuf/feedback/put_exit_reason_type.hpp"
 #include "fuzzuf/logger/logger.hpp"
 
+namespace fuzzuf::executor {
+
 Executor::Executor(  
     const std::vector<std::string> &argv,
     u32 exec_timelimit_ms,
@@ -58,8 +60,8 @@ Executor::Executor(
  *  - enable null_fd member. In other word, open "/dev/null", then assign the file descriptor to null_fd.
  */
 void Executor::OpenExecutorDependantFiles() {
-    input_fd = Util::OpenFile(path_str_to_write_input, O_RDWR | O_CREAT | O_CLOEXEC, 0600);
-    null_fd = Util::OpenFile("/dev/null", O_RDONLY | O_CLOEXEC);
+    input_fd = fuzzuf::utils::OpenFile(path_str_to_write_input, O_RDWR | O_CREAT | O_CLOEXEC, 0600);
+    null_fd = fuzzuf::utils::OpenFile("/dev/null", O_RDONLY | O_CLOEXEC);
     assert(input_fd > -1 && null_fd > -1);
 }
 
@@ -82,10 +84,10 @@ void Executor::OpenExecutorDependantFiles() {
 void Executor::WriteTestInputToFile(const u8 *buf, u32 len) {
     assert(input_fd > -1);
 
-    Util::SeekFile(input_fd, 0, SEEK_SET);
-    Util::WriteFile(input_fd, buf, len);
-    if (Util::TruncateFile(input_fd, len)) ERROR("ftruncate() failed");
-    Util::SeekFile(input_fd, 0, SEEK_SET);
+    fuzzuf::utils::SeekFile(input_fd, 0, SEEK_SET);
+    fuzzuf::utils::WriteFile(input_fd, buf, len);
+    if (fuzzuf::utils::TruncateFile(input_fd, len)) ERROR("ftruncate() failed");
+    fuzzuf::utils::SeekFile(input_fd, 0, SEEK_SET);
 }
 
 /*
@@ -101,3 +103,6 @@ void Executor::KillChildWithoutWait() {
         child_pid = -1;
     }
 }
+
+}
+

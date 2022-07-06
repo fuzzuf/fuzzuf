@@ -1,6 +1,7 @@
 *.swp
 *.log
 *.core
+core
 
 ### VUzzer-related
 bb.out

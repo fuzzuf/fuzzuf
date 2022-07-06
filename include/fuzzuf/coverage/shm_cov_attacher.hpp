@@ -28,29 +28,27 @@
 #include "fuzzuf/logger/logger.hpp"
 #include "fuzzuf/utils/common.hpp"
 
+namespace fuzzuf::coverage {
+
 /**
  * @class ShmCovAttacher
  * @brief Base class that attaches coverage stored in shared memory.
  */
 class ShmCovAttacher {
-public:
+ public:
   static constexpr int INVALID_SHMID = -1;
 
   u8 *trace_bits;
 
   ShmCovAttacher(u32 map_size)
-  : trace_bits(nullptr),
-    map_size(map_size),
-    shmid(INVALID_SHMID) {}
+      : trace_bits(nullptr), map_size(map_size), shmid(INVALID_SHMID) {}
 
-  ~ShmCovAttacher() {
-    Erase();
-  }
+  ~ShmCovAttacher() { Erase(); }
 
-  ShmCovAttacher(const ShmCovAttacher&) = delete;
+  ShmCovAttacher(const ShmCovAttacher &) = delete;
   ShmCovAttacher(ShmCovAttacher &&) = delete;
-  ShmCovAttacher &operator=(const ShmCovAttacher&) = delete;
-  ShmCovAttacher &operator=(ShmCovAttacher&&) = delete;
+  ShmCovAttacher &operator=(const ShmCovAttacher &) = delete;
+  ShmCovAttacher &operator=(ShmCovAttacher &&) = delete;
   ShmCovAttacher() = delete;
 
   void Setup(void) {
@@ -92,31 +90,27 @@ public:
     }
   }
 
-  virtual u32 GetMapSize(void) {
-    return map_size;
+  virtual u32 GetMapSize(void) { return map_size; }
+
+  virtual int GetShmID(void) { return shmid; }
+
+  feedback::InplaceMemoryFeedback GetFeedback(void) {
+    return feedback::InplaceMemoryFeedback(trace_bits, map_size, lock);
   }
 
-  virtual int GetShmID(void) {
-    return shmid;
-  }
+  long GetLockUseCount(void) { return lock.use_count(); }
 
-  InplaceMemoryFeedback GetFeedback(void) {
-    return InplaceMemoryFeedback(trace_bits, map_size, lock);
-  }
-
-  long GetLockUseCount(void) {
-    return lock.use_count();
-  }
-
-protected:
+ protected:
   // FIXME: we want to change the type of these variables to u64.
   // But to do this, we have to modify InplaceFeedback and everything using it.
   const u32 map_size;
 
   std::shared_ptr<u8> lock;
 
-private:
+ private:
   int shmid;
 };
 
-#endif // FUZZUF_INCLUDE_COVERAGE_SHM_COV_ATTACHER_HPP
+}  // namespace fuzzuf::coverage
+
+#endif  // FUZZUF_INCLUDE_COVERAGE_SHM_COV_ATTACHER_HPP

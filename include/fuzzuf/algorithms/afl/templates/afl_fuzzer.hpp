@@ -29,7 +29,7 @@ AFLFuzzerTemplate<State>::AFLFuzzerTemplate(
 ) :
     state(std::move(state_ref))
 {
-    state->start_time = Util::GetCurTimeMs();
+    state->start_time = fuzzuf::utils::GetCurTimeMs();
 
     BuildFuzzFlow();
 
@@ -110,6 +110,7 @@ void AFLFuzzerTemplate<State>::BuildFuzzFlow() {
           || arith << execute.HardLink() << normal_update.HardLink()
           || interest << execute.HardLink() << normal_update.HardLink()
           || user_dict_overwrite << execute.HardLink() << normal_update.HardLink()
+          || user_dict_insert << execute.HardLink() << normal_update.HardLink()
           || auto_dict_overwrite << execute.HardLink() << normal_update.HardLink()
          )
        || apply_rand_muts << (

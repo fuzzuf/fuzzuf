@@ -1,7 +1,7 @@
 /*
  * fuzzuf
  * Copyright (C) 2021 Ricerca Security
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -21,6 +21,8 @@
  */
 #ifndef FUZZUF_INCLUDE_ALGORITHM_LIBFUZZER_HIERARFLOW_APPEND_HPP
 #define FUZZUF_INCLUDE_ALGORITHM_LIBFUZZER_HIERARFLOW_APPEND_HPP
+#include <tuple>
+
 #include "fuzzuf/algorithms/libfuzzer/hierarflow/simple_function.hpp"
 #include "fuzzuf/algorithms/libfuzzer/hierarflow/standard_end.hpp"
 #include "fuzzuf/algorithms/libfuzzer/hierarflow/standard_typedef.hpp"
@@ -29,7 +31,6 @@
 #include "fuzzuf/utils/call_with_nth.hpp"
 #include "fuzzuf/utils/range_traits.hpp"
 #include "fuzzuf/utils/type_traits/remove_cvr.hpp"
-#include <tuple>
 
 namespace fuzzuf::algorithm::libfuzzer {
 
@@ -40,10 +41,11 @@ namespace fuzzuf::algorithm::libfuzzer {
  * @tparam F Function type to define what arguments passes through this node.
  * @tparam Path Struct path to define which value to to use.
  */
-template <typename F, typename Path> struct StaticAppend {};
+template <typename F, typename Path>
+struct StaticAppend {};
 template <typename R, typename... Args, typename Path>
 struct StaticAppend<R(Args...), Path>
-    : public HierarFlowRoutine<R(Args...), R(Args...)> {
+    : public hierarflow::HierarFlowRoutine<R(Args...), R(Args...)> {
   FUZZUF_ALGORITHM_LIBFUZZER_HIERARFLOW_STANDARD_TYPEDEFS
   /**
    * Constructor
@@ -63,7 +65,7 @@ struct StaticAppend<R(Args...), Path>
     FUZZUF_ALGORITHM_LIBFUZZER_HIERARFLOW_STANDARD_END(StaticAppend)
   }
 
-private:
+ private:
   utils::type_traits::RemoveCvrT<
       utils::struct_path::PointedTypeT<R(Args...), Path>>
       value;
@@ -78,5 +80,5 @@ private:
  */
 FUZZUF_ALGORITHM_LIBFUZZER_HIERARFLOW_SIMPLE_FUNCTION(DynamicAppend,
                                                       utils::range::append)
-} // namespace fuzzuf::algorithm::libfuzzer
+}  // namespace fuzzuf::algorithm::libfuzzer
 #endif

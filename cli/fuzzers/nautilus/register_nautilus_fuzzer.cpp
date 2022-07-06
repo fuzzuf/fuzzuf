@@ -1,7 +1,7 @@
 /*
  * fuzzuf
  * Copyright (C) 2022 Ricerca Security
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -16,15 +16,15 @@
  * along with this program.  If not, see http://www.gnu.org/licenses/.
  */
 #include "fuzzuf/algorithms/nautilus/fuzzer/fuzzer.hpp"
-#include "fuzzuf/cli/fuzzer_builder_register.hpp"
 #include "fuzzuf/cli/fuzzer/nautilus/build_nautilus_fuzzer_from_args.hpp"
+#include "fuzzuf/cli/fuzzer_builder_register.hpp"
 #include "fuzzuf/executor/afl_executor_interface.hpp"
 
 namespace fuzzuf::cli::fuzzer::nautilus {
 
 static FuzzerBuilderRegister global_nautilus_register(
-  "nautilus",
-  BuildNautilusFuzzerFromArgs<Fuzzer, NautilusFuzzer, executor::AFLExecutorInterface>
-);
+    "nautilus",
+    BuildNautilusFuzzerFromArgs<fuzzuf::fuzzer::Fuzzer, NautilusFuzzer,
+                                executor::AFLExecutorInterface>);
 
-} // namespace fuzzuf::cli::fuzzer::nautilus
+}  // namespace fuzzuf::cli::fuzzer::nautilus

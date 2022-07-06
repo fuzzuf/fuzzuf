@@ -1,7 +1,7 @@
 /*
  * fuzzuf
  * Copyright (C) 2021 Ricerca Security
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -22,15 +22,17 @@
 #include "fuzzuf/exec_input/on_memory_exec_input.hpp"
 #include "fuzzuf/feedback/persistent_memory_feedback.hpp"
 
-struct PythonTestcase {
-    explicit PythonTestcase(
-        std::shared_ptr<OnMemoryExecInput> input,
-        PersistentMemoryFeedback &&afl_feed,
-        PersistentMemoryFeedback &&bb_feed
-    );
-    ~PythonTestcase();
+namespace fuzzuf::bindings::python {
 
-    std::shared_ptr<OnMemoryExecInput> input;
-    PersistentMemoryFeedback afl_feed;
-    PersistentMemoryFeedback  bb_feed;
+struct PythonTestcase {
+  explicit PythonTestcase(std::shared_ptr<exec_input::OnMemoryExecInput> input,
+                          feedback::PersistentMemoryFeedback &&afl_feed,
+                          feedback::PersistentMemoryFeedback &&bb_feed);
+  ~PythonTestcase();
+
+  std::shared_ptr<exec_input::OnMemoryExecInput> input;
+  feedback::PersistentMemoryFeedback afl_feed;
+  feedback::PersistentMemoryFeedback bb_feed;
 };
+
+}  // namespace fuzzuf::bindings::python

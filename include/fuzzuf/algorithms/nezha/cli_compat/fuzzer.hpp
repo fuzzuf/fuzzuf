@@ -1,7 +1,7 @@
 /*
  * fuzzuf
  * Copyright (C) 2021 Ricerca Security
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -22,13 +22,6 @@
 #ifndef FUZZUF_INCLUDE_ALGORITHM_NEZHA_FUZZER_HPP
 #define FUZZUF_INCLUDE_ALGORITHM_LNEZHA_FUZZER_HPP
 
-#include "fuzzuf/algorithms/nezha/cli_compat/variables.hpp"
-#include "fuzzuf/algorithms/nezha/state.hpp"
-#include "fuzzuf/cli/fuzzer_args.hpp"
-#include "fuzzuf/fuzzer/fuzzer.hpp"
-#include "fuzzuf/utils/node_tracer.hpp"
-#include "fuzzuf/utils/range_traits.hpp"
-#include "fuzzuf/utils/type_traits/replace_return_type.hpp"
 #include <chrono>
 #include <cstddef>
 #include <functional>
@@ -36,20 +29,30 @@
 #include <variant>
 #include <vector>
 
+#include "fuzzuf/algorithms/nezha/cli_compat/variables.hpp"
+#include "fuzzuf/algorithms/nezha/state.hpp"
+#include "fuzzuf/cli/fuzzer_args.hpp"
+#include "fuzzuf/fuzzer/fuzzer.hpp"
+#include "fuzzuf/utils/node_tracer.hpp"
+#include "fuzzuf/utils/range_traits.hpp"
+#include "fuzzuf/utils/type_traits/replace_return_type.hpp"
+
+namespace fuzzuf::cli {
 struct GlobalFuzzerOptions;
+}
 
 namespace fuzzuf::algorithm::nezha {
 
-class NezhaFuzzer : public ::Fuzzer {
+class NezhaFuzzer : public fuzzer::Fuzzer {
   /// Fuzzer signature ( status code difference as a difference of targets )
-  using Func = bool(libfuzzer::Variables &, // common libFuzzer variables
-                    Variables &,            // Nezha specific variables
+  using Func = bool(libfuzzer::Variables &,  // common libFuzzer variables
+                    Variables &,             // Nezha specific variables
                     utils::DumpTracer &, utils::ElapsedTimeTracer &);
 
   using wrapped = utils::type_traits::replace_return_type_t<void, Func>;
 
-public:
-  NezhaFuzzer(const FuzzerArgs &, const GlobalFuzzerOptions &,
+ public:
+  NezhaFuzzer(const cli::FuzzerArgs &, const cli::GlobalFuzzerOptions &,
               std::function<void(std::string &&)> &&);
   virtual ~NezhaFuzzer() {}
   virtual void OneLoop();
@@ -59,7 +62,7 @@ public:
     return create_info;
   }
 
-private:
+ private:
   libfuzzer::FuzzerCreateInfo create_info;
   libfuzzer::Variables libfuzzer_variables;
   Variables nezha_variables;
@@ -72,6 +75,6 @@ private:
   utils::DumpTracer node_tracer;
   utils::ElapsedTimeTracer ett;
 };
-} // namespace fuzzuf::algorithm::nezha
+}  // namespace fuzzuf::algorithm::nezha
 
 #endif

@@ -1,7 +1,7 @@
 /*
  * fuzzuf
  * Copyright (C) 2022 Ricerca Security
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -25,37 +25,35 @@
 
 #include <memory>
 #include <nlohmann/json.hpp>
+
 #include "fuzzuf/algorithms/nautilus/fuzzer/state.hpp"
 #include "fuzzuf/fuzzer/fuzzer.hpp"
 #include "fuzzuf/hierarflow/hierarflow_node.hpp"
-
 
 namespace fuzzuf::algorithm::nautilus::fuzzer {
 
 using json = nlohmann::json;
 
-class NautilusFuzzer : public Fuzzer {
-public:
+class NautilusFuzzer : public fuzzuf::fuzzer::Fuzzer {
+ public:
   explicit NautilusFuzzer(std::unique_ptr<NautilusState>&& state_ref);
   virtual ~NautilusFuzzer();
 
   void BuildFuzzFlow();
   void CheckPathExistence();
   static void LoadGrammar(Context& ctx, fs::path grammar_path);
-  static bool ParseAndAddRule(Context& ctx,
-                              std::string nt,
-                              json rule, bool
-                              recursive=false);
+  static bool ParseAndAddRule(Context& ctx, std::string nt, json rule,
+                              bool recursive = false);
 
   virtual void OneLoop(void);
   virtual void ReceiveStopSignal(void);
   virtual bool ShouldEnd(void);
 
-private:
+ private:
   std::unique_ptr<NautilusState> state;
-  HierarFlowNode<void(void), void(void)> fuzz_loop;
+  hierarflow::HierarFlowNode<void(void), void(void)> fuzz_loop;
 };
 
-} // namespace fuzzuf::algorithm::nautilus
+}  // namespace fuzzuf::algorithm::nautilus::fuzzer
 
 #endif

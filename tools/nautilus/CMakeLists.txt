@@ -1,7 +1,10 @@
+algorithm_enabled(ENABLE_NAUTILUS ${ALGORITHMS} nautilus)
+if( ENABLE_NAUTILUS )
 add_executable( generator generator.cpp )
 target_link_libraries(
   generator
-  fuzzuf
+  fuzzuf_core
+  fuzzuf_core_nautilus
   ${FUZZUF_LIBRARIES}
   Boost::system
   Boost::program_options
@@ -19,3 +22,5 @@ set_target_properties(
   generator
   PROPERTIES LINK_FLAGS "${ADDITIONAL_COMPILE_FLAGS_STR}"
 )
+endif()
+

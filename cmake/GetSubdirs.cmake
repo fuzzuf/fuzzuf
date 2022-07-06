@@ -1,0 +1,11 @@
+function(get_subdirs ret cd)
+  file(GLOB children RELATIVE ${cd} ${cd}/*)
+  set(dirs "python")
+  foreach(child ${children})
+    if(IS_DIRECTORY ${cd}/${child})
+      list(APPEND dirs ${child})
+    endif()
+  endforeach()
+  set(${ret} ${dirs} PARENT_SCOPE)
+endfunction()
+

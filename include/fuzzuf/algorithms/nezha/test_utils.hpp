@@ -1,7 +1,7 @@
 /*
  * fuzzuf
  * Copyright (C) 2021 Ricerca Security
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -21,14 +21,15 @@
  */
 #ifndef FUZZUF_INCLUDE_ALGORITHMS_NEZHA_TEST_UTILS_HPP
 #define FUZZUF_INCLUDE_ALGORITHMS_NEZHA_TEST_UTILS_HPP
-#include "fuzzuf/algorithms/nezha/state.hpp"
+#include <cstdint>
+#include <vector>
+
 #include "fuzzuf/algorithms/libfuzzer/test_utils.hpp"
+#include "fuzzuf/algorithms/nezha/state.hpp"
 #include "fuzzuf/executor/native_linux_executor.hpp"
 #include "fuzzuf/hierarflow/hierarflow_intermediates.hpp"
 #include "fuzzuf/utils/node_tracer.hpp"
 #include "fuzzuf/utils/not_random.hpp"
-#include <cstdint>
-#include <vector>
 
 /// some utilities to write tests quickly
 namespace fuzzuf::algorithm::nezha::test {
@@ -62,9 +63,13 @@ struct Order : public libfuzzer::test::Order {
   constexpr static auto outputs = ne / sp::mem<V, outputs_t, &V::outputs>;
   constexpr static auto known_outputs =
       ne / sp::mem<V, known_outputs_t, &V::known_outputs>;
-  constexpr static auto single_status = exec_result / sp::mem<libfuzzer::InputInfo, PUTExitReasonType, &libfuzzer::InputInfo::status>;
-  constexpr static auto added_to_corpus = exec_result / sp::mem<libfuzzer::InputInfo, bool, &libfuzzer::InputInfo::added_to_corpus>;
+  constexpr static auto single_status =
+      exec_result / sp::mem<libfuzzer::InputInfo, feedback::PUTExitReasonType,
+                            &libfuzzer::InputInfo::status>;
+  constexpr static auto added_to_corpus =
+      exec_result / sp::mem<libfuzzer::InputInfo, bool,
+                            &libfuzzer::InputInfo::added_to_corpus>;
 };
 
-} // namespace fuzzuf::algorithm::nezha::test
+}  // namespace fuzzuf::algorithm::nezha::test
 #endif

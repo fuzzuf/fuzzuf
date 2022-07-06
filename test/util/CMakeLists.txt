@@ -2,7 +2,7 @@ add_executable( test-util-exec_command exec_command.cpp )
 target_link_libraries(
   test-util-exec_command
   test-common
-  fuzzuf
+  fuzzuf_core
   ${FUZZUF_LIBRARIES}
   Boost::unit_test_framework
 )
@@ -33,7 +33,7 @@ add_executable( test-util-hash hash.cpp )
 target_link_libraries(
   test-util-hash
   test-common
-  fuzzuf
+  fuzzuf_core
   ${FUZZUF_LIBRARIES}
   Boost::unit_test_framework
 )
@@ -64,7 +64,7 @@ add_executable( test-util-count_bits count_bits.cpp )
 target_link_libraries(
   test-util-count_bits
   test-common
-  fuzzuf
+  fuzzuf_core
   ${FUZZUF_LIBRARIES}
   Boost::unit_test_framework
 )
@@ -95,7 +95,7 @@ add_executable( test-util-count_bytes count_bytes.cpp )
 target_link_libraries(
   test-util-count_bytes
   test-common
-  fuzzuf
+  fuzzuf_core
   ${FUZZUF_LIBRARIES}
   Boost::unit_test_framework
 )
@@ -126,7 +126,7 @@ add_executable( test-util-count_non255_bytes count_non255_bytes.cpp )
 target_link_libraries(
   test-util-count_non255_bytes
   test-common
-  fuzzuf
+  fuzzuf_core
   ${FUZZUF_LIBRARIES}
   Boost::unit_test_framework
 )
@@ -157,7 +157,7 @@ add_executable( test-util-minimize_bits minimize_bits.cpp )
 target_link_libraries(
   test-util-minimize_bits
   test-common
-  fuzzuf
+  fuzzuf_core
   ${FUZZUF_LIBRARIES}
   Boost::unit_test_framework
 )
@@ -188,7 +188,7 @@ add_executable( test-util-locate_diffs locate_diffs.cpp )
 target_link_libraries(
   test-util-locate_diffs
   test-common
-  fuzzuf
+  fuzzuf_core
   ${FUZZUF_LIBRARIES}
   Boost::unit_test_framework
 )
@@ -219,7 +219,7 @@ add_executable( test-util-global-counter global_counter.cpp )
 target_link_libraries(
   test-util-global-counter
   test-common
-  fuzzuf
+  fuzzuf_core
   ${FUZZUF_LIBRARIES}
   Boost::unit_test_framework
 )
@@ -250,7 +250,7 @@ add_executable( test-util-range range.cpp )
 target_link_libraries(
   test-util-range
   test-common
-  fuzzuf
+  fuzzuf_core
   ${FUZZUF_LIBRARIES}
   Boost::unit_test_framework
 )
@@ -281,7 +281,7 @@ add_executable( test-util-status status.cpp )
 target_link_libraries(
   test-util-status
   test-common
-  fuzzuf
+  fuzzuf_core
   ${FUZZUF_LIBRARIES}
   Boost::unit_test_framework
 )
@@ -312,7 +312,7 @@ add_executable( test-util-which which.cpp )
 target_link_libraries(
   test-util-which
   test-common
-  fuzzuf
+  fuzzuf_core
   ${FUZZUF_LIBRARIES}
   Boost::unit_test_framework
 )
@@ -351,7 +351,7 @@ add_executable( test-util-bswap bswap.cpp )
 target_link_libraries(
   test-util-bswap
   test-common
-  fuzzuf
+  fuzzuf_core
   ${FUZZUF_LIBRARIES}
   Boost::unit_test_framework
 )
@@ -382,7 +382,7 @@ add_executable( test-util-not_random not_random.cpp )
 target_link_libraries(
   test-util-not_random
   test-common
-  fuzzuf
+  fuzzuf_core
   ${FUZZUF_LIBRARIES}
   Boost::unit_test_framework
 )
@@ -413,7 +413,7 @@ add_executable( test-util-to_string to_string.cpp )
 target_link_libraries(
   test-util-to_string
   test-common
-  fuzzuf
+  fuzzuf_core
   ${FUZZUF_LIBRARIES}
   Boost::unit_test_framework
 )
@@ -444,7 +444,7 @@ add_executable( test-util-insert_nth insert_nth.cpp )
 target_link_libraries(
   test-util-insert_nth
   test-common
-  fuzzuf
+  fuzzuf_core
   ${FUZZUF_LIBRARIES}
   Boost::unit_test_framework
 )
@@ -475,7 +475,7 @@ add_executable( test-util-erase_nth erase_nth.cpp )
 target_link_libraries(
   test-util-erase_nth
   test-common
-  fuzzuf
+  fuzzuf_core
   ${FUZZUF_LIBRARIES}
   Boost::unit_test_framework
 )
@@ -506,7 +506,7 @@ add_executable( test-util-get_nth get_nth.cpp )
 target_link_libraries(
   test-util-get_nth
   test-common
-  fuzzuf
+  fuzzuf_core
   ${FUZZUF_LIBRARIES}
   Boost::unit_test_framework
 )
@@ -537,7 +537,7 @@ add_executable( test-util-sort_types sort_types.cpp )
 target_link_libraries(
   test-util-sort_types
   test-common
-  fuzzuf
+  fuzzuf_core
   ${FUZZUF_LIBRARIES}
   Boost::unit_test_framework
 )
@@ -568,7 +568,7 @@ add_executable( test-util-call_with_nth call_with_nth.cpp )
 target_link_libraries(
   test-util-call_with_nth
   test-common
-  fuzzuf
+  fuzzuf_core
   ${FUZZUF_LIBRARIES}
   Boost::unit_test_framework
 )
@@ -599,7 +599,7 @@ add_executable( test-util-random random.cpp )
 target_link_libraries(
   test-util-random
   test-common
-  fuzzuf
+  fuzzuf_core
   ${FUZZUF_LIBRARIES}
   Boost::unit_test_framework
 )

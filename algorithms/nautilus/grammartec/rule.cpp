@@ -311,7 +311,7 @@ std::string RuleChild::SplitNTDescription(const std::string& nonterm) const {
   // Splits {A:a} or {A} into A and maybe a
   if (!std::regex_match(nonterm, m, SPLITTER)) {
     throw exceptions::fuzzuf_runtime_error(
-      Util::StrPrintf("Could not interpret Nonterminal %s. "
+      fuzzuf::utils::StrPrintf("Could not interpret Nonterminal %s. "
                       "Nonterminal Descriptions need to match "
                       "start with a capital letter and can only "
                       "contain [a-zA-Z_-0-9]", nonterm.c_str()),

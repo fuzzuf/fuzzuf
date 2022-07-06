@@ -1,7 +1,7 @@
 /*
  * fuzzuf
  * Copyright (C) 2021 Ricerca Security
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -21,16 +21,18 @@
  */
 #ifndef FUZZUF_INCLUDE_ALGORITHM_LIBFUZZER_SELECT_SEED_HPP
 #define FUZZUF_INCLUDE_ALGORITHM_LIBFUZZER_SELECT_SEED_HPP
+#include <boost/range/iterator_range.hpp>
+
 #include "fuzzuf/algorithms/libfuzzer/random.hpp"
 #include "fuzzuf/utils/for_each_multi_index_values.hpp"
 #include "fuzzuf/utils/range_traits.hpp"
 #include "fuzzuf/utils/void_t.hpp"
-#include <boost/range/iterator_range.hpp>
 
 namespace fuzzuf::algorithm::libfuzzer::select_seed {
 
 /**
- * Display feature count and weight of current corpus elements in libFuzzer compatible format
+ * Display feature count and weight of current corpus elements in libFuzzer
+ * compatible format
  *
  * Corresponding code of original libFuzzer implementation
  * https://github.com/llvm/llvm-project/blob/llvmorg-12.0.1/compiler-rt/lib/fuzzer/FuzzerCorpus.h#L547
@@ -103,7 +105,8 @@ auto GenerateVanillaSchedule(Corpus &corpus, std::vector<double> &weights)
 }
 
 /**
- * Calculate energy for each corpus element, then decide weights depending on the energy.
+ * Calculate energy for each corpus element, then decide weights depending on
+ * the energy.
  *
  * Corresponding code of original libFuzzer implementation
  * https://github.com/llvm/llvm-project/blob/llvmorg-12.0.1/compiler-rt/lib/fuzzer/FuzzerCorpus.h#L504
@@ -114,11 +117,10 @@ auto GenerateVanillaSchedule(Corpus &corpus, std::vector<double> &weights)
  */
 template <typename State, typename Corpus>
 auto GenerateEntropicSchedule(State &state, Corpus &corpus,
-                                std::vector<double> &weights,
-                                std::uint8_t max_mutation_factor)
+                              std::vector<double> &weights,
+                              std::uint8_t max_mutation_factor)
     -> std::enable_if_t<is_state_v<State> && is_full_corpus_v<Corpus>, bool> {
-  if (!state.create_info.config.entropic.enabled)
-    return false;
+  if (!state.create_info.config.entropic.enabled) return false;
   const std::size_t corpus_size = corpus.corpus.size();
   weights.reserve(corpus_size);
   const auto average_unit_execution_time =
@@ -133,9 +135,10 @@ auto GenerateEntropicSchedule(State &state, Corpus &corpus,
       corpus.corpus.template get<Sequential>(), [&](auto &input) {
         if (input.needs_energy_update && input.energy != 0.0) {
           input.needs_energy_update = false;
-          input.updateEnergy(state.rare_features.size(),
-                             state.create_info.config.entropic.scale_per_exec_time,
-                             average_unit_execution_time);
+          input.updateEnergy(
+              state.rare_features.size(),
+              state.create_info.config.entropic.scale_per_exec_time,
+              average_unit_execution_time);
         }
       });
   utils::ForEachMultiIndexValues<false>(
@@ -154,20 +157,21 @@ auto GenerateEntropicSchedule(State &state, Corpus &corpus,
         input.weight = weights.back();
 
         // If energy for all seeds is zero, fall back to vanilla schedule.
-        if (weights.back() > 0.0)
-          vanilla_schedule = false;
+        if (weights.back() > 0.0) vanilla_schedule = false;
       });
   return !vanilla_schedule;
 }
 
 /**
  * Update distribution that is used to choose input value.
- * Compatible to LLVM version equal or higher than 11.0.0 ( entropic mode is enabled )
+ * Compatible to LLVM version equal or higher than 11.0.0 ( entropic mode is
+ * enabled )
  *
  * Corresponding code of original libFuzzer implementation
  * https://github.com/llvm/llvm-project/blob/llvmorg-12.0.1/compiler-rt/lib/fuzzer/FuzzerCorpus.h#L488
  *
- * @tparam llvm_version LLVM version that the function is about to compatible to.
+ * @tparam llvm_version LLVM version that the function is about to compatible
+ * to.
  * @tparam State LibFuzzer state object type
  * @tparam Corpus FullCorpus type to add new execution result
  * @tparam RNG A type that satisfies standard  random number generator concept
@@ -175,7 +179,8 @@ auto GenerateEntropicSchedule(State &state, Corpus &corpus,
  * @param corpus FullCorpus to add new execution result
  * @param rng Random number generator
  * @param sparse_energy_updates
- * On entropic mode, calculate distribution in probability of 1/sparse_energy_updates even if distribution updating is not requested.
+ * On entropic mode, calculate distribution in probability of
+ * 1/sparse_energy_updates even if distribution updating is not requested.
  * @param sink Callable with one string argument to display message
  */
 template <Version llvm_version, typename State, typename Corpus, typename RNG>
@@ -200,14 +205,12 @@ auto UpdateDistribution(State &state, Corpus &corpus, RNG &rng,
 
   bool vanilla_schedule = true;
   if (state.create_info.config.entropic.enabled)
-    vanilla_schedule = !GenerateEntropicSchedule(state, corpus, weights,
-                                                   max_mutation_factor);
+    vanilla_schedule =
+        !GenerateEntropicSchedule(state, corpus, weights, max_mutation_factor);
 
-  if (vanilla_schedule)
-    GenerateVanillaSchedule(corpus, weights);
+  if (vanilla_schedule) GenerateVanillaSchedule(corpus, weights);
 
-  if (state.create_info.config.debug)
-    DumpDistribution(corpus, weights, sink);
+  if (state.create_info.config.debug) DumpDistribution(corpus, weights, sink);
 
   if (std::find_if(weights.begin(), weights.end(),
                    [](auto v) { return v != 0; }) == weights.end())
@@ -225,7 +228,8 @@ auto UpdateDistribution(State &state, Corpus &corpus, RNG &rng,
  * Corresponding code of original libFuzzer implementation
  * https://github.com/llvm/llvm-project/blob/llvmorg-10.0.1/compiler-rt/lib/fuzzer/FuzzerCorpus.h#L271
  *
- * @tparam llvm_version LLVM version that the function is about to compatible to.
+ * @tparam llvm_version LLVM version that the function is about to compatible
+ * to.
  * @tparam State LibFuzzer state object type
  * @tparam Corpus FullCorpus type to add new execution result
  * @tparam RNG A type that satisfies standard  random number generator concept
@@ -233,7 +237,8 @@ auto UpdateDistribution(State &state, Corpus &corpus, RNG &rng,
  * @param corpus FullCorpus to add new execution result
  * @param rng Random number generator
  * @param sparse_energy_updates
- * On entropic mode, calculate distribution in probability of 1/sparse_energy_updates even if distribution updating is not requested.
+ * On entropic mode, calculate distribution in probability of
+ * 1/sparse_energy_updates even if distribution updating is not requested.
  * @param sink Callable with one string argument to display message
  */
 template <Version llvm_version, typename State, typename Corpus, typename RNG>
@@ -297,7 +302,7 @@ auto SelectSeed(State &state, Corpus &corpus, RNG &rng, Range &range,
   assert(index < corpus.corpus.size());
   auto selected_testcase = std::next(corpus.corpus.begin(), index);
   if (selected_testcase->enabled) {
-    const ExecInput &selected_input =
+    const exec_input::ExecInput &selected_input =
         *corpus.inputs.get_ref(selected_testcase->id);
     const auto *head = selected_input.GetBuf();
     const auto length = selected_input.GetLen();
@@ -314,6 +319,6 @@ auto SelectSeed(State &state, Corpus &corpus, RNG &rng, Range &range,
   }
 }
 
-} // namespace fuzzuf::algorithm::libfuzzer::select_seed
+}  // namespace fuzzuf::algorithm::libfuzzer::select_seed
 
 #endif

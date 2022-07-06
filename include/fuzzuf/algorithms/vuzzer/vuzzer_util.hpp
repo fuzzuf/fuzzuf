@@ -1,7 +1,7 @@
 /*
  * fuzzuf
  * Copyright (C) 2021 Ricerca Security
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -20,40 +20,27 @@
 #include <boost/dynamic_bitset.hpp>
 #include <string>
 
-#include "fuzzuf/logger/logger.hpp"
-#include "fuzzuf/utils/common.hpp"
-#include "fuzzuf/feedback/inplace_memory_feedback.hpp"
-#include "fuzzuf/feedback/put_exit_reason_type.hpp"
 #include "fuzzuf/algorithms/vuzzer/vuzzer_state.hpp"
 #include "fuzzuf/algorithms/vuzzer/vuzzer_testcase.hpp"
+#include "fuzzuf/feedback/inplace_memory_feedback.hpp"
+#include "fuzzuf/feedback/put_exit_reason_type.hpp"
+#include "fuzzuf/logger/logger.hpp"
+#include "fuzzuf/utils/common.hpp"
 
 namespace fuzzuf::algorithm::vuzzer::util {
 
-void ParseBBWeights(
-    VUzzerState &state,
-    const fs::path &path
-);
+void ParseBBWeights(VUzzerState& state, const fs::path& path);
 
-void ParseBBCov(
-    FileFeedback& inp_feed,
-    std::map<u64, u32>& bb_cov
-);
+void ParseBBCov(feedback::FileFeedback& inp_feed, std::map<u64, u32>& bb_cov);
 
-void ParseTaintInfo(
-    VUzzerState &state,
-    const std::shared_ptr<VUzzerTestcase>& testcase,
-    FileFeedback& inp_feed
-);
+void ParseTaintInfo(VUzzerState& state,
+                    const std::shared_ptr<VUzzerTestcase>& testcase,
+                    feedback::FileFeedback& inp_feed);
 
-void DictToBitsWithKeys(
-    std::map<u64, u32>& dict, 
-    std::vector<u64>& keys, 
-    boost::dynamic_bitset<>& bits
-);
+void DictToBitsWithKeys(std::map<u64, u32>& dict, std::vector<u64>& keys,
+                        boost::dynamic_bitset<>& bits);
 
 std::unique_ptr<std::vector<u8>> GenerateRandomBytesFromDict(
-    u32 size,
-    const std::vector<const dict_t *>& all_dicts
-);
+    u32 size, const std::vector<const dict_t*>& all_dicts);
 
-} // namespace fuzzuf::algorithm::afl::util
+}  // namespace fuzzuf::algorithm::vuzzer::util

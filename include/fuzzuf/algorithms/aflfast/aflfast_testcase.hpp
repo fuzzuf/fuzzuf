@@ -1,7 +1,7 @@
 /*
  * fuzzuf
  * Copyright (C) 2021 Ricerca Security
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -17,22 +17,22 @@
  */
 #pragma once
 
-#include <memory>
 #include <bitset>
+#include <memory>
 
+#include "fuzzuf/algorithms/afl/afl_testcase.hpp"
 #include "fuzzuf/algorithms/aflfast/aflfast_option.hpp"
 #include "fuzzuf/exec_input/on_disk_exec_input.hpp"
-#include "fuzzuf/algorithms/afl/afl_testcase.hpp"
 
 namespace fuzzuf::algorithm::aflfast {
 
 struct AFLFastTestcase : public afl::AFLTestcase {
-    using Tag = option::AFLFastTag;
+  using Tag = option::AFLFastTag;
 
-    AFLFastTestcase(std::shared_ptr<OnDiskExecInput> input);
-    ~AFLFastTestcase();
+  AFLFastTestcase(std::shared_ptr<exec_input::OnDiskExecInput> input);
+  ~AFLFastTestcase();
 
-    u64 n_fuzz; /* Number of fuzz, does not overflow */
+  u64 n_fuzz; /* Number of fuzz, does not overflow */
 };
 
-} // namespace fuzzuf::algorithm::aflfast
+}  // namespace fuzzuf::algorithm::aflfast

@@ -1,7 +1,7 @@
 /*
  * fuzzuf
  * Copyright (C) 2021 Ricerca Security
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -17,22 +17,24 @@
  */
 #define BOOST_TEST_MODULE algorithms.output_hash3
 #define BOOST_TEST_DYN_LINK
-#include "fuzzuf/algorithms/nezha/cli_compat/fuzzer.hpp"
+#include <config.h>
+
+#include <array>
+#include <boost/scope_exit.hpp>
+#include <boost/test/unit_test.hpp>
+#include <fstream>
+#include <iostream>
+#include <iterator>
+#include <vector>
+
 #include "fuzzuf/algorithms/libfuzzer/executor/execute.hpp"
+#include "fuzzuf/algorithms/nezha/cli_compat/fuzzer.hpp"
 #include "fuzzuf/cli/global_fuzzer_options.hpp"
 #include "fuzzuf/executor/native_linux_executor.hpp"
 #include "fuzzuf/utils/filesystem.hpp"
 #include "fuzzuf/utils/map_file.hpp"
 #include "fuzzuf/utils/sha1.hpp"
 #include "fuzzuf/utils/which.hpp"
-#include <array>
-#include <boost/scope_exit.hpp>
-#include <boost/test/unit_test.hpp>
-#include <config.h>
-#include <fstream>
-#include <iostream>
-#include <iterator>
-#include <vector>
 
 /**
  * fuzzufをCLIから実行した場合に近い方法でNezhaを組み立て、libFuzzerのデフォルトのサイクル数だけ回し、その過程でサニタイザにかかったりabortしたりしないことを確認する
@@ -94,11 +96,11 @@ BOOST_AUTO_TEST_CASE(HierarFlowExecute) {
   cargs.reserve(args.size());
   std::transform(args.begin(), args.end(), std::back_inserter(cargs),
                  [](const auto &v) { return v.c_str(); });
-  FuzzerArgs wrapped_args;
+  fuzzuf::cli::FuzzerArgs wrapped_args;
   wrapped_args.argc = int(cargs.size()) - 1;
   wrapped_args.argv = std::next(cargs.data());
 
-  ne::NezhaFuzzer fuzzer(wrapped_args, GlobalFuzzerOptions(),
+  ne::NezhaFuzzer fuzzer(wrapped_args, fuzzuf::cli::GlobalFuzzerOptions(),
                          [](std::string &&m) { std::cout << m << std::flush; });
 
   while (!fuzzer.ShouldEnd()) {
@@ -111,21 +113,20 @@ BOOST_AUTO_TEST_CASE(HierarFlowExecute) {
     namespace tt = boost::test_tools;
     const auto output_file_path = create_info.output_dir / "result";
     const auto path_to_write_seed = create_info.output_dir / "cur_input";
-    std::vector< LibFuzzerExecutorInterface > executor;
-    executor.push_back(
-      std::shared_ptr<NativeLinuxExecutor>(new NativeLinuxExecutor(
-        {FUZZUF_FUZZTOYS_DIR "/fuzz_toys-csv_small", output_file_path.string()},
-        create_info.exec_timelimit_ms, create_info.exec_memlimit,
-        create_info.forksrv, path_to_write_seed, create_info.afl_shm_size,
-        create_info.bb_shm_size, true))
-    );
-    executor.push_back(
-      std::shared_ptr<NativeLinuxExecutor>(new NativeLinuxExecutor(
-        {FUZZUF_FUZZTOYS_DIR "/fuzz_toys-csv", output_file_path.string()},
-        create_info.exec_timelimit_ms, create_info.exec_memlimit,
-        create_info.forksrv, path_to_write_seed, create_info.afl_shm_size,
-        create_info.bb_shm_size, true))
-    );
+    std::vector<LibFuzzerExecutorInterface> executor;
+    executor.push_back(std::shared_ptr<fuzzuf::executor::NativeLinuxExecutor>(
+        new fuzzuf::executor::NativeLinuxExecutor(
+            {FUZZUF_FUZZTOYS_DIR "/fuzz_toys-csv_small",
+             output_file_path.string()},
+            create_info.exec_timelimit_ms, create_info.exec_memlimit,
+            create_info.forksrv, path_to_write_seed, create_info.afl_shm_size,
+            create_info.bb_shm_size, true)));
+    executor.push_back(std::shared_ptr<fuzzuf::executor::NativeLinuxExecutor>(
+        new fuzzuf::executor::NativeLinuxExecutor(
+            {FUZZUF_FUZZTOYS_DIR "/fuzz_toys-csv", output_file_path.string()},
+            create_info.exec_timelimit_ms, create_info.exec_memlimit,
+            create_info.forksrv, path_to_write_seed, create_info.afl_shm_size,
+            create_info.bb_shm_size, true)));
     std::size_t solution_count = 0u;
     ne::known_outputs_t known;
     for (const auto &filename :
@@ -145,16 +146,16 @@ BOOST_AUTO_TEST_CASE(HierarFlowExecute) {
             lf::InputInfo input_info;
             std::vector<std::uint8_t> output;
             std::vector<std::uint8_t> coverage;
-            lf::executor::Execute(input, output, coverage, input_info,
-                                  executor, 0u, true);
+            lf::executor::Execute(input, output, coverage, input_info, executor,
+                                  0u, true);
             hash.push_back(ne::output_hash()(output));
           }
           {
             lf::InputInfo input_info;
             std::vector<std::uint8_t> output;
             std::vector<std::uint8_t> coverage;
-            lf::executor::Execute(input, output, coverage, input_info,
-                                  executor, 1u, true);
+            lf::executor::Execute(input, output, coverage, input_info, executor,
+                                  1u, true);
             hash.push_back(ne::output_hash()(output));
           }
           // each targets output different message to stdout

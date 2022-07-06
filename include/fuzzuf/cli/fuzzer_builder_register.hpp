@@ -1,7 +1,7 @@
 /*
  * fuzzuf
  * Copyright (C) 2021 Ricerca Security
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -18,18 +18,22 @@
 #pragma once
 
 #include <map>
+
 #include "fuzzuf/cli/fuzzer_builder.hpp"
-#include "fuzzuf/cli/fuzzer/afl/build_afl_fuzzer_from_args.hpp"
+
+namespace fuzzuf::cli {
 
 using BuilderMap = std::map<std::string, FuzzerBuilder>;
 
 // Used only for CLI
 class FuzzerBuilderRegister {
-    public:
-        FuzzerBuilderRegister(std::string name, FuzzerBuilder builder);
+ public:
+  FuzzerBuilderRegister(std::string name, FuzzerBuilder builder);
 
-        static FuzzerBuilder Get(std::string name);
+  static FuzzerBuilder Get(std::string name);
 
-    private:
-        static BuilderMap& GetBuilderMap();
+ private:
+  static BuilderMap& GetBuilderMap();
 };
+
+}  // namespace fuzzuf::cli

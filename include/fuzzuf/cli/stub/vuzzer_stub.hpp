@@ -1,7 +1,7 @@
 /*
  * fuzzuf
  * Copyright (C) 2021 Ricerca Security
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -17,25 +17,25 @@
  */
 #pragma once
 
-#include <vector>
-#include <string>
 #include <memory>
-#include "fuzzuf/utils/common.hpp"
-#include "fuzzuf/fuzzer/fuzzer.hpp"
+#include <string>
+#include <vector>
+
 #include "fuzzuf/algorithms/vuzzer/vuzzer_state.hpp"
+#include "fuzzuf/fuzzer/fuzzer.hpp"
+#include "fuzzuf/utils/common.hpp"
 
-template<class State>
-class VUzzerStub : public Fuzzer {
-public:
+namespace fuzzuf::cli {
 
-    std::unique_ptr<State> state;
+template <class State>
+class VUzzerStub : public fuzzuf::fuzzer::Fuzzer {
+ public:
+  std::unique_ptr<State> state;
 
-    VUzzerStub(
-        std::unique_ptr<State>&& state
-    )
-      : state(std::move(state))
-    {}
+  VUzzerStub(std::unique_ptr<State>&& state) : state(std::move(state)) {}
 
-    void ReceiveStopSignal(void) {}
-    bool ShouldEnd(void) { return false; }
+  void ReceiveStopSignal(void) {}
+  bool ShouldEnd(void) { return false; }
 };
+
+}  // namespace fuzzuf::cli

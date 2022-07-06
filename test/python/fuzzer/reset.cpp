@@ -1,7 +1,7 @@
 /*
  * fuzzuf
  * Copyright (C) 2021 Ricerca Security
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -17,14 +17,15 @@
  */
 #define BOOST_TEST_MODULE fuzzerhandle.reset
 #define BOOST_TEST_DYN_LINK
-#include "config.h"
-#include "fuzzuf/python/python_fuzzer.hpp"
+#include <boost/scope_exit.hpp>
 #include <boost/test/unit_test.hpp>
+#include <create_file.hpp>
 #include <iostream>
 #include <random>
+
+#include "config.h"
+#include "fuzzuf/python/python_fuzzer.hpp"
 #include "fuzzuf/utils/filesystem.hpp"
-#include <boost/scope_exit.hpp>
-#include <create_file.hpp>
 
 // PythonFuzzer::Resetが正常に実行されることを確認する
 // to test both fork server mode and non fork server mode, we specify forksrv
@@ -33,8 +34,7 @@ static void PythonFuzzerReset(bool forksrv) {
   // Create root directory
   std::string root_dir_template("/tmp/fuzzuf_test.XXXXXX");
   auto *const raw_dirname = mkdtemp(root_dir_template.data());
-  if (!raw_dirname)
-    throw -1;
+  if (!raw_dirname) throw -1;
   BOOST_CHECK(raw_dirname != nullptr);
 #ifdef HAS_CXX_STD_FILESYSTEM
   namespace fs = std::filesystem;
@@ -56,11 +56,11 @@ static void PythonFuzzerReset(bool forksrv) {
   create_file(input_path.string(), "Hello, World!");
 
   // Create fuzzer instance
-  auto fuzzer =
-      PythonFuzzer({"../../put_binaries/command_wrapper", "/bin/cat"},
-                   input_dir.native(), output_dir.native(), 1000, 10000,
-                   forksrv, true, true // need_afl_cov, need_bb_cov
-      );
+  auto fuzzer = fuzzuf::bindings::python::PythonFuzzer(
+      {"../../put_binaries/command_wrapper", "/bin/cat"}, input_dir.native(),
+      output_dir.native(), 1000, 10000, forksrv, true,
+      true  // need_afl_cov, need_bb_cov
+  );
 
   // Configurate fuzzer
   fuzzer.SuppressLog();

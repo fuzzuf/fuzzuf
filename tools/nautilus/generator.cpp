@@ -104,13 +104,13 @@ int main(int argc, char **argv) {
 
     if (store) {
       /* Write to file */
-      int fd = Util::OpenFile(
-        Util::StrPrintf("corpus/%ld", i+1),
+      int fd = fuzzuf::utils::OpenFile(
+        fuzzuf::utils::StrPrintf("corpus/%ld", i+1),
         O_WRONLY | O_CREAT | O_TRUNC,
         S_IWUSR | S_IRUSR // 0600
       );
-      Util::WriteFile(fd, buffer.data(), buffer.size());
-      Util::CloseFile(fd);
+      fuzzuf::utils::WriteFile(fd, buffer.data(), buffer.size());
+      fuzzuf::utils::CloseFile(fd);
 
     } else {
       /* Write to stdout */

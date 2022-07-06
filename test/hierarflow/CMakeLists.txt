@@ -2,7 +2,7 @@ add_executable( test-hierarflow-check-operator-behavior check_operator_behavior.
 target_link_libraries(
   test-hierarflow-check-operator-behavior
   test-common
-  fuzzuf
+  fuzzuf_core
   ${FUZZUF_LIBRARIES}
   Boost::unit_test_framework
 )
@@ -18,7 +18,7 @@ set_target_properties(
 )
 set_target_properties(
   test-hierarflow-check-operator-behavior
-  PROPERTIES LINK_FLAGS "${ADDITIONAL_COMPILE_FLAGS_STR}"
+  PROPERTIES LINK_FLAGS "${ADDITIONAL_LINK_FLAGS_STR}"
 )
 add_test( NAME "hierarflow.check_operator_behavior" COMMAND test-hierarflow-check-operator-behavior )
 
@@ -26,7 +26,7 @@ add_executable( test-hierarflow-handle-corner-cases handle_corner_cases.cpp )
 target_link_libraries(
   test-hierarflow-handle-corner-cases
   test-common
-  fuzzuf
+  fuzzuf_core
   ${FUZZUF_LIBRARIES}
   Boost::unit_test_framework
 )
@@ -51,7 +51,7 @@ add_executable( test-hierarflow-utility utility.cpp )
 target_link_libraries(
   test-hierarflow-utility
   test-common
-  fuzzuf
+  fuzzuf_core
   ${FUZZUF_LIBRARIES}
   Boost::unit_test_framework
 )
@@ -67,6 +67,6 @@ set_target_properties(
 )
 set_target_properties(
   test-hierarflow-utility
-  PROPERTIES LINK_FLAGS "${ADDITIONAL_COMPILE_FLAGS_STR}"
+  PROPERTIES LINK_FLAGS "${ADDITIONAL_LINK_FLAGS_STR}"
 )
 add_test( NAME "hierarflow.utility" COMMAND test-hierarflow-utility )

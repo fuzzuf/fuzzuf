@@ -1,7 +1,7 @@
 /*
  * fuzzuf
  * Copyright (C) 2021 Ricerca Security
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -16,13 +16,15 @@
  * along with this program.  If not, see http://www.gnu.org/licenses/.
  */
 #include "fuzzuf/algorithms/vuzzer/vuzzer_testcase.hpp"
+
 #include "fuzzuf/exec_input/on_disk_exec_input.hpp"
 
 namespace fuzzuf::algorithm::vuzzer {
 
-VUzzerTestcase::VUzzerTestcase(std::shared_ptr<OnDiskExecInput> input)
-    : input( input ) {}
+VUzzerTestcase::VUzzerTestcase(
+    std::shared_ptr<exec_input::OnDiskExecInput> input)
+    : input(input) {}
 
 VUzzerTestcase::~VUzzerTestcase() {}
 
-} // namespace fuzzuf::algorithm::vuzzer
+}  // namespace fuzzuf::algorithm::vuzzer

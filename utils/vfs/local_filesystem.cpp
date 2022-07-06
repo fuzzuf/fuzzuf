@@ -2,6 +2,7 @@
 #include <fuzzuf/exceptions.hpp>
 #include <fuzzuf/utils/filesystem.hpp>
 #include <fuzzuf/utils/vfs/local_filesystem.hpp>
+#include <fuzzuf/logger/logger.hpp>
 
 namespace fuzzuf::utils::vfs {
 
@@ -148,6 +149,9 @@ fs::space_info LocalFilesystem::Space(const fs::path &p) {
   return fs::space(SanitizePath(p));
 }
 fs::directory_iterator LocalFilesystem::OpenDirectory(const fs::path &p) {
+  if (!fs::is_directory(p)) {
+    ERROR("LocalFilesystem::OpenDirectory: Path is not directory: p=%s", p.c_str());
+  }
 #ifdef HAS_CXX_STD_FILESYSTEM
   return fs::directory_iterator(SanitizePath(p),
                                 fs::directory_options::skip_permission_denied);
@@ -157,6 +161,9 @@ fs::directory_iterator LocalFilesystem::OpenDirectory(const fs::path &p) {
 }
 fs::recursive_directory_iterator
 LocalFilesystem::OpenDirectoryRecursive(const fs::path &p) {
+  if (!fs::is_directory(p)) {
+    ERROR("LocalFilesystem::OpenDirectoryRecursive: Path is not directory: p=%s", p.c_str());
+  }
 #ifdef HAS_CXX_STD_FILESYSTEM
   return fs::recursive_directory_iterator(
       SanitizePath(p), fs::directory_options::skip_permission_denied);

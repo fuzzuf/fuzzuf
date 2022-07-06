@@ -17,15 +17,23 @@
  */
 
 #include "fuzzuf/algorithms/ijon/ijon_state.hpp"
+#include "fuzzuf/executor/afl_executor_interface.hpp"
 
 namespace fuzzuf::algorithm::ijon {
 
 IJONState::IJONState(
     std::shared_ptr<const afl::AFLSetting> setting,
-    std::shared_ptr<executor::AFLExecutorInterface> executor,
+    std::shared_ptr<executor::IJONExecutorInterface> executor,
     std::unique_ptr<optimizer::Optimizer<u32>>&& mutop_optimizer
 ) : 
-    afl::AFLStateTemplate<IJONTestcase>(setting, executor, std::move(mutop_optimizer)) {}
+    afl::AFLStateTemplate<IJONTestcase>(
+        setting,
+        // std::make_shared<executor::AFLExecutorInterface>(executor->ExposeExecutor()),
+        std::make_shared<executor::AFLExecutorInterface>(executor),
+        std::move(mutop_optimizer)
+    ),
+    ijon_executor(executor)
+{}
 
 IJONState::~IJONState() {}
 

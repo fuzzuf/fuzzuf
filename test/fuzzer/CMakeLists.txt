@@ -18,7 +18,7 @@ set_target_properties(
 )
 set_target_properties(
   test-fuzzer-loop
-  PROPERTIES LINK_FLAGS "${ADDITIONAL_COMPILE_FLAGS_STR}"
+  PROPERTIES LINK_FLAGS "${ADDITIONAL_LINK_FLAGS_STR}"
 )
 if( ENABLE_CLANG_TIDY )
   set_target_properties(
@@ -49,7 +49,7 @@ set_target_properties(
 )
 set_target_properties(
   test-fuzzer-timeout
-  PROPERTIES LINK_FLAGS "${ADDITIONAL_COMPILE_FLAGS_STR}"
+  PROPERTIES LINK_FLAGS "${ADDITIONAL_LINK_FLAGS_STR}"
 )
 if( ENABLE_CLANG_TIDY )
   set_target_properties(
@@ -80,7 +80,7 @@ set_target_properties(
 )
 set_target_properties(
   test-fuzzer-create
-  PROPERTIES LINK_FLAGS "${ADDITIONAL_COMPILE_FLAGS_STR}"
+  PROPERTIES LINK_FLAGS "${ADDITIONAL_LINK_FLAGS_STR}"
 )
 if( ENABLE_CLANG_TIDY )
   set_target_properties(
@@ -105,13 +105,14 @@ target_include_directories(
   ${FUZZUF_INCLUDE_DIRS}
   ${CMAKE_SOURCE_DIR}/test/common
 )
+
 set_target_properties(
   test-fuzzer-multiple-instances
   PROPERTIES COMPILE_FLAGS "${ADDITIONAL_COMPILE_FLAGS_STR}"
 )
 set_target_properties(
   test-fuzzer-multiple-instances
-  PROPERTIES LINK_FLAGS "${ADDITIONAL_COMPILE_FLAGS_STR}"
+  PROPERTIES LINK_FLAGS "${ADDITIONAL_LINK_FLAGS_STR}"
 )
 if( ENABLE_CLANG_TIDY )
   set_target_properties(

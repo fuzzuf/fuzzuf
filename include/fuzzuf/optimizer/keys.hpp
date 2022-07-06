@@ -1,7 +1,7 @@
 /*
  * fuzzuf
  * Copyright (C) 2022 Ricerca Security
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -19,22 +19,22 @@
 #ifndef FUZZUF_INCLUDE_OPTIMIZER_KEYS_HPP
 #define FUZZUF_INCLUDE_OPTIMIZER_KEYS_HPP
 
-#include "fuzzuf/utils/common.hpp"
-#include "fuzzuf/optimizer/store.hpp"
 #include "fuzzuf/algorithms/afl/afl_dict_data.hpp"
-
-#include <array>
+#include "fuzzuf/optimizer/store.hpp"
+#include "fuzzuf/utils/common.hpp"
 
 namespace fuzzuf::optimizer::keys {
 
-namespace { 
-    using AFLDictRef = NullableRef<const std::vector<algorithm::afl::dictionary::AFLDictData>>;
+namespace {
+using AFLDictRef = utils::NullableRef<
+    const std::vector<algorithm::afl::dictionary::AFLDictData>>;
 }
 
-const StoreKey<AFLDictRef> Extras     { "extras" };
-const StoreKey<AFLDictRef> AutoExtras { "aextras" };
-const StoreKey<std::array<u32, NUM_CASE>> SelectedCaseHistogram { "selected_case_histogram" };
+const StoreKey<AFLDictRef> Extras{"extras"};
+const StoreKey<AFLDictRef> AutoExtras{"aextras"};
+const StoreKey<std::array<u32, fuzzuf::mutator::NUM_CASE>>
+    SelectedCaseHistogram{"selected_case_histogram"};
 
-} // namespace fuzzuf::optimizer::keys
+}  // namespace fuzzuf::optimizer::keys
 
 #endif

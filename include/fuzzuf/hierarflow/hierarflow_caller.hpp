@@ -1,7 +1,7 @@
 /*
  * fuzzuf
  * Copyright (C) 2021 Ricerca Security
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -18,58 +18,61 @@
 #ifndef FUZZUF_INCLUDE_HIERARFLOW_HIERARFLOW_CALLER_HPP
 #define FUZZUF_INCLUDE_HIERARFLOW_HIERARFLOW_CALLER_HPP
 
-#include "fuzzuf/utils/common.hpp"
-#include "fuzzuf/hierarflow/parent_traversable.hpp"
 #include "fuzzuf/hierarflow/hierarflow_callee.hpp"
+#include "fuzzuf/hierarflow/parent_traversable.hpp"
+#include "fuzzuf/utils/common.hpp"
+
+namespace fuzzuf::hierarflow {
 
 // HierarFlowCaller represents objects that call their successors
 // with the arguments of type "OArgs..."
 
-template<class O>
+template <class O>
 class HierarFlowCaller;
 
-template<class OReturn, class... OArgs>
+template <class OReturn, class... OArgs>
 class HierarFlowCaller<OReturn(OArgs...)> : public ParentTraversable {
-    using O = OReturn(OArgs...);
+  using O = OReturn(OArgs...);
 
-public:
-    HierarFlowCaller() : succ_nodes() {}
+ public:
+  HierarFlowCaller() : succ_nodes() {}
 
-    HierarFlowCaller(HierarFlowCaller<O>&& orig)
-        : resp_val(std::move(orig.resp_val)),
-          succ_nodes(std::move(orig.succ_nodes)) {}
+  HierarFlowCaller(HierarFlowCaller<O>&& orig)
+      : resp_val(std::move(orig.resp_val)),
+        succ_nodes(std::move(orig.succ_nodes)) {}
 
-    virtual ~HierarFlowCaller() {}
+  virtual ~HierarFlowCaller() {}
 
-    OReturn& GetResponseValue() {
-        return resp_val;
-    }
+  OReturn& GetResponseValue() { return resp_val; }
 
-    virtual ParentTraversable* GetParent() = 0;
+  virtual ParentTraversable* GetParent() = 0;
 
-    std::vector<std::shared_ptr<HierarFlowCallee<O>>> succ_nodes;
-    // the following is illegal if OReturn = void, so we specialize that case below
-    OReturn resp_val;
+  std::vector<std::shared_ptr<HierarFlowCallee<O>>> succ_nodes;
+  // the following is illegal if OReturn = void, so we specialize that case
+  // below
+  OReturn resp_val;
 };
 
-template<class... OArgs>
+template <class... OArgs>
 class HierarFlowCaller<void(OArgs...)>;
 
-template<class... OArgs>
+template <class... OArgs>
 class HierarFlowCaller<void(OArgs...)> : public ParentTraversable {
-    using O = void(OArgs...);
+  using O = void(OArgs...);
 
-public:
-    HierarFlowCaller() : succ_nodes() {}
+ public:
+  HierarFlowCaller() : succ_nodes() {}
 
-    HierarFlowCaller(HierarFlowCaller<O>&& orig)
-        : succ_nodes(std::move(orig.succ_nodes)) {}
+  HierarFlowCaller(HierarFlowCaller<O>&& orig)
+      : succ_nodes(std::move(orig.succ_nodes)) {}
 
-    virtual ~HierarFlowCaller() {}
+  virtual ~HierarFlowCaller() {}
 
-    virtual ParentTraversable* GetParent() = 0;
+  virtual ParentTraversable* GetParent() = 0;
 
-    std::vector<std::shared_ptr<HierarFlowCallee<O>>> succ_nodes;
+  std::vector<std::shared_ptr<HierarFlowCallee<O>>> succ_nodes;
 };
+
+}  // namespace fuzzuf::hierarflow
 
 #endif

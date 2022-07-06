@@ -1,7 +1,7 @@
 /*
  * fuzzuf
  * Copyright (C) 2021 Ricerca Security
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -19,25 +19,27 @@
 
 #include <cstddef>
 #include <unordered_map>
+
 #include "fuzzuf/algorithms/afl/afl_option.hpp"
-#include "fuzzuf/utils/common.hpp"
 #include "fuzzuf/feedback/put_exit_reason_type.hpp"
+#include "fuzzuf/utils/common.hpp"
+
+namespace fuzzuf::feedback {
 
 ExitStatusFeedback::ExitStatusFeedback() {}
 
-ExitStatusFeedback::ExitStatusFeedback(
-    PUTExitReasonType exit_reason,
-    u8 signal
-) : exit_reason( exit_reason ),
-    signal( signal ) {}
+ExitStatusFeedback::ExitStatusFeedback(PUTExitReasonType exit_reason, u8 signal)
+    : exit_reason(exit_reason), signal(signal) {}
 
-ExitStatusFeedback::ExitStatusFeedback(const ExitStatusFeedback& orig) 
-    : exit_reason( orig.exit_reason ),
-      signal( orig.signal ) {}
+ExitStatusFeedback::ExitStatusFeedback(const ExitStatusFeedback& orig)
+    : exit_reason(orig.exit_reason), signal(orig.signal) {}
 
-ExitStatusFeedback& ExitStatusFeedback::operator=(const ExitStatusFeedback& orig) {
-    exit_reason = orig.exit_reason;
-    signal = orig.signal;
+ExitStatusFeedback& ExitStatusFeedback::operator=(
+    const ExitStatusFeedback& orig) {
+  exit_reason = orig.exit_reason;
+  signal = orig.signal;
 
-    return *this;
+  return *this;
 }
+
+}  // namespace fuzzuf::feedback

@@ -5,7 +5,13 @@ set(
   ${CMAKE_MODULE_PATH}
 )
 
-PROJECT(fuzzuf)
+set( PATTR_VERSION_MAJOR 0 )
+set( PATTR_VERSION_MINOR 1 )
+set( PATTR_VERSION_PATCH 0 )
+
+PROJECT(fuzzuf
+  VERSION ${PATTR_VERSION_MAJOR}.${PATTR_VERSION_MINOR}.${PATTR_VERSION_PATCH}
+)
 
 execute_process(
   COMMAND git rev-parse HEAD
@@ -16,9 +22,6 @@ execute_process(
   OUTPUT_VARIABLE PATTR_USER
 )
 set( PATTR_BRANCH "unknown" CACHE STRING "The name of branch the package used" )
-set( PATTR_VERSION_MAJOR 0 )
-set( PATTR_VERSION_MINOR 1 )
-set( PATTR_VERSION_PATCH 0 )
 set( PATTR_VERSION_RELEASE 1 CACHE STRING "Release number of package" )
 math( EXPR PATTR_VERSION_RELEASE_CALCULATED "${PATTR_VERSION_RELEASE}" )
 set( PATTR_DESCRIPTION_SUMMARY "Extensible fuzzing framework" )
@@ -32,6 +35,8 @@ set( PATTR_COMPRESSIN_TYPE "xz" )
 include(CheckIncludeFiles)
 include(CheckCXXSourceCompiles)
 include(GNUInstallDirs)
+include(GetSubdirs)
+include(AlgorithmEnabled)
 find_package(PkgConfig)
 enable_testing()
 try_compile(
@@ -49,6 +54,25 @@ if( HAS_CXX_STD_FILESYSTEM )
 else()
   find_package( Boost 1.53.0 COMPONENTS filesystem system unit_test_framework program_options REQUIRED )
 endif()
+get_subdirs( AVAILABLE_ALGORITHMS ${CMAKE_CURRENT_SOURCE_DIR}/include/fuzzuf/algorithms )
+string(REPLACE ";" "," AVAILABLE_ALGORITHMS_STR "${AVAILABLE_ALGORITHMS}")
+set( ENABLE_ALGORITHMS "all" CACHE STRING "Available values: ${AVAILABLE_ALGORITHMS_STR},all" )
+string(REPLACE "," ";" ALGORITHMS "${ENABLE_ALGORITHMS}")
+list(FIND ALGORITHMS "all" ALL_INDEX_IN_ALGORITHMS)
+foreach( alg ${ALGORITHMS} )
+  list(FIND AVAILABLE_ALGORITHMS ${alg} alg_index )
+  if( "${alg_index}" EQUAL "-1" )
+    if( NOT "${alg}" MATCHES "all" )
+      message( FATAL_ERROR "Unknown algorithm : ${alg}" )
+    endif()
+  endif()
+endforeach()
+if( NOT "${ALL_INDEX_IN_ALGORITHMS}" EQUAL "-1" )
+  set( ALGORITHMS "${AVAILABLE_ALGORITHMS}" )
+endif()
+message( "Enabled algorithms : ${ALGORITHMS}" )
+
+
 set(CMAKE_VERBOSE_MAKEFILE OFF)
 
 find_package( Threads REQUIRED )
@@ -91,6 +115,7 @@ find_package( FridaTrace )
 # Nezhaは類似した2つのPUTを必要としており、fuzz_toysにはその条件を満たす物が含まれている
 find_package( FuzzToys )
 find_package( FuzzToysSymCC )
+find_package( FuzzufCC )
 if( ${CMAKE_VERSION} VERSION_GREATER_EQUAL 3.6.0 )
   option( ENABLE_CLANG_TIDY "enable clang-tidy" OFF )
   if( ENABLE_CLANG_TIDY )
@@ -280,61 +305,6 @@ include(CPack)
 #アルファベット順に並べてください
 set(
   FUZZUF_SOURCES
-  algorithms/afl/afl_dict_data.cpp
-  algorithms/afl/afl_havoc_case_distrib.cpp
-  algorithms/afl/afl_setting.cpp
-  algorithms/afl/afl_testcase.cpp
-  algorithms/afl/afl_util.cpp
-  algorithms/aflfast/aflfast_other_hierarflow_routines.cpp
-  algorithms/aflfast/aflfast_setting.cpp
-  algorithms/aflfast/aflfast_state.cpp
-  algorithms/aflfast/aflfast_testcase.cpp
-  algorithms/die/die_fuzzer.cpp
-  algorithms/die/die_hierarflow_routines.cpp
-  algorithms/die/die_state.cpp
-  algorithms/ijon/ijon_fuzzer.cpp
-  algorithms/ijon/ijon_havoc.cpp
-  algorithms/ijon/ijon_hierarflow_routines.cpp
-  algorithms/ijon/ijon_state.cpp
-  algorithms/ijon/ijon_testcase.cpp
-  algorithms/libfuzzer/config.cpp
-  algorithms/libfuzzer/dictionary.cpp
-  algorithms/libfuzzer/fuzzer.cpp
-  algorithms/libfuzzer/options.cpp
-  algorithms/libfuzzer/input_info.cpp
-  algorithms/libfuzzer/state.cpp
-  algorithms/libfuzzer/test_utils.cpp
-  algorithms/libfuzzer/trace.cpp
-  algorithms/libfuzzer/utils.cpp
-  algorithms/libfuzzer/config.cpp
-  algorithms/mopt/mopt_fuzzer.cpp
-  algorithms/mopt/mopt_havoc.cpp
-  algorithms/mopt/mopt_hierarflow_routines.cpp
-  algorithms/mopt/mopt_optimizer.cpp
-  algorithms/mopt/mopt_state.cpp
-  algorithms/mopt/mopt_testcase.cpp
-  algorithms/nautilus/fuzzer/fuzzer.cpp
-  algorithms/nautilus/fuzzer/mutation_hierarflow_routines.cpp
-  algorithms/nautilus/fuzzer/other_hierarflow_routines.cpp
-  algorithms/nautilus/fuzzer/queue.cpp
-  algorithms/nautilus/fuzzer/state.cpp
-  algorithms/nautilus/fuzzer/update_hierarflow_routines.cpp
-  algorithms/nautilus/grammartec/chunkstore.cpp
-  algorithms/nautilus/grammartec/context.cpp
-  algorithms/nautilus/grammartec/mutator.cpp
-  algorithms/nautilus/grammartec/recursion_info.cpp
-  algorithms/nautilus/grammartec/rule.cpp
-  algorithms/nautilus/grammartec/tree.cpp
-  algorithms/nezha/fuzzer.cpp
-  algorithms/vuzzer/vuzzer.cpp
-  algorithms/vuzzer/vuzzer_mutation_hierarflow_routines.cpp
-  algorithms/vuzzer/vuzzer_mutator.cpp
-  algorithms/vuzzer/vuzzer_other_hierarflow_routines.cpp
-  algorithms/vuzzer/vuzzer_setting.cpp
-  algorithms/vuzzer/vuzzer_state.cpp
-  algorithms/vuzzer/vuzzer_testcase.cpp
-  algorithms/vuzzer/vuzzer_update_hierarflow_routines.cpp
-  algorithms/vuzzer/vuzzer_util.cpp
   channel/fd_channel.cpp
   exec_input/exec_input.cpp
   exec_input/exec_input_set.cpp
@@ -359,16 +329,12 @@ set(
   logger/log_file_logger.cpp
   logger/stdout_logger.cpp
   optimizer/store.cpp
-  python/pyfeedback.cpp
-  python/pyseed.cpp
-  python/python_fuzzer.cpp
-  python/python_hierarflow_routines.cpp
-  python/python_setting.cpp
-  python/python_state.cpp
-  python/python_testcase.cpp
+  utils/check_crash_handling.cpp
+  utils/check_if_string_is_decimal.cpp
   utils/common.cpp
   utils/create_empty_file.cpp
   utils/errno_to_system_error.cpp
+  utils/get_aligned_addr.cpp
   utils/get_hash.cpp
   utils/hex_dump.cpp
   utils/is_executable.cpp
@@ -406,11 +372,19 @@ add_library(
   ${FUZZUF_SOURCES}
 )
 
-add_library(
-  fuzzuf
-  SHARED
-  python/export_fuzzuf.cpp
+set_target_properties(
+  fuzzuf_core
+  PROPERTIES
+  VERSION ${PROJECT_VERSION_MINOR}
+  SOVERSION ${PROJECT_VERSION_PATCH}
+  SUFFIX "${PROJECT_VERSION_MAJOR}${CMAKE_SHARED_LIBRARY_SUFFIX}"
 )
+
+set( FUZZUF_CLI_ALGORITHM_SPECIFIC_SOURCES "" )
+FOREACH( alg ${ALGORITHMS} )
+  file(GLOB ALGORITHM_SOURCES LIST_DIRECTORIES false RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} "${CMAKE_CURRENT_SOURCE_DIR}/cli/fuzzers/${alg}/*.cpp" )
+  list(APPEND FUZZUF_CLI_ALGORITHM_SPECIFIC_SOURCES ${ALGORITHM_SOURCES} )
+ENDFOREACH()
 
 #アルファベット順に並べてください
 set(
@@ -418,14 +392,7 @@ set(
   cli/command_line_args.cpp
   cli/create_fuzzer_instance_from_argv.cpp
   cli/fuzzer_builder_register.cpp
-  cli/fuzzers/afl/register_afl_fuzzer.cpp
-  cli/fuzzers/aflfast/register_aflfast_fuzzer.cpp
-  cli/fuzzers/die/register_die_fuzzer.cpp
-  cli/fuzzers/ijon/register_ijon_fuzzer.cpp
-  cli/fuzzers/libfuzzer/register_libfuzzer.cpp
-  cli/fuzzers/nautilus/register_nautilus_fuzzer.cpp
-  cli/fuzzers/nezha/register_nezha_fuzzer.cpp
-  cli/fuzzers/vuzzer/register_vuzzer.cpp
+  ${FUZZUF_CLI_ALGORITHM_SPECIFIC_SOURCES}
   cli/parse_global_options_for_fuzzer.cpp
   cli/setup_execution_environment.cpp
 )
@@ -443,6 +410,15 @@ add_library(
   SHARED
   ${FUZZUF_CLI_SOURCES}
 )
+
+set_target_properties(
+  fuzzuf-cli-lib
+  PROPERTIES
+  VERSION ${PROJECT_VERSION_MINOR}
+  SOVERSION ${PROJECT_VERSION_PATCH}
+  SUFFIX "${PROJECT_VERSION_MAJOR}${CMAKE_SHARED_LIBRARY_SUFFIX}"
+)
+
 
 set( FUZZUF_LIBRARIES )
 set( FUZZUF_INCLUDE_DIRS )
@@ -482,6 +458,12 @@ link_directories(
   ${FUZZUF_LIBRARY_DIRS}
 )
 
+add_subdirectory(algorithms)
+algorithm_enabled( python_wrapper_enabled ${ALGORITHMS} "python" )
+if( python_wrapper_enabled )
+  add_subdirectory(python)
+endif()
+
 ### Configure dependencies
 target_include_directories(
   fuzzuf_core
@@ -499,20 +481,7 @@ set_target_properties(
   PROPERTIES LINK_FLAGS "${ADDITIONAL_LINK_FLAGS_STR}"
 )
 
-
 target_link_libraries(
-  fuzzuf_core
-  ${FUZZUF_LIBRARIES}
-)
-
-target_include_directories(
-  fuzzuf
-  PRIVATE
-  ${FUZZUF_INCLUDE_DIRS}
-)
-
-target_link_libraries(
-  fuzzuf
   fuzzuf_core
   ${FUZZUF_LIBRARIES}
 )
@@ -538,6 +507,7 @@ target_link_libraries(
   fuzzuf-cli-lib
   fuzzuf_core
   ${FUZZUF_LIBRARIES}
+  ${FUZZUF_ALGORITHM_LIBS}
 )
 
 set_target_properties(
@@ -554,6 +524,7 @@ target_link_libraries(
   fuzzuf-cli-lib
   fuzzuf_core
   ${FUZZUF_LIBRARIES}
+  ${FUZZUF_ALGORITHM_LIBS}
 )
 target_include_directories(
   fuzzuf-cli-lib
@@ -561,19 +532,6 @@ target_include_directories(
   ${FUZZUF_INCLUDE_DIRS}
 )
 
-### 
-set_target_properties( fuzzuf PROPERTIES PREFIX "" )
-set_target_properties( fuzzuf PROPERTIES SUFFIX ".${Python3_SOABI}${CMAKE_SHARED_LIBRARY_SUFFIX}" )
-set_target_properties(
-  fuzzuf
-  PROPERTIES COMPILE_FLAGS "${ADDITIONAL_COMPILE_FLAGS_STR}"
-)
-set_target_properties(
-  fuzzuf
-  PROPERTIES LINK_FLAGS "${ADDITIONAL_LINK_FLAGS_STR}"
-)
-list( GET Python3_SITELIB 0 Python3_FIRST_SITELIB )
-install( TARGETS fuzzuf LIBRARY DESTINATION "${Python3_FIRST_SITELIB}" )
 install(
   TARGETS fuzzuf_core fuzzuf-cli fuzzuf-cli-lib
   LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}

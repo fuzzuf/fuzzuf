@@ -1,7 +1,7 @@
 /*
  * fuzzuf
  * Copyright (C) 2021 Ricerca Security
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -21,8 +21,6 @@
  */
 #ifndef FUZZUF_INCLUDE_ALGORITHM_LIBFUZZER_STATE_CORPUS_HPP
 #define FUZZUF_INCLUDE_ALGORITHM_LIBFUZZER_STATE_CORPUS_HPP
-#include "fuzzuf/algorithms/libfuzzer/state/input_info.hpp"
-#include "fuzzuf/exec_input/exec_input_set.hpp"
 #include <boost/multi_index/hashed_index.hpp>
 #include <boost/multi_index/member.hpp>
 #include <boost/multi_index/sequenced_index.hpp>
@@ -31,6 +29,9 @@
 #include <string>
 #include <vector>
 
+#include "fuzzuf/algorithms/libfuzzer/state/input_info.hpp"
+#include "fuzzuf/exec_input/exec_input_set.hpp"
+
 namespace fuzzuf::algorithm::libfuzzer {
 
 struct Sequential {};
@@ -38,7 +39,8 @@ struct ByName {};
 struct ById {};
 
 /**
- * Since libFuzzer uses insertion order, corpus must provide both sequential index and hashed index.
+ * Since libFuzzer uses insertion order, corpus must provide both sequential
+ * index and hashed index.
  */
 using PartialCorpus = boost::multi_index::multi_index_container<
     InputInfo,
@@ -63,24 +65,28 @@ template <typename T, typename Enable = void>
 struct is_partial_corpus : public std::false_type {};
 template <typename T>
 struct is_partial_corpus<
-    T, std::enable_if_t<
-           is_input_info_v<utils::type_traits::RemoveCvrT<decltype(
-               *std::declval<T &>().template get<Sequential>().begin())>> &&
-           is_input_info_v<utils::type_traits::RemoveCvrT<decltype(
-               *std::declval<T &>().template get<ByName>().begin())>> &&
-           is_input_info_v<utils::type_traits::RemoveCvrT<decltype(
-               *std::declval<T &>().template get<ById>().begin())>>>>
+    T,
+    std::enable_if_t<
+        is_input_info_v<utils::type_traits::RemoveCvrT<
+            decltype(*std::declval<T &>()
+                          .template get<Sequential>()
+                          .begin())>> &&
+        is_input_info_v<utils::type_traits::RemoveCvrT<
+            decltype(*std::declval<T &>().template get<ByName>().begin())>> &&
+        is_input_info_v<utils::type_traits::RemoveCvrT<
+            decltype(*std::declval<T &>().template get<ById>().begin())>>>>
     : public std::true_type {};
 template <typename T>
 constexpr bool is_partial_corpus_v = is_partial_corpus<T>::value;
 
 /**
  * @class FullCorpus
- * Pair of container to store input values and container to store execution results
+ * Pair of container to store input values and container to store execution
+ * results
  */
 struct FullCorpus {
   // container to store input values
-  ExecInputSet inputs;
+  exec_input::ExecInputSet inputs;
   // container to store execution results
   PartialCorpus corpus;
 };
@@ -95,12 +101,13 @@ template <typename T, typename Enable = void>
 struct is_full_corpus : public std::false_type {};
 template <typename T>
 struct is_full_corpus<
-    T, std::enable_if_t<is_partial_corpus_v<utils::type_traits::RemoveCvrT<
-                            decltype(std::declval<T &>().corpus)>> &&
-                        std::is_same_v<utils::type_traits::RemoveCvrT<decltype(
-                                           std::declval<T &>().inputs)>,
-                                       ExecInputSet>>> : public std::true_type {
-};
+    T,
+    std::enable_if_t<is_partial_corpus_v<utils::type_traits::RemoveCvrT<
+                         decltype(std::declval<T &>().corpus)>> &&
+                     std::is_same_v<utils::type_traits::RemoveCvrT<
+                                        decltype(std::declval<T &>().inputs)>,
+                                    exec_input::ExecInputSet>>>
+    : public std::true_type {};
 template <typename T>
 constexpr bool is_full_corpus_v = is_full_corpus<T>::value;
 
@@ -124,6 +131,6 @@ bool toString(std::string &dest, const PartialCorpus &value,
 bool toString(std::string &dest, const FullCorpus &value,
               std::size_t indent_count, const std::string &indent);
 
-} // namespace fuzzuf::algorithm::libfuzzer
+}  // namespace fuzzuf::algorithm::libfuzzer
 
 #endif

@@ -1,7 +1,7 @@
 /*
  * fuzzuf
  * Copyright (C) 2021 Ricerca Security
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -17,16 +17,17 @@
  */
 
 #include "fuzzuf/algorithms/ijon/ijon_fuzzer.hpp"
-#include "fuzzuf/cli/fuzzer_builder_register.hpp"
 #include "fuzzuf/cli/fuzzer/ijon/build_ijon_fuzzer_from_args.hpp"
-#include "fuzzuf/executor/afl_executor_interface.hpp"
+#include "fuzzuf/cli/fuzzer_builder_register.hpp"
 
 namespace fuzzuf::cli::fuzzer::ijon {
 
-// builder_map.insert is called before main function if the below is declared as a global variable and linked as an
-// object file.
-// Conversely, if IJON cannot be built in a certain environment, do not compile it into an object file to prevent IJON
-// from being registered by accident.
-static FuzzerBuilderRegister global_ijon_register("ijon", BuildIJONFuzzerFromArgs<Fuzzer, algorithm::ijon::IJONFuzzer, executor::AFLExecutorInterface>);
+// builder_map.insert is called before main function if the below is declared as
+// a global variable and linked as an object file. Conversely, if IJON cannot be
+// built in a certain environment, do not compile it into an object file to
+// prevent IJON from being registered by accident.
+static FuzzerBuilderRegister global_ijon_register(
+    "ijon", BuildIJONFuzzerFromArgs<fuzzuf::fuzzer::Fuzzer,
+                                    algorithm::ijon::IJONFuzzer>);
 
-} // namespace fuzzuf::cli::fuzzer::ijon
+}  // namespace fuzzuf::cli::fuzzer::ijon

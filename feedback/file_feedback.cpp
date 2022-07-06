@@ -1,7 +1,7 @@
 /*
  * fuzzuf
  * Copyright (C) 2021 Ricerca Security
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -19,34 +19,36 @@
 
 #include <cstddef>
 #include <functional>
+
 #include "fuzzuf/algorithms/afl/afl_option.hpp"
+#include "fuzzuf/feedback/put_exit_reason_type.hpp"
 #include "fuzzuf/utils/common.hpp"
 #include "fuzzuf/utils/filesystem.hpp"
-#include "fuzzuf/feedback/put_exit_reason_type.hpp"
+
+namespace fuzzuf::feedback {
 
 FileFeedback::FileFeedback() {}
 
-FileFeedback::FileFeedback(
-    fs::path feed_path,
-    std::shared_ptr<u8> executor_lock
-) : feed_path( feed_path ),
-    executor_lock( executor_lock ) {}
+FileFeedback::FileFeedback(fs::path feed_path,
+                           std::shared_ptr<u8> executor_lock)
+    : feed_path(feed_path), executor_lock(executor_lock) {}
 
 FileFeedback::FileFeedback(FileFeedback&& orig)
-    : feed_path( orig.feed_path ),
-      executor_lock( std::move(orig.executor_lock) ) {}
+    : feed_path(orig.feed_path), executor_lock(std::move(orig.executor_lock)) {}
 
 FileFeedback& FileFeedback::operator=(FileFeedback&& orig) {
-    std::swap(feed_path, orig.feed_path);
-    std::swap(executor_lock, orig.executor_lock);
+  std::swap(feed_path, orig.feed_path);
+  std::swap(executor_lock, orig.executor_lock);
 
-    return *this;
+  return *this;
 }
 
 // This is static method
 // the argument name is commented out to suppress unused-value-warning
 void FileFeedback::DiscardActive(FileFeedback /* unused_and_discarded_arg */) {
-    // Do nothing.
-    // At the end of this function, the argument unused_and_discarded_arg will be destructed
-    // This is what this function means
+  // Do nothing.
+  // At the end of this function, the argument unused_and_discarded_arg will be
+  // destructed This is what this function means
 }
+
+}  // namespace fuzzuf::feedback

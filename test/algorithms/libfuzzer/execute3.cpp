@@ -1,7 +1,7 @@
 /*
  * fuzzuf
  * Copyright (C) 2021 Ricerca Security
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -17,20 +17,22 @@
  */
 #define BOOST_TEST_MODULE algorithms.libfuzzer.execute3
 #define BOOST_TEST_DYN_LINK
+#include <config.h>
+
+#include <boost/program_options.hpp>
+#include <boost/scope_exit.hpp>
+#include <boost/test/unit_test.hpp>
+#include <iostream>
+
 #include "fuzzuf/algorithms/libfuzzer/cli_compat/fuzzer.hpp"
 #include "fuzzuf/algorithms/libfuzzer/executor/execute.hpp"
 #include "fuzzuf/cli/global_fuzzer_options.hpp"
-#include "fuzzuf/executor/native_linux_executor.hpp"
 #include "fuzzuf/executor/libfuzzer_executor_interface.hpp"
+#include "fuzzuf/executor/native_linux_executor.hpp"
 #include "fuzzuf/utils/filesystem.hpp"
 #include "fuzzuf/utils/map_file.hpp"
 #include "fuzzuf/utils/sha1.hpp"
 #include "fuzzuf/utils/which.hpp"
-#include <boost/scope_exit.hpp>
-#include <boost/test/unit_test.hpp>
-#include <config.h>
-#include <iostream>
-#include <boost/program_options.hpp>
 
 namespace po = boost::program_options;
 
@@ -78,14 +80,12 @@ BOOST_AUTO_TEST_CASE(HierarFlowExecute) {
 
   // Define global options
   po::options_description global_desc("Global options");
-  global_desc.add_options()
-      ("fuzzer", 
-          po::value<std::string>(), 
-          "Specify fuzzer to be used in your fuzzing campaign.")
-  ;
+  global_desc.add_options()(
+      "fuzzer", po::value<std::string>(),
+      "Specify fuzzer to be used in your fuzzing campaign.");
 
   // Simulate command line args
-  std::vector<std::string> args{"fuzzuf", 
+  std::vector<std::string> args{"fuzzuf",
                                 "libfuzzer",
                                 "-target=" FUZZUF_FUZZTOYS_DIR
                                 "/fuzz_toys-brainf_ck",
@@ -110,13 +110,13 @@ BOOST_AUTO_TEST_CASE(HierarFlowExecute) {
   std::transform(args.begin(), args.end(), std::back_inserter(cargs),
                  [](const auto &v) { return v.c_str(); });
 
-  FuzzerArgs fargs { 
-    .argc = int(cargs.size()),
-    .argv = cargs.data(),
-    .global_options_description = global_desc,
+  fuzzuf::cli::FuzzerArgs fargs{
+      .argc = int(cargs.size()),
+      .argv = cargs.data(),
+      .global_options_description = global_desc,
   };
 
-  lf::LibFuzzer fuzzer(fargs, GlobalFuzzerOptions(),
+  lf::LibFuzzer fuzzer(fargs, fuzzuf::cli::GlobalFuzzerOptions(),
                        [](std::string &&m) { std::cout << m << std::flush; });
 
   while (!fuzzer.ShouldEnd()) {
@@ -128,14 +128,14 @@ BOOST_AUTO_TEST_CASE(HierarFlowExecute) {
     const auto &create_info = fuzzer.get_create_info();
     const auto output_file_path = create_info.output_dir / "result";
     const auto path_to_write_seed = create_info.output_dir / "cur_input";
-    std::vector< LibFuzzerExecutorInterface > executor;
-    executor.push_back(
-      std::shared_ptr<NativeLinuxExecutor>(new NativeLinuxExecutor(
-        {FUZZUF_FUZZTOYS_DIR "/fuzz_toys-brainf_ck", output_file_path.string()},
-        create_info.exec_timelimit_ms, create_info.exec_memlimit,
-        create_info.forksrv, path_to_write_seed, create_info.afl_shm_size,
-        create_info.bb_shm_size))
-    );
+    std::vector<LibFuzzerExecutorInterface> executor;
+    executor.push_back(std::shared_ptr<fuzzuf::executor::NativeLinuxExecutor>(
+        new fuzzuf::executor::NativeLinuxExecutor(
+            {FUZZUF_FUZZTOYS_DIR "/fuzz_toys-brainf_ck",
+             output_file_path.string()},
+            create_info.exec_timelimit_ms, create_info.exec_memlimit,
+            create_info.forksrv, path_to_write_seed, create_info.afl_shm_size,
+            create_info.bb_shm_size)));
     std::size_t solution_count = 0u;
     for (const auto &filename :
          fs::directory_iterator{create_info.output_dir}) {
@@ -144,15 +144,15 @@ BOOST_AUTO_TEST_CASE(HierarFlowExecute) {
             fuzzuf::utils::map_file(filename.path().string(), O_RDONLY, true);
         std::vector<std::uint8_t> input(mapped.begin(), mapped.end());
         auto sha1 = fuzzuf::utils::ToSerializedSha1(input);
-        if (sha1 != filename.path().filename().string())
-          continue;
+        if (sha1 != filename.path().filename().string()) continue;
         std::vector<std::uint8_t> output;
         std::vector<std::uint8_t> coverage;
         lf::InputInfo input_info;
         lf::executor::Execute(input, output, coverage, input_info, executor, 0u,
                               true);
         // target fails to execute found inputs
-        BOOST_CHECK_NE(input_info.status, PUTExitReasonType::FAULT_NONE);
+        BOOST_CHECK_NE(input_info.status,
+                       fuzzuf::feedback::PUTExitReasonType::FAULT_NONE);
         ++solution_count;
       }
     }

@@ -1,7 +1,7 @@
 /*
  * fuzzuf
  * Copyright (C) 2021 Ricerca Security
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -19,47 +19,36 @@
 
 #include "fuzzuf/utils/common.hpp"
 
+namespace fuzzuf::exec_input {
+
 u64 ExecInput::id_counter = 0;
 
-ExecInput::ExecInput()
-    : id(id_counter++), 
-      len(0) {}
+ExecInput::ExecInput() : id(id_counter++), len(0) {}
 
 ExecInput::~ExecInput() {}
 
-ExecInput::ExecInput(const u8* orig_buf, u32 len) 
-    : id(id_counter++),
-      buf(new u8[len]),
-      len(len)
-{
-    std::memcpy(buf.get(), orig_buf, len);
+ExecInput::ExecInput(const u8* orig_buf, u32 len)
+    : id(id_counter++), buf(new u8[len]), len(len) {
+  std::memcpy(buf.get(), orig_buf, len);
 }
 
-ExecInput::ExecInput(std::unique_ptr<u8[]>&& orig_buf, u32 len) 
-    : id(id_counter++),
-      buf(orig_buf.release()),
-      len(len) {}
+ExecInput::ExecInput(std::unique_ptr<u8[]>&& orig_buf, u32 len)
+    : id(id_counter++), buf(orig_buf.release()), len(len) {}
 
 ExecInput::ExecInput(ExecInput&& orig)
-    : id(orig.id),
-      buf(std::move(orig.buf)),
-      len(orig.len) {}
+    : id(orig.id), buf(std::move(orig.buf)), len(orig.len) {}
 
 ExecInput& ExecInput::operator=(ExecInput&& orig) {
-    id = orig.id;
-    buf = std::move(orig.buf);
-    len = orig.len;
-    return *this;
+  id = orig.id;
+  buf = std::move(orig.buf);
+  len = orig.len;
+  return *this;
 }
 
-u8* ExecInput::GetBuf() const {
-    return buf.get();
-}
+u8* ExecInput::GetBuf() const { return buf.get(); }
 
-u32 ExecInput::GetLen() const {
-    return len;
-}
+u32 ExecInput::GetLen() const { return len; }
 
-u64 ExecInput::GetID() const {
-    return id;
-}
+u64 ExecInput::GetID() const { return id; }
+
+}  // namespace fuzzuf::exec_input
