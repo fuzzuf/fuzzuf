@@ -6,6 +6,7 @@ add_library(
   mopt_hierarflow_routines.cpp
   mopt_optimizer.cpp
   mopt_state.cpp
+  mopt_setting.cpp
   mopt_testcase.cpp
 )
 

@@ -12,6 +12,10 @@ using fuzzuf::mutator::INSERT_EXTRA;
 using fuzzuf::mutator::OVERWRITE_WITH_AEXTRA;
 using fuzzuf::mutator::OVERWRITE_WITH_EXTRA;
 
+MOptHavocCaseDistrib::MOptHavocCaseDistrib(optimizer::MOptOptimizer* mopt)
+    : mopt(std::move(mopt)) {}
+MOptHavocCaseDistrib::~MOptHavocCaseDistrib() {}
+
 /**
  * @fn
  * This function represents the probability distributions of mutation operators
