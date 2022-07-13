@@ -9,7 +9,8 @@ MOptState::MOptState(
     std::shared_ptr<const MOptSetting> setting,
     std::shared_ptr<executor::AFLExecutorInterface> executor,
     std::unique_ptr<optimizer::Optimizer<u32>>&& mutop_optimizer
-) : afl::AFLStateTemplate<MOptTestcase>(setting, executor, std::move(mutop_optimizer))
+) : afl::AFLStateTemplate<MOptTestcase>(setting, executor, std::move(mutop_optimizer)),
+    setting(setting)
 {
     UpdateSpliceCycles(); // init
 }
