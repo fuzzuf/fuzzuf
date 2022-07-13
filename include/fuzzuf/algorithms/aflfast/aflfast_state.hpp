@@ -21,11 +21,6 @@
 
 #include <memory>
 
-#ifndef FUZZUF_INCLUDE_ALGORITHM_AFLFAST_AFLFAST_STATE_HPP
-#define FUZZUF_INCLUDE_ALGORITHM_AFLFAST_AFLFAST_STATE_HPP
-
-#include <memory>
-
 #include "fuzzuf/optimizer/optimizer.hpp"
 #include "fuzzuf/algorithms/afl/afl_state.hpp"
 #include "fuzzuf/algorithms/aflfast/aflfast_option.hpp"

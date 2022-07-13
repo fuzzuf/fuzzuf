@@ -13,7 +13,7 @@ namespace other {
 MOptUpdate::MOptUpdate(MOptState& state) : state(state) {}
 
 MOptMidCalleeRef MOptUpdate::operator()(
-    std::shared_ptr<MOptTestcase> testcase) {
+    [[maybe_unused]] std::shared_ptr<MOptTestcase> testcase) {
   auto last_splice_cycle = fuzzuf::optimizer::Store::GetInstance().Get(
       fuzzuf::optimizer::keys::LastSpliceCycle);
 
@@ -61,7 +61,7 @@ CheckPacemakerThreshold::CheckPacemakerThreshold(MOptState& state,
     : state(state), abandon_entry(abandon_entry) {}
 
 MOptMidCalleeRef CheckPacemakerThreshold::operator()(
-    std::shared_ptr<MOptTestcase> testcase) {
+    [[maybe_unused]] std::shared_ptr<MOptTestcase> testcase) {
   u64 cur_ms_lv = fuzzuf::utils::GetCurTimeMs();
   if (!(state.pacemaker_mode == false &&
         ((cur_ms_lv - state.last_path_time <

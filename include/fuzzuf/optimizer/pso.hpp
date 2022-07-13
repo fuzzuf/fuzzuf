@@ -69,16 +69,16 @@ protected:
     std::array<double, Demention> best_position;
     double best_fitness;
 
-    // parameters
-    double w = 0.729; // inertia weight
-    double c1 = 1.49445; // cognitive weight
-    double c2 = 1.49445; // social weight
-
     // constraints
     double min_position;
     double max_position;
     double min_velocity;
     double max_velocity;
+
+    // parameters
+    double w = 0.729; // inertia weight
+    double c1 = 1.49445; // cognitive weight
+    double c2 = 1.49445; // social weight
 
     bool opt_minimize = true;
 };
