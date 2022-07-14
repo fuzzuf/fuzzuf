@@ -25,6 +25,7 @@ RUN apt-get update \
     dia \
     wget \
     curl \
+    afl++-clang \
   && apt-get clean \
   && rm -rf /var/lib/apt/lists/*
 
