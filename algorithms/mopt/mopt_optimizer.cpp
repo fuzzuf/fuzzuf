@@ -3,6 +3,7 @@
 #include <random>
 #include <vector>
 
+#include "fuzzuf/optimizer/keys.hpp"
 #include "fuzzuf/utils/common.hpp"
 
 namespace fuzzuf::optimizer {

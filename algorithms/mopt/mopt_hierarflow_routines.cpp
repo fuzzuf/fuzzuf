@@ -80,6 +80,10 @@ MOptMidCalleeRef CheckPacemakerThreshold::operator()(
 
 namespace mutation {
 
+using HavocBase = afl::routine::mutation::HavocTemplate<MOptState>;
+
+MOptHavoc::MOptHavoc(MOptState& state) : HavocBase(state) {}
+
 bool MOptHavoc::DoHavoc(AFLMutatorTemplate<MOptState>& mutator,
                         optimizer::Optimizer<u32>& mutop_optimizer,
                         void (*custom_cases)(u32, u8*&, u32&,
@@ -164,6 +168,10 @@ bool MOptHavoc::DoHavoc(AFLMutatorTemplate<MOptState>& mutator,
   return false;
 }
 
+using SplicingBase = afl::routine::mutation::SplicingTemplate<MOptState>;
+
+Splicing::Splicing(MOptState& state) : SplicingBase(state) {}
+
 MOptMutCalleeRef Splicing::operator()(AFLMutatorTemplate<MOptState>& mutator) {
   // Declare the alias just to omit "this->" in this function.
   auto& state = this->state;
@@ -214,8 +222,8 @@ MOptMutCalleeRef Splicing::operator()(AFLMutatorTemplate<MOptState>& mutator) {
             mutator, *state.mutop_optimizer,
             [](int, u8*&, u32&, const std::vector<AFLDictData>&,
                const std::vector<AFLDictData>&) {},
-            fuzzuf::utils::StrPrintf("splice %u", splice_cycle), "splice",
-            state.orig_perf, afl::option::GetSpliceHavoc(state),
+            fuzzuf::utils::StrPrintf("MOpt-splice %u", splice_cycle),
+            "MOpt-splice", state.orig_perf, afl::option::GetSpliceHavoc(state),
             afl::option::STAGE_SPLICE)) {
       this->SetResponseValue(true);
       return this->GoToParent();
