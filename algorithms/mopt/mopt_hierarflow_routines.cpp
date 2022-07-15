@@ -3,6 +3,7 @@
 #include "fuzzuf/algorithms/mopt/mopt_optimizer.hpp"
 #include "fuzzuf/algorithms/mopt/mopt_option.hpp"
 #include "fuzzuf/algorithms/mopt/mopt_option_get_splice_cycles.hpp"
+#include "fuzzuf/logger/logger.hpp"
 #include "fuzzuf/optimizer/pso.hpp"
 #include "fuzzuf/utils/common.hpp"
 
@@ -15,7 +16,7 @@ MOptUpdate::MOptUpdate(MOptState& state) : state(state) {}
 MOptMidCalleeRef MOptUpdate::operator()(
     [[maybe_unused]] std::shared_ptr<MOptTestcase> testcase) {
   auto last_splice_cycle = fuzzuf::optimizer::Store::GetInstance().Get(
-      fuzzuf::optimizer::keys::LastSpliceCycle);
+      fuzzuf::optimizer::keys::LastSpliceCycle, true);
 
   if (last_splice_cycle >= afl::option::GetSpliceCycles(state)) {
     state.UpdateSpliceCycles();
@@ -26,11 +27,11 @@ MOptMidCalleeRef MOptUpdate::operator()(
   }
 
   auto new_testcases = fuzzuf::optimizer::Store::GetInstance().Get(
-      fuzzuf::optimizer::keys::NewTestcases);
+      fuzzuf::optimizer::keys::NewTestcases, true);
   auto havoc_operator_finds = fuzzuf::optimizer::Store::GetInstance().Get(
-      fuzzuf::optimizer::keys::HavocOperatorFinds);
+      fuzzuf::optimizer::keys::HavocOperatorFinds, true);
   auto selected_case_histogram = fuzzuf::optimizer::Store::GetInstance().Get(
-      fuzzuf::optimizer::keys::SelectedCaseHistogram);
+      fuzzuf::optimizer::keys::SelectedCaseHistogram, true);
 
   // pilot mode (update local best)
   if (!state.core_mode) {
@@ -115,7 +116,7 @@ bool MOptHavoc::DoHavoc(AFLMutatorTemplate<MOptState>& mutator,
                   custom_cases);
 
     auto& new_testcases = fuzzuf::optimizer::Store::GetInstance().GetMutRef(
-        fuzzuf::optimizer::keys::NewTestcases);
+        fuzzuf::optimizer::keys::NewTestcases, true);
     new_testcases++;
 
     u64 havoc_finds = state.queued_paths + state.unique_crashes;
@@ -127,10 +128,10 @@ bool MOptHavoc::DoHavoc(AFLMutatorTemplate<MOptState>& mutator,
     if (unlikely(havoc_finds > 0)) {
       auto selected_case_histogram =
           fuzzuf::optimizer::Store::GetInstance().Get(
-              fuzzuf::optimizer::keys::SelectedCaseHistogram);
+              fuzzuf::optimizer::keys::SelectedCaseHistogram, true);
       auto& havoc_operator_finds =
           fuzzuf::optimizer::Store::GetInstance().GetMutRef(
-              fuzzuf::optimizer::keys::HavocOperatorFinds);
+              fuzzuf::optimizer::keys::HavocOperatorFinds, true);
       for (size_t i = 0; i < selected_case_histogram.size(); i++) {
         if (selected_case_histogram[i] > 0) {
           havoc_operator_finds[state.core_mode ? 1 : 0][i] += havoc_finds;
