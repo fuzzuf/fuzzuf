@@ -47,6 +47,7 @@ class MOptOptimizer : public PSO<NUM_CASE, SwarmNum> {
   void SetScore(size_t, double);
   void PSOUpdate();  // pso_updating
   void UpdateInertia();
+  bool IncrementSwarmIdx();
 
   bool opt_minimize = false;
 

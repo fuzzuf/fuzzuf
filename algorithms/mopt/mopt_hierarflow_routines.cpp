@@ -44,6 +44,10 @@ MOptMidCalleeRef MOptUpdate::operator()(
         state.mopt->SetScore(i, score);
       }
       state.mopt->UpdateLocalBest();
+
+      if (state.mopt->IncrementSwarmIdx()) {  // all swarms are visited
+        state.core_mode = true;
+      }
     }
   }
 
@@ -51,6 +55,7 @@ MOptMidCalleeRef MOptUpdate::operator()(
   if (state.core_mode) {
     if (unlikely(new_testcases > option::GetPeriodCore<option::MOptTag>())) {
       state.mopt->UpdateGlobalBest();
+      state.core_mode = false;
     }
   }
 

@@ -76,4 +76,10 @@ void MOptOptimizer::UpdateInertia() {
   ++g_now %= G_MAX;
 }
 
+bool MOptOptimizer::IncrementSwarmIdx() {
+  idx++;
+  idx %= swarm.size();
+  return idx == 0;
+}
+
 }  // namespace fuzzuf::optimizer
