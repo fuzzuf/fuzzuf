@@ -21,8 +21,10 @@ struct MOptState : public afl::AFLStateTemplate<MOptTestcase> {
 
     void UpdateSpliceCycles();
 
+    void ShowStats(void);
+
     bool pacemaker_mode = false; // key_puppet: (0: false, 1: true)
-    bool core_mode = true; // key_module: (0: pilot, 1: core)
+    bool core_mode = false; // key_module: (0: pilot, 1: core)
 
     u32 splice_cycles_limit = 0;
 
