@@ -68,9 +68,9 @@ struct MOptHavoc : public HavocTemplate<MOptState> {
                u32 perf_score, s32 stage_max_multiplier, int stage_idx);
 };
 
-struct Splicing : public SplicingTemplate<MOptState> {
+struct MOptSplicing : public SplicingTemplate<MOptState> {
  public:
-  Splicing(MOptState &state);
+  MOptSplicing(MOptState &state);
 
   MOptMutCalleeRef operator()(AFLMutatorTemplate<MOptState> &mutator) override;
 };

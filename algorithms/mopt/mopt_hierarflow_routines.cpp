@@ -173,11 +173,11 @@ bool MOptHavoc::DoHavoc(AFLMutatorTemplate<MOptState>& mutator,
   return false;
 }
 
-using SplicingBase = afl::routine::mutation::SplicingTemplate<MOptState>;
+MOptSplicing::MOptSplicing(MOptState& state)
+    : afl::routine::mutation::SplicingTemplate<MOptState>(state) {}
 
-Splicing::Splicing(MOptState& state) : SplicingBase(state) {}
-
-MOptMutCalleeRef Splicing::operator()(AFLMutatorTemplate<MOptState>& mutator) {
+MOptMutCalleeRef MOptSplicing::operator()(
+    AFLMutatorTemplate<MOptState>& mutator) {
   // Declare the alias just to omit "this->" in this function.
   auto& state = this->state;
 
