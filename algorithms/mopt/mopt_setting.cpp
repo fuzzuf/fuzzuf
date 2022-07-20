@@ -22,9 +22,12 @@ namespace fuzzuf::algorithm::mopt {
 MOptSetting::MOptSetting(const std::vector<std::string> &argv,
                          const std::string &in_dir, const std::string &out_dir,
                          u32 exec_timelimit_ms, u64 exec_memlimit, bool forksrv,
-                         bool dumb_mode, int cpuid_to_bind)
+                         bool dumb_mode, int cpuid_to_bind, u64 mopt_limit_time,
+                         u64 mopt_most_time)
     : AFLSetting(argv, in_dir, out_dir, exec_timelimit_ms, exec_memlimit,
-                 forksrv, dumb_mode, cpuid_to_bind) {}
+                 forksrv, dumb_mode, cpuid_to_bind),
+      mopt_limit_time(mopt_limit_time),
+      mopt_most_time(mopt_most_time) {}
 
 MOptSetting::~MOptSetting() {}
 

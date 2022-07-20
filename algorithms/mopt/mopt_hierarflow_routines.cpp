@@ -70,10 +70,9 @@ MOptMidCalleeRef CheckPacemakerThreshold::operator()(
     [[maybe_unused]] std::shared_ptr<MOptTestcase> testcase) {
   u64 cur_ms_lv = fuzzuf::utils::GetCurTimeMs();
   if (!(state.pacemaker_mode == false &&
-        ((cur_ms_lv - state.last_path_time <
-          state.setting->limit_time_puppet) ||
-         (state.last_crash_time != 0 && cur_ms_lv - state.last_crash_time <
-                                            state.setting->limit_time_puppet) ||
+        ((cur_ms_lv - state.last_path_time < state.setting->mopt_limit_time) ||
+         (state.last_crash_time != 0 &&
+          cur_ms_lv - state.last_crash_time < state.setting->mopt_limit_time) ||
          (state.last_path_time == 0)))) {
     state.pacemaker_mode = true;
     return abandon_entry;

@@ -47,6 +47,8 @@ struct MOptFuzzerOptions {
   bool forksrv;                        // Optional
   std::vector<std::string> dict_file;  // Optional
   bool frida_mode;                     // Optional
+  u64 mopt_limit_time = 1;
+  u64 mopt_most_time = 0;
 
   // Default values
   MOptFuzzerOptions() : forksrv(true), frida_mode(false){};
@@ -86,7 +88,17 @@ std::unique_ptr<TFuzzer> BuildMOptFuzzerFromArgs(
           "frida",
           po::value<bool>(&mopt_options.frida_mode)
               ->default_value(mopt_options.frida_mode),
-          "Enable/disable frida mode. Default to false.");
+          "Enable/disable frida mode. Default to false.")(
+          "limit,L",
+          po::value<u64>(&mopt_options.mopt_limit_time)
+              ->default_value(mopt_options.mopt_limit_time),
+          "use MOpt-AFL and set the limit time for entering the pacemaker "
+          "fuzzing mode (set 0 will enter pacemaker mode at first). For "
+          "instance, (-L 30): if MOpt-AFL finishes the mutation of one input "
+          "while does not find any interesting test case for more than 30 min, "
+          "MOpt-AFL will enter the pacemaker fuzzing mode (it may take three "
+          "or four days for MOpt-AFL to enter the pacemaker fuzzing mode when "
+          "'-L 30').");
 
   po::variables_map vm;
   po::store(
@@ -151,7 +163,8 @@ std::unique_ptr<TFuzzer> BuildMOptFuzzerFromArgs(
       global_options.exec_timelimit_ms.value_or(GetExecTimeout<MOptTag>()),
       mem_limit, mopt_options.forksrv,
       /* dumb_mode */ false,  // FIXME: add dumb_mode
-      fuzzuf::utils::CPUID_BIND_WHICHEVER);
+      fuzzuf::utils::CPUID_BIND_WHICHEVER, mopt_options.mopt_limit_time,
+      mopt_options.mopt_most_time);
 
   // NativeLinuxExecutor needs the directory specified by "out_dir" to be
   // already set up so we need to create the directory first, and then

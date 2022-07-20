@@ -14,7 +14,7 @@ MOptState::MOptState(
                                           std::move(mutop_optimizer)),
       setting(setting) {
   // set core_mode if -L is 0
-  if (setting->limit_time_puppet == 0) {
+  if (setting->mopt_limit_time == 0) {
     core_mode = true;
   }
 
