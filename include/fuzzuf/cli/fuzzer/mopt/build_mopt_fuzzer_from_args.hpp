@@ -175,6 +175,20 @@ std::unique_ptr<TFuzzer> BuildMOptFuzzerFromArgs(
       break;
     }
 
+    case ExecutorKind::FORKSERVER: {
+      auto lfe = std::make_shared<fuzzuf::executor::LinuxForkServerExecutor>(
+          fuzzuf::executor::LinuxForkServerExecutorParameters()
+              .set_argv(setting->argv)
+              .set_exec_timelimit_ms(setting->exec_timelimit_ms)
+              .set_exec_memlimit(setting->exec_memlimit)
+              .set_path_to_write_input(setting->out_dir /
+                                       GetDefaultOutfile<MOptTag>())
+              .set_afl_shm_size(GetMapSize<MOptTag>())  // afl_shm_size
+              .move());
+      executor = std::make_shared<TExecutor>(std::move(lfe));
+      break;
+    }
+
     case ExecutorKind::QEMU: {
       // NOTE: Assuming GetMapSize<MOptTag>() == QEMUExecutor::QEMU_SHM_SIZE
       auto qe = std::make_shared<fuzzuf::executor::QEMUExecutor>(
