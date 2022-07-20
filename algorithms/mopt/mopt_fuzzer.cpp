@@ -79,13 +79,13 @@ void MOptFuzzer::BuildFuzzFlow(void) {
     using fuzzuf::algorithm::mopt::routine::other::MOptUpdate;
 
     auto check_pacemaker =
-        CreateNode<CheckPacemakerThreshold>(*state, *abandon_node);
+        CreateNode<CheckPacemakerThreshold>(*state, *apply_rand_muts);
     auto update_mopt = CreateNode<MOptUpdate>(*state);
 
     fuzz_loop << (cull_queue || select_seed);
 
     select_seed << (consider_skip_mut || retry_calibrate || trim_case ||
-                    calc_score ||
+                    calc_score || check_pacemaker ||
                     apply_det_muts
                         << (bit_flip1
                                 << execute
@@ -105,7 +105,6 @@ void MOptFuzzer::BuildFuzzFlow(void) {
                                                 << normal_update.HardLink() ||
                             auto_dict_overwrite << execute.HardLink()
                                                 << normal_update.HardLink()) ||
-                    check_pacemaker ||
                     apply_rand_muts
                         << (mopt_havoc << execute.HardLink()
                                        << normal_update.HardLink() ||
