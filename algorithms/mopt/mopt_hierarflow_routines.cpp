@@ -131,7 +131,7 @@ bool MOptHavoc::DoHavoc(AFLMutatorTemplate<MOptState>& mutator,
 
     if (this->CallSuccessors(mutator.GetBuf(), mutator.GetLen())) return true;
 
-    havoc_finds -= state.queued_paths + state.unique_crashes;
+    havoc_finds = state.queued_paths + state.unique_crashes - havoc_finds;
 
     if (unlikely(havoc_finds > 0)) {
       auto selected_case_histogram =
