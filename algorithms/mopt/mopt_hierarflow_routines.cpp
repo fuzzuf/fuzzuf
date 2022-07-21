@@ -7,6 +7,8 @@
 #include "fuzzuf/optimizer/pso.hpp"
 #include "fuzzuf/utils/common.hpp"
 
+#include "fuzzuf/logger/logger.hpp"
+
 namespace fuzzuf::algorithm::mopt::routine {
 
 namespace other {
@@ -93,9 +95,9 @@ MOptMidCalleeRef CheckPacemakerThreshold::operator()(
 
 namespace mutation {
 
-MOptHavoc::MOptHavoc(MOptState &state) : HavocTemplate<MOptState>(state) {}
+MOptHavoc::MOptHavoc(MOptState &state) : HavocBaseTemplate<MOptState>(state) {}
 
-MOptMutCalleeRef MOptHavoc::operator()(AFLMutatorTemplate<MOptState> &mutator) {
+MOptMutCalleeRef MOptHavoc::operator()(MOptMutator &mutator) {
   // Declare the alias just to omit "this->" in this function.
   auto &state = this->state;
 
@@ -106,6 +108,8 @@ MOptMutCalleeRef MOptHavoc::operator()(AFLMutatorTemplate<MOptState> &mutator) {
     stage_max_multiplier = afl::option::GetHavocCycles(state);
 
   using afl::dictionary::AFLDictData;
+
+  ERROR("kasu!!!!!!!!!!!");
 
   if (this->DoHavoc(
           mutator, *state.mutop_optimizer,
@@ -121,10 +125,9 @@ MOptMutCalleeRef MOptHavoc::operator()(AFLMutatorTemplate<MOptState> &mutator) {
 }
 
 MOptSplicing::MOptSplicing(MOptState &state)
-    : SplicingTemplate<MOptState>(state) {}
+    : HavocBaseTemplate<MOptState>(state) {}
 
-MOptMutCalleeRef MOptSplicing::operator()(
-    AFLMutatorTemplate<MOptState> &mutator) {
+MOptMutCalleeRef MOptSplicing::operator()(MOptMutator &mutator) {
   // Declare the alias just to omit "this->" in this function.
   auto &state = this->state;
 

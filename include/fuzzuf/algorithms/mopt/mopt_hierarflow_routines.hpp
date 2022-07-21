@@ -50,20 +50,21 @@ namespace mutation {
 
 using MOptMutCalleeRef =
     fuzzuf::algorithm::afl::routine::mutation::AFLMutCalleeRef<MOptState>;
-using fuzzuf::algorithm::afl::AFLMutatorTemplate;
+using MOptMutator = fuzzuf::algorithm::afl::AFLMutatorTemplate<MOptState>;
+using fuzzuf::algorithm::afl::routine::mutation::HavocBaseTemplate;
 using fuzzuf::algorithm::afl::routine::mutation::HavocTemplate;
 using fuzzuf::algorithm::afl::routine::mutation::SplicingTemplate;
 
-struct MOptHavoc : public HavocTemplate<MOptState> {
+struct MOptHavoc : public HavocBaseTemplate<MOptState> {
  public:
   MOptHavoc(MOptState &state);
-  MOptMutCalleeRef operator()(AFLMutatorTemplate<MOptState> &mutator) override;
+  MOptMutCalleeRef operator()(MOptMutator &mutator);
 };
 
-struct MOptSplicing : public SplicingTemplate<MOptState> {
+struct MOptSplicing : public HavocBaseTemplate<MOptState> {
  public:
   MOptSplicing(MOptState &state);
-  MOptMutCalleeRef operator()(AFLMutatorTemplate<MOptState> &mutator) override;
+  MOptMutCalleeRef operator()(MOptMutator &mutator);
 };
 
 }  // namespace mutation

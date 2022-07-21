@@ -23,8 +23,6 @@ void MOptFuzzer::BuildFuzzFlow(void) {
     using hierarflow::CreateDummyParent;
     using hierarflow::CreateNode;
 
-    using namespace fuzzuf::algorithm::mopt::routine;
-
     // head node
     fuzz_loop = CreateDummyParent<void(void)>();
 
@@ -61,8 +59,13 @@ void MOptFuzzer::BuildFuzzFlow(void) {
         CreateNode<UserDictInsertTemplate<MOptState>>(*state);
     auto auto_dict_overwrite =
         CreateNode<AutoDictOverwriteTemplate<MOptState>>(*state);
-    auto havoc = CreateNode<mutation::MOptHavoc>(*state);
-    auto splicing = CreateNode<mutation::MOptSplicing>(*state);
+
+    // MOpt-specific mutations
+    using fuzzuf::algorithm::mopt::routine::mutation::MOptHavoc;
+    using fuzzuf::algorithm::mopt::routine::mutation::MOptSplicing;
+
+    auto havoc = CreateNode<MOptHavoc>(*state);
+    auto splicing = CreateNode<MOptSplicing>(*state);
 
     // execution
     auto execute = CreateNode<ExecutePUTTemplate<MOptState>>(*state);
