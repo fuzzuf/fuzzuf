@@ -3,11 +3,8 @@
 #include "fuzzuf/algorithms/mopt/mopt_optimizer.hpp"
 #include "fuzzuf/algorithms/mopt/mopt_option.hpp"
 #include "fuzzuf/algorithms/mopt/mopt_option_get_splice_cycles.hpp"
-#include "fuzzuf/logger/logger.hpp"
 #include "fuzzuf/optimizer/pso.hpp"
 #include "fuzzuf/utils/common.hpp"
-
-#include "fuzzuf/logger/logger.hpp"
 
 namespace fuzzuf::algorithm::mopt::routine {
 
@@ -108,8 +105,6 @@ MOptMutCalleeRef MOptHavoc::operator()(MOptMutator &mutator) {
     stage_max_multiplier = afl::option::GetHavocCycles(state);
 
   using afl::dictionary::AFLDictData;
-
-  ERROR("kasu!!!!!!!!!!!");
 
   if (this->DoHavoc(
           mutator, *state.mutop_optimizer,

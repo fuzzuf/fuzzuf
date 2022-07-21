@@ -58,13 +58,13 @@ using fuzzuf::algorithm::afl::routine::mutation::SplicingTemplate;
 struct MOptHavoc : public HavocBaseTemplate<MOptState> {
  public:
   MOptHavoc(MOptState &state);
-  MOptMutCalleeRef operator()(MOptMutator &mutator);
+  MOptMutCalleeRef operator()(MOptMutator &mutator) override;
 };
 
 struct MOptSplicing : public HavocBaseTemplate<MOptState> {
  public:
   MOptSplicing(MOptState &state);
-  MOptMutCalleeRef operator()(MOptMutator &mutator);
+  MOptMutCalleeRef operator()(MOptMutator &mutator) override;
 };
 
 }  // namespace mutation

@@ -63,7 +63,7 @@ static void usage(po::options_description &desc) {
 }
 
 // Used only for CLI
-template <class TFuzzer, class TAFLFuzzer, class TExecutor>
+template <class TFuzzer, class TMOptFuzzer, class TExecutor>
 std::unique_ptr<TFuzzer> BuildMOptFuzzerFromArgs(
     FuzzerArgs &fuzzer_args, GlobalFuzzerOptions &global_options) {
   po::positional_options_description pargs_desc;
@@ -238,7 +238,7 @@ std::unique_ptr<TFuzzer> BuildMOptFuzzerFromArgs(
   fuzzuf::algorithm::afl::dictionary::SortDictByLength(state->extras);
 
   return std::unique_ptr<TFuzzer>(
-      dynamic_cast<TFuzzer *>(new TAFLFuzzer(std::move(state))));
+      dynamic_cast<TFuzzer *>(new TMOptFuzzer(std::move(state))));
 }
 
 }  // namespace fuzzuf::cli::fuzzer::mopt
