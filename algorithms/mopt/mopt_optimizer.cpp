@@ -52,8 +52,6 @@ void MOptOptimizer::UpdateGlobalBest() {
     // TODO?
   }
 
-  auto havoc_operator_finds = fuzzuf::optimizer::Store::GetInstance().Get(
-      fuzzuf::optimizer::keys::HavocOperatorFinds);
   std::array<u64, NUM_CASE> havoc_operator_dist;
   havoc_operator_dist.fill(0);
 

@@ -11,12 +11,23 @@ namespace fuzzuf::algorithm::mopt::routine {
 
 namespace other {
 
-MOptUpdate::MOptUpdate(MOptState& state) : state(state) {}
+using mopt::option::MOptTag;
+
+MOptUpdate::MOptUpdate(MOptState &state) : state(state) {}
 
 MOptMidCalleeRef MOptUpdate::operator()(
     [[maybe_unused]] std::shared_ptr<MOptTestcase> testcase) {
+  // retrive optimizer values
   auto last_splice_cycle = fuzzuf::optimizer::Store::GetInstance().Get(
       fuzzuf::optimizer::keys::LastSpliceCycle, true);
+  auto havoc_operator_finds = fuzzuf::optimizer::Store::GetInstance().Get(
+      fuzzuf::optimizer::keys::HavocOperatorFinds, true);
+
+  // update havoc_operator_finds
+  for (size_t i = 0; i < havoc_operator_finds.size(); i++) {
+    state.mopt->havoc_operator_finds[state.core_mode ? 1 : 0][i] +=
+        havoc_operator_finds[i];
+  }
 
   if (last_splice_cycle >= afl::option::GetSpliceCycles(state)) {
     state.UpdateSpliceCycles();
@@ -28,18 +39,16 @@ MOptMidCalleeRef MOptUpdate::operator()(
 
   auto new_testcases = fuzzuf::optimizer::Store::GetInstance().Get(
       fuzzuf::optimizer::keys::NewTestcases, true);
-  auto havoc_operator_finds = fuzzuf::optimizer::Store::GetInstance().Get(
-      fuzzuf::optimizer::keys::HavocOperatorFinds, true);
   auto selected_case_histogram = fuzzuf::optimizer::Store::GetInstance().Get(
       fuzzuf::optimizer::keys::SelectedCaseHistogram, true);
 
   // pilot mode (update local best)
   if (!state.core_mode) {
-    if (unlikely(new_testcases > option::GetPeriodPilot<option::MOptTag>())) {
+    if (unlikely(new_testcases > mopt::option::GetPeriodPilot<MOptTag>())) {
       for (size_t i = 0; i < selected_case_histogram.size(); i++) {
         double score = 0.0;
         if (selected_case_histogram[i] > 0) {
-          score = havoc_operator_finds[0][i] / selected_case_histogram[i];
+          score = havoc_operator_finds[i] / selected_case_histogram[i];
         }
         state.mopt->SetScore(i, score);
       }
@@ -53,7 +62,7 @@ MOptMidCalleeRef MOptUpdate::operator()(
 
   // core mode (update global best)
   if (state.core_mode) {
-    if (unlikely(new_testcases > option::GetPeriodCore<option::MOptTag>())) {
+    if (unlikely(new_testcases > mopt::option::GetPeriodCore<MOptTag>())) {
       state.mopt->UpdateGlobalBest();
       state.core_mode = false;
     }
@@ -62,7 +71,7 @@ MOptMidCalleeRef MOptUpdate::operator()(
   return this->GoToDefaultNext();
 }
 
-CheckPacemakerThreshold::CheckPacemakerThreshold(MOptState& state,
+CheckPacemakerThreshold::CheckPacemakerThreshold(MOptState &state,
                                                  MOptMidCalleeRef abandon_entry)
     : state(state), abandon_entry(abandon_entry) {}
 
@@ -84,108 +93,47 @@ MOptMidCalleeRef CheckPacemakerThreshold::operator()(
 
 namespace mutation {
 
-using HavocBase = afl::routine::mutation::HavocTemplate<MOptState>;
+MOptHavoc::MOptHavoc(MOptState &state) : HavocTemplate<MOptState>(state) {}
 
-MOptHavoc::MOptHavoc(MOptState& state) : HavocBase(state) {}
+MOptMutCalleeRef MOptHavoc::operator()(AFLMutatorTemplate<MOptState> &mutator) {
+  // Declare the alias just to omit "this->" in this function.
+  auto &state = this->state;
 
-bool MOptHavoc::DoHavoc(AFLMutatorTemplate<MOptState>& mutator,
-                        optimizer::Optimizer<u32>& mutop_optimizer,
-                        void (*custom_cases)(u32, u8*&, u32&,
-                                             const std::vector<AFLDictData>&,
-                                             const std::vector<AFLDictData>&),
-                        const std::string& stage_name,
-                        const std::string& stage_short, u32 perf_score,
-                        s32 stage_max_multiplier, int stage_idx) {
-  state.stage_name = stage_name;
-  state.stage_short = stage_short;
-  state.stage_max = stage_max_multiplier * perf_score / state.havoc_div / 100;
-  state.stage_cur_byte = -1;
+  s32 stage_max_multiplier;
+  if (state.doing_det)
+    stage_max_multiplier = afl::option::GetHavocCyclesInit(state);
+  else
+    stage_max_multiplier = afl::option::GetHavocCycles(state);
 
-  if (state.stage_max < afl::option::GetHavocMin(state)) {
-    state.stage_max = afl::option::GetHavocMin(state);
+  using afl::dictionary::AFLDictData;
+
+  if (this->DoHavoc(
+          mutator, *state.mutop_optimizer,
+          [](int, u8 *&, u32 &, const std::vector<AFLDictData> &,
+             const std::vector<AFLDictData> &) {},
+          "MOpt-havoc", "MOpt-havoc", state.orig_perf, stage_max_multiplier,
+          afl::option::STAGE_HAVOC)) {
+    this->SetResponseValue(true);
+    return this->GoToParent();
   }
 
-  u64 orig_hit_cnt = state.queued_paths + state.unique_crashes;
-
-  u64 havoc_queued = state.queued_paths;
-
-  /* We essentially just do several thousand runs (depending on perf_score)
-     where we take the input file and make random stacked tweaks. */
-
-  for (state.stage_cur = 0; state.stage_cur < state.stage_max;
-       state.stage_cur++) {
-    using afl::util::UR;
-
-    u32 use_stacking =
-        1 << (1 + UR(afl::option::GetHavocStackPow2(state), state.rand_fd));
-
-    state.stage_cur_val = use_stacking;
-    mutator.Havoc(use_stacking, state.extras, state.a_extras, mutop_optimizer,
-                  custom_cases);
-
-    auto& new_testcases = fuzzuf::optimizer::Store::GetInstance().GetMutRef(
-        fuzzuf::optimizer::keys::NewTestcases, true);
-    new_testcases++;
-
-    u64 havoc_finds = state.queued_paths + state.unique_crashes;
-
-    if (this->CallSuccessors(mutator.GetBuf(), mutator.GetLen())) return true;
-
-    havoc_finds = state.queued_paths + state.unique_crashes - havoc_finds;
-
-    if (unlikely(havoc_finds > 0)) {
-      auto selected_case_histogram =
-          fuzzuf::optimizer::Store::GetInstance().Get(
-              fuzzuf::optimizer::keys::SelectedCaseHistogram, true);
-      auto& havoc_operator_finds =
-          fuzzuf::optimizer::Store::GetInstance().GetMutRef(
-              fuzzuf::optimizer::keys::HavocOperatorFinds, true);
-      for (size_t i = 0; i < selected_case_histogram.size(); i++) {
-        if (selected_case_histogram[i] > 0) {
-          havoc_operator_finds[state.core_mode ? 1 : 0][i] += havoc_finds;
-        }
-      }
-    }
-
-    /* out_buf might have been mangled a bit, so let's restore it to its
-       original size and shape. */
-
-    mutator.RestoreHavoc();
-
-    /* If we're finding new stuff, let's run for a bit longer, limits
-       permitting. */
-
-    if (state.queued_paths != havoc_queued) {
-      if (perf_score <= afl::option::GetHavocMaxMult(state) * 100) {
-        state.stage_max *= 2;
-        perf_score *= 2;
-      }
-
-      havoc_queued = state.queued_paths;
-    }
-  }
-
-  u64 new_hit_cnt = state.queued_paths + state.unique_crashes;
-  state.stage_finds[stage_idx] += new_hit_cnt - orig_hit_cnt;
-  state.stage_cycles[stage_idx] += state.stage_max;
-
-  return false;
+  return this->GoToDefaultNext();
 }
 
-MOptSplicing::MOptSplicing(MOptState& state)
-    : afl::routine::mutation::SplicingTemplate<MOptState>(state) {}
+MOptSplicing::MOptSplicing(MOptState &state)
+    : SplicingTemplate<MOptState>(state) {}
 
 MOptMutCalleeRef MOptSplicing::operator()(
-    AFLMutatorTemplate<MOptState>& mutator) {
+    AFLMutatorTemplate<MOptState> &mutator) {
   // Declare the alias just to omit "this->" in this function.
-  auto& state = this->state;
+  auto &state = this->state;
 
   if (!state.use_splicing || state.setting->ignore_finds) {
     return this->GoToDefaultNext();
   }
 
   u32 splice_cycle = 0;
-  while (splice_cycle++ < afl::option::GetSpliceCycles<MOptState>(state) &&
+  while (splice_cycle++ < afl::option::GetSpliceCycles(state) &&
          state.queued_paths > 1 && mutator.GetSource().GetLen() > 1) {
     /* Pick a random queue entry and seek to it. Don't splice with yourself. */
 
@@ -207,7 +155,7 @@ MOptMutCalleeRef MOptSplicing::operator()(
 
     if (tid == state.case_queue.size()) continue;
 
-    auto& target_case = *state.case_queue[tid];
+    auto &target_case = *state.case_queue[tid];
     state.splicing_with = tid;
 
     /* Read the testcase into a new buffer. */
@@ -224,8 +172,8 @@ MOptMutCalleeRef MOptSplicing::operator()(
 
     if (this->DoHavoc(
             mutator, *state.mutop_optimizer,
-            [](int, u8*&, u32&, const std::vector<AFLDictData>&,
-               const std::vector<AFLDictData>&) {},
+            [](int, u8 *&, u32 &, const std::vector<AFLDictData> &,
+               const std::vector<AFLDictData> &) {},
             fuzzuf::utils::StrPrintf("MOpt-splice %u", splice_cycle),
             "MOpt-splice", state.orig_perf, afl::option::GetSpliceHavoc(state),
             afl::option::STAGE_SPLICE)) {

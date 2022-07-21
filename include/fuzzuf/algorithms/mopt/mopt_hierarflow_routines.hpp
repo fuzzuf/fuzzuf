@@ -51,27 +51,18 @@ namespace mutation {
 using MOptMutCalleeRef =
     fuzzuf::algorithm::afl::routine::mutation::AFLMutCalleeRef<MOptState>;
 using fuzzuf::algorithm::afl::AFLMutatorTemplate;
-using fuzzuf::algorithm::afl::dictionary::AFLDictData;
 using fuzzuf::algorithm::afl::routine::mutation::HavocTemplate;
 using fuzzuf::algorithm::afl::routine::mutation::SplicingTemplate;
 
 struct MOptHavoc : public HavocTemplate<MOptState> {
  public:
   MOptHavoc(MOptState &state);
-
-  bool DoHavoc(AFLMutatorTemplate<MOptState> &mutator,
-               optimizer::Optimizer<u32> &mutop_optimizer,
-               void (*custom_cases)(u32, u8 *&, u32 &,
-                                    const std::vector<AFLDictData> &,
-                                    const std::vector<AFLDictData> &),
-               const std::string &stage_name, const std::string &stage_short,
-               u32 perf_score, s32 stage_max_multiplier, int stage_idx);
+  MOptMutCalleeRef operator()(AFLMutatorTemplate<MOptState> &mutator) override;
 };
 
 struct MOptSplicing : public SplicingTemplate<MOptState> {
  public:
   MOptSplicing(MOptState &state);
-
   MOptMutCalleeRef operator()(AFLMutatorTemplate<MOptState> &mutator) override;
 };
 

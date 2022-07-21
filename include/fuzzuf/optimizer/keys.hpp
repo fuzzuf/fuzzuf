@@ -20,6 +20,7 @@
 #define FUZZUF_INCLUDE_OPTIMIZER_KEYS_HPP
 
 #include "fuzzuf/algorithms/afl/afl_dict_data.hpp"
+#include "fuzzuf/mutator/havoc_case.hpp"
 #include "fuzzuf/optimizer/store.hpp"
 #include "fuzzuf/utils/common.hpp"
 
@@ -28,12 +29,16 @@ namespace fuzzuf::optimizer::keys {
 namespace {
 using AFLDictRef = utils::NullableRef<
     const std::vector<algorithm::afl::dictionary::AFLDictData>>;
-}
+using fuzzuf::mutator::NUM_CASE;
+}  // namespace
 
 const StoreKey<AFLDictRef> Extras{"extras"};
 const StoreKey<AFLDictRef> AutoExtras{"aextras"};
 const StoreKey<std::array<u32, fuzzuf::mutator::NUM_CASE>>
     SelectedCaseHistogram{"selected_case_histogram"};
+const StoreKey<std::array<u64, NUM_CASE>> HavocOperatorFinds{
+    "havoc_operator_finds"};
+const StoreKey<u32> LastSpliceCycle{"last_splice_cycle"};
 
 }  // namespace fuzzuf::optimizer::keys
 

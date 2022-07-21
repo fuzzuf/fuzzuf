@@ -10,10 +10,7 @@ using fuzzuf::mutator::NUM_CASE;
 
 namespace keys {
 
-const StoreKey<u32> LastSpliceCycle{"last_splice_cycle"};
 const StoreKey<u64> NewTestcases{"new_testcases"};
-const StoreKey<std::array<std::array<u64, NUM_CASE>, 2>> HavocOperatorFinds{
-    "havoc_operator_finds"};  // [0]: pilot, [1]: core
 
 }  // namespace keys
 
@@ -50,6 +47,8 @@ class MOptOptimizer : public PSO<NUM_CASE, SwarmNum> {
   bool IncrementSwarmIdx();
 
   bool opt_minimize = false;
+  std::array<std::array<u64, NUM_CASE>, 2>
+      havoc_operator_finds;  // 0: pilot, 1: core
 
  private:
   std::array<MOptParticle, SwarmNum> swarm;

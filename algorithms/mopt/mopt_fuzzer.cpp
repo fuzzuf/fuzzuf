@@ -61,8 +61,8 @@ void MOptFuzzer::BuildFuzzFlow(void) {
         CreateNode<UserDictInsertTemplate<MOptState>>(*state);
     auto auto_dict_overwrite =
         CreateNode<AutoDictOverwriteTemplate<MOptState>>(*state);
-    auto mopt_havoc = CreateNode<mutation::MOptHavoc>(*state);
-    auto mopt_splicing = CreateNode<mutation::MOptSplicing>(*state);
+    auto havoc = CreateNode<mutation::MOptHavoc>(*state);
+    auto splicing = CreateNode<mutation::MOptSplicing>(*state);
 
     // execution
     auto execute = CreateNode<ExecutePUTTemplate<MOptState>>(*state);
@@ -105,11 +105,10 @@ void MOptFuzzer::BuildFuzzFlow(void) {
                                                 << normal_update.HardLink() ||
                             auto_dict_overwrite << execute.HardLink()
                                                 << normal_update.HardLink()) ||
-                    apply_rand_muts
-                        << (mopt_havoc << execute.HardLink()
-                                       << normal_update.HardLink() ||
-                            mopt_splicing << execute.HardLink()
-                                          << normal_update.HardLink()) ||
+                    apply_rand_muts << (havoc << execute.HardLink()
+                                              << normal_update.HardLink() ||
+                                        splicing << execute.HardLink()
+                                                 << normal_update.HardLink()) ||
                     abandon_node || update_mopt);
   }
 }
