@@ -46,6 +46,7 @@ IJONFuzzer::IJONFuzzer(std::unique_ptr<IJONState>&& moved_state,
     state->all_inputs.emplace_back(
         state->input_set.CreateOnDisk(state->max_dir / std::to_string(i)));
   }
+  BuildFuzzFlow();
 }
 
 IJONFuzzer::~IJONFuzzer() {}
@@ -222,6 +223,11 @@ void IJONFuzzer::OneLoop(void) {
   if (!state->setting->ignore_finds && IjonShouldSchedule()) {
     ijon_fuzz_loop();
   } else {
+    // Since AFL handles end of seeds, the prior position must be recovered.
+    if (state->current_entry_is_swapped) {
+      state->current_entry_is_swapped = false;
+      state->current_entry = state->old_current_entry;
+    }
     fuzz_loop();
   }
 }

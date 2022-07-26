@@ -65,6 +65,8 @@ struct IJONState : public afl::AFLStateTemplate<IJONTestcase> {
 
   size_t num_updates = 0;
   fs::path max_dir;
+  u32 old_current_entry = 0u;
+  bool current_entry_is_swapped = false;
 };
 
 }  // namespace fuzzuf::algorithm::ijon
