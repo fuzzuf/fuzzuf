@@ -27,17 +27,18 @@ namespace fuzzuf::algorithm::ijon {
 /**
  * @brief CLI compatible interface for IJON
  */
-class IJONFuzzer : public afl::AFLFuzzerTemplate<IJONState> {
+class IJONFuzzer final : public afl::AFLFuzzerTemplate<IJONState> {
  public:
   explicit IJONFuzzer(std::unique_ptr<IJONState>&& state, u32 ijon_max_offset);
   ~IJONFuzzer();
 
-  void BuildFuzzFlow(void) override;
   void OneLoop(void) override;
 
  private:
+  void BuildFuzzFlow(void);
   bool IjonShouldSchedule(void);
 
+  hierarflow::HierarFlowNode<void(void), void(void)> fuzz_loop;
   hierarflow::HierarFlowNode<void(void), void(void)> ijon_fuzz_loop;
   u32 ijon_max_offset;
 };

@@ -1,7 +1,7 @@
 /*
  * fuzzuf
  * Copyright (C) 2021 Ricerca Security
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -17,20 +17,32 @@
  */
 #pragma once
 
-#include <vector>
 #include <array>
 #include <memory>
-#include "fuzzuf/utils/common.hpp"
-#include "fuzzuf/fuzzer/fuzzer.hpp"
+#include <vector>
+
 #include "fuzzuf/algorithms/afl/afl_fuzzer.hpp"
 #include "fuzzuf/algorithms/aflfast/aflfast_state.hpp"
-
-#include "fuzzuf/hierarflow/hierarflow_routine.hpp"
-#include "fuzzuf/hierarflow/hierarflow_node.hpp"
+#include "fuzzuf/fuzzer/fuzzer.hpp"
 #include "fuzzuf/hierarflow/hierarflow_intermediates.hpp"
+#include "fuzzuf/hierarflow/hierarflow_node.hpp"
+#include "fuzzuf/hierarflow/hierarflow_routine.hpp"
+#include "fuzzuf/utils/common.hpp"
 
 namespace fuzzuf::algorithm::aflfast {
 
-using AFLFastFuzzer = afl::AFLFuzzerTemplate<AFLFastState>;
+// It is reported that an incoming new algorithm inherits this class, thus it is
+// impossible to restrict it as final.
+class AFLFastFuzzer : public afl::AFLFuzzerTemplate<AFLFastState> {
+ public:
+  explicit AFLFastFuzzer(std::unique_ptr<AFLFastState>&& state)
+      : afl::AFLFuzzerTemplate<AFLFastState>(std::move(state)),
+        fuzz_loop(afl::BuildAFLFuzzLoop(
+            *afl::AFLFuzzerTemplate<AFLFastState>::state)) {}
+  virtual void OneLoop(void) override { fuzz_loop(); }
 
-} // namespace fuzzuf::algorithm::aflfast
+ private:
+  hierarflow::HierarFlowNode<void(void), void(void)> fuzz_loop;
+};
+
+}  // namespace fuzzuf::algorithm::aflfast

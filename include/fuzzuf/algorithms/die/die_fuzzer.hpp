@@ -1,7 +1,7 @@
 /*
  * fuzzuf
  * Copyright (C) 2022 Ricerca Security
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -30,19 +30,19 @@
 #include "fuzzuf/hierarflow/hierarflow_routine.hpp"
 #include "fuzzuf/utils/common.hpp"
 
-
 namespace fuzzuf::algorithm::die {
 
-using DIEFuzzer = afl::AFLFuzzerTemplate<DIEState>;
+class DIEFuzzer final : public afl::AFLFuzzerTemplate<DIEState> {
+ public:
+  explicit DIEFuzzer(std::unique_ptr<DIEState>&& state)
+      : afl::AFLFuzzerTemplate<DIEState>(std::move(state)) {
+    BuildFuzzFlow();
+  }
+  virtual void OneLoop(void) override { fuzz_loop(); }
 
-} // namespace fuzzuf::algorithm::die
+ private:
+  void BuildFuzzFlow();
+  hierarflow::HierarFlowNode<void(void), void(void)> fuzz_loop;
+};
 
-
-namespace fuzzuf::algorithm::afl {
-
-using fuzzuf::algorithm::die::DIEFuzzer;
-
-template <>  // declaration for template specialization
-void DIEFuzzer::BuildFuzzFlow();
-
-} // namespace fuzzuf::algorithm::afl
+}  // namespace fuzzuf::algorithm::die
