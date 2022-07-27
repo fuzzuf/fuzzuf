@@ -311,6 +311,7 @@ void Mutator<Tag>::Havoc(u32 stacking, const std::vector<AFLDictData> &extras,
           fuzzuf::optimizer::keys::SelectedCaseHistogram);
 
   std::array<u32, fuzzuf::mutator::NUM_CASE> selected_case_histogram;
+  selected_case_histogram.fill(0);
 
   for (std::size_t i = 0; i < stacking; i++) {
     u32 r = mutop_optimizer.CalcValue();
