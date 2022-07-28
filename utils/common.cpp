@@ -211,22 +211,17 @@ ssize_t ReadFileAll(int fd, fuzzuf::executor::output_t &buf) {
   return ReadFile(fd, buf.data(), size, true);
 }
 
-// 時間制限付きReadFile
-// https://github.com/AFLplusplus/AFLplusplus/blob/stable/src/afl-forkserver.c#L135-L210
-// timeout_ms ミリ秒後にタイムアウトする
-// 戻り値は、エラー発生時に0、タイムアウト時にtimeout_ms+1
-// それ以外の時はかかった時間(ミリ秒)
-// fdがinvalid等のエラーに加えて、fdからlenバイト読めない場合もエラーになるので注意
-// タイマーはselectシステムコールによって実現している
-// select,
-// readそれぞれがsignalのinterruptなどにより、失敗することを考慮に入れないといけない
-// あるいは、readは指定したバイト数lenだけ一度に読み込むとは限らない
-// したがって、ループによって複数回処理する必要がある
-// 複数回実行される時の注意点として、残り時間の更新がある。
-// Linuxにおいてはselectが引数timeoutの値を書き換え、「select中に経過した時間をtimeoutの値から差し引く処理」が実行される。すなわち自動で残り時間が更新されていく。
-// それ以外の環境においては書き換えられないことが知られているため、時間を計測し、自前で残りの時間を計算する必要がある
-// ただしこれらはドキュメントで保証されている挙動ではないように見えるため、どう対応するかは今後検討しなければならない
-
+/**
+ * @fn
+ * @brief Timed read from a file descriptor
+ * @param fd File descriptor 
+ * @param buf Buffer pointer for read data 
+ * @param len Length of read data in bytes
+ * @param timeout_ms Timeout in milliseconds
+ * @return 0 on error, timeout_ms+1 on timeout, otherwise the time taken in milliseconds
+ * @note In addition to errors such as invalid fd, an error occurs if len bytes cannot be read from fd. Timer is implemented by the select system call. select, read can fail due to signal interrupt, etc. The read system call does not always read the specified number of bytes len at a time. Therefore, it is necessary to process multiple times by looping. One of the caveats of multiple executions is the update of the remaining time. In Linux, select rewrites the value of the timeout argument and "subtracts the time elapsed during select from the timeout value" is executed. In other words, the remaining time is automatically updated. In other environments, it is known that the timeout value cannot be rewritten, so it is necessary to measure the time and calculate the remaining time on one's own. However, since this does not seem to be a behavior guaranteed by the documentation, we will have to consider how to handle this in the future.
+ * https://github.com/AFLplusplus/AFLplusplus/blob/stable/src/afl-forkserver.c#L135-L210
+ */
 u32 ReadFileTimed(int fd, void *buf, u32 len, u32 timeout_ms) {
   ssize_t nread = 0;
   struct timeval timeout;
