@@ -33,17 +33,27 @@ class AFLFuzzerTemplate : public fuzzer::Fuzzer {
   explicit AFLFuzzerTemplate(std::unique_ptr<State>&& state);
   virtual ~AFLFuzzerTemplate();
 
-  virtual void BuildFuzzFlow(void);
-  virtual void OneLoop(void);
+  virtual void OneLoop(void) = 0;
   virtual void ReceiveStopSignal(void);
   virtual bool ShouldEnd(void);
 
  protected:
   std::unique_ptr<State> state;
-  hierarflow::HierarFlowNode<void(void), void(void)> fuzz_loop;
 };
 
-using AFLFuzzer = AFLFuzzerTemplate<AFLState>;
+template <class State>
+hierarflow::HierarFlowNode<void(void), void(void)> BuildAFLFuzzLoop(State&);
+
+class AFLFuzzer final : public AFLFuzzerTemplate<AFLState> {
+ public:
+  explicit AFLFuzzer(std::unique_ptr<AFLState>&& state)
+      : AFLFuzzerTemplate<AFLState>(std::move(state)),
+        fuzz_loop(BuildAFLFuzzLoop(*AFLFuzzerTemplate<AFLState>::state)) {}
+  virtual void OneLoop(void) override { fuzz_loop(); }
+
+ private:
+  hierarflow::HierarFlowNode<void(void), void(void)> fuzz_loop;
+};
 
 }  // namespace fuzzuf::algorithm::afl
 

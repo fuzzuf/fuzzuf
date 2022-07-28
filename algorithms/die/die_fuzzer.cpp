@@ -1,7 +1,7 @@
 /*
  * fuzzuf
  * Copyright (C) 2022 Ricerca Security
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -21,10 +21,10 @@
  * @author Ricerca Security <fuzzuf-dev@ricsec.co.jp>
  */
 #include "fuzzuf/algorithms/die/die_fuzzer.hpp"
+
 #include "fuzzuf/algorithms/die/die_hierarflow_routines.hpp"
 
-
-namespace fuzzuf::algorithm::afl {
+namespace fuzzuf::algorithm::die {
 
 using namespace fuzzuf::algorithm::die;
 
@@ -32,15 +32,14 @@ using namespace fuzzuf::algorithm::die;
  * @fn
  * @brief Build HierarFlow of DIE
  */
-template <> // explicit specialization
 void DIEFuzzer::BuildFuzzFlow() {
   using namespace fuzzuf::algorithm::afl::routine::other;
   using namespace fuzzuf::algorithm::die::routine::mutation;
   using namespace fuzzuf::algorithm::die::routine::other;
   using namespace fuzzuf::algorithm::die::routine::update;
 
-  using fuzzuf::hierarflow::CreateNode;
   using fuzzuf::hierarflow::CreateDummyParent;
+  using fuzzuf::hierarflow::CreateNode;
 
   /* Create head node */
   fuzz_loop = CreateDummyParent<void(void)>();
@@ -53,9 +52,7 @@ void DIEFuzzer::BuildFuzzFlow() {
   auto execute = CreateNode<DIEExecute>(*state);
   auto update = CreateNode<DIEUpdate>(*state);
 
-  fuzz_loop << (
-    select_seed << mutate << execute << update
-  );
+  fuzz_loop << (select_seed << mutate << execute << update);
 }
 
-} // namespace fuzzuf::algorithm::die
+}  // namespace fuzzuf::algorithm::die

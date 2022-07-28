@@ -44,11 +44,15 @@ namespace fuzzuf::algorithm::afl_symcc {
  * straightforward.
  */
 template <typename State>
-struct AFLFuzzerTemplate : public afl::AFLFuzzerTemplate<State> {
+struct AFLFuzzerTemplate final : public afl::AFLFuzzerTemplate<State> {
   /**
    * All constructor arguments are forwarded to afl::AFLFuzzerTemplate
    */
-  using afl::AFLFuzzerTemplate<State>::AFLFuzzerTemplate;
+  explicit AFLFuzzerTemplate(std::unique_ptr<State> &&state)
+      : afl::AFLFuzzerTemplate<State>(std::move(state)),
+        fuzz_loop(
+            afl::BuildAFLFuzzLoop(*afl::AFLFuzzerTemplate<State>::state)) {}
+  virtual void OneLoop(void) override { fuzz_loop(); }
 
   /**
    * Add the input value to case_queue.
@@ -79,6 +83,9 @@ struct AFLFuzzerTemplate : public afl::AFLFuzzerTemplate<State> {
             ->input->GetPath();
     return utils::map_file(fs::absolute(fs::path(fn)).string(), O_RDONLY, true);
   }
+
+ private:
+  hierarflow::HierarFlowNode<void(void), void(void)> fuzz_loop;
 };
 
 /**
@@ -103,10 +110,6 @@ class AFLSymCCFuzzerTemplate : public fuzzer::Fuzzer {
         cycle(0u),
         options(std::move(options_)),
         executor(std::move(executor_)) {}
-  /**
-   * Call AFLFuzzerTemplate::BuildFuzzFlow()
-   */
-  virtual void BuildFuzzFlow() { afl->BuildFuzzFlow(); }
   /**
    * Call AFLFuzzerTemplate::OneLoop(), then execute SymCC.
    */
