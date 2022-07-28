@@ -1003,12 +1003,24 @@ void NativeLinuxExecutor::SetupForkServer() {
   // launched.
   u8 tmp[4];
   u32 time_limit = 10000;
-  u32 res = fuzzuf::utils::ReadFileTimed(forksrv_read_fd, &tmp, 4, time_limit);
-  // FIXME: There are various reason to fail fork server, and as the responses
-  // varies and identifiable, it is more decent to classify them.
-  if (res == 0 || res > time_limit) {
+  u32 time_ms =
+      fuzzuf::utils::ReadFileTimed(forksrv_read_fd, &tmp, 4, time_limit);
+  if (time_ms == 0) {
+    // Error during reading
     TerminateForkServer();
-    ERROR("Fork server crashed");
+    MSG("\n" cLRD "[-] " cRST
+        "Hmm, looks like the target binary terminated before we could complete "
+        "a\n"
+        "handshake with the injected code. You can try the following:\n\n"
+        "    - Possibly the target is not a valid executable. Check:\n"
+        "      - The target exists and a valid ELF binary.\n"
+        "      - The target is instrumented.\n"
+        "        Retry with fork server disabled.\n");
+    ABORT("Fork server handshake failed");
+  } else if (time_ms > time_limit) {
+    // Timeout
+    TerminateForkServer();
+    ABORT("Timeout while initializing fork server (Default time limit is 10s)");
   }
 
   return;
