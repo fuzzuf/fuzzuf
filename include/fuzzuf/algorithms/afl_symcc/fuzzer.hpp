@@ -111,10 +111,6 @@ class AFLSymCCFuzzerTemplate : public fuzzer::Fuzzer {
         options(std::move(options_)),
         executor(std::move(executor_)) {}
   /**
-   * Call AFLFuzzerTemplate::BuildFuzzFlow()
-   */
-  virtual void BuildFuzzFlow() { afl->BuildFuzzFlow(); }
-  /**
    * Call AFLFuzzerTemplate::OneLoop(), then execute SymCC.
    */
   virtual void OneLoop() {

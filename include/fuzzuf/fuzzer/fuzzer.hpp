@@ -26,7 +26,6 @@ class Fuzzer {
  public:
   virtual ~Fuzzer() {}
 
-  virtual void BuildFuzzFlow(void) {}
   virtual void OneLoop(void) {}
 
   // do not call non aync-signal-safe functions inside because this function can
