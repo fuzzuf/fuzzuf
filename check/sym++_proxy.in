@@ -1,0 +1,3 @@
+#!/bin/bash
+export SYMCC_LIBCXX_PATH=@SYMCC_LIBCXX_PREFIX@
+exec @SYMCC_CXX@ $@
