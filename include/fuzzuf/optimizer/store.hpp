@@ -23,8 +23,6 @@
 #include <string>
 #include <unordered_map>
 
-#include "fuzzuf/logger/logger.hpp"
-
 namespace fuzzuf::optimizer {
 
 /**
@@ -87,13 +85,15 @@ void Store::InitKey(const StoreKey<Type>& key, Type val) {
   data[key.name] = std::any_cast<Type>(Type(val));
 }
 
+void OnKeyDoesntExist(const std::string&);
+
 template <typename Type>
 Type Store::Get(const StoreKey<Type>& key, bool assert) {
   // may throw std::bad_any_cast
   auto it = data.find(key.name);
 
   if (assert && it == data.end()) {
-    ERROR("not found key '%s'", key.name.c_str());
+    OnKeyDoesntExist(key.name);
   }
 
   return std::any_cast<Type>(it->second);
@@ -105,7 +105,7 @@ Type& Store::GetMutRef(const StoreKey<Type>& key, bool assert) {
   auto it = data.find(key.name);
 
   if (assert && it == data.end()) {
-    ERROR("not found key '%s'", key.name.c_str());
+    OnKeyDoesntExist(key.name);
   }
 
   return std::any_cast<Type&>(it->second);
