@@ -1,6 +1,6 @@
 /*
  * fuzzuf
- * Copyright (C) 2021 Ricerca Security
+ * Copyright (C) 2022 Ricerca Security
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
@@ -15,7 +15,7 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see http://www.gnu.org/licenses/.
  */
-#define BOOST_TEST_MODULE algorithms.afl.cli
+#define BOOST_TEST_MODULE algorithms.mopt.cli
 #define BOOST_TEST_DYN_LINK
 #include <config.h>
 
@@ -31,7 +31,7 @@
 
 namespace po = boost::program_options;
 
-BOOST_AUTO_TEST_CASE(ExecuteAFLFromCLI) {
+BOOST_AUTO_TEST_CASE(ExecuteMOptFromCLI) {
   // Setup root directory
   std::string root_dir_template("/tmp/fuzzuf_test.XXXXXX");
   auto *const raw_dirname = mkdtemp(root_dir_template.data());
@@ -64,21 +64,31 @@ BOOST_AUTO_TEST_CASE(ExecuteAFLFromCLI) {
   BOOST_TEST_CHECKPOINT("initialized dirs");
 
   const char *argv[] = {"fuzzuf",
-                        "afl",
+                        "mopt",
                         "-i",
                         input_dir.c_str(),
                         "-o",
                         output_dir.c_str(),
-                        "-e",
-                        "forkserver",
-                        TEST_BINARY_DIR "/put/afl/test-instr",
+                        TEST_BINARY_DIR "/put/afl_gcc/afl_gcc-easy_to_branch",
                         nullptr};
-  constexpr int argc = 9;
+  constexpr int argc = 7;
   auto fuzzer = fuzzuf::cli::CreateFuzzerInstanceFromArgv(argc, argv);
 
   BOOST_TEST_CHECKPOINT("created fuzzer");
 
   fuzzer->OneLoop();
+
+  std::size_t crash_count = 0u;
+  for (const auto &e : fs::directory_iterator(output_dir / "crashes")) {
+#ifdef HAS_CXX_STD_FILESYSTEM
+    BOOST_CHECK(e.is_regular_file());
+#else
+    BOOST_CHECK(fs::is_regular_file(e.path()));
+#endif
+    ++crash_count;
+  }
+  // At least one crash input is produced
+  BOOST_CHECK_GE(crash_count, 1);
 
   BOOST_TEST_CHECKPOINT("done");
 }
