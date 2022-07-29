@@ -15,7 +15,9 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see http://www.gnu.org/licenses/.
  */
-#pragma once
+
+#ifndef FUZZUF_INCLUDE_ALGORITHM_MOPT_MOPT_SETTING_HPP
+#define FUZZUF_INCLUDE_ALGORITHM_MOPT_MOPT_SETTING_HPP
 
 #include "fuzzuf/algorithms/afl/afl_setting.hpp"
 #include "fuzzuf/algorithms/mopt/mopt_option.hpp"
@@ -38,3 +40,5 @@ struct MOptSetting : public afl::AFLSetting {
 };
 
 }  // namespace fuzzuf::algorithm::mopt
+
+#endif
