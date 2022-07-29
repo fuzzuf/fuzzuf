@@ -91,25 +91,25 @@ void MOptFuzzer::BuildFuzzFlow() {
 
     select_seed << (consider_skip_mut || retry_calibrate || trim_case ||
                     calc_score || check_pacemaker ||
-                    // apply_det_muts
-                    //     << (bit_flip1
-                    //             << execute
-                    //             << (normal_update || construct_auto_dict) ||
-                    //         bit_flip_other << execute.HardLink()
-                    //                        << normal_update.HardLink() ||
-                    //         byte_flip1 << execute.HardLink()
-                    //                    << (normal_update.HardLink() ||
-                    //                        construct_eff_map) ||
-                    //         byte_flip_other << execute.HardLink()
-                    //                         << normal_update.HardLink() ||
-                    //         arith << execute.HardLink()
-                    //               << normal_update.HardLink() ||
-                    //         interest << execute.HardLink()
-                    //                  << normal_update.HardLink() ||
-                    //         user_dict_overwrite << execute.HardLink()
-                    //                             << normal_update.HardLink() ||
-                    //         auto_dict_overwrite << execute.HardLink()
-                    //                             << normal_update.HardLink()) ||
+                    apply_det_muts
+                        << (bit_flip1
+                                << execute
+                                << (normal_update || construct_auto_dict) ||
+                            bit_flip_other << execute.HardLink()
+                                           << normal_update.HardLink() ||
+                            byte_flip1 << execute.HardLink()
+                                       << (normal_update.HardLink() ||
+                                           construct_eff_map) ||
+                            byte_flip_other << execute.HardLink()
+                                            << normal_update.HardLink() ||
+                            arith << execute.HardLink()
+                                  << normal_update.HardLink() ||
+                            interest << execute.HardLink()
+                                     << normal_update.HardLink() ||
+                            user_dict_overwrite << execute.HardLink()
+                                                << normal_update.HardLink() ||
+                            auto_dict_overwrite << execute.HardLink()
+                                                << normal_update.HardLink()) ||
                     apply_rand_muts << (havoc << execute.HardLink()
                                               << normal_update.HardLink() ||
                                         splicing << execute.HardLink()
