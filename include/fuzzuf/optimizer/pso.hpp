@@ -31,28 +31,28 @@ namespace fuzzuf::optimizer {
 
 namespace keys {}
 
-template <size_t Demention, size_t ParticleNum>
+template <size_t Dimension, size_t ParticleNum>
 class PSO;
 
-template <size_t Demention>
+template <size_t Dimension>
 class Particle {
  public:
   Particle();
   ~Particle();
 
-  template <size_t _Demention, size_t ParticleNum>
+  template <size_t _Dimension, size_t ParticleNum>
   friend class PSO;
 
  protected:
-  std::array<double, Demention> position;
+  std::array<double, Dimension> position;
   double fitness;
-  std::array<double, Demention> velocity;
-  std::array<double, Demention> best_position;
+  std::array<double, Dimension> velocity;
+  std::array<double, Dimension> best_position;
   double best_fitness;
 };
 
-template <size_t Demention, size_t ParticleNum>
-class PSO : public Optimizer<std::array<double, Demention>> {
+template <size_t Dimension, size_t ParticleNum>
+class PSO : public Optimizer<std::array<double, Dimension>> {
  public:
   PSO(double min_position, double max_position, double min_velocity,
       double max_velocity, double w = 0.729, double c1 = 1.49445,
@@ -60,9 +60,9 @@ class PSO : public Optimizer<std::array<double, Demention>> {
   ~PSO();
 
   void Init();
-  std::array<double, Demention> GetCurParticle();
+  std::array<double, Dimension> GetCurParticle();
   void SetScore(double);
-  std::array<double, Demention> CalcValue() override;  // return global best
+  std::array<double, Dimension> CalcValue() override;  // return global best
   void UpdateLocalBest();
   void UpdateGlobalBest();
 
@@ -72,10 +72,10 @@ class PSO : public Optimizer<std::array<double, Demention>> {
 
   size_t idx = 0;
   std::uint64_t time = 0;
-  std::array<Particle<Demention>, ParticleNum> swarm;
+  std::array<Particle<Dimension>, ParticleNum> swarm;
 
   // global best
-  std::array<double, Demention> best_position;
+  std::array<double, Dimension> best_position;
   double best_fitness;
 
   // constraints

@@ -28,14 +28,14 @@
 
 namespace fuzzuf::optimizer {
 
-template <size_t Demention>
-Particle<Demention>::Particle(){};
+template <size_t Dimension>
+Particle<Dimension>::Particle(){};
 
-template <size_t Demention>
-Particle<Demention>::~Particle(){};
+template <size_t Dimension>
+Particle<Dimension>::~Particle(){};
 
-template <size_t Demention, size_t ParticleNum>
-PSO<Demention, ParticleNum>::PSO(double min_position, double max_position,
+template <size_t Dimension, size_t ParticleNum>
+PSO<Dimension, ParticleNum>::PSO(double min_position, double max_position,
                                  double min_velocity, double max_velocity,
                                  double w, double c1, double c2)
     : min_position(min_position),
@@ -46,11 +46,11 @@ PSO<Demention, ParticleNum>::PSO(double min_position, double max_position,
       c1(c1),
       c2(c2) {}
 
-template <size_t Demention, size_t ParticleNum>
-PSO<Demention, ParticleNum>::~PSO() {}
+template <size_t Dimension, size_t ParticleNum>
+PSO<Dimension, ParticleNum>::~PSO() {}
 
-template <size_t Demention, size_t ParticleNum>
-void PSO<Demention, ParticleNum>::Init() {
+template <size_t Dimension, size_t ParticleNum>
+void PSO<Dimension, ParticleNum>::Init() {
   for (auto& p : swarm) {
     for (auto& pos : p.position)
       pos = fuzzuf::utils::random::Random<double>(min_position, max_position);
@@ -61,13 +61,13 @@ void PSO<Demention, ParticleNum>::Init() {
   time = 0;
 }
 
-template <size_t Demention, size_t ParticleNum>
-std::array<double, Demention> PSO<Demention, ParticleNum>::GetCurParticle() {
+template <size_t Dimension, size_t ParticleNum>
+std::array<double, Dimension> PSO<Dimension, ParticleNum>::GetCurParticle() {
   return swarm[idx].best_position;
 }
 
-template <size_t Demention, size_t ParticleNum>
-void PSO<Demention, ParticleNum>::SetScore(double score) {
+template <size_t Dimension, size_t ParticleNum>
+void PSO<Dimension, ParticleNum>::SetScore(double score) {
   auto& p = swarm[idx];
   p.fitness = score;
   UpdateLocalBest();
@@ -81,16 +81,16 @@ void PSO<Demention, ParticleNum>::SetScore(double score) {
   }
 }
 
-template <size_t Demention, size_t ParticleNum>
-std::array<double, Demention> PSO<Demention, ParticleNum>::CalcValue() {
+template <size_t Dimension, size_t ParticleNum>
+std::array<double, Dimension> PSO<Dimension, ParticleNum>::CalcValue() {
   return best_position;
 }
 
-template <size_t Demention, size_t ParticleNum>
-void PSO<Demention, ParticleNum>::UpdatePositions() {
+template <size_t Dimension, size_t ParticleNum>
+void PSO<Dimension, ParticleNum>::UpdatePositions() {
   auto& p = swarm[idx];
 
-  for (size_t i = 0; i < Demention; i++) {
+  for (size_t i = 0; i < Dimension; i++) {
     double pos = p.position[i] + p.velocity[i];
     pos = std::min(pos, max_position);
     pos = std::max(pos, min_position);
@@ -99,11 +99,11 @@ void PSO<Demention, ParticleNum>::UpdatePositions() {
   }
 }
 
-template <size_t Demention, size_t ParticleNum>
-void PSO<Demention, ParticleNum>::UpdateVelocities() {
+template <size_t Dimension, size_t ParticleNum>
+void PSO<Dimension, ParticleNum>::UpdateVelocities() {
   auto& p = swarm[idx];
 
-  for (size_t i = 0; i < Demention; i++) {
+  for (size_t i = 0; i < Dimension; i++) {
     double v = w * p.velocity[i] +
                c1 * fuzzuf::utils::random::Random<double>(0, 1) *
                    (p.best_position[i] - p.position[i]) +
@@ -116,8 +116,8 @@ void PSO<Demention, ParticleNum>::UpdateVelocities() {
   }
 }
 
-template <size_t Demention, size_t ParticleNum>
-void PSO<Demention, ParticleNum>::UpdateLocalBest() {
+template <size_t Dimension, size_t ParticleNum>
+void PSO<Dimension, ParticleNum>::UpdateLocalBest() {
   auto& p = swarm[idx];
 
   if (unlikely(time == 0)) {
@@ -133,8 +133,8 @@ void PSO<Demention, ParticleNum>::UpdateLocalBest() {
   }
 }
 
-template <size_t Demention, size_t ParticleNum>
-void PSO<Demention, ParticleNum>::UpdateGlobalBest() {
+template <size_t Dimension, size_t ParticleNum>
+void PSO<Dimension, ParticleNum>::UpdateGlobalBest() {
   if (unlikely(time == 0)) {
     best_fitness = swarm[0].best_fitness;
     best_position = swarm[0].best_position;
