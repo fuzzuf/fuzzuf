@@ -216,9 +216,7 @@ std::unique_ptr<TFuzzer> BuildMOptFuzzerFromArgs(
       EXIT("Unsupported executor: '%s'", global_options.executor.c_str());
   }
 
-  auto mutop_optimizer = std::unique_ptr<optimizer::Optimizer<u32>>(
-      new algorithm::mopt::havoc::MOptHavocCaseDistrib(
-          new optimizer::MOptOptimizer()));
+  auto mutop_optimizer = std::make_shared<optimizer::MOptOptimizer>();
 
   // Create MOptState
   using fuzzuf::algorithm::mopt::MOptState;

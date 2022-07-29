@@ -3,7 +3,6 @@
 #include "fuzzuf/algorithms/mopt/mopt_optimizer.hpp"
 #include "fuzzuf/algorithms/mopt/mopt_option.hpp"
 #include "fuzzuf/algorithms/mopt/mopt_option_get_splice_cycles.hpp"
-#include "fuzzuf/optimizer/pso.hpp"
 #include "fuzzuf/utils/common.hpp"
 
 namespace fuzzuf::algorithm::mopt::routine {
@@ -22,9 +21,11 @@ MOptMidCalleeRef MOptUpdate::operator()(
   auto havoc_operator_finds = fuzzuf::optimizer::Store::GetInstance().Get(
       fuzzuf::optimizer::keys::HavocOperatorFinds, true);
 
+  auto &mopt = state.mopt;
+
   // update havoc_operator_finds
   for (size_t i = 0; i < havoc_operator_finds.size(); i++) {
-    state.mopt->havoc_operator_finds[state.core_mode ? 1 : 0][i] +=
+    mopt->havoc_operator_finds[state.core_mode ? 1 : 0][i] +=
         havoc_operator_finds[i];
   }
 
@@ -47,13 +48,15 @@ MOptMidCalleeRef MOptUpdate::operator()(
       for (size_t i = 0; i < selected_case_histogram.size(); i++) {
         double score = 0.0;
         if (selected_case_histogram[i] > 0) {
-          score = havoc_operator_finds[i] / selected_case_histogram[i];
+          score = (mopt->havoc_operator_finds[0][i] +
+                   mopt->havoc_operator_finds[1][i]) /
+                  selected_case_histogram[i];
         }
-        state.mopt->SetScore(i, score);
+        mopt->SetScore(i, score);
       }
-      state.mopt->UpdateLocalBest();
+      mopt->UpdateLocalBest();
 
-      if (state.mopt->IncrementSwarmIdx()) {  // all swarms are visited
+      if (mopt->IncrementSwarmIdx()) {  // all swarms are visited
         state.core_mode = true;
       }
     }
@@ -62,7 +65,7 @@ MOptMidCalleeRef MOptUpdate::operator()(
   // core mode (update global best)
   if (state.core_mode) {
     if (unlikely(new_testcases > mopt::option::GetPeriodCore<MOptTag>())) {
-      state.mopt->UpdateGlobalBest();
+      mopt->UpdateGlobalBest();
       state.core_mode = false;
     }
   }

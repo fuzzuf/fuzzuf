@@ -6,13 +6,12 @@
 
 namespace fuzzuf::algorithm::mopt {
 
-MOptState::MOptState(
-    std::shared_ptr<const MOptSetting> setting,
-    std::shared_ptr<executor::AFLExecutorInterface> executor,
-    std::unique_ptr<optimizer::Optimizer<u32>>&& mutop_optimizer)
-    : afl::AFLStateTemplate<MOptTestcase>(setting, executor,
-                                          std::move(mutop_optimizer)),
-      setting(setting) {
+MOptState::MOptState(std::shared_ptr<const MOptSetting> setting,
+                     std::shared_ptr<executor::AFLExecutorInterface> executor,
+                     std::shared_ptr<optimizer::MOptOptimizer>&& mopt)
+    : afl::AFLStateTemplate<MOptTestcase>(setting, executor, mopt),
+      setting(setting),
+      mopt(mopt) {
   // set core_mode if -L is 0
   if (setting->mopt_limit_time == 0) {
     core_mode = true;

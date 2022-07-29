@@ -1,7 +1,7 @@
 /*
  * fuzzuf
  * Copyright (C) 2022 Ricerca Security
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -16,28 +16,28 @@
  * along with this program.  If not, see http://www.gnu.org/licenses/.
  */
 
-#pragma once
+#ifndef FUZZUF_INCLUDE_ALGORITHM_MOPT_MOPT_FUZZER_HPP
+#define FUZZUF_INCLUDE_ALGORITHM_MOPT_MOPT_FUZZER_HPP
 
-#include <vector>
 #include <string>
+#include <vector>
 
-#include "fuzzuf/utils/common.hpp"
-#include "fuzzuf/hierarflow/hierarflow_node.hpp"
 #include "fuzzuf/algorithms/afl/afl_fuzzer.hpp"
 #include "fuzzuf/algorithms/mopt/mopt_state.hpp"
+#include "fuzzuf/hierarflow/hierarflow_node.hpp"
+#include "fuzzuf/utils/common.hpp"
 
 namespace fuzzuf::algorithm::mopt {
 
 class MOptFuzzer : public afl::AFLFuzzerTemplate<MOptState> {
-public:
-    explicit MOptFuzzer(std::unique_ptr<MOptState>&& state);
-    ~MOptFuzzer();
+ public:
+  explicit MOptFuzzer(std::unique_ptr<MOptState>&& state);
+  ~MOptFuzzer();
 
-    void BuildFuzzFlow(void) override;
-    void OneLoop(void) override;
-
-private:
-    bool MOptShouldSchedule(void);
+  void BuildFuzzFlow(void) override;
+  void OneLoop(void) override;
 };
 
-} // namespace fuzzuf::algorithm::mopt
+}  // namespace fuzzuf::algorithm::mopt
+
+#endif

@@ -1,6 +1,7 @@
 #pragma once
 
 #include "fuzzuf/mutator/havoc_case.hpp"
+#include "fuzzuf/optimizer/optimizer.hpp"
 #include "fuzzuf/optimizer/pso.hpp"
 #include "fuzzuf/optimizer/store.hpp"
 
@@ -33,7 +34,7 @@ class MOptParticle : public Particle<NUM_CASE> {
   std::array<double, NUM_CASE> best_fitness;
 };
 
-class MOptOptimizer : public PSO<NUM_CASE, SwarmNum> {
+class MOptOptimizer : public Optimizer<u32> {
  public:
   MOptOptimizer();
   ~MOptOptimizer();
@@ -42,17 +43,34 @@ class MOptOptimizer : public PSO<NUM_CASE, SwarmNum> {
   void UpdateLocalBest();
   void UpdateGlobalBest();
   void SetScore(size_t, double);
-  void PSOUpdate();  // pso_updating
   void UpdateInertia();
   bool IncrementSwarmIdx();
 
-  bool opt_minimize = false;
+  u32 CalcValue() override;
+
   std::array<std::array<u64, NUM_CASE>, 2>
       havoc_operator_finds;  // 0: pilot, 1: core
 
  private:
+  void UpdatePositions();
+  void UpdateVelocities();
+
+  size_t idx = 0;
+  std::uint64_t time = 0;
   std::array<MOptParticle, SwarmNum> swarm;
+
+  // global best
+  std::array<double, NUM_CASE> best_position;
+  double best_fitness;
+
+  // parameter
   int g_now = 0;
+  double w = 0;  // inertia weight
+
+  double min_position = P_MIN;
+  double max_position = P_MAX;
+  double min_velocity = 0;
+  double max_velocity = 1;
 };
 
 }  // namespace fuzzuf::optimizer

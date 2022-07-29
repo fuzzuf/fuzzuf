@@ -2,7 +2,6 @@ add_library(
   fuzzuf_core_mopt
   STATIC
   mopt_fuzzer.cpp
-  mopt_havoc.cpp
   mopt_hierarflow_routines.cpp
   mopt_optimizer.cpp
   mopt_state.cpp
