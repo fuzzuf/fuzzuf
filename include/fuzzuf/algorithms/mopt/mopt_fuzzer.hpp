@@ -34,8 +34,11 @@ class MOptFuzzer : public afl::AFLFuzzerTemplate<MOptState> {
   explicit MOptFuzzer(std::unique_ptr<MOptState>&& state);
   ~MOptFuzzer();
 
-  void BuildFuzzFlow(void) override;
   void OneLoop(void) override;
+
+ private:
+  void BuildFuzzFlow(void);
+  hierarflow::HierarFlowNode<void(void), void(void)> fuzz_loop;
 };
 
 }  // namespace fuzzuf::algorithm::mopt
