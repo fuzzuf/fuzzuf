@@ -23,7 +23,6 @@
 #include <memory>
 
 #include "fuzzuf/algorithms/afl/afl_option.hpp"
-#include "fuzzuf/algorithms/mopt/mopt_havoc.hpp"
 #include "fuzzuf/algorithms/mopt/mopt_optimizer.hpp"
 #include "fuzzuf/algorithms/mopt/mopt_option.hpp"
 #include "fuzzuf/algorithms/mopt/mopt_state.hpp"

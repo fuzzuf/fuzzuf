@@ -22,7 +22,6 @@
 #include <memory>
 
 #include "fuzzuf/algorithms/afl/afl_state.hpp"
-#include "fuzzuf/algorithms/mopt/mopt_havoc.hpp"
 #include "fuzzuf/algorithms/mopt/mopt_optimizer.hpp"
 #include "fuzzuf/algorithms/mopt/mopt_setting.hpp"
 #include "fuzzuf/algorithms/mopt/mopt_testcase.hpp"
