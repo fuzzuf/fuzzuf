@@ -23,6 +23,7 @@
 
 #include "fuzzuf/algorithms/afl/afl_state.hpp"
 #include "fuzzuf/algorithms/mopt/mopt_optimizer.hpp"
+#include "fuzzuf/algorithms/mopt/mopt_option.hpp"
 #include "fuzzuf/algorithms/mopt/mopt_setting.hpp"
 #include "fuzzuf/algorithms/mopt/mopt_testcase.hpp"
 #include "fuzzuf/executor/native_linux_executor.hpp"
@@ -41,7 +42,7 @@ struct MOptState : public afl::AFLStateTemplate<MOptTestcase> {
   void ShowStats(void);
 
   bool pacemaker_mode = false;  // key_puppet: (0: false, 1: true)
-  bool core_mode = false;       // key_module: (0: pilot, 1: core)
+  option::MOptMode mode = option::MOptMode::PilotMode;
 
   u32 splice_cycles_limit = 0;
 

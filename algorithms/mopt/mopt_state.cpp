@@ -30,9 +30,9 @@ MOptState::MOptState(std::shared_ptr<const MOptSetting> setting,
     : afl::AFLStateTemplate<MOptTestcase>(setting, executor, mopt),
       setting(setting),
       mopt(mopt) {
-  // set core_mode if -L is 0
+  // set mode to CoreMode if -L is 0
   if (setting->mopt_limit_time == 0) {
-    core_mode = true;
+    mode = option::MOptMode::CoreMode;
   }
 
   UpdateSpliceCycles();  // init
@@ -152,7 +152,8 @@ void MOptState::ShowStats(void) {
 
   std::string mopt_banner = fuzzuf::utils::StrPrintf(
       "MOpt-AFL %s", this->pacemaker_mode ? "+ pacemaker " : "");
-  mopt_banner += this->core_mode ? "(core_fuzzing)" : "(pilot_fuzzing)";
+  mopt_banner += this->mode == option::MOptMode::CoreMode ? "(core_fuzzing)"
+                                                          : "(pilot_fuzzing)";
 
   std::string fuzzer_name =
       crash_mode != feedback::PUTExitReasonType::FAULT_NONE

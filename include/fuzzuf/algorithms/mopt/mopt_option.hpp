@@ -23,6 +23,11 @@
 
 namespace fuzzuf::algorithm::mopt::option {
 
+enum MOptMode {
+  CoreMode,
+  PilotMode,
+};
+
 struct MOptTag {};
 
 template <class Tag>

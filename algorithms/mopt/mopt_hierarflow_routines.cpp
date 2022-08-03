@@ -43,8 +43,7 @@ MOptMidCalleeRef MOptUpdate::operator()(
 
   // update havoc_operator_finds
   for (size_t i = 0; i < havoc_operator_finds.size(); i++) {
-    mopt->havoc_operator_finds[state.core_mode ? 1 : 0][i] +=
-        havoc_operator_finds[i];
+    mopt->havoc_operator_finds[state.mode][i] += havoc_operator_finds[i];
   }
 
   if (last_splice_cycle >= afl::option::GetSpliceCycles(state)) {
@@ -61,7 +60,7 @@ MOptMidCalleeRef MOptUpdate::operator()(
       fuzzuf::optimizer::keys::SelectedCaseHistogram, true);
 
   // pilot mode (update local best)
-  if (!state.core_mode) {
+  if (state.mode == option::MOptMode::PilotMode) {
     if (unlikely(new_testcases > mopt::option::GetPeriodPilot<MOptTag>())) {
       for (size_t i = 0; i < selected_case_histogram.size(); i++) {
         double score = 0.0;
@@ -75,16 +74,16 @@ MOptMidCalleeRef MOptUpdate::operator()(
       mopt->UpdateLocalBest();
 
       if (mopt->IncrementSwarmIdx()) {  // all swarms are visited
-        state.core_mode = true;
+        state.mode = option::MOptMode::CoreMode;
       }
     }
   }
 
   // core mode (update global best)
-  if (state.core_mode) {
+  if (state.mode == option::MOptMode::CoreMode) {
     if (unlikely(new_testcases > mopt::option::GetPeriodCore<MOptTag>())) {
       mopt->UpdateGlobalBest();
-      state.core_mode = false;
+      state.mode = option::MOptMode::PilotMode;
     }
   }
 
