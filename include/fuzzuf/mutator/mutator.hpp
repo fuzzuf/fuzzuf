@@ -687,7 +687,6 @@ void Mutator<Tag>::Havoc(u32 stacking, const std::vector<AFLDictData> &extras,
 
       default:
         custom_cases(r, outbuf, len, extras, a_extras);
-        selected_case_histogram[r] += 1;
         break;
     }
 
