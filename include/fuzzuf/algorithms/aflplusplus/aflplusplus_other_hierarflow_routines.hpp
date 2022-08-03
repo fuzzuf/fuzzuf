@@ -28,6 +28,17 @@ namespace fuzzuf::algorithm::afl::routine::other {
 using AFLplusplusState = aflplusplus::AFLplusplusState;
 using AFLplusplusTestcase = aflplusplus::AFLplusplusTestcase;
 
+// explicit specialization
+template <>
+AFLMidCalleeRef<AFLplusplusState> ApplyDetMutsTemplate<AFLplusplusState>::operator()(
+    std::shared_ptr<AFLplusplusTestcase> testcase);
+
+// explicit specialization
+template <>
+AFLMidCalleeRef<AFLplusplusState> AbandonEntryTemplate<AFLplusplusState>::operator()(
+    std::shared_ptr<AFLplusplusTestcase> testcase);
+
+// explicit specialization
 template<>
 utils::NullableRef<hierarflow::HierarFlowCallee<void(void)>>
 SelectSeedTemplate<AFLplusplusState>::operator()(void);

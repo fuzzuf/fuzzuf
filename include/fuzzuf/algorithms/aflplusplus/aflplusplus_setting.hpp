@@ -21,7 +21,8 @@
 #include "fuzzuf/algorithms/aflfast/aflfast_setting.hpp"
 
 namespace fuzzuf::algorithm::aflplusplus {
-struct AFLplusplusSetting : public aflfast::AFLFastSetting {
+
+struct AFLplusplusSetting : public afl::AFLSetting {
     explicit AFLplusplusSetting(
         const std::vector<std::string>& argv,
         const std::string& in_dir,

@@ -1,7 +1,7 @@
 /*
  * fuzzuf
  * Copyright (C) 2022 Ricerca Security
- *
+ * 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -15,26 +15,23 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see http://www.gnu.org/licenses/.
  */
-#ifndef FUZZUF_INCLUDE_ALGORITHM_AFLPLUSPLUS_AFLPLUSPLUS_TESTCASE_HPP
-#define FUZZUF_INCLUDE_ALGORITHM_AFLPLUSPLUS_AFLPLUSPLUS_TESTCASE_HPP
-
-#include <bitset>
-#include <memory>
-
-#include "fuzzuf/algorithms/aflfast/aflfast_testcase.hpp"
-#include "fuzzuf/algorithms/aflplusplus/aflplusplus_option.hpp"
-#include "fuzzuf/exec_input/on_disk_exec_input.hpp"
+#include "fuzzuf/algorithms/aflplusplus/aflplusplus_setting.hpp"
 
 namespace fuzzuf::algorithm::aflplusplus {
 
-struct AFLplusplusTestcase : public afl::AFLTestcase {
-  using Tag = option::AFLplusplusTag;
+AFLplusplusSetting::AFLplusplusSetting(
+    const std::vector<std::string> &argv,
+    const std::string &in_dir,
+    const std::string &out_dir,
+    u32 exec_timelimit_ms,
+    u64 exec_memlimit,
+    bool forksrv,
+    bool dumb_mode,
+    int cpuid_to_bind,
+    const aflfast::option::Schedule schedule
+) : AFLSetting(argv, in_dir, out_dir, exec_timelimit_ms, exec_memlimit, forksrv, dumb_mode, cpuid_to_bind),
+    schedule( schedule ) {}
 
-  AFLplusplusTestcase(std::shared_ptr<exec_input::OnDiskExecInput> input);
-  ~AFLplusplusTestcase();
+AFLplusplusSetting::~AFLplusplusSetting() {}
 
-  u64 n_fuzz_entry; /* offset in n_fuzz */
-};
-
-}  // namespace fuzzuf::algorithm::aflplusplus
-#endif
+} // namespace fuzzuf::algorithm::aflplusplus

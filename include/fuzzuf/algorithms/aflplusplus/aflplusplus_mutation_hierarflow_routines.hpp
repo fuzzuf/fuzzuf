@@ -1,7 +1,7 @@
 /*
  * fuzzuf
  * Copyright (C) 2022 Ricerca Security
- *
+ * 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -15,26 +15,24 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see http://www.gnu.org/licenses/.
  */
-#ifndef FUZZUF_INCLUDE_ALGORITHM_AFLPLUSPLUS_AFLPLUSPLUS_TESTCASE_HPP
-#define FUZZUF_INCLUDE_ALGORITHM_AFLPLUSPLUS_AFLPLUSPLUS_TESTCASE_HPP
 
-#include <bitset>
-#include <memory>
+#ifndef FUZZUF_INCLUDE_ALGORITHM_AFLPLUSPLUS_AFLPLUSPLUS_MUTATION_HIERARFLOW_ROUTINES_HPP
+#define FUZZUF_INCLUDE_ALGORITHM_AFLPLUSPLUS_AFLPLUSPLUS_MUTATION_HIERARFLOW_ROUTINES_HPP
 
-#include "fuzzuf/algorithms/aflfast/aflfast_testcase.hpp"
-#include "fuzzuf/algorithms/aflplusplus/aflplusplus_option.hpp"
-#include "fuzzuf/exec_input/on_disk_exec_input.hpp"
+#include "fuzzuf/algorithms/afl/afl_mutation_hierarflow_routines.hpp"
+#include "fuzzuf/algorithms/afl/afl_mutator.hpp"
+#include "fuzzuf/algorithms/aflplusplus/aflplusplus_state.hpp"
 
-namespace fuzzuf::algorithm::aflplusplus {
+namespace fuzzuf::algorithm::afl::routine::mutation {
 
-struct AFLplusplusTestcase : public afl::AFLTestcase {
-  using Tag = option::AFLplusplusTag;
+using AFLplusplusState = aflplusplus::AFLplusplusState;
 
-  AFLplusplusTestcase(std::shared_ptr<exec_input::OnDiskExecInput> input);
-  ~AFLplusplusTestcase();
+// explicit specialization
+template<>
+AFLMutCalleeRef<AFLplusplusState> HavocTemplate<AFLplusplusState>::operator()(
+    AFLMutatorTemplate<AFLplusplusState>& mutator
+);
 
-  u64 n_fuzz_entry; /* offset in n_fuzz */
-};
+} // namespace fuzzuf::algorithm::afl::routine::mutation
 
-}  // namespace fuzzuf::algorithm::aflplusplus
 #endif

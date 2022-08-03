@@ -15,26 +15,17 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see http://www.gnu.org/licenses/.
  */
-#ifndef FUZZUF_INCLUDE_ALGORITHM_AFLPLUSPLUS_AFLPLUSPLUS_TESTCASE_HPP
-#define FUZZUF_INCLUDE_ALGORITHM_AFLPLUSPLUS_AFLPLUSPLUS_TESTCASE_HPP
+#include "fuzzuf/algorithms/aflplusplus/aflplusplus_testcase.hpp"
 
-#include <bitset>
-#include <memory>
-
-#include "fuzzuf/algorithms/aflfast/aflfast_testcase.hpp"
-#include "fuzzuf/algorithms/aflplusplus/aflplusplus_option.hpp"
 #include "fuzzuf/exec_input/on_disk_exec_input.hpp"
 
 namespace fuzzuf::algorithm::aflplusplus {
 
-struct AFLplusplusTestcase : public afl::AFLTestcase {
-  using Tag = option::AFLplusplusTag;
+AFLplusplusTestcase::AFLplusplusTestcase(
+    std::shared_ptr<exec_input::OnDiskExecInput> input)
+    : AFLTestcase(input),
+      n_fuzz_entry(0) {}
 
-  AFLplusplusTestcase(std::shared_ptr<exec_input::OnDiskExecInput> input);
-  ~AFLplusplusTestcase();
-
-  u64 n_fuzz_entry; /* offset in n_fuzz */
-};
+AFLplusplusTestcase::~AFLplusplusTestcase() {}
 
 }  // namespace fuzzuf::algorithm::aflplusplus
-#endif

@@ -25,7 +25,17 @@
 
 namespace fuzzuf::algorithm::aflplusplus {
 
-using AFLplusplusFuzzer = afl::AFLFuzzerTemplate<AFLplusplusState>;
+class AFLplusplusFuzzer final : public afl::AFLFuzzerTemplate<AFLplusplusState> {
+ public:
+  explicit AFLplusplusFuzzer(std::unique_ptr<AFLplusplusState>&& state)
+      : afl::AFLFuzzerTemplate<AFLplusplusState>(std::move(state)),
+        fuzz_loop(afl::BuildAFLFuzzLoop(
+            *afl::AFLFuzzerTemplate<AFLplusplusState>::state)) {}
+  virtual void OneLoop(void) override { fuzz_loop(); }
+
+ private:
+  hierarflow::HierarFlowNode<void(void), void(void)> fuzz_loop;
+};
 
 } // namespace fuzzuf::algorithm::aflplusplus
 
