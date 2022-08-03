@@ -57,6 +57,10 @@
 
 #include "fuzzuf/utils/status.hpp"
 
+#define XXH_INLINE_ALL
+#include "third_party/xxHash/xxhash.h"
+#undef XXH_INLINE_ALL
+
 typedef uint8_t u8;
 typedef uint16_t u16;
 typedef uint32_t u32;
@@ -196,7 +200,10 @@ pid_t Fork();
 u64 GetCurTimeUs();
 u64 GetCurTimeMs();
 
-u32 Hash32(const void *key, u32 len, u32 seed);
+u32 MurmurHash32(const void *key, u32 len, u32 seed);
+inline u32 Hash32(const void *key, u32 len, [[maybe_unused]] u32 seed) {
+  return static_cast<u32>(XXH3_64bits(key, len));
+}
 
 u32 CountBits(const u8 *mem, u32 len);
 u32 CountBytes(const u8 *mem, u32 len);
