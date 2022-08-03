@@ -557,7 +557,7 @@ std::string StrPrintf(const char *format, ...) {
 
 #define ROL64(_x, _r) ((((u64)(_x)) << (_r)) | (((u64)(_x)) >> (64 - (_r))))
 
-u32 Hash32(const void *key, u32 len, u32 seed) {
+u32 MurmurHash32(const void *key, u32 len, u32 seed) {
   const u64 *data = (u64 *)key;
   u64 h1 = seed ^ len;
 
@@ -587,7 +587,7 @@ u32 Hash32(const void *key, u32 len, u32 seed) {
 
 #define ROL32(_x, _r) ((((u32)(_x)) << (_r)) | (((u32)(_x)) >> (32 - (_r))))
 
-u32 Hash32(const void *key, u32 len, u32 seed) {
+u32 MurmurHash32(const void *key, u32 len, u32 seed) {
   const u32 *data = (u32 *)key;
   u32 h1 = seed ^ len;
 
