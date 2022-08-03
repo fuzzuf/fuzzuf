@@ -22,7 +22,7 @@
 #include "fuzzuf/utils/common.hpp"
 #include "fuzzuf/algorithms/afl/afl_option.hpp"
 
-namespace fuzzuf::algorithm::ijon { struct IJONTestcase; }
+namespace fuzzuf::algorithm::ijon { struct IJONState; }
 
 namespace fuzzuf::algorithm::ijon::option {
 
@@ -38,7 +38,7 @@ constexpr u32 GetMaxMapSize(void) {
 namespace fuzzuf::algorithm::afl::option {
 
 template<>
-constexpr const char* GetVersion<ijon::IJONTestcase>(AFLStateTemplate<ijon::IJONTestcase>&) { 
+constexpr const char* GetVersion<ijon::IJONState>(ijon::IJONState&) { 
     return "2.57b-ijon";
 }
 
@@ -63,7 +63,7 @@ constexpr u32 GetHavocBlkXl<ijon::option::IJONTag>(void) {
 }
 
 template<>
-constexpr u32 GetSpliceCycles<ijon::IJONTestcase>(AFLStateTemplate<ijon::IJONTestcase>&) { 
+constexpr u32 GetSpliceCycles<ijon::IJONState>(ijon::IJONState&) { 
     return 8;
 }
 
@@ -72,7 +72,7 @@ constexpr u32 GetSpliceCycles<ijon::IJONTestcase>(AFLStateTemplate<ijon::IJONTes
 // Therefore, we deal with this by dividing SPLICE_HAVOC(=32) by 2.
 // See https://github.com/RUB-SysSec/ijon/blob/4cb8ae04d/afl-fuzz.c#L6125
 template<>
-constexpr u32 GetSpliceHavoc<ijon::IJONTestcase>(AFLStateTemplate<ijon::IJONTestcase>&) { 
+constexpr u32 GetSpliceHavoc<ijon::IJONState>(ijon::IJONState&) { 
     return 16;
 }
 

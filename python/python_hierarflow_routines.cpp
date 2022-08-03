@@ -22,6 +22,7 @@
 #include "fuzzuf/algorithms/afl/afl_dict_data.hpp"
 #include "fuzzuf/algorithms/afl/afl_havoc_case_distrib.hpp"
 #include "fuzzuf/algorithms/afl/afl_util.hpp"
+#include "fuzzuf/algorithms/afl/afl_havoc_case_distrib.hpp"
 #include "fuzzuf/executor/native_linux_executor.hpp"
 #include "fuzzuf/feedback/exit_status_feedback.hpp"
 #include "fuzzuf/feedback/inplace_memory_feedback.hpp"
