@@ -19,9 +19,18 @@
 #ifndef FUZZUF_INCLUDE_ALGORITHMS_AFLPLUSPLUS_AFLPLUSPLUS_FUZZER_HPP
 #define FUZZUF_INCLUDE_ALGORITHMS_AFLPLUSPLUS_AFLPLUSPLUS_FUZZER_HPP
 
+#include "fuzzuf/fuzzer/fuzzer.hpp"
 #include "fuzzuf/algorithms/afl/afl_fuzzer.hpp"
 #include "fuzzuf/algorithms/aflplusplus/aflplusplus_state.hpp"
-#include "fuzzuf/algorithms/aflfast/aflfast_fuzzer.hpp"
+#include "fuzzuf/algorithms/aflplusplus/aflplusplus_mutation_hierarflow_routines.hpp"
+#include "fuzzuf/algorithms/aflplusplus/aflplusplus_other_hierarflow_routines.hpp"
+
+#include "fuzzuf/hierarflow/hierarflow_routine.hpp"
+#include "fuzzuf/hierarflow/hierarflow_node.hpp"
+#include "fuzzuf/hierarflow/hierarflow_intermediates.hpp"
+#include "fuzzuf/hierarflow/hierarflow_node.hpp"
+#include "fuzzuf/hierarflow/hierarflow_routine.hpp"
+#include "fuzzuf/utils/common.hpp"
 
 namespace fuzzuf::algorithm::aflplusplus {
 
