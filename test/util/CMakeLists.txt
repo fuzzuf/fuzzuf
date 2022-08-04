@@ -29,36 +29,67 @@ if( ENABLE_CLANG_TIDY )
 endif()
 add_test( NAME "util.exec_command" COMMAND test-util-exec_command )
 
-add_executable( test-util-hash hash.cpp )
+add_executable( test-util-murmurhash murmurhash.cpp )
 target_link_libraries(
-  test-util-hash
+  test-util-murmurhash
   test-common
   fuzzuf_core
   ${FUZZUF_LIBRARIES}
   Boost::unit_test_framework
 )
 target_include_directories(
-  test-util-hash
+  test-util-murmurhash
   PRIVATE
   ${FUZZUF_INCLUDE_DIRS}
   ${CMAKE_SOURCE_DIR}/test/common
 )
 set_target_properties(
-  test-util-hash
+  test-util-murmurhash
   PROPERTIES COMPILE_FLAGS "${ADDITIONAL_COMPILE_FLAGS_STR}"
 )
 set_target_properties(
-  test-util-hash
+  test-util-murmurhash
   PROPERTIES LINK_FLAGS "${ADDITIONAL_LINK_FLAGS_STR}"
 )
 if( ENABLE_CLANG_TIDY )
   set_target_properties(
-    test-util-hash
+    test-util-murmurhash
     PROPERTIES
     CXX_CLANG_TIDY "${CLANG_TIDY};${CLANG_TIDY_CONFIG_FOR_TEST}"
   )
 endif()
-add_test( NAME "util.hash" COMMAND test-util-hash )
+add_test( NAME "util.murmurhash" COMMAND test-util-murmurhash )
+
+add_executable( test-util-xxhash xxhash.cpp )
+target_link_libraries(
+  test-util-xxhash
+  test-common
+  fuzzuf_core
+  ${FUZZUF_LIBRARIES}
+  Boost::unit_test_framework
+)
+target_include_directories(
+  test-util-xxhash
+  PRIVATE
+  ${FUZZUF_INCLUDE_DIRS}
+  ${CMAKE_SOURCE_DIR}/test/common
+)
+set_target_properties(
+  test-util-xxhash
+  PROPERTIES COMPILE_FLAGS "${ADDITIONAL_COMPILE_FLAGS_STR}"
+)
+set_target_properties(
+  test-util-xxhash
+  PROPERTIES LINK_FLAGS "${ADDITIONAL_LINK_FLAGS_STR}"
+)
+if( ENABLE_CLANG_TIDY )
+  set_target_properties(
+    test-util-xxhash
+    PROPERTIES
+    CXX_CLANG_TIDY "${CLANG_TIDY};${CLANG_TIDY_CONFIG_FOR_TEST}"
+  )
+endif()
+add_test( NAME "util.xxhash" COMMAND test-util-xxhash )
 
 add_executable( test-util-count_bits count_bits.cpp )
 target_link_libraries(
