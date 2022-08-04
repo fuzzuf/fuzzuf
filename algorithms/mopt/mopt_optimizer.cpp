@@ -45,14 +45,20 @@ MOptOptimizer::MOptOptimizer() {
   fuzzuf::optimizer::Store::GetInstance().InitKey(
       fuzzuf::optimizer::keys::LastSpliceCycle, (u32)0);
 
+  // initialize
   for (auto& p : swarm) {
+    for (size_t i = 0; i < p.fitness.size(); i++) {
+      p.best_fitness[i] = p.fitness[i];
+      p.best_position[i] = p.position[i];
+    }
+
     for (auto& pos : p.position)
       pos = fuzzuf::utils::random::Random<double>(min_position, max_position);
     p.velocity.fill(0);
   }
 
   idx = 0;
-  time = 0;
+  g_now = 0;
 
   UpdateInertia();
 }
@@ -67,13 +73,6 @@ void MOptOptimizer::SetScore(size_t i, double score) {
 void MOptOptimizer::UpdateLocalBest() {
   auto& p = swarm[idx];
 
-  if (unlikely(time == 0)) {
-    for (size_t i = 0; i < p.fitness.size(); i++) {
-      p.best_fitness[i] = p.fitness[i];
-      p.best_position[i] = p.position[i];
-    }
-  }
-
   for (size_t i = 0; i < p.fitness.size(); i++) {
     if (p.fitness[i] > p.best_fitness[i]) {
       p.best_fitness[i] = p.fitness[i];
@@ -83,10 +82,6 @@ void MOptOptimizer::UpdateLocalBest() {
 }
 
 void MOptOptimizer::UpdateGlobalBest() {
-  if (unlikely(time == 0)) {
-    // TODO?
-  }
-
   std::array<u64, NUM_CASE> havoc_operator_dist;
   havoc_operator_dist.fill(0);
 

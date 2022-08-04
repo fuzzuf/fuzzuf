@@ -74,8 +74,7 @@ class MOptOptimizer : public Optimizer<u32> {
   void UpdatePositions();
   void UpdateVelocities();
 
-  size_t idx = 0;
-  std::uint64_t time = 0;
+  size_t idx;
   std::array<MOptParticle, SwarmNum> swarm;
 
   // global best
