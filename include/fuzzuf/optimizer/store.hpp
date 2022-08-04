@@ -75,17 +75,24 @@ class Store {
   std::unordered_map<std::string, std::any> data;
 };
 
+void OnKeyDoesntExist(const std::string&);
+void OnKeyAlreadyExists(const std::string&);
+
 template <typename Type>
 void Store::InitKey(const StoreKey<Type>& key) {
+  if (Exists(key)) {
+    OnKeyAlreadyExists(key.name);
+  }
   data[key.name] = std::any_cast<Type>(Type());
 }
 
 template <typename Type>
 void Store::InitKey(const StoreKey<Type>& key, Type val) {
+  if (Exists(key)) {
+    OnKeyAlreadyExists(key.name);
+  }
   data[key.name] = std::any_cast<Type>(Type(val));
 }
-
-void OnKeyDoesntExist(const std::string&);
 
 template <typename Type>
 Type Store::Get(const StoreKey<Type>& key, bool assert) {
