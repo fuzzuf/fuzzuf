@@ -46,7 +46,7 @@ template <class Testcase>
 AFLStateTemplate<Testcase>::AFLStateTemplate(
     std::shared_ptr<const AFLSetting> setting,
     std::shared_ptr<executor::AFLExecutorInterface> executor,
-    std::shared_ptr<optimizer::Optimizer<u32>>&& _mutop_optimizer)
+    std::shared_ptr<optimizer::Optimizer<u32>> _mutop_optimizer)
     : setting(setting),
       executor(executor),
       input_set(),
