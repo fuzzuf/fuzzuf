@@ -29,6 +29,7 @@
 #include "fuzzuf/cli/global_fuzzer_options.hpp"
 #include "fuzzuf/cli/put_args.hpp"
 #include "fuzzuf/exceptions.hpp"
+#include "fuzzuf/executor/linux_fork_server_executor.hpp"
 #include "fuzzuf/executor/native_linux_executor.hpp"
 #include "fuzzuf/executor/qemu_executor.hpp"
 #include "fuzzuf/optimizer/optimizer.hpp"
@@ -207,6 +208,20 @@ std::unique_ptr<TFuzzer> BuildAFLplusplusFuzzerFromArgs(
           0                              // bb_shm_size
       );
       executor = std::make_shared<TExecutor>(std::move(nle));
+      break;
+    }
+
+    case ExecutorKind::FORKSERVER: {
+      auto lfe = std::make_shared<fuzzuf::executor::LinuxForkServerExecutor>(
+          fuzzuf::executor::LinuxForkServerExecutorParameters()
+              .set_argv(setting->argv)
+              .set_exec_timelimit_ms(setting->exec_timelimit_ms)
+              .set_exec_memlimit(setting->exec_memlimit)
+              .set_path_to_write_input(setting->out_dir /
+                                       GetDefaultOutfile<AFLplusplusTag>())
+              .set_afl_shm_size(GetMapSize<AFLplusplusTag>())  // afl_shm_size
+              .move());
+      executor = std::make_shared<TExecutor>(std::move(lfe));
       break;
     }
 
