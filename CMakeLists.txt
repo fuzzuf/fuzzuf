@@ -116,6 +116,7 @@ find_package( FridaTrace )
 find_package( FuzzToys )
 find_package( FuzzToysSymCC )
 find_package( FuzzufCC )
+find_package( LibBFD REQUIRED )
 if( ${CMAKE_VERSION} VERSION_GREATER_EQUAL 3.6.0 )
   option( ENABLE_CLANG_TIDY "enable clang-tidy" OFF )
   if( ENABLE_CLANG_TIDY )
@@ -334,10 +335,12 @@ set(
   utils/check_if_string_is_decimal.cpp
   utils/common.cpp
   utils/create_empty_file.cpp
+  utils/create_shared_memory.cpp
   utils/errno_to_system_error.cpp
   utils/get_aligned_addr.cpp
   utils/get_hash.cpp
   utils/hex_dump.cpp
+  utils/instrumentation_info.cpp
   utils/is_executable.cpp
   utils/load_inputs.cpp
   utils/map_file.cpp
@@ -444,6 +447,7 @@ endif()
 if( FLC_FOUND )
   list(APPEND FUZZUF_INCLUDE_DIRS "${FLC_INCLUDE_DIRS}" )
   list(APPEND FUZZUF_LIBRARY_DIRS "${FLC_LIBRARY_DIRS}" )
+  list(APPEND FUZZUF_INCLUDE_DIRS "${LIBBFD_INCLUDE_DIRS}" )
   list(APPEND FUZZUF_LIBRARIES "${FLC_LIBRARIES}")
 endif()
 list(APPEND FUZZUF_INCLUDE_DIRS "${CRYPTOPP_INCLUDE_DIRS}" )
@@ -454,6 +458,7 @@ list(APPEND FUZZUF_LIBRARIES Boost::program_options )
 list(APPEND FUZZUF_LIBRARIES Threads::Threads )
 list(APPEND FUZZUF_LIBRARIES ${CMAKE_DL_LIBS} )
 list(APPEND FUZZUF_LIBRARIES util )
+list(APPEND FUZZUF_LIBRARIES ${LIBBFD_LIBRARY} )
 
 link_directories(
   ${FUZZUF_LIBRARY_DIRS}

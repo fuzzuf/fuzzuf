@@ -41,6 +41,7 @@
 #include "fuzzuf/utils/is_executable.hpp"
 #include "fuzzuf/utils/which.hpp"
 #include "fuzzuf/utils/workspace.hpp"
+#include "fuzzuf/utils/create_shared_memory.hpp"
 
 namespace fuzzuf::executor {
 /**
@@ -79,6 +80,16 @@ LinuxForkServerExecutor::LinuxForkServerExecutor(
       filesystem(std::move(args.allowed_path)),
       put_channel()  // TODO: Make channel configurable outside of executor
 {
+  if( args.argv.empty() ) {
+    throw exceptions::invalid_argument( "LinuxForkServerExecutor::LinuxForkServerExecutor : The executor requires at least one argument.", __FILE__, __LINE__ );
+  }
+  instrumentation_info = utils::get_instrumentation_info( args.argv[ 0 ] );
+  if( !instrumentation_info.instrumented ) {
+    throw exceptions::invalid_argument( "LinuxForkServerExecutor::LinuxForkServerExecutor : PUT is required to be instrumented by fuzzuf-cc.", __FILE__, __LINE__ );
+  }
+  if( instrumentation_info.major_version != 0 || instrumentation_info.minor_version != 0 ) {
+    throw exceptions::invalid_argument( "LinuxForkServerExecutor::LinuxForkServerExecutor : The instrumentation is incompatible to fuzzuf.", __FILE__, __LINE__ );
+  }
   fuzzuf::utils::CheckCrashHandling();
 
   SetCArgvAndDecideInputMode();
@@ -103,6 +114,15 @@ LinuxForkServerExecutor::LinuxForkServerExecutor(
   SetupSharedMemories();
   SetupEnvironmentVariablesForTarget();
   args.AflCoverageSizeToEnvironmentVariables();
+  if( instrumentation_info.read_input_from_shared_memory ) {
+    if( args.input_shm_size == 0u ) {
+    throw exceptions::invalid_argument( "LinuxForkServerExecutor::LinuxForkServerExecutor : shared memory ", __FILE__, __LINE__ );
+    }
+    auto [input_shm_env, input_shm_] =
+      fuzzuf::utils::create_shared_memory("__FUZZUF_CC_INPUT_SHM_ID", args.input_shm_size);
+    input_shm = std::move( input_shm_ );
+    args.environment_variables.push_back( std::move( input_shm_env ) );
+  }
   CreateJoinedEnvironmentVariables(std::move(args.environment_variables));
 
   // Configure PUT runtime settings
@@ -206,7 +226,14 @@ void LinuxForkServerExecutor::Run(const u8 *buf, u32 len, u32 timeout_ms) {
   // Aliases
   ResetSharedMemories();
 
-  WriteTestInputToFile(buf, len);
+  if( input_shm ) {
+    const auto len_ = std::min( std::size_t( len ), std::size_t( std::distance( input_shm->begin(), input_shm->end() ) - 4u ) );
+    *reinterpret_cast< std::uint32_t* >( &*input_shm->begin() ) = len_;
+    std::copy( buf, std::next( buf, len_  ), std::next( input_shm->begin(), 4u ) );
+  }
+  else {
+    WriteTestInputToFile(buf, len);
+  }
 
   //#if 0
   // TODO: Since the information priority is Trace level that is less important
