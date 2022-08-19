@@ -395,6 +395,8 @@ bool HavocBaseTemplate<State>::DoHavoc(
   u64 havoc_queued = state.queued_paths;
 
   std::array<u64, fuzzuf::mutator::NUM_CASE> havoc_operator_finds;
+  havoc_operator_finds.fill(0);
+
   bool useHavocOperatorFinds =
       fuzzuf::optimizer::Store::GetInstance().Exists(
           fuzzuf::optimizer::keys::SelectedCaseHistogram) &&
@@ -415,19 +417,20 @@ bool HavocBaseTemplate<State>::DoHavoc(
     mutator.Havoc(use_stacking, state.extras, state.a_extras, mutop_optimizer,
                   custom_cases);
 
-    u64 havoc_finds = state.queued_paths + state.unique_crashes;
+    u64 prev_havoc_finds = state.queued_paths + state.unique_crashes;
 
     if (this->CallSuccessors(mutator.GetBuf(), mutator.GetLen())) return true;
 
-    havoc_finds = state.queued_paths + state.unique_crashes - havoc_finds;
+    u64 havoc_finds_diff =
+        state.queued_paths + state.unique_crashes - prev_havoc_finds;
 
-    if (unlikely(havoc_finds > 0) && useHavocOperatorFinds) {
+    if (unlikely(havoc_finds_diff > 0) && useHavocOperatorFinds) {
       auto selected_case_histogram =
           fuzzuf::optimizer::Store::GetInstance().Get(
               fuzzuf::optimizer::keys::SelectedCaseHistogram, true);
       for (size_t i = 0; i < selected_case_histogram.size(); i++) {
         if (selected_case_histogram[i] > 0) {
-          havoc_operator_finds[i] += havoc_finds;
+          havoc_operator_finds[i] += havoc_finds_diff;
         }
       }
 
