@@ -83,7 +83,7 @@ void Store::InitKey(const StoreKey<Type>& key) {
   if (Exists(key)) {
     OnKeyAlreadyExists(key.name);
   }
-  data[key.name] = std::any_cast<Type>(Type());
+  data[key.name] = Type();
 }
 
 template <typename Type>
@@ -91,7 +91,7 @@ void Store::InitKey(const StoreKey<Type>& key, Type val) {
   if (Exists(key)) {
     OnKeyAlreadyExists(key.name);
   }
-  data[key.name] = std::any_cast<Type>(Type(val));
+  data[key.name] = Type(val);
 }
 
 template <typename Type>
