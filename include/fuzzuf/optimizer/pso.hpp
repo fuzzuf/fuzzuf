@@ -91,9 +91,9 @@ class PSO : public Optimizer<std::array<double, Dimension>> {
   double max_velocity;
 
   // parameters
-  double w = 0.729;     // inertia weight
-  double c1 = 1.49445;  // cognitive weight
-  double c2 = 1.49445;  // social weight
+  double w;   // inertia weight
+  double c1;  // cognitive weight
+  double c2;  // social weight
 
   bool opt_minimize = true;
 };
