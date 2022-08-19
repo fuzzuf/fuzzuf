@@ -46,11 +46,15 @@ struct MOptFuzzerOptions {
   bool forksrv;                        // Optional
   std::vector<std::string> dict_file;  // Optional
   bool frida_mode;                     // Optional
-  u64 mopt_limit_time = 1;
-  u64 mopt_most_time = 0;
+  u64 mopt_limit_time;
+  u64 mopt_most_time;
 
   // Default values
-  MOptFuzzerOptions() : forksrv(true), frida_mode(false){};
+  MOptFuzzerOptions()
+      : forksrv(true),
+        frida_mode(false),
+        mopt_limit_time(1),
+        mopt_most_time(0){};
 };
 
 // Fuzzer specific help
