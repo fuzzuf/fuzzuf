@@ -99,7 +99,12 @@ class PSO : public Optimizer<std::array<double, Dimension>> {
 };
 
 template <size_t Dimension>
-Particle<Dimension>::Particle(){};
+Particle<Dimension>::Particle() {
+  position.fill(0);
+  velocity.fill(0);
+  best_position.fill(0);
+  best_fitness = 0;
+};
 
 template <size_t Dimension>
 Particle<Dimension>::~Particle(){};

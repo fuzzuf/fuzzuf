@@ -32,7 +32,11 @@ using fuzzuf::mutator::INSERT_EXTRA;
 using fuzzuf::mutator::OVERWRITE_WITH_AEXTRA;
 using fuzzuf::mutator::OVERWRITE_WITH_EXTRA;
 
-MOptParticle::MOptParticle() {}
+MOptParticle::MOptParticle() {
+  fitness.fill(0);
+  best_fitness.fill(0);
+}
+
 MOptParticle::~MOptParticle() {}
 
 MOptOptimizer::MOptOptimizer() {
@@ -46,6 +50,13 @@ MOptOptimizer::MOptOptimizer() {
       fuzzuf::optimizer::keys::LastSpliceCycle, (u32)0);
 
   // initialize
+  accum_havoc_operator_finds[0].fill(0);
+  accum_havoc_operator_finds[1].fill(0);
+  accum_selected_case_histogram[0].fill(0);
+  accum_selected_case_histogram[1].fill(0);
+  best_position.fill(0);
+  best_fitness = 0;
+
   for (auto& p : swarm) {
     for (size_t i = 0; i < p.fitness.size(); i++) {
       p.best_fitness[i] = p.fitness[i];
