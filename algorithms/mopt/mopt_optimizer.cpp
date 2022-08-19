@@ -115,10 +115,10 @@ void MOptOptimizer::UpdateInertia() {
   ++g_now %= G_MAX;
 }
 
-bool MOptOptimizer::IncrementSwarmIdx() {
+bool MOptOptimizer::NextSwarmIdx() {
   idx++;
   idx %= swarm.size();
-  return idx == 0;
+  return idx;
 }
 
 u32 MOptOptimizer::CalcValue() {

@@ -63,7 +63,7 @@ class MOptOptimizer : public Optimizer<u32> {
   void UpdateGlobalBest();
   void SetScore(size_t, double);
   void UpdateInertia();
-  bool IncrementSwarmIdx();
+  bool NextSwarmIdx();
 
   u32 CalcValue() override;
 

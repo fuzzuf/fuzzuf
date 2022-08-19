@@ -73,7 +73,7 @@ MOptMidCalleeRef MOptUpdate::operator()(
       }
       mopt->UpdateLocalBest();
 
-      if (mopt->IncrementSwarmIdx()) {  // all swarms are visited
+      if (mopt->NextSwarmIdx() == 0) {  // all swarms are visited
         state.mode = option::MOptMode::CoreMode;
       }
     }
