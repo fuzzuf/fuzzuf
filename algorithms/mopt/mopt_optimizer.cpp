@@ -96,9 +96,9 @@ void MOptOptimizer::UpdateGlobalBest() {
   std::array<u64, NUM_CASE> havoc_operator_dist;
   havoc_operator_dist.fill(0);
 
-  for (size_t i = 0; i < havoc_operator_finds[0].size(); i++) {
+  for (size_t i = 0; i < accum_havoc_operator_finds[0].size(); i++) {
     havoc_operator_dist[i] =
-        havoc_operator_finds[0][i] + havoc_operator_finds[1][i];
+        accum_havoc_operator_finds[0][i] + accum_havoc_operator_finds[1][i];
   }
 
   std::discrete_distribution<u32> dist(havoc_operator_dist.begin(),

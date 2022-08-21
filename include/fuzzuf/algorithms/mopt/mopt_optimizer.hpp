@@ -68,7 +68,9 @@ class MOptOptimizer : public Optimizer<u32> {
   u32 CalcValue() override;
 
   std::array<std::array<u64, NUM_CASE>, 2>
-      havoc_operator_finds;  // 0: pilot, 1: core
+      accum_havoc_operator_finds;  // 0: pilot, 1: core
+  std::array<std::array<u64, NUM_CASE>, 2>
+      accum_selected_case_histogram;  // 0: pilot, 1: core
 
  private:
   void UpdatePositions();

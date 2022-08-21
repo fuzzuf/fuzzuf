@@ -38,12 +38,16 @@ MOptMidCalleeRef MOptUpdate::operator()(
       fuzzuf::optimizer::keys::LastSpliceCycle, true);
   auto havoc_operator_finds = fuzzuf::optimizer::Store::GetInstance().Get(
       fuzzuf::optimizer::keys::HavocOperatorFinds, true);
+  auto selected_case_histogram = fuzzuf::optimizer::Store::GetInstance().Get(
+      fuzzuf::optimizer::keys::SelectedCaseHistogram, true);
 
   auto &mopt = state.mopt;
 
   // update havoc_operator_finds
   for (size_t i = 0; i < havoc_operator_finds.size(); i++) {
-    mopt->havoc_operator_finds[state.mode][i] += havoc_operator_finds[i];
+    mopt->accum_havoc_operator_finds[state.mode][i] += havoc_operator_finds[i];
+    mopt->accum_selected_case_histogram[state.mode][i] +=
+        selected_case_histogram[i];
   }
 
   if (last_splice_cycle >= afl::option::GetSpliceCycles(state)) {
@@ -56,22 +60,21 @@ MOptMidCalleeRef MOptUpdate::operator()(
 
   auto new_testcases = fuzzuf::optimizer::Store::GetInstance().Get(
       fuzzuf::optimizer::keys::NewTestcases, true);
-  auto selected_case_histogram = fuzzuf::optimizer::Store::GetInstance().Get(
-      fuzzuf::optimizer::keys::SelectedCaseHistogram, true);
 
   // pilot mode (update local best)
   if (state.mode == option::MOptMode::PilotMode) {
     if (unlikely(new_testcases > mopt::option::GetPeriodPilot<MOptTag>())) {
       for (size_t i = 0; i < selected_case_histogram.size(); i++) {
         double score = 0.0;
-        if (selected_case_histogram[i] > 0) {
-          score = (mopt->havoc_operator_finds[0][i] +
-                   mopt->havoc_operator_finds[1][i]) /
-                  selected_case_histogram[i];
+        if (mopt->accum_selected_case_histogram[0][i] > 0) {
+          score = mopt->accum_havoc_operator_finds[0][i] /
+                  mopt->accum_selected_case_histogram[0][i];
         }
         mopt->SetScore(i, score);
       }
       mopt->UpdateLocalBest();
+      mopt->accum_havoc_operator_finds[0].fill(0);
+      mopt->accum_selected_case_histogram[0].fill(0);
 
       if (mopt->NextSwarmIdx() == 0) {  // all swarms are visited
         state.mode = option::MOptMode::CoreMode;
@@ -83,6 +86,8 @@ MOptMidCalleeRef MOptUpdate::operator()(
   if (state.mode == option::MOptMode::CoreMode) {
     if (unlikely(new_testcases > mopt::option::GetPeriodCore<MOptTag>())) {
       mopt->UpdateGlobalBest();
+      mopt->accum_havoc_operator_finds[1].fill(0);
+      mopt->accum_selected_case_histogram[1].fill(0);
       state.mode = option::MOptMode::PilotMode;
     }
   }
