@@ -41,6 +41,11 @@ const double W_INIT = 0.9;
 const double W_END = 0.3;
 const int G_MAX = 5000;
 
+enum MOptMode {
+  CoreMode,
+  PilotMode,
+};
+
 class MOptParticle : public Particle<NUM_CASE> {
  public:
   MOptParticle();
@@ -71,6 +76,9 @@ class MOptOptimizer : public Optimizer<u32> {
       accum_havoc_operator_finds;  // 0: pilot, 1: core
   std::array<std::array<u64, NUM_CASE>, 2>
       accum_selected_case_histogram;  // 0: pilot, 1: core
+
+  bool pacemaker_mode = false;  // key_puppet: (0: false, 1: true)
+  MOptMode mode = MOptMode::PilotMode;
 
  private:
   void UpdatePositions();

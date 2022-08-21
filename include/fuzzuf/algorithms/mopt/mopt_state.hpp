@@ -41,9 +41,6 @@ struct MOptState : public afl::AFLStateTemplate<MOptTestcase> {
 
   void ShowStats(void);
 
-  bool pacemaker_mode = false;  // key_puppet: (0: false, 1: true)
-  option::MOptMode mode = option::MOptMode::PilotMode;
-
   u32 splice_cycles_limit = 0;
 
   std::shared_ptr<const MOptSetting> setting;

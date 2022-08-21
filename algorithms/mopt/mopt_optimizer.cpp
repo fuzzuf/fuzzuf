@@ -139,7 +139,7 @@ u32 MOptOptimizer::CalcValue() {
   bool no_extras = extras.empty();
   bool no_aextras = a_extras.empty();
 
-  auto weights(swarm[idx].best_position);
+  auto weights(swarm[mode == MOptMode::PilotMode ? idx : best_idx].position);
 
   if (no_extras) {
     weights[INSERT_EXTRA] = 0;

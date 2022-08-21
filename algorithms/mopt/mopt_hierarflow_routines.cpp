@@ -19,7 +19,6 @@
 #include "fuzzuf/algorithms/mopt/mopt_hierarflow_routines.hpp"
 
 #include "fuzzuf/algorithms/mopt/mopt_optimizer.hpp"
-#include "fuzzuf/algorithms/mopt/mopt_option.hpp"
 #include "fuzzuf/algorithms/mopt/mopt_option_get_splice_cycles.hpp"
 #include "fuzzuf/utils/common.hpp"
 
@@ -27,6 +26,7 @@ namespace fuzzuf::algorithm::mopt::routine {
 
 namespace other {
 
+using fuzzuf::optimizer::MOptMode;
 using mopt::option::MOptTag;
 
 MOptUpdate::MOptUpdate(MOptState &state) : state(state) {}
@@ -45,8 +45,8 @@ MOptMidCalleeRef MOptUpdate::operator()(
 
   // update havoc_operator_finds
   for (size_t i = 0; i < havoc_operator_finds.size(); i++) {
-    mopt->accum_havoc_operator_finds[state.mode][i] += havoc_operator_finds[i];
-    mopt->accum_selected_case_histogram[state.mode][i] +=
+    mopt->accum_havoc_operator_finds[mopt->mode][i] += havoc_operator_finds[i];
+    mopt->accum_selected_case_histogram[mopt->mode][i] +=
         selected_case_histogram[i];
   }
 
@@ -54,7 +54,7 @@ MOptMidCalleeRef MOptUpdate::operator()(
     state.UpdateSpliceCycles();
   }
 
-  if (state.pacemaker_mode) {
+  if (mopt->pacemaker_mode) {
     // TODO
   }
 
@@ -62,7 +62,7 @@ MOptMidCalleeRef MOptUpdate::operator()(
       fuzzuf::optimizer::keys::NewTestcases, true);
 
   // pilot mode (update local best)
-  if (state.mode == option::MOptMode::PilotMode) {
+  if (mopt->mode == MOptMode::PilotMode) {
     if (unlikely(new_testcases > mopt::option::GetPeriodPilot<MOptTag>())) {
       for (size_t i = 0; i < selected_case_histogram.size(); i++) {
         double score = 0.0;
@@ -77,18 +77,18 @@ MOptMidCalleeRef MOptUpdate::operator()(
       mopt->accum_selected_case_histogram[0].fill(0);
 
       if (mopt->NextSwarmIdx() == 0) {  // all swarms are visited
-        state.mode = option::MOptMode::CoreMode;
+        mopt->mode = MOptMode::CoreMode;
       }
     }
   }
 
   // core mode (update global best)
-  if (state.mode == option::MOptMode::CoreMode) {
+  if (mopt->mode == MOptMode::CoreMode) {
     if (unlikely(new_testcases > mopt::option::GetPeriodCore<MOptTag>())) {
       mopt->UpdateGlobalBest();
       mopt->accum_havoc_operator_finds[1].fill(0);
       mopt->accum_selected_case_histogram[1].fill(0);
-      state.mode = option::MOptMode::PilotMode;
+      mopt->mode = MOptMode::PilotMode;
     }
   }
 
@@ -101,13 +101,14 @@ CheckPacemakerThreshold::CheckPacemakerThreshold(MOptState &state,
 
 MOptMidCalleeRef CheckPacemakerThreshold::operator()(
     [[maybe_unused]] std::shared_ptr<MOptTestcase> testcase) {
+  auto &mopt = state.mopt;
   u64 cur_ms_lv = fuzzuf::utils::GetCurTimeMs();
-  if (!(state.pacemaker_mode == false &&
+  if (!(mopt->pacemaker_mode == false &&
         ((cur_ms_lv - state.last_path_time < state.setting->mopt_limit_time) ||
          (state.last_crash_time != 0 &&
           cur_ms_lv - state.last_crash_time < state.setting->mopt_limit_time) ||
          (state.last_path_time == 0)))) {
-    state.pacemaker_mode = true;
+    mopt->pacemaker_mode = true;
     return abandon_entry;
   }
   return this->GoToDefaultNext();

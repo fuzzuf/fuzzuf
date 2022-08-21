@@ -18,11 +18,14 @@
 
 #include "fuzzuf/algorithms/mopt/mopt_state.hpp"
 
+#include "fuzzuf/algorithms/mopt/mopt_optimizer.hpp"
 #include "fuzzuf/algorithms/mopt/mopt_option.hpp"
 #include "fuzzuf/algorithms/mopt/mopt_setting.hpp"
 #include "fuzzuf/utils/random.hpp"
 
 namespace fuzzuf::algorithm::mopt {
+
+using optimizer::MOptMode;
 
 MOptState::MOptState(std::shared_ptr<const MOptSetting> setting,
                      std::shared_ptr<executor::AFLExecutorInterface> executor,
@@ -32,7 +35,7 @@ MOptState::MOptState(std::shared_ptr<const MOptSetting> setting,
       mopt(mopt) {
   // set mode to CoreMode if -L is 0
   if (setting->mopt_limit_time == 0) {
-    mode = option::MOptMode::CoreMode;
+    mopt->mode = MOptMode::CoreMode;
   }
 
   UpdateSpliceCycles();  // init
@@ -151,9 +154,9 @@ void MOptState::ShowStats(void) {
   u32 banner_pad = (80 - banner_len) / 2;
 
   std::string mopt_banner = fuzzuf::utils::StrPrintf(
-      "MOpt-AFL %s", this->pacemaker_mode ? "+ pacemaker " : "");
-  mopt_banner += this->mode == option::MOptMode::CoreMode ? "(core_fuzzing)"
-                                                          : "(pilot_fuzzing)";
+      "MOpt-AFL %s", this->mopt->pacemaker_mode ? "+ pacemaker " : "");
+  mopt_banner += this->mopt->mode == MOptMode::CoreMode ? "(core_fuzzing)"
+                                                        : "(pilot_fuzzing)";
 
   std::string fuzzer_name =
       crash_mode != feedback::PUTExitReasonType::FAULT_NONE
