@@ -111,8 +111,8 @@ void MOptOptimizer::UpdateGlobalBest() {
 }
 
 void MOptOptimizer::UpdateInertia() {
-  w = (W_INIT - W_END) * (G_MAX - g_now) / G_MAX + W_END;
   ++g_now %= G_MAX;
+  w = (W_INIT - W_END) * (G_MAX - g_now) / G_MAX + W_END;
 }
 
 bool MOptOptimizer::NextSwarmIdx() {
