@@ -41,7 +41,8 @@ MOptParticle::MOptParticle() {
 
 MOptParticle::~MOptParticle() {}
 
-MOptOptimizer::MOptOptimizer() {
+MOptOptimizer::MOptOptimizer()
+    : min_position(0.05), max_position(1), min_velocity(0), max_velocity(1) {
   fuzzuf::optimizer::Store::GetInstance().InitKey(
       fuzzuf::optimizer::keys::NewTestcases, (u64)0);
   fuzzuf::optimizer::Store::GetInstance().InitKey(
@@ -126,8 +127,12 @@ void MOptOptimizer::UpdateGlobalBest() {
 }
 
 void MOptOptimizer::UpdateInertia() {
+  const double W_INIT = 0.9;
+  const double W_END = 0.3;
+  const int G_MAX = 5000;
+
   ++g_now %= G_MAX;
-  w = (W_INIT - W_END) * (G_MAX - g_now) / G_MAX + W_END;
+  w = (W_END - W_INIT) * (G_MAX - g_now) / G_MAX + W_END;
 }
 
 bool MOptOptimizer::NextSwarmIdx() {

@@ -35,11 +35,6 @@ const StoreKey<u64> NewTestcases{"new_testcases"};
 }  // namespace keys
 
 const size_t SwarmNum = 5;
-const double P_MAX = 1;
-const double P_MIN = 0.05;
-const double W_INIT = 0.9;
-const double W_END = 0.3;
-const int G_MAX = 5000;
 
 enum MOptMode {
   CoreMode,
@@ -99,10 +94,10 @@ class MOptOptimizer : public Optimizer<u32> {
   int g_now = 0;
   double w = 0;  // inertia weight
 
-  double min_position = P_MIN;
-  double max_position = P_MAX;
-  double min_velocity = 0;
-  double max_velocity = 1;
+  double min_position;
+  double max_position;
+  double min_velocity;
+  double max_velocity;
 };
 
 }  // namespace fuzzuf::optimizer
