@@ -100,10 +100,12 @@ void MOptFuzzer::BuildFuzzFlow() {
     // MOpt-specific nodes
     using fuzzuf::algorithm::mopt::routine::other::CheckPacemakerThreshold;
     using fuzzuf::algorithm::mopt::routine::other::MOptUpdate;
+    using fuzzuf::algorithm::mopt::routine::other::SavePacemakerHitCnt;
 
     auto check_pacemaker =
         CreateNode<CheckPacemakerThreshold>(*state, *apply_rand_muts);
     auto update_mopt = CreateNode<MOptUpdate>(*state);
+    auto save_pacemaker = CreateNode<SavePacemakerHitCnt>(*state);
 
     fuzz_loop << (cull_queue || select_seed);
 
@@ -128,6 +130,7 @@ void MOptFuzzer::BuildFuzzFlow() {
                                                 << normal_update.HardLink() ||
                             auto_dict_overwrite << execute.HardLink()
                                                 << normal_update.HardLink()) ||
+                    save_pacemaker ||
                     apply_rand_muts << (havoc << execute.HardLink()
                                               << normal_update.HardLink() ||
                                         splicing << execute.HardLink()

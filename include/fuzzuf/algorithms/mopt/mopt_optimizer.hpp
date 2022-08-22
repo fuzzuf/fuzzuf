@@ -77,6 +77,8 @@ class MOptOptimizer : public Optimizer<u32> {
   bool pacemaker_mode = false;  // key_puppet: (0: false, 1: true)
   MOptMode mode = MOptMode::PilotMode;
 
+  u64 pacemaker_hit_cnt = 0;
+
  private:
   void UpdatePositions();
   void UpdateVelocities();

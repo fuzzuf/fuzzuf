@@ -55,7 +55,13 @@ MOptMidCalleeRef MOptUpdate::operator()(
   }
 
   if (mopt->pacemaker_mode) {
-    // TODO
+    u64 hit_cnt = state.queued_paths + state.unique_crashes;
+
+    if (unlikely(hit_cnt > hit_cnt * option::GetLimitTimeBound<MOptTag>() +
+                               mopt->pacemaker_hit_cnt)) {
+      mopt->pacemaker_hit_cnt = 0;
+      mopt->pacemaker_mode = false;
+    }
   }
 
   auto new_testcases = fuzzuf::optimizer::Store::GetInstance().Get(
@@ -116,6 +122,20 @@ MOptMidCalleeRef CheckPacemakerThreshold::operator()(
     mopt->pacemaker_mode = true;
     return abandon_entry;
   }
+  return this->GoToDefaultNext();
+}
+
+SavePacemakerHitCnt::SavePacemakerHitCnt(MOptState &state) : state(state) {}
+
+MOptMidCalleeRef SavePacemakerHitCnt::operator()(
+    [[maybe_unused]] std::shared_ptr<MOptTestcase> testcase) {
+  auto &mopt = state.mopt;
+
+  if (mopt->pacemaker_mode == true && unlikely(mopt->pacemaker_hit_cnt == 0)) {
+    mopt->pacemaker_hit_cnt = state.queued_paths + state.unique_crashes;
+    state.UpdateSpliceCycles();
+  }
+
   return this->GoToDefaultNext();
 }
 

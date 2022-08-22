@@ -62,6 +62,7 @@ MOptOptimizer::MOptOptimizer()
   best_position.fill(0);
   best_fitness = 0;
   swarm_fitness.fill(0);
+  pacemaker_hit_cnt = 0;
 
   for (auto& p : swarm) {
     for (size_t i = 0; i < p.fitness.size(); i++) {

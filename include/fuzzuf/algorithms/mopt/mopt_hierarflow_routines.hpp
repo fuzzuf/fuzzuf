@@ -63,6 +63,17 @@ struct CheckPacemakerThreshold
   MOptMidCalleeRef abandon_entry;
 };
 
+struct SavePacemakerHitCnt
+    : public HierarFlowRoutine<MOptMidInputType, MOptMidOutputType> {
+ public:
+  SavePacemakerHitCnt(MOptState &state);
+
+  MOptMidCalleeRef operator()(std::shared_ptr<MOptTestcase>);
+
+ private:
+  MOptState &state;
+};
+
 }  // namespace other
 
 namespace mutation {

@@ -45,6 +45,11 @@ constexpr u32 GetPeriodCore(void) {
   return 500000;
 }
 
+template <class Tag>
+constexpr double GetLimitTimeBound(void) {
+  return 1.1;
+}
+
 }  // namespace fuzzuf::algorithm::mopt::option
 
 #endif
