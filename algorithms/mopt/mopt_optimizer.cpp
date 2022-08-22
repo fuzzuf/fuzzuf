@@ -18,6 +18,8 @@
 
 #include "fuzzuf/algorithms/mopt/mopt_optimizer.hpp"
 
+#include <algorithm>
+#include <iterator>
 #include <random>
 #include <vector>
 
@@ -48,6 +50,8 @@ MOptOptimizer::MOptOptimizer() {
       fuzzuf::optimizer::keys::SelectedCaseHistogram);
   fuzzuf::optimizer::Store::GetInstance().InitKey(
       fuzzuf::optimizer::keys::LastSpliceCycle, (u32)0);
+  fuzzuf::optimizer::Store::GetInstance().InitKey(
+      fuzzuf::optimizer::keys::LastHavocFinds, (u64)0);
 
   // initialize
   accum_havoc_operator_finds[0].fill(0);
@@ -56,6 +60,7 @@ MOptOptimizer::MOptOptimizer() {
   accum_selected_case_histogram[1].fill(0);
   best_position.fill(0);
   best_fitness = 0;
+  swarm_fitness.fill(0);
 
   for (auto& p : swarm) {
     for (size_t i = 0; i < p.fitness.size(); i++) {
@@ -79,6 +84,16 @@ MOptOptimizer::~MOptOptimizer() {}
 void MOptOptimizer::SetScore(size_t i, double score) {
   auto& p = swarm[idx];
   p.fitness[i] = score;
+}
+
+void MOptOptimizer::SetSwarmFitness(double fitness) {
+  swarm_fitness[idx] = fitness;
+}
+
+void MOptOptimizer::UpdateBestSwarmIdx() {
+  best_idx = std::distance(
+      swarm_fitness.begin(),
+      std::max_element(swarm_fitness.begin(), swarm_fitness.end()));
 }
 
 void MOptOptimizer::UpdateLocalBest() {

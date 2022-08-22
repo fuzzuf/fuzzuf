@@ -67,6 +67,8 @@ class MOptOptimizer : public Optimizer<u32> {
   void UpdateLocalBest();
   void UpdateGlobalBest();
   void SetScore(size_t, double);
+  void SetSwarmFitness(double);
+  void UpdateBestSwarmIdx();
   void UpdateInertia();
   bool NextSwarmIdx();
 
@@ -85,11 +87,13 @@ class MOptOptimizer : public Optimizer<u32> {
   void UpdateVelocities();
 
   size_t idx;
+  size_t best_idx;
   std::array<MOptParticle, SwarmNum> swarm;
 
   // global best
   std::array<double, NUM_CASE> best_position;
   double best_fitness;
+  std::array<double, NUM_CASE> swarm_fitness;
 
   // parameter
   int g_now = 0;

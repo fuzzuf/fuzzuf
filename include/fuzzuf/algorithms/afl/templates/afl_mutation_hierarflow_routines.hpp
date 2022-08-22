@@ -401,7 +401,9 @@ bool HavocBaseTemplate<State>::DoHavoc(
       fuzzuf::optimizer::Store::GetInstance().Exists(
           fuzzuf::optimizer::keys::SelectedCaseHistogram) &&
       fuzzuf::optimizer::Store::GetInstance().Exists(
-          fuzzuf::optimizer::keys::SelectedCaseHistogram);
+          fuzzuf::optimizer::keys::HavocOperatorFinds);
+  bool useLastHavocFinds = fuzzuf::optimizer::Store::GetInstance().Exists(
+      fuzzuf::optimizer::keys::LastHavocFinds);
 
   /* We essentially just do several thousand runs (depending on perf_score)
      where we take the input file and make random stacked tweaks. */
@@ -423,6 +425,11 @@ bool HavocBaseTemplate<State>::DoHavoc(
 
     u64 havoc_finds_diff =
         state.queued_paths + state.unique_crashes - prev_havoc_finds;
+
+    if (useLastHavocFinds) {
+      fuzzuf::optimizer::Store::GetInstance().Set(
+          fuzzuf::optimizer::keys::LastHavocFinds, havoc_finds_diff);
+    }
 
     if (unlikely(havoc_finds_diff > 0) && useHavocOperatorFinds) {
       auto selected_case_histogram =

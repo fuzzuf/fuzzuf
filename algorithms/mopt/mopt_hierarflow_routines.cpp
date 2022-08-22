@@ -64,6 +64,10 @@ MOptMidCalleeRef MOptUpdate::operator()(
   // pilot mode (update local best)
   if (mopt->mode == MOptMode::PilotMode) {
     if (unlikely(new_testcases > mopt::option::GetPeriodPilot<MOptTag>())) {
+      auto last_havoc_finds = fuzzuf::optimizer::Store::GetInstance().Get(
+          fuzzuf::optimizer::keys::LastHavocFinds, true);
+      mopt->SetSwarmFitness(last_havoc_finds / new_testcases);
+
       for (size_t i = 0; i < selected_case_histogram.size(); i++) {
         double score = 0.0;
         if (mopt->accum_selected_case_histogram[0][i] > 0) {
@@ -77,6 +81,7 @@ MOptMidCalleeRef MOptUpdate::operator()(
       mopt->accum_selected_case_histogram[0].fill(0);
 
       if (mopt->NextSwarmIdx() == 0) {  // all swarms are visited
+        mopt->UpdateBestSwarmIdx();
         mopt->mode = MOptMode::CoreMode;
       }
     }

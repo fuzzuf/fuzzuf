@@ -39,6 +39,7 @@ const StoreKey<std::array<u32, fuzzuf::mutator::NUM_CASE>>
 const StoreKey<std::array<u64, NUM_CASE>> HavocOperatorFinds{
     "havoc_operator_finds"};
 const StoreKey<u32> LastSpliceCycle{"last_splice_cycle"};
+const StoreKey<u64> LastHavocFinds{"last_havoc_finds"};
 
 }  // namespace fuzzuf::optimizer::keys
 
