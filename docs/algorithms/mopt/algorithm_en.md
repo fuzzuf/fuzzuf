@@ -2,8 +2,11 @@
 
 ## What is MOpt
 
-[MOpt-AFL](https://github.com/puppet-meteor/MOpt-AFL) is an example implementation for MOpt[^usenix19] paper applying customized PSO (Particle Swarm Optimization) algorithm to AFL mutation scheduling.
-They optimize the selection of mutation operators to find more interesting inputs by generating probability distribution from particles optimized with PSO algorithm.
+[MOpt-AFL](https://github.com/puppet-meteor/MOpt-AFL) is an example implementation for MOpt[^usenix19] paper.
+We think their algorithm is not even a customized PSO, but original heuristics inspired by PSO.
+This is because the original PSO and MOpt's PSO-like algorithms don't share the problem setting and the objective function at all.
+This can be emphasized to some extent considering that I saw some people misunderstand this point.
+They optimize the selection of mutation operators to find more interesting inputs by generating probability distribution from particles optimized with PSO-like algorithm.
 
 
 
