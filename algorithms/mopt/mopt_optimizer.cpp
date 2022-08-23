@@ -55,10 +55,10 @@ MOptOptimizer::MOptOptimizer()
       fuzzuf::optimizer::keys::LastHavocFinds, (u64)0);
 
   // initialize
-  accum_havoc_operator_finds[0].fill(0);
-  accum_havoc_operator_finds[1].fill(0);
-  accum_selected_case_histogram[0].fill(0);
-  accum_selected_case_histogram[1].fill(0);
+  accum_havoc_operator_finds[MOptMode::CoreMode].fill(0);
+  accum_havoc_operator_finds[MOptMode::PilotMode].fill(0);
+  accum_selected_case_histogram[MOptMode::CoreMode].fill(0);
+  accum_selected_case_histogram[MOptMode::PilotMode].fill(0);
   best_position.fill(0);
   best_fitness = 0;
   swarm_fitness.fill(0);
@@ -114,8 +114,8 @@ void MOptOptimizer::UpdateGlobalBest() {
   havoc_operator_dist.fill(0);
 
   for (size_t i = 0; i < accum_havoc_operator_finds[0].size(); i++) {
-    havoc_operator_dist[i] =
-        accum_havoc_operator_finds[0][i] + accum_havoc_operator_finds[1][i];
+    havoc_operator_dist[i] = accum_havoc_operator_finds[MOptMode::CoreMode][i] +
+                             accum_havoc_operator_finds[MOptMode::PilotMode][i];
   }
 
   std::discrete_distribution<u32> dist(havoc_operator_dist.begin(),

@@ -76,15 +76,15 @@ MOptMidCalleeRef MOptUpdate::operator()(
 
       for (size_t i = 0; i < selected_case_histogram.size(); i++) {
         double score = 0.0;
-        if (mopt->accum_selected_case_histogram[0][i] > 0) {
-          score = mopt->accum_havoc_operator_finds[0][i] /
-                  mopt->accum_selected_case_histogram[0][i];
+        if (mopt->accum_selected_case_histogram[MOptMode::CoreMode][i] > 0) {
+          score = mopt->accum_havoc_operator_finds[MOptMode::CoreMode][i] /
+                  mopt->accum_selected_case_histogram[MOptMode::CoreMode][i];
         }
         mopt->SetScore(i, score);
       }
       mopt->UpdateLocalBest();
-      mopt->accum_havoc_operator_finds[0].fill(0);
-      mopt->accum_selected_case_histogram[0].fill(0);
+      mopt->accum_havoc_operator_finds[MOptMode::CoreMode].fill(0);
+      mopt->accum_selected_case_histogram[MOptMode::CoreMode].fill(0);
 
       if (mopt->NextSwarmIdx() == 0) {  // all swarms are visited
         mopt->UpdateBestSwarmIdx();
@@ -99,8 +99,8 @@ MOptMidCalleeRef MOptUpdate::operator()(
   if (mopt->mode == MOptMode::CoreMode) {
     if (unlikely(new_testcases > mopt::option::GetPeriodCore<MOptTag>())) {
       mopt->UpdateGlobalBest();
-      mopt->accum_havoc_operator_finds[1].fill(0);
-      mopt->accum_selected_case_histogram[1].fill(0);
+      mopt->accum_havoc_operator_finds[MOptMode::PilotMode].fill(0);
+      mopt->accum_selected_case_histogram[MOptMode::PilotMode].fill(0);
       mopt->mode = MOptMode::PilotMode;
     }
   }
