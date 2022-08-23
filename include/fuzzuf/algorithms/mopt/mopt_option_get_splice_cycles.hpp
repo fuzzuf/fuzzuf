@@ -16,16 +16,21 @@
  * along with this program.  If not, see http://www.gnu.org/licenses/.
  */
 
-#include "fuzzuf/optimizer/store.hpp"
+#ifndef FUZZUF_INCLUDE_ALGORITHM_MOPT_MOPT_OPTION_GET_SPLICE_CYCLES_HPP
+#define FUZZUF_INCLUDE_ALGORITHM_MOPT_MOPT_OPTION_GET_SPLICE_CYCLES_HPP
 
-namespace fuzzuf::optimizer {
+#include "fuzzuf/algorithms/afl/afl_option.hpp"
+#include "fuzzuf/algorithms/afl/afl_state.hpp"
 
-Store::Store() {}
-Store::~Store() {}
+// separated from mopt_option.hpp as methods defined here use MOptState member
 
-Store &Store::GetInstance() {
-  static Store store;
-  return store;
+namespace fuzzuf::algorithm::afl::option {
+
+template <>
+u32 GetSpliceCycles<mopt::MOptState>(mopt::MOptState& state) {
+  return state.splice_cycles_limit;
 }
 
-}  // namespace fuzzuf::optimizer
+}  // namespace fuzzuf::algorithm::afl::option
+
+#endif

@@ -61,7 +61,7 @@ struct AFLStateTemplate {
   explicit AFLStateTemplate(
       std::shared_ptr<const AFLSetting> setting,
       std::shared_ptr<executor::AFLExecutorInterface> executor,
-      std::unique_ptr<optimizer::Optimizer<u32>> &&mutop_optimizer);
+      std::shared_ptr<optimizer::Optimizer<u32>> mutop_optimizer);
   virtual ~AFLStateTemplate();
 
   AFLStateTemplate(const AFLStateTemplate &) = delete;
@@ -315,7 +315,7 @@ struct AFLStateTemplate {
   /* Automatically selected extras    */
   std::vector<AFLDictData> a_extras;
 
-  std::unique_ptr<optimizer::Optimizer<u32>> mutop_optimizer;
+  std::shared_ptr<optimizer::Optimizer<u32>> mutop_optimizer;
 
  private:
   bool should_construct_auto_dict;

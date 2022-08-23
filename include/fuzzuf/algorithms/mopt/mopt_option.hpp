@@ -16,16 +16,40 @@
  * along with this program.  If not, see http://www.gnu.org/licenses/.
  */
 
-#include "fuzzuf/optimizer/store.hpp"
+#ifndef FUZZUF_INCLUDE_ALGORITHM_MOPT_MOPT_OPTION_HPP
+#define FUZZUF_INCLUDE_ALGORITHM_MOPT_MOPT_OPTION_HPP
 
-namespace fuzzuf::optimizer {
+#include "fuzzuf/algorithms/afl/afl_option.hpp"
 
-Store::Store() {}
-Store::~Store() {}
+namespace fuzzuf::algorithm::mopt::option {
 
-Store &Store::GetInstance() {
-  static Store store;
-  return store;
+struct MOptTag {};
+
+template <class Tag>
+constexpr u32 GetSpliceCyclesUp(void) {
+  return 25;
 }
 
-}  // namespace fuzzuf::optimizer
+template <class Tag>
+constexpr u32 GetSpliceCyclesLow(void) {
+  return 5;
+}
+
+template <class Tag>
+constexpr u32 GetPeriodPilot(void) {
+  return 50000;
+}
+
+template <class Tag>
+constexpr u32 GetPeriodCore(void) {
+  return 500000;
+}
+
+template <class Tag>
+constexpr double GetLimitTimeBound(void) {
+  return 1.1;
+}
+
+}  // namespace fuzzuf::algorithm::mopt::option
+
+#endif

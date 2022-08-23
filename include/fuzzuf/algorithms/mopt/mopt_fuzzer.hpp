@@ -16,16 +16,31 @@
  * along with this program.  If not, see http://www.gnu.org/licenses/.
  */
 
-#include "fuzzuf/optimizer/store.hpp"
+#ifndef FUZZUF_INCLUDE_ALGORITHM_MOPT_MOPT_FUZZER_HPP
+#define FUZZUF_INCLUDE_ALGORITHM_MOPT_MOPT_FUZZER_HPP
 
-namespace fuzzuf::optimizer {
+#include <string>
+#include <vector>
 
-Store::Store() {}
-Store::~Store() {}
+#include "fuzzuf/algorithms/afl/afl_fuzzer.hpp"
+#include "fuzzuf/algorithms/mopt/mopt_state.hpp"
+#include "fuzzuf/hierarflow/hierarflow_node.hpp"
+#include "fuzzuf/utils/common.hpp"
 
-Store &Store::GetInstance() {
-  static Store store;
-  return store;
-}
+namespace fuzzuf::algorithm::mopt {
 
-}  // namespace fuzzuf::optimizer
+class MOptFuzzer : public afl::AFLFuzzerTemplate<MOptState> {
+ public:
+  explicit MOptFuzzer(std::unique_ptr<MOptState>&& state);
+  ~MOptFuzzer();
+
+  void OneLoop(void) override;
+
+ private:
+  void BuildFuzzFlow(void);
+  hierarflow::HierarFlowNode<void(void), void(void)> fuzz_loop;
+};
+
+}  // namespace fuzzuf::algorithm::mopt
+
+#endif

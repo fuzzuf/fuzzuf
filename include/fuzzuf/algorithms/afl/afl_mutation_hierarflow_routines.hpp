@@ -28,6 +28,8 @@
 #include "fuzzuf/hierarflow/hierarflow_routine.hpp"
 #include "fuzzuf/optimizer/optimizer.hpp"
 
+#include "fuzzuf/optimizer/optimizer.hpp"
+
 namespace fuzzuf::algorithm::afl::routine::mutation {
 
 template <class State>

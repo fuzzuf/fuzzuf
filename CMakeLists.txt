@@ -328,6 +328,7 @@ set(
   logger/logger.cpp
   logger/log_file_logger.cpp
   logger/stdout_logger.cpp
+  optimizer/for_nlohmann_json.cpp
   optimizer/store.cpp
   utils/check_crash_handling.cpp
   utils/check_if_string_is_decimal.cpp

@@ -16,16 +16,20 @@
  * along with this program.  If not, see http://www.gnu.org/licenses/.
  */
 
-#include "fuzzuf/optimizer/store.hpp"
+// This file is separated from store.cpp to avoid issue raising compile error on
+// C++17 Old nlohmann JSON including one provided by Ubuntu 20.04 has issue that
+// cannot exist with C++17 std::any in same translation unit.
+
+#include "fuzzuf/logger/logger.hpp"
 
 namespace fuzzuf::optimizer {
 
-Store::Store() {}
-Store::~Store() {}
+void OnKeyDoesntExist(const std::string &v) {
+  ERROR("not found key '%s'", v.c_str());
+}
 
-Store &Store::GetInstance() {
-  static Store store;
-  return store;
+void OnKeyAlreadyExists(const std::string &v) {
+  ERROR("key '%s' already exists", v.c_str());
 }
 
 }  // namespace fuzzuf::optimizer

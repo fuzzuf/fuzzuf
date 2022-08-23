@@ -19,6 +19,7 @@
 #ifndef FUZZUF_INCLUDE_CLI_IJON_BUILD_IJON_FROM_ARGS_HPP
 #define FUZZUF_INCLUDE_CLI_IJON_BUILD_IJON_FROM_ARGS_HPP
 
+#include <memory>
 #include <boost/program_options.hpp>
 #include <memory>
 

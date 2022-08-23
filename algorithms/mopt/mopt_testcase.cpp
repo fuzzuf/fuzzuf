@@ -16,16 +16,13 @@
  * along with this program.  If not, see http://www.gnu.org/licenses/.
  */
 
-#include "fuzzuf/optimizer/store.hpp"
+#include "fuzzuf/algorithms/mopt/mopt_testcase.hpp"
 
-namespace fuzzuf::optimizer {
+namespace fuzzuf::algorithm::mopt {
 
-Store::Store() {}
-Store::~Store() {}
+MOptTestcase::MOptTestcase(std::shared_ptr<OnDiskExecInput> input)
+    : AFLTestcase(input) {}
 
-Store &Store::GetInstance() {
-  static Store store;
-  return store;
-}
+MOptTestcase::~MOptTestcase() {}
 
-}  // namespace fuzzuf::optimizer
+}  // namespace fuzzuf::algorithm::mopt
