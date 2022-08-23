@@ -91,7 +91,7 @@ void Store::InitKey(const StoreKey<Type>& key, Type val) {
   if (Exists(key)) {
     OnKeyAlreadyExists(key.name);
   }
-  data[key.name] = Type(val);
+  data[key.name] = val;
 }
 
 template <typename Type>
