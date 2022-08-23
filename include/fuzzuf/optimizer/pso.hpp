@@ -65,7 +65,6 @@ class PSO : public Optimizer<std::array<double, Dimension>> {
       double c2 = 1.49445);
   ~PSO();
 
-  void Init();
   std::array<double, Dimension> GetCurParticle();
   void SetScore(double);
   std::array<double, Dimension> CalcValue() override;  // return global best
@@ -77,7 +76,6 @@ class PSO : public Optimizer<std::array<double, Dimension>> {
   void UpdateVelocities();
 
   size_t idx = 0;
-  std::uint64_t time = 0;
   std::array<Particle<Dimension>, ParticleNum> swarm;
 
   // global best
@@ -119,22 +117,20 @@ PSO<Dimension, ParticleNum>::PSO(double min_position, double max_position,
       max_velocity(max_velocity),
       w(w),
       c1(c1),
-      c2(c2) {}
-
-template <size_t Dimension, size_t ParticleNum>
-PSO<Dimension, ParticleNum>::~PSO() {}
-
-template <size_t Dimension, size_t ParticleNum>
-void PSO<Dimension, ParticleNum>::Init() {
+      c2(c2) {
   for (auto& p : swarm) {
     for (auto& pos : p.position)
       pos = fuzzuf::utils::random::Random<double>(min_position, max_position);
     p.velocity.fill(0);
   }
 
+  best_fitness = opt_minimize ? 0 : std::numeric_limits<double>::infinity();
+  best_position.fill(0);
   idx = 0;
-  time = 0;
 }
+
+template <size_t Dimension, size_t ParticleNum>
+PSO<Dimension, ParticleNum>::~PSO() {}
 
 template <size_t Dimension, size_t ParticleNum>
 std::array<double, Dimension> PSO<Dimension, ParticleNum>::GetCurParticle() {
@@ -152,7 +148,6 @@ void PSO<Dimension, ParticleNum>::SetScore(double score) {
 
   if (idx == 0) {
     UpdateGlobalBest();
-    time++;
   }
 }
 
@@ -195,12 +190,6 @@ template <size_t Dimension, size_t ParticleNum>
 void PSO<Dimension, ParticleNum>::UpdateLocalBest() {
   auto& p = swarm[idx];
 
-  if (unlikely(time == 0)) {
-    p.best_position = p.position;
-    p.best_fitness = p.fitness;
-    return;
-  }
-
   if (p.fitness < p.best_fitness ^
       !opt_minimize) {  // not when optimize to maximize
     p.best_position = p.position;
@@ -210,11 +199,6 @@ void PSO<Dimension, ParticleNum>::UpdateLocalBest() {
 
 template <size_t Dimension, size_t ParticleNum>
 void PSO<Dimension, ParticleNum>::UpdateGlobalBest() {
-  if (unlikely(time == 0)) {
-    best_fitness = swarm[0].best_fitness;
-    best_position = swarm[0].best_position;
-  }
-
   for (auto p : swarm) {
     if (best_fitness < p.best_fitness ^
         !opt_minimize) {  // not when optimizer to maximize
