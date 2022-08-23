@@ -88,6 +88,8 @@ MOptMidCalleeRef MOptUpdate::operator()(
 
       if (mopt->NextSwarmIdx() == 0) {  // all swarms are visited
         mopt->UpdateBestSwarmIdx();
+        mopt->accum_havoc_operator_finds[MOptMode::CoreMode].fill(0);
+        mopt->accum_selected_case_histogram[MOptMode::CoreMode].fill(0);
         mopt->mode = MOptMode::CoreMode;
       }
     }
