@@ -136,7 +136,7 @@ void MOptOptimizer::UpdateInertia() {
   w = (W_END - W_INIT) * (G_MAX - g_now) / G_MAX + W_END;
 }
 
-bool MOptOptimizer::NextSwarmIdx() {
+size_t MOptOptimizer::NextSwarmIdx() {
   idx++;
   idx %= swarm.size();
   return idx;

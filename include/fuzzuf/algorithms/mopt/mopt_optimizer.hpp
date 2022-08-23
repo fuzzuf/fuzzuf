@@ -65,7 +65,7 @@ class MOptOptimizer : public Optimizer<u32> {
   void SetSwarmFitness(double);
   void UpdateBestSwarmIdx();
   void UpdateInertia();
-  bool NextSwarmIdx();
+  size_t NextSwarmIdx();
 
   u32 CalcValue() override;
 
