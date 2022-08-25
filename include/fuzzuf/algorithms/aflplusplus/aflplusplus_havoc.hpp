@@ -19,9 +19,17 @@
 #define FUZZUF_INCLUDE_ALGORITHM_AFLPLUSPLUS_AFLPLUSPLUS_HAVOC_HPP
 
 #include "fuzzuf/algorithms/afl/afl_dict_data.hpp"
+#include "fuzzuf/algorithms/afl/afl_mutator.hpp"
 #include "fuzzuf/optimizer/optimizer.hpp"
 
 namespace fuzzuf::algorithm::aflplusplus::havoc {
+
+enum AFLplusplusExtraHavocCase : u32 {
+  AFLPLUSPLUS_ADDBYTE = mutator::NUM_CASE,
+  AFLPLUSPLUS_SUBBYTE,
+  AFLPLUSPLUS_SWITCH_BYTES,
+  AFLPLUSPLUS_NUM_CASE  // number of cases in AFL++ havoc
+};
 
 void AFLplusplusCustomCases(
     u32 case_idx, u8*& outbuf, u32& len,

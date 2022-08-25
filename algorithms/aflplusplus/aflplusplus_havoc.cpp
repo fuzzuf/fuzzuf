@@ -18,7 +18,6 @@
 #include "fuzzuf/algorithms/aflplusplus/aflplusplus_havoc.hpp"
 
 #include "fuzzuf/algorithms/afl/afl_dict_data.hpp"
-#include "fuzzuf/algorithms/afl/afl_mutator.hpp"
 #include "fuzzuf/algorithms/afl/afl_option.hpp"
 #include "fuzzuf/algorithms/afl/afl_util.hpp"
 #include "fuzzuf/algorithms/afl/count_classes.hpp"
@@ -29,13 +28,6 @@
 #include "fuzzuf/utils/random.hpp"
 
 namespace fuzzuf::algorithm::aflplusplus::havoc {
-
-enum AFLplusplusExtraHavocCase : u32 {
-  AFLPLUSPLUS_ADDBYTE = mutator::NUM_CASE,
-  AFLPLUSPLUS_SUBBYTE,
-  AFLPLUSPLUS_SWITCH_BYTES,
-  AFLPLUSPLUS_NUM_CASE  // number of cases in AFL++ havoc
-};
 
 /**
  * @fn AFLplusplusGetCaseWeights
