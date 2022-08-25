@@ -183,6 +183,13 @@ SelectSeedTemplate<AFLplusplusState>::operator()(void) {
 
 /* create the alias table that allows weighted random selection - expensive */
 void CreateAliasTable(AFLplusplusState &state) {
+  std::vector<double> vw;
+  ComputeWeightVector(state, vw);
+  using fuzzuf::utils::random::WalkerDiscreteDistribution;
+  state.alias_probability.reset(new WalkerDiscreteDistribution<double>(vw));
+}
+
+void ComputeWeightVector(AFLplusplusState &state, std::vector<double> &vw) {
   u32 queued_items = state.case_queue.size();
 
   double avg_exec_us = 0.0, avg_bitmap_size = 0.0, avg_top_size = 0.0;
@@ -195,15 +202,11 @@ void CreateAliasTable(AFLplusplusState &state) {
   avg_bitmap_size /= queued_items;
   avg_top_size /= queued_items;
 
-  std::vector<double> vw;
   std::transform(state.case_queue.begin(), state.case_queue.end(),
                  std::back_inserter(vw), [&](auto &tc) {
                    return ComputeWeight(state, *tc, avg_exec_us,
                                         avg_bitmap_size, avg_top_size);
                  });
-
-  using fuzzuf::utils::random::WalkerDiscreteDistribution;
-  state.alias_probability.reset(new WalkerDiscreteDistribution<double>(vw));
 }
 
 double ComputeWeight(const AFLplusplusState &state,

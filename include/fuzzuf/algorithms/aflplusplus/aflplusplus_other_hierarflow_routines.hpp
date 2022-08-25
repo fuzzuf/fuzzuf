@@ -47,6 +47,8 @@ SelectSeedTemplate<AFLplusplusState>::operator()(void);
 
 void CreateAliasTable(AFLplusplusState& state);
 
+void ComputeWeightVector(AFLplusplusState& state, std::vector<double>& vw);
+
 double ComputeWeight(const AFLplusplusState& state,
                      const AFLplusplusTestcase& testcase,
                      const double& avg_exec_us, const double& avg_bitmap_size,
