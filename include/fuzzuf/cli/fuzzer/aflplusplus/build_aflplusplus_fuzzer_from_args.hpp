@@ -21,6 +21,7 @@
 
 #include "fuzzuf/algorithms/afl/afl_havoc_case_distrib.hpp"
 #include "fuzzuf/algorithms/aflfast/aflfast_option.hpp"
+#include "fuzzuf/algorithms/aflplusplus/aflplusplus_havoc.hpp"
 #include "fuzzuf/algorithms/aflplusplus/aflplusplus_option.hpp"
 #include "fuzzuf/algorithms/aflplusplus/aflplusplus_other_hierarflow_routines.hpp"
 #include "fuzzuf/algorithms/aflplusplus/aflplusplus_setting.hpp"
@@ -254,7 +255,7 @@ std::unique_ptr<TFuzzer> BuildAFLplusplusFuzzerFromArgs(
   }
 
   auto mutop_optimizer = std::unique_ptr<optimizer::Optimizer<u32>>(
-      new algorithm::afl::AFLHavocCaseDistrib());
+      new algorithm::aflplusplus::havoc::AFLplusplusHavocCaseDistrib());
 
   // Create AFLplusplusState
   using fuzzuf::algorithm::aflplusplus::AFLplusplusState;
