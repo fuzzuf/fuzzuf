@@ -206,7 +206,7 @@ void CreateAliasTable(AFLplusplusState &state) {
   state.alias_probability.reset(new WalkerDiscreteDistribution<double>(vw));
 }
 
-double ComputeWeight([[maybe_unused]] const AFLplusplusState &state,
+double ComputeWeight(const AFLplusplusState &state,
                      const AFLplusplusTestcase &testcase,
                      const double &avg_exec_us, const double &avg_bitmap_size,
                      const double &avg_top_size) {
