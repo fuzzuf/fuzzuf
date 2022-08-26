@@ -62,6 +62,8 @@ if( ENABLE_CLANG_TIDY )
 endif()
 add_test( NAME "mutator.havoc" COMMAND test-mutator-havoc )
 
+list( FIND ALGORITHMS "aflplusplus" AFLPLUSPLUS_INDEX )
+if( NOT "${AFLPLUSPLUS_INDEX}" EQUAL "-1" )
 add_executable( test-mutator-more-havoc more_havoc.cpp )
 target_link_libraries(
         test-mutator-more-havoc
@@ -93,3 +95,4 @@ if( ENABLE_CLANG_TIDY )
   )
 endif()
 add_test( NAME "mutator.more_havoc" COMMAND test-mutator-more-havoc )
+endif()
