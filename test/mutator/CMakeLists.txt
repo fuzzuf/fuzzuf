@@ -61,3 +61,38 @@ if( ENABLE_CLANG_TIDY )
   )
 endif()
 add_test( NAME "mutator.havoc" COMMAND test-mutator-havoc )
+
+list( FIND ALGORITHMS "aflplusplus" AFLPLUSPLUS_INDEX )
+if( NOT "${AFLPLUSPLUS_INDEX}" EQUAL "-1" )
+add_executable( test-mutator-more-havoc more_havoc.cpp )
+target_link_libraries(
+        test-mutator-more-havoc
+        test-common
+        fuzzuf_core
+	fuzzuf_core_afl_common
+        ${FUZZUF_LIBRARIES}
+        Boost::unit_test_framework
+)
+target_include_directories(
+        test-mutator-more-havoc
+        PRIVATE
+        ${FUZZUF_INCLUDE_DIRS}
+        ${CMAKE_SOURCE_DIR}/test/common
+)
+set_target_properties(
+  test-mutator-more-havoc
+  PROPERTIES COMPILE_FLAGS "${ADDITIONAL_COMPILE_FLAGS_STR}"
+)
+set_target_properties(
+  test-mutator-more-havoc
+  PROPERTIES LINK_FLAGS "${ADDITIONAL_LINK_FLAGS_STR}"
+)
+if( ENABLE_CLANG_TIDY )
+  set_target_properties(
+    test-mutator-more-havoc
+    PROPERTIES
+    CXX_CLANG_TIDY "${CLANG_TIDY};${CLANG_TIDY_CONFIG_FOR_TEST}"
+  )
+endif()
+add_test( NAME "mutator.more_havoc" COMMAND test-mutator-more-havoc )
+endif()
