@@ -4,9 +4,9 @@
 
 [https://github.com/AFLplusplus/AFLplusplus](https://github.com/AFLplusplus/AFLplusplus)
 
-AFLplusplus[^woot20] is a superior fork to Google's (Michael Zalewski's) AFL, originally began as a collection of patches applicable to AFL v2.52b, which had become inactive at then.
+AFLplusplus[^woot20] is a superior fork to Google's (Michał Zalewski's) AFL, originally began as a collection of patches applicable to AFL v2.52b, which had become inactive at then.
 
-After Zalewski released AFL v2.52b in 2017 and stopped updating, lots of community-provided patches have been published for fixes and enhancements (e.g. llvm-mode fixes and qemu-mode optimization). However, some of them conflicted when applied together since they are based on the same origin, and sometimes tried to overwrite the same line. Marc Heuse started merging them into one single repository as AFLplusplus in 2019 with Michael Böhme's AFLFast patch[^group-uqRFf7rmCQAJ] [^group-jSNsWNmPCAAJ].
+After Zalewski released AFL v2.52b in 2017 and stopped updating, lots of community-provided patches have been published for fixes and enhancements (e.g. llvm-mode fixes and qemu-mode optimization). However, some of them conflicted when applied together since they are based on the same origin, and sometimes tried to overwrite the same line. Marc Heuse started merging them into one single repository as AFLplusplus in 2019 with Marcel Böhme's AFLFast patch[^group-uqRFf7rmCQAJ] [^group-jSNsWNmPCAAJ].
 
 As it got updated, Heuse and developer team did not only enhanced existing features, but also adopted new ones including multi-architecture support, more ways to perform binary-only fuzzing, new mutators and instrumentations proposed in academic papers, and so on.
 
