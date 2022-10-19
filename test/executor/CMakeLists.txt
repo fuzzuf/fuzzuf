@@ -58,7 +58,6 @@ if( ENABLE_CLANG_TIDY )
     CXX_CLANG_TIDY "${CLANG_TIDY};${CLANG_TIDY_CONFIG_FOR_TEST}"
   )
 endif()
-add_test( NAME "linux_fork_server_executor.run" COMMAND test-linuxforkserver-run )
 
 
 add_executable( ok ok.cpp )

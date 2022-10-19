@@ -87,7 +87,7 @@ LinuxForkServerExecutor::LinuxForkServerExecutor(
   if( !instrumentation_info.instrumented ) {
     throw exceptions::invalid_argument( "LinuxForkServerExecutor::LinuxForkServerExecutor : PUT is required to be instrumented by fuzzuf-cc.", __FILE__, __LINE__ );
   }
-  if( instrumentation_info.major_version != 0 || instrumentation_info.minor_version != 0 ) {
+  if( instrumentation_info.major_version != 0 || instrumentation_info.minor_version != 1 ) {
     throw exceptions::invalid_argument( "LinuxForkServerExecutor::LinuxForkServerExecutor : The instrumentation is incompatible to fuzzuf.", __FILE__, __LINE__ );
   }
   fuzzuf::utils::CheckCrashHandling();
