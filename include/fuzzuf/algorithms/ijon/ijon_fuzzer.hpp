@@ -37,6 +37,7 @@ class IJONFuzzer final : public afl::AFLFuzzerTemplate<IJONState> {
  private:
   void BuildFuzzFlow(void);
   bool IjonShouldSchedule(void);
+  void SyncFuzzers();
 
   hierarflow::HierarFlowNode<void(void), void(void)> fuzz_loop;
   hierarflow::HierarFlowNode<void(void), void(void)> ijon_fuzz_loop;

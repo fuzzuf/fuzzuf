@@ -1,7 +1,7 @@
 /*
  * fuzzuf
  * Copyright (C) 2021 Ricerca Security
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -21,50 +21,54 @@
  */
 #ifndef FUZZUF_INCLUDE_UTILS_SHARED_RANGE_HPP
 #define FUZZUF_INCLUDE_UTILS_SHARED_RANGE_HPP
-#include "fuzzuf/utils/range_traits.hpp"
-#include "fuzzuf/utils/type_traits/remove_cvr.hpp"
 #include <boost/range/iterator_range.hpp>
 #include <memory>
 #include <type_traits>
+
+#include "fuzzuf/utils/range_traits.hpp"
+#include "fuzzuf/utils/type_traits/remove_cvr.hpp"
 namespace fuzzuf::utils::range {
 /**
  * @class shared_iterator
- * @brief Iterator adaptor that holds value of U and forward all operations to iterator of type T
- * value of U is copied when this iterator is copied
- * The main purpose of this adaptor is to keep smart pointer to the container during at least one iterator is alive
+ * @brief Iterator adaptor that holds value of U and forward all operations to
+ * iterator of type T value of U is copied when this iterator is copied The main
+ * purpose of this adaptor is to keep smart pointer to the container during at
+ * least one iterator is alive
  *
  * example:
  * std::shared_ptr< std::vector< int > > a{ new std::vector< int >{ ... } };
  * b = a|shared;
- * b behave as same as *a, and keep reference count of a to be incremented until b is destroyed
+ * b behave as same as *a, and keep reference count of a to be incremented until
+ * b is destroyed
  */
 
 template <typename T, typename U, typename Enable = void>
 class shared_iterator {};
-#define FUZZUF_SHARED_ITERATOR_BASIC_OPS                                       \
-  using base_iter_t = T;                                                       \
-  using difference_type = typename std::iterator_traits<T>::difference_type;   \
-  using value_type =                                                           \
-      std::remove_reference_t<decltype(*std::declval<base_iter_t>())>;         \
-  using pointer = void;                                                        \
-  using reference = decltype(*std::declval<base_iter_t>());                    \
-  shared_iterator(const base_iter_t &p_, const std::shared_ptr<U> &sp_)        \
-      : p(p_), sp(sp_) {}                                                      \
-                                                                               \
-  reference operator*() const { return *p; }                                   \
-                                                                               \
-  base_iter_t &get() { return p; }                                             \
-  const base_iter_t &get() const { return p; }                                 \
-                                                                               \
-  shared_iterator &operator++() {                                              \
-    ++p;                                                                       \
-    return *this;                                                              \
-  }                                                                            \
-                                                                               \
-  shared_iterator operator++(int) {                                            \
-    auto old = *this;                                                          \
-    p++;                                                                       \
-    return old;                                                                \
+#define FUZZUF_SHARED_ITERATOR_BASIC_OPS                                     \
+  using base_iter_t = T;                                                     \
+  using difference_type = typename std::iterator_traits<T>::difference_type; \
+  using value_type =                                                         \
+      std::remove_reference_t<decltype(*std::declval<base_iter_t>())>;       \
+  using pointer = void;                                                      \
+  using reference = decltype(*std::declval<base_iter_t>());                  \
+  shared_iterator() : p(base_iter_t()) {}                                    \
+  shared_iterator(const base_iter_t &p_, const std::shared_ptr<U> &sp_)      \
+      : p(p_), sp(sp_) {}                                                    \
+                                                                             \
+  reference operator*() const { return *p; }                                 \
+                                                                             \
+  base_iter_t &get() { return p; }                                           \
+  const base_iter_t &get() const { return p; }                               \
+                                                                             \
+  shared_iterator &operator++() {                                            \
+    ++p;                                                                     \
+    return *this;                                                            \
+  }                                                                          \
+                                                                             \
+  shared_iterator operator++(int) {                                          \
+    auto old = *this;                                                        \
+    p++;                                                                     \
+    return old;                                                              \
   }
 
 // requirements: the itartor category of T is input_iterator
@@ -73,10 +77,10 @@ class shared_iterator<T, std::shared_ptr<U>,
                       std::enable_if_t<std::is_same_v<
                           typename std::iterator_traits<T>::iterator_category,
                           std::input_iterator_tag>>> {
-public:
+ public:
   using iterator_category = std::input_iterator_tag;
   FUZZUF_SHARED_ITERATOR_BASIC_OPS
-private:
+ private:
   base_iter_t p;
   std::shared_ptr<U> sp;
 };
@@ -86,7 +90,7 @@ class shared_iterator<T, std::shared_ptr<U>,
                       std::enable_if_t<std::is_same_v<
                           typename std::iterator_traits<T>::iterator_category,
                           std::forward_iterator_tag>>> {
-public:
+ public:
   using iterator_category = std::forward_iterator_tag;
   FUZZUF_SHARED_ITERATOR_BASIC_OPS
 
@@ -94,7 +98,7 @@ public:
 
   bool operator!=(const shared_iterator &r) const { return p != r.p; }
 
-private:
+ private:
   base_iter_t p;
   std::shared_ptr<U> sp;
 };
@@ -104,7 +108,7 @@ class shared_iterator<T, std::shared_ptr<U>,
                       std::enable_if_t<std::is_same_v<
                           typename std::iterator_traits<T>::iterator_category,
                           std::bidirectional_iterator_tag>>> {
-public:
+ public:
   using iterator_category = std::bidirectional_iterator_tag;
   FUZZUF_SHARED_ITERATOR_BASIC_OPS
 
@@ -123,7 +127,7 @@ public:
     return old;
   }
 
-private:
+ private:
   base_iter_t p;
   std::shared_ptr<U> sp;
 };
@@ -133,7 +137,7 @@ class shared_iterator<T, std::shared_ptr<U>,
                       std::enable_if_t<std::is_same_v<
                           typename std::iterator_traits<T>::iterator_category,
                           std::random_access_iterator_tag>>> {
-public:
+ public:
   using iterator_category = std::random_access_iterator_tag;
   FUZZUF_SHARED_ITERATOR_BASIC_OPS
 
@@ -174,7 +178,7 @@ public:
 
   reference operator[](difference_type n) const { return p[n]; }
 
-private:
+ private:
   base_iter_t p;
   std::shared_ptr<U> sp;
 };
@@ -237,7 +241,7 @@ class shared_iterator<T, std::shared_ptr<U>,
 
   reference operator[](difference_type n) const { return p[n]; }
 
-private:
+ private:
   base_iter_t p;
   std::shared_ptr<U> sp;
 };
@@ -254,6 +258,12 @@ auto operator+(typename shared_iterator<T, U>::difference_type l,
 }
 
 #endif
+
+template <typename R>
+using shared_range = boost::iterator_range<shared_iterator<
+    utils::type_traits::RemoveCvrT<decltype(std::declval<R>().begin())>,
+    std::shared_ptr<R>>>;
+
 // requirements: R satisfies range concept
 template <typename R>
 auto make_shared_range(const std::shared_ptr<R> &v) -> std::enable_if_t<
@@ -276,7 +286,7 @@ auto operator|(const std::shared_ptr<T> &p, const shared_t &)
   return make_shared_range(p);
 }
 
-} // namespace adaptor
+}  // namespace adaptor
 
-} // namespace fuzzuf::utils::range
+}  // namespace fuzzuf::utils::range
 #endif

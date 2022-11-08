@@ -335,9 +335,11 @@ set(
   utils/check_crash_handling.cpp
   utils/check_if_string_is_decimal.cpp
   utils/common.cpp
+  utils/count_regular_files.cpp
   utils/create_empty_file.cpp
   utils/errno_to_system_error.cpp
   utils/get_aligned_addr.cpp
+  utils/get_external_seeds.cpp
   utils/get_hash.cpp
   utils/hex_dump.cpp
   utils/is_executable.cpp

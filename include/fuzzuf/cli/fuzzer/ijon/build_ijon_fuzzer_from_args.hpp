@@ -19,7 +19,6 @@
 #ifndef FUZZUF_INCLUDE_CLI_IJON_BUILD_IJON_FROM_ARGS_HPP
 #define FUZZUF_INCLUDE_CLI_IJON_BUILD_IJON_FROM_ARGS_HPP
 
-#include <memory>
 #include <boost/program_options.hpp>
 #include <memory>
 
@@ -27,6 +26,7 @@
 #include "fuzzuf/algorithms/ijon/ijon_havoc.hpp"
 #include "fuzzuf/algorithms/ijon/ijon_option.hpp"
 #include "fuzzuf/algorithms/ijon/ijon_state.hpp"
+#include "fuzzuf/cli/fuzzer/ijon/check_parallel_mode_args.hpp"
 #include "fuzzuf/cli/fuzzer_args.hpp"
 #include "fuzzuf/cli/global_fuzzer_options.hpp"
 #include "fuzzuf/cli/put_args.hpp"
@@ -36,6 +36,7 @@
 #include "fuzzuf/optimizer/optimizer.hpp"
 #include "fuzzuf/utils/common.hpp"
 #include "fuzzuf/utils/optparser.hpp"
+#include "fuzzuf/utils/parallel_mode.hpp"
 #include "fuzzuf/utils/workspace.hpp"
 
 namespace fuzzuf::cli::fuzzer::ijon {
@@ -45,6 +46,9 @@ namespace po = boost::program_options;
 struct IJONFuzzerOptions {
   bool forksrv;                        // Optional
   std::vector<std::string> dict_file;  // Optional
+  std::string instance_id;             // Optional
+  utils::ParallelModeT parallel_mode =
+      utils::ParallelModeT::SINGLE;  // Optional
 
   // Default values
   IJONFuzzerOptions() : forksrv(true) {}
@@ -80,7 +84,13 @@ std::unique_ptr<TFuzzer> BuildIJONFuzzerFromArgs(
       "Load additional dictionary file.")
       // If you want to add fuzzer specific options, add options here
       ("pargs", po::value<std::vector<std::string>>(&pargs),
-       "Specify PUT and args for PUT.");
+       "Specify PUT and args for PUT.")(
+          "parallel-deterministic,M",
+          po::value<std::string>(&ijon_options.instance_id),
+          "distributed mode (see docs/algorithms/afl/parallel_fuzzing.md)")(
+          "parallel-random,S",
+          po::value<std::string>(&ijon_options.instance_id),
+          "distributed mode (see docs/algorithms/afl/parallel_fuzzing.md)");
 
   po::variables_map vm;
   po::store(
@@ -94,6 +104,8 @@ std::unique_ptr<TFuzzer> BuildIJONFuzzerFromArgs(
   if (global_options.help) {
     usage(fuzzer_args.global_options_description);
   }
+
+  CheckParallelModeArgs(vm, ijon_options, global_options);
 
   PutArgs put(pargs);
   try {
@@ -184,6 +196,11 @@ std::unique_ptr<TFuzzer> BuildIJONFuzzerFromArgs(
     fuzzuf::algorithm::afl::dictionary::load(d, state->extras, false, f);
   }
   fuzzuf::algorithm::afl::dictionary::SortDictByLength(state->extras);
+
+  if (ijon_options.parallel_mode != utils::ParallelModeT::SINGLE) {
+    state->sync_external_queue = true;
+    state->sync_id = ijon_options.instance_id;
+  }
 
   return std::unique_ptr<TFuzzer>(dynamic_cast<TFuzzer *>(
       new TIJONFuzzer(std::move(state), ijon_max_offset)));

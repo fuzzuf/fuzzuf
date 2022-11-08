@@ -34,7 +34,7 @@ struct SymCCOptions {
 
 // Used only for CLI
 std::unique_ptr<fuzzuf::fuzzer::Fuzzer> BuildFromArgs(
-    const FuzzerArgs &fuzzer_args, const GlobalFuzzerOptions &global_options);
+    const FuzzerArgs &fuzzer_args, GlobalFuzzerOptions &global_options);
 
 }  // namespace fuzzuf::cli::fuzzer::afl_symcc
 

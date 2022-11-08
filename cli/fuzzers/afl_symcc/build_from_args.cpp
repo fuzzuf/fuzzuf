@@ -9,11 +9,12 @@
 #include "fuzzuf/algorithms/afl/afl_fuzzer.hpp"
 #include "fuzzuf/algorithms/afl_symcc/fuzzer.hpp"
 #include "fuzzuf/cli/fuzzer/afl/build_afl_fuzzer_from_args.hpp"
+#include "fuzzuf/cli/fuzzer/afl_symcc/check_parallel_mode_args.hpp"
 
 namespace fuzzuf::cli::fuzzer::afl_symcc {
 // Used only for CLI
 std::unique_ptr<fuzzuf::fuzzer::Fuzzer> BuildFromArgs(
-    const FuzzerArgs &fuzzer_args, const GlobalFuzzerOptions &global_options) {
+    const FuzzerArgs &fuzzer_args, GlobalFuzzerOptions &global_options) {
   namespace po = boost::program_options;
   po::positional_options_description pargs_desc;
   pargs_desc.add("fuzzer", 1);
@@ -42,7 +43,11 @@ std::unique_ptr<fuzzuf::fuzzer::Fuzzer> BuildFromArgs(
           "If 0, SymCC is never executed."
           "Otherwise, SymCC is executed if recent n local loop blocks didn't "
           "change the corpus."
-          "Default 1.");
+          "Default 1.")("parallel-deterministic,M",
+                        po::value<std::string>(&afl_options.instance_id),
+                        "distributed mode (see docs/algorithms/afl/parallel_fuzzing.md)")(
+          "parallel-random,S", po::value<std::string>(&afl_options.instance_id),
+          "distributed mode (see docs/algorithms/afl/parallel_fuzzing.md)");
 
   po::variables_map vm;
   po::store(po::command_line_parser(fuzzer_args.argc, fuzzer_args.argv)
@@ -67,6 +72,7 @@ std::unique_ptr<fuzzuf::fuzzer::Fuzzer> BuildFromArgs(
     symcc_args.push_back(symcc_options.target_path);
   else
     symcc_args[0] = symcc_options.target_path;
+  afl_symcc::CheckParallelModeArgs(vm, afl_options, global_options);
   const auto symcc_dir =
       fs::absolute(fs::path(global_options.out_dir) / "symcc");
   namespace as = algorithm::afl_symcc;

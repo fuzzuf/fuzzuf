@@ -26,6 +26,7 @@
 #include "fuzzuf/algorithms/mopt/mopt_optimizer.hpp"
 #include "fuzzuf/algorithms/mopt/mopt_option.hpp"
 #include "fuzzuf/algorithms/mopt/mopt_state.hpp"
+#include "fuzzuf/cli/fuzzer/mopt/check_parallel_mode_args.hpp"
 #include "fuzzuf/cli/fuzzer_args.hpp"
 #include "fuzzuf/cli/global_fuzzer_options.hpp"
 #include "fuzzuf/cli/put_args.hpp"
@@ -36,6 +37,7 @@
 #include "fuzzuf/optimizer/optimizer.hpp"
 #include "fuzzuf/utils/common.hpp"
 #include "fuzzuf/utils/optparser.hpp"
+#include "fuzzuf/utils/parallel_mode.hpp"
 #include "fuzzuf/utils/workspace.hpp"
 
 namespace fuzzuf::cli::fuzzer::mopt {
@@ -48,6 +50,9 @@ struct MOptFuzzerOptions {
   bool frida_mode;                     // Optional
   u64 mopt_limit_time;
   u64 mopt_most_time;
+  std::string instance_id;  // Optional
+  utils::ParallelModeT parallel_mode =
+      utils::ParallelModeT::SINGLE;  // Optional
 
   // Default values
   MOptFuzzerOptions()
@@ -101,7 +106,12 @@ std::unique_ptr<TFuzzer> BuildMOptFuzzerFromArgs(
           "while does not find any interesting test case for more than 30 min, "
           "MOpt-AFL will enter the pacemaker fuzzing mode (it may take three "
           "or four days for MOpt-AFL to enter the pacemaker fuzzing mode when "
-          "'-L 30').");
+          "'-L 30').")("parallel-deterministic,M",
+                       po::value<std::string>(&mopt_options.instance_id),
+                       "distributed mode (see docs/algorithms/afl/parallel_fuzzing.md)")(
+          "parallel-random,S",
+          po::value<std::string>(&mopt_options.instance_id),
+          "distributed mode (see docs/algorithms/afl/parallel_fuzzing.md)");
 
   po::variables_map vm;
   po::store(
@@ -115,6 +125,8 @@ std::unique_ptr<TFuzzer> BuildMOptFuzzerFromArgs(
   if (global_options.help) {
     fuzzuf::cli::fuzzer::mopt::usage(fuzzer_args.global_options_description);
   }
+
+  CheckParallelModeArgs(vm, mopt_options, global_options);
 
   using fuzzuf::algorithm::afl::option::GetMemLimit;
   using fuzzuf::algorithm::mopt::option::MOptTag;
@@ -237,6 +249,11 @@ std::unique_ptr<TFuzzer> BuildMOptFuzzerFromArgs(
     fuzzuf::algorithm::afl::dictionary::load(d, state->extras, false, f);
   }
   fuzzuf::algorithm::afl::dictionary::SortDictByLength(state->extras);
+
+  if (mopt_options.parallel_mode != utils::ParallelModeT::SINGLE) {
+    state->sync_external_queue = true;
+    state->sync_id = mopt_options.instance_id;
+  }
 
   return std::unique_ptr<TFuzzer>(
       dynamic_cast<TFuzzer *>(new TMOptFuzzer(std::move(state))));

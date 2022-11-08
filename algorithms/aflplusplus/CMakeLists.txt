@@ -1,6 +1,7 @@
 add_library(
   fuzzuf_core_aflplusplus
   STATIC
+  aflplusplus_fuzzer.cpp
   aflplusplus_havoc.cpp
   aflplusplus_mutation_hierarflow_routines.cpp
   aflplusplus_other_hierarflow_routines.cpp

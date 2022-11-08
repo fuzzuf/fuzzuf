@@ -27,7 +27,6 @@
 #include "fuzzuf/hierarflow/hierarflow_intermediates.hpp"
 #include "fuzzuf/hierarflow/hierarflow_node.hpp"
 #include "fuzzuf/hierarflow/hierarflow_routine.hpp"
-#include "fuzzuf/utils/common.hpp"
 
 namespace fuzzuf::algorithm::aflplusplus {
 
@@ -38,9 +37,10 @@ class AFLplusplusFuzzer final
       : afl::AFLFuzzerTemplate<AFLplusplusState>(std::move(state)),
         fuzz_loop(afl::BuildAFLFuzzLoop(
             *afl::AFLFuzzerTemplate<AFLplusplusState>::state)) {}
-  virtual void OneLoop(void) override { fuzz_loop(); }
+  virtual void OneLoop(void) override;
 
  private:
+  void SyncFuzzers();
   hierarflow::HierarFlowNode<void(void), void(void)> fuzz_loop;
 };
 
