@@ -31,7 +31,7 @@
 
 namespace po = boost::program_options;
 
-BOOST_AUTO_TEST_CASE(ExecuteAFLFastFromCLI) {
+BOOST_AUTO_TEST_CASE(ExecuteNautilusFromCLI) {
   // Setup root directory
   std::string root_dir_template("/tmp/fuzzuf_test.XXXXXX");
   auto *const raw_dirname = mkdtemp(root_dir_template.data());
@@ -44,7 +44,7 @@ BOOST_AUTO_TEST_CASE(ExecuteAFLFastFromCLI) {
 
   BOOST_CHECK_EQUAL(fs::create_directory(input_dir), true);
   BOOST_CHECK_EQUAL(fs::create_directory(output_dir), true);
-  BOOST_CHECK_EQUAL(fs::create_directory(output_dir/"crashes"), true);
+  BOOST_CHECK_EQUAL(fs::create_directory(output_dir / "crashes"), true);
 
   // NOLINTBEGIN(cppcoreguidelines-pro-type-cstyle-cast,cppcoreguidelines-pro-type-member-init,cppcoreguidelines-special-member-functions,hicpp-explicit-conversions)
   BOOST_SCOPE_EXIT(&root_dir) { fs::remove_all(root_dir); }
@@ -71,8 +71,8 @@ BOOST_AUTO_TEST_CASE(ExecuteAFLFastFromCLI) {
                         "-o",
                         output_dir.c_str(),
                         TEST_BINARY_DIR "/put/nautilus/nautilus-test",
-			"--grammar",
-			TEST_SOURCE_DIR "/put/nautilus/rules.json",
+                        "--grammar",
+                        TEST_SOURCE_DIR "/put/nautilus/rules.json",
                         nullptr};
   constexpr int argc = 9;
   auto fuzzer = fuzzuf::cli::CreateFuzzerInstanceFromArgv(argc, argv);
