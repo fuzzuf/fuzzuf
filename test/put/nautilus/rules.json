@@ -1,0 +1,7 @@
+[
+    ["EXPRESSION", "{WORD}"],
+    ["EXPRESSION", "{EXPRESSION}{EXPRESSION}"],
+    ["WORD", "dead"],
+    ["WORD", "beef"]
+]
+

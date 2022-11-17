@@ -23,3 +23,4 @@ set_target_properties(
 if( ENABLE_HEAVY_TEST )
 add_test( NAME "die.loop" COMMAND test-die-loop )
 endif()
+

@@ -55,3 +55,4 @@ if( ENABLE_CLANG_TIDY )
   )
 endif()
 add_test( NAME "algorithms.vuzzer.cli_parser" COMMAND test-vuzzer-cli_parser )
+
