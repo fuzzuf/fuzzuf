@@ -17,6 +17,7 @@
  */
 #include "fuzzuf/logger/logger.hpp"
 #include "fuzzuf/utils/common.hpp"
+#include "fuzzuf/utils/filesystem.hpp"
 
 namespace fuzzuf::utils {
 // FIXME: this should be moved to Algorithms/AFL/?
@@ -24,15 +25,15 @@ namespace fuzzuf::utils {
 void SetupDirs(std::string out_dir) {
   try {
     DEBUG("SetupDir\n");
-    fuzzuf::utils::CreateDir(out_dir);
-    fuzzuf::utils::CreateDir(out_dir + "/queue");
-    fuzzuf::utils::CreateDir(out_dir + "/queue/.state/");
-    fuzzuf::utils::CreateDir(out_dir + "/queue/.state/deterministic_done/");
-    fuzzuf::utils::CreateDir(out_dir + "/queue/.state/auto_extras/");
-    fuzzuf::utils::CreateDir(out_dir + "/queue/.state/redundant_edges/");
-    fuzzuf::utils::CreateDir(out_dir + "/queue/.state/variable_behavior/");
-    fuzzuf::utils::CreateDir(out_dir + "/crashes");
-    fuzzuf::utils::CreateDir(out_dir + "/hangs");
+    fs::create_directories(out_dir);
+    fs::create_directories(out_dir + "/queue");
+    fs::create_directories(out_dir + "/queue/.state/");
+    fs::create_directories(out_dir + "/queue/.state/deterministic_done/");
+    fs::create_directories(out_dir + "/queue/.state/auto_extras/");
+    fs::create_directories(out_dir + "/queue/.state/redundant_edges/");
+    fs::create_directories(out_dir + "/queue/.state/variable_behavior/");
+    fs::create_directories(out_dir + "/crashes");
+    fs::create_directories(out_dir + "/hangs");
 
   } catch (const FileError &e) {
     std::cerr << e.what() << std::endl;

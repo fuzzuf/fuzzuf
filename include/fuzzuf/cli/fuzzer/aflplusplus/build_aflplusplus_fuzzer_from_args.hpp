@@ -26,6 +26,7 @@
 #include "fuzzuf/algorithms/aflplusplus/aflplusplus_other_hierarflow_routines.hpp"
 #include "fuzzuf/algorithms/aflplusplus/aflplusplus_setting.hpp"
 #include "fuzzuf/algorithms/aflplusplus/aflplusplus_state.hpp"
+#include "fuzzuf/cli/fuzzer/aflplusplus/check_parallel_mode_args.hpp"
 #include "fuzzuf/cli/fuzzer_args.hpp"
 #include "fuzzuf/cli/global_fuzzer_options.hpp"
 #include "fuzzuf/cli/put_args.hpp"
@@ -35,6 +36,7 @@
 #include "fuzzuf/executor/qemu_executor.hpp"
 #include "fuzzuf/optimizer/optimizer.hpp"
 #include "fuzzuf/utils/optparser.hpp"
+#include "fuzzuf/utils/parallel_mode.hpp"
 #include "fuzzuf/utils/workspace.hpp"
 #ifdef __aarch64__
 #include "fuzzuf/executor/coresight_executor.hpp"
@@ -50,7 +52,9 @@ struct AFLplusplusFuzzerOptions {
   std::vector<std::string> dict_file;  // Optional
   bool frida_mode;                     // Optional
   std::string schedule;                // Optional
-
+  std::string instance_id;             // Optional
+  utils::ParallelModeT parallel_mode =
+      utils::ParallelModeT::SINGLE;  // Optional
   // Default values
   AFLplusplusFuzzerOptions()
       : forksrv(true), frida_mode(false), schedule("fast"){};
@@ -99,7 +103,13 @@ std::unique_ptr<TFuzzer> BuildAFLplusplusFuzzerFromArgs(
           po::value<std::string>(&aflplusplus_options.schedule)
               ->default_value(aflplusplus_options.schedule),
           "Power schedule to use. Available values are:\n"
-          "fast (default), coe, explore, lin, quad, exploit");
+          "fast (default), coe, explore, lin, quad, exploit")(
+          "parallel-deterministic,M",
+          po::value<std::string>(&aflplusplus_options.instance_id),
+          "distributed mode (see docs/algorithms/afl/parallel_fuzzing.md)")(
+          "parallel-random,S",
+          po::value<std::string>(&aflplusplus_options.instance_id),
+          "distributed mode (see docs/algorithms/afl/parallel_fuzzing.md)");
 
   po::variables_map vm;
   po::store(
@@ -114,6 +124,8 @@ std::unique_ptr<TFuzzer> BuildAFLplusplusFuzzerFromArgs(
     fuzzuf::cli::fuzzer::aflplusplus::usage(
         fuzzer_args.global_options_description);
   }
+
+  CheckParallelModeArgs(vm, aflplusplus_options, global_options);
 
   using fuzzuf::algorithm::afl::option::GetMemLimit;
   using fuzzuf::algorithm::aflplusplus::option::AFLplusplusTag;
@@ -275,6 +287,11 @@ std::unique_ptr<TFuzzer> BuildAFLplusplusFuzzerFromArgs(
     fuzzuf::algorithm::afl::dictionary::load(d, state->extras, false, f);
   }
   fuzzuf::algorithm::afl::dictionary::SortDictByLength(state->extras);
+
+  if (aflplusplus_options.parallel_mode != utils::ParallelModeT::SINGLE) {
+    state->sync_external_queue = true;
+    state->sync_id = aflplusplus_options.instance_id;
+  }
 
   return std::unique_ptr<TFuzzer>(
       dynamic_cast<TFuzzer *>(new TAFLFuzzer(std::move(state))));

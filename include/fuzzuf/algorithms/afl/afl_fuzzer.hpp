@@ -18,12 +18,12 @@
 #pragma once
 
 #include "fuzzuf/algorithms/afl/afl_state.hpp"
+#include "fuzzuf/exceptions.hpp"
 #include "fuzzuf/fuzzer/fuzzer.hpp"
 #include "fuzzuf/hierarflow/hierarflow_intermediates.hpp"
 #include "fuzzuf/hierarflow/hierarflow_node.hpp"
 #include "fuzzuf/hierarflow/hierarflow_routine.hpp"
 #include "fuzzuf/optimizer/optimizer.hpp"
-#include "fuzzuf/utils/common.hpp"
 
 namespace fuzzuf::algorithm::afl {
 
@@ -49,9 +49,10 @@ class AFLFuzzer final : public AFLFuzzerTemplate<AFLState> {
   explicit AFLFuzzer(std::unique_ptr<AFLState>&& state)
       : AFLFuzzerTemplate<AFLState>(std::move(state)),
         fuzz_loop(BuildAFLFuzzLoop(*AFLFuzzerTemplate<AFLState>::state)) {}
-  virtual void OneLoop(void) override { fuzz_loop(); }
+  virtual void OneLoop(void) override;
 
  private:
+  void SyncFuzzers();
   hierarflow::HierarFlowNode<void(void), void(void)> fuzz_loop;
 };
 

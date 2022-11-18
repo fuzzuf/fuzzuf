@@ -23,6 +23,7 @@
 #include "fuzzuf/algorithms/afl/afl_option.hpp"
 #include "fuzzuf/algorithms/afl/afl_setting.hpp"
 #include "fuzzuf/algorithms/afl/afl_state.hpp"
+#include "fuzzuf/cli/fuzzer/afl/check_parallel_mode_args.hpp"
 #include "fuzzuf/cli/fuzzer_args.hpp"
 #include "fuzzuf/cli/global_fuzzer_options.hpp"
 #include "fuzzuf/cli/put_args.hpp"
@@ -32,6 +33,7 @@
 #include "fuzzuf/executor/qemu_executor.hpp"
 #include "fuzzuf/optimizer/optimizer.hpp"
 #include "fuzzuf/utils/optparser.hpp"
+#include "fuzzuf/utils/parallel_mode.hpp"
 #include "fuzzuf/utils/workspace.hpp"
 #ifdef __aarch64__
 #include "fuzzuf/executor/coresight_executor.hpp"
@@ -46,7 +48,9 @@ struct AFLFuzzerOptions {
   bool forksrv;                        // Optional
   std::vector<std::string> dict_file;  // Optional
   bool frida_mode;                     // Optional
-
+  std::string instance_id;             // Optional
+  utils::ParallelModeT parallel_mode =
+      utils::ParallelModeT::SINGLE;  // Optional
   // Default values
   AFLFuzzerOptions() : forksrv(true), frida_mode(false){};
 };
@@ -82,7 +86,12 @@ std::unique_ptr<TFuzzer> BuildAFLFuzzerFromArgs(
       "frida",
       po::value<bool>(&afl_options.frida_mode)
           ->default_value(afl_options.frida_mode),
-      "Enable/disable frida mode. Default to false.");
+      "Enable/disable frida mode. Default to false.")(
+      "parallel-deterministic,M",
+      po::value<std::string>(&afl_options.instance_id),
+      "distributed mode (see docs/algorithms/afl/parallel_fuzzing.md)")(
+      "parallel-random,S", po::value<std::string>(&afl_options.instance_id),
+      "distributed mode (see docs/algorithms/afl/parallel_fuzzing.md)");
 
   po::variables_map vm;
   po::store(
@@ -98,6 +107,8 @@ std::unique_ptr<TFuzzer> BuildAFLFuzzerFromArgs(
     std::cout << fuzzer_args.global_options_description << std::endl;
     std::exit(1);
   }
+
+  CheckParallelModeArgs(vm, afl_options, global_options);
 
   return BuildFuzzer<TFuzzer, TAFLFuzzer, TExecutor>(
       fuzzer_args.argv[0], fuzzer_args.global_options_description, afl_options,
@@ -244,6 +255,11 @@ std::unique_ptr<TFuzzer> BuildFuzzer(
     fuzzuf::algorithm::afl::dictionary::load(d, state->extras, false, f);
   }
   fuzzuf::algorithm::afl::dictionary::SortDictByLength(state->extras);
+
+  if (afl_options.parallel_mode != utils::ParallelModeT::SINGLE) {
+    state->sync_external_queue = true;
+    state->sync_id = afl_options.instance_id;
+  }
 
   return std::unique_ptr<TFuzzer>(
       dynamic_cast<TFuzzer *>(new TAFLFuzzer(std::move(state))));

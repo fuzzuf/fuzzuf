@@ -23,6 +23,7 @@
 #include "fuzzuf/hierarflow/hierarflow_node.hpp"
 #include "fuzzuf/hierarflow/hierarflow_routine.hpp"
 #include "fuzzuf/utils/common.hpp"
+#include "fuzzuf/utils/get_external_seeds.hpp"
 #include "fuzzuf/utils/workspace.hpp"
 
 namespace fuzzuf::algorithm::mopt {
@@ -139,6 +140,32 @@ void MOptFuzzer::BuildFuzzFlow() {
   }
 }
 
-void MOptFuzzer::OneLoop(void) { fuzz_loop(); }
+void MOptFuzzer::OneLoop(void) {
+  fuzz_loop();
+  if (!ShouldEnd() && state->sync_external_queue) {
+    if (state->sync_interval_cnt++ %
+        afl::option::GetSyncInterval<MOptState>(*state)) {
+      SyncFuzzers();
+    }
+  }
+}
+
+void MOptFuzzer::SyncFuzzers() {
+  for (const auto& seed : utils::GetExternalSeeds(
+           state->setting->out_dir.parent_path(), state->sync_id, true)) {
+    feedback::ExitStatusFeedback exit_status;
+    feedback::InplaceMemoryFeedback inp_feed =
+        state->RunExecutorWithClassifyCounts(
+            &*seed.begin(), std::distance(seed.begin(), seed.end()),
+            exit_status);
+    if (exit_status.exit_reason != feedback::PUTExitReasonType::FAULT_TMOUT) {
+      if (state->SaveIfInteresting(&*seed.begin(),
+                                   std::distance(seed.begin(), seed.end()),
+                                   inp_feed, exit_status)) {
+        state->queued_discovered++;
+      }
+    }
+  }
+}
 
 }  // namespace fuzzuf::algorithm::mopt

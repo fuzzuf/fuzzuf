@@ -43,3 +43,8 @@ add_executable(
   ../afl_gcc/easy_to_branch.c 
 )
 
+add_executable(
+  symcc-hard_to_branch
+  ../afl_gcc/hard_to_branch.c 
+)
+

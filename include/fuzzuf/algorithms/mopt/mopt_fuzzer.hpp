@@ -38,6 +38,7 @@ class MOptFuzzer : public afl::AFLFuzzerTemplate<MOptState> {
 
  private:
   void BuildFuzzFlow(void);
+  void SyncFuzzers();
   hierarflow::HierarFlowNode<void(void), void(void)> fuzz_loop;
 };
 

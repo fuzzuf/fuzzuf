@@ -317,6 +317,9 @@ struct AFLStateTemplate {
 
   std::shared_ptr<optimizer::Optimizer<u32>> mutop_optimizer;
 
+  bool sync_external_queue = false; /* Enable parallel mode */
+  std::uint32_t sync_interval_cnt = 0u;
+
  private:
   bool should_construct_auto_dict;
 };

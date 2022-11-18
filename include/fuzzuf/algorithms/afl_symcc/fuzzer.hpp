@@ -23,7 +23,9 @@
 #include <unordered_set>
 #include <vector>
 
+#include "fuzzuf/algorithms/afl/afl_fuzzer.hpp"
 #include "fuzzuf/algorithms/afl/afl_state.hpp"
+#include "fuzzuf/cli/fuzzer/afl_symcc/build_from_args.hpp"
 #include "fuzzuf/executor/afl_symcc_executor_interface.hpp"
 #include "fuzzuf/fuzzer/fuzzer.hpp"
 #include "fuzzuf/hierarflow/hierarflow_intermediates.hpp"
@@ -31,8 +33,6 @@
 #include "fuzzuf/hierarflow/hierarflow_routine.hpp"
 #include "fuzzuf/utils/common.hpp"
 #include "fuzzuf/utils/map_file.hpp"
-#include "fuzzuf/utils/sha1.hpp"
-#include "fuzzuf/utils/vfs/read_once.hpp"
 
 namespace fuzzuf::algorithm::afl_symcc {
 
@@ -83,6 +83,7 @@ struct AFLFuzzerTemplate final : public afl::AFLFuzzerTemplate<State> {
             ->input->GetPath();
     return utils::map_file(fs::absolute(fs::path(fn)).string(), O_RDONLY, true);
   }
+  State &GetState() const { return *afl::AFLFuzzerTemplate<State>::state; }
 
  private:
   hierarflow::HierarFlowNode<void(void), void(void)> fuzz_loop;
@@ -113,14 +114,7 @@ class AFLSymCCFuzzerTemplate : public fuzzer::Fuzzer {
   /**
    * Call AFLFuzzerTemplate::OneLoop(), then execute SymCC.
    */
-  virtual void OneLoop() {
-    afl->OneLoop();
-    ++cycle;
-    if (options.symcc_freq && cycle == options.symcc_freq) {
-      cycle = 0u;
-      RunSymCC();
-    }
-  }
+  virtual void OneLoop() = 0;
   /**
    * Call AFLFuzzerTemplate::ReceiveStopSignal()
    */
@@ -130,33 +124,10 @@ class AFLSymCCFuzzerTemplate : public fuzzer::Fuzzer {
    */
   virtual bool ShouldEnd() { return afl->ShouldEnd(); }
 
- private:
+ protected:
   /**
    * Execute SymCC
    */
-  void RunSymCC() {
-    auto input = afl->GetInput();
-    {
-      const std::vector<unsigned char> temp(input.begin(), input.end());
-      executor->Run(temp.data(), temp.size());
-    }
-    auto files_ =
-        (executor->Filesystem() | fuzzuf::utils::vfs::adaptor::read_once)
-            .MmapAll();
-    for (auto &v : files_) {
-      const std::vector<unsigned char> temp(v.second.begin(), v.second.end());
-      const auto hash = utils::ToSerializedSha1(temp);
-      /*
-       * Since SymCC doesn't care known paths, multiple executions typically
-       * generate tons of same input values. To prevent inserting many same
-       * inputs to case_queue, this filteres already inserted values.
-       */
-      if (existing.find(hash) == existing.end()) {
-        existing.insert(existing.end(), hash);
-        afl->AddToQueue(temp.data(), temp.size());
-      }
-    }
-  }
   std::unique_ptr<AFLFuzzerTemplate<State>> afl;
   std::size_t cycle;
   fuzzuf::cli::fuzzer::afl_symcc::SymCCOptions options;
@@ -164,7 +135,15 @@ class AFLSymCCFuzzerTemplate : public fuzzer::Fuzzer {
   std::unordered_set<std::string> existing;
 };
 
-using AFLSymCCFuzzer = AFLSymCCFuzzerTemplate<fuzzuf::algorithm::afl::AFLState>;
+class AFLSymCCFuzzer final : public AFLSymCCFuzzerTemplate<afl::AFLState> {
+ public:
+  using AFLSymCCFuzzerTemplate<afl::AFLState>::AFLSymCCFuzzerTemplate;
+  virtual void OneLoop(void) override;
+
+ private:
+  void SyncFuzzers();
+  void RunSymCC();
+};
 
 }  // namespace fuzzuf::algorithm::afl_symcc
 

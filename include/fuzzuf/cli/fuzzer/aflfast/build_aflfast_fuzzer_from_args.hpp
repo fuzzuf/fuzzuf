@@ -24,6 +24,7 @@
 #include "fuzzuf/algorithms/aflfast/aflfast_other_hierarflow_routines.hpp"
 #include "fuzzuf/algorithms/aflfast/aflfast_setting.hpp"
 #include "fuzzuf/algorithms/aflfast/aflfast_state.hpp"
+#include "fuzzuf/cli/fuzzer/aflfast/check_parallel_mode_args.hpp"
 #include "fuzzuf/cli/fuzzer_args.hpp"
 #include "fuzzuf/cli/global_fuzzer_options.hpp"
 #include "fuzzuf/cli/put_args.hpp"
@@ -32,6 +33,7 @@
 #include "fuzzuf/executor/qemu_executor.hpp"
 #include "fuzzuf/optimizer/optimizer.hpp"
 #include "fuzzuf/utils/optparser.hpp"
+#include "fuzzuf/utils/parallel_mode.hpp"
 #include "fuzzuf/utils/workspace.hpp"
 #ifdef __aarch64__
 #include "fuzzuf/executor/coresight_executor.hpp"
@@ -46,6 +48,9 @@ struct AFLFastFuzzerOptions {
   bool forksrv;                        // Optional
   std::vector<std::string> dict_file;  // Optional
   bool frida_mode;                     // Optional
+  std::string instance_id;             // Optional
+  utils::ParallelModeT parallel_mode =
+      utils::ParallelModeT::SINGLE;  // Optional
 
   // Default values
   AFLFastFuzzerOptions() : forksrv(true), frida_mode(false){};
@@ -86,7 +91,13 @@ std::unique_ptr<TFuzzer> BuildAFLFastFuzzerFromArgs(
           "frida",
           po::value<bool>(&aflfast_options.frida_mode)
               ->default_value(aflfast_options.frida_mode),
-          "Enable/disable frida mode. Default to false.");
+          "Enable/disable frida mode. Default to false.")(
+          "parallel-deterministic,M",
+          po::value<std::string>(&aflfast_options.instance_id),
+          "distributed mode (see docs/algorithms/afl/parallel_fuzzing.md)")(
+          "parallel-random,S",
+          po::value<std::string>(&aflfast_options.instance_id),
+          "distributed mode (see docs/algorithms/afl/parallel_fuzzing.md)");
 
   po::variables_map vm;
   po::store(
@@ -100,6 +111,8 @@ std::unique_ptr<TFuzzer> BuildAFLFastFuzzerFromArgs(
   if (global_options.help) {
     fuzzuf::cli::fuzzer::aflfast::usage(fuzzer_args.global_options_description);
   }
+
+  CheckParallelModeArgs(vm, aflfast_options, global_options);
 
   using fuzzuf::algorithm::afl::option::GetMemLimit;
   using fuzzuf::algorithm::aflfast::option::AFLFastTag;
@@ -222,6 +235,11 @@ std::unique_ptr<TFuzzer> BuildAFLFastFuzzerFromArgs(
     fuzzuf::algorithm::afl::dictionary::load(d, state->extras, false, f);
   }
   fuzzuf::algorithm::afl::dictionary::SortDictByLength(state->extras);
+
+  if (aflfast_options.parallel_mode != utils::ParallelModeT::SINGLE) {
+    state->sync_external_queue = true;
+    state->sync_id = aflfast_options.instance_id;
+  }
 
   return std::unique_ptr<TFuzzer>(
       dynamic_cast<TFuzzer *>(new TAFLFuzzer(std::move(state))));

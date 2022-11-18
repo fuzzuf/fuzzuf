@@ -47,3 +47,8 @@ add_executable(
   easy_to_branch.c 
 )
 
+add_executable(
+  afl_gcc-hard_to_branch
+  hard_to_branch.c 
+)
+

@@ -40,3 +40,7 @@ add_executable(
   test2.c 
 )
 
+add_executable(
+  ijon-hard_to_branch
+  ../afl_gcc/hard_to_branch.c 
+)
