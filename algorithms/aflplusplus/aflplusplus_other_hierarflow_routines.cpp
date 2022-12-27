@@ -165,7 +165,7 @@ SelectSeedTemplate<AFLplusplusState>::operator()(void) {
   }
 
   // get the testcase indexed by state.current_entry and start mutations
-  state.current_entry = static_cast<u32>((*state.alias_probability)());
+  state.current_entry = (*state.alias_probability)();
   auto &testcase = state.case_queue[state.current_entry];
   this->CallSuccessors(testcase);
 
@@ -186,7 +186,7 @@ void CreateAliasTable(AFLplusplusState &state) {
   std::vector<double> vw;
   ComputeWeightVector(state, vw);
   using fuzzuf::utils::random::WalkerDiscreteDistribution;
-  state.alias_probability.reset(new WalkerDiscreteDistribution<double>(vw));
+  state.alias_probability.reset(new WalkerDiscreteDistribution<u32>(vw));
 }
 
 void ComputeWeightVector(AFLplusplusState &state, std::vector<double> &vw) {

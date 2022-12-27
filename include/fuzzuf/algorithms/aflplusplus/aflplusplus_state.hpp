@@ -57,7 +57,7 @@ struct AFLplusplusState : public afl::AFLStateTemplate<AFLplusplusTestcase> {
   std::shared_ptr<u32[]> n_fuzz;
 
   u32 prev_queued_items;
-  std::unique_ptr<WalkerDiscreteDistribution<double>> alias_probability;
+  std::unique_ptr<WalkerDiscreteDistribution<u32>> alias_probability;
 };
 
 }  // namespace fuzzuf::algorithm::aflplusplus
