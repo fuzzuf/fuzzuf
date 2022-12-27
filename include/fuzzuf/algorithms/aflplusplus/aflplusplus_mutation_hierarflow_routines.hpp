@@ -32,6 +32,11 @@ template <>
 AFLMutCalleeRef<AFLplusplusState> HavocTemplate<AFLplusplusState>::operator()(
     AFLMutatorTemplate<AFLplusplusState>& mutator);
 
+template <>
+AFLMutCalleeRef<AFLplusplusState>
+SplicingTemplate<AFLplusplusState>::operator()(
+    AFLMutatorTemplate<AFLplusplusState>& mutator);
+
 }  // namespace fuzzuf::algorithm::afl::routine::mutation
 
 #endif
