@@ -306,17 +306,78 @@ void Mutator<Tag>::Havoc(const std::vector<AFLDictData> &extras,
   using AFLDictRef =
       utils::NullableRef<const std::vector<afl::dictionary::AFLDictData>>;
   optimizer::Store::GetInstance().Set(optimizer::keys::Extras,
-                                              AFLDictRef(extras));
+                                      AFLDictRef(extras));
   optimizer::Store::GetInstance().Set(optimizer::keys::AutoExtras,
                                       AFLDictRef(a_extras));
 
   bool useSelectedCaseHistogram = optimizer::Store::GetInstance().Exists(
       optimizer::keys::SelectedCaseHistogram);
 
+  bool useIsMutopBanned =
+      optimizer::Store::GetInstance().Exists(optimizer::keys::IsMutopBanned);
+  auto check_banned_mutops = [&extras, &a_extras](u32 len) {
+    // Never prepare a new `is_mutop_banned` instance. The size of it is unknown
+    // due to CustomCases.
+    auto &is_mutop_banned = optimizer::Store::GetInstance().GetMutRef(
+        optimizer::keys::IsMutopBanned, true);
+    std::fill(is_mutop_banned.begin(), is_mutop_banned.end(), false);
+
+    if (extras.empty()) {
+      is_mutop_banned[INSERT_EXTRA] = true;
+      is_mutop_banned[OVERWRITE_WITH_EXTRA] = true;
+    }
+
+    if (a_extras.empty()) {
+      is_mutop_banned[INSERT_AEXTRA] = true;
+      is_mutop_banned[OVERWRITE_WITH_AEXTRA] = true;
+    }
+
+    if (len + GetHavocBlkXl<Tag>() >= GetMaxFile<Tag>()) {
+      is_mutop_banned[CLONE_BYTES] = true;
+      is_mutop_banned[INSERT_SAME_BYTE] = true;
+    } else if (len < 4) {
+      is_mutop_banned[FLIP32] = true;
+      is_mutop_banned[INT32_LE] = true;
+      is_mutop_banned[INT32_BE] = true;
+      is_mutop_banned[SUB32_LE] = true;
+      is_mutop_banned[SUB32_BE] = true;
+      is_mutop_banned[ADD32_LE] = true;
+      is_mutop_banned[ADD32_BE] = true;
+      is_mutop_banned[SUBADD32] = true;
+
+      if (len < 2) {
+        is_mutop_banned[FLIP16] = true;
+        is_mutop_banned[INT16_LE] = true;
+        is_mutop_banned[INT16_BE] = true;
+        is_mutop_banned[SUB16_LE] = true;
+        is_mutop_banned[SUB16_BE] = true;
+        is_mutop_banned[ADD16_LE] = true;
+        is_mutop_banned[ADD16_BE] = true;
+        is_mutop_banned[SUBADD16] = true;
+        is_mutop_banned[DELETE_BYTES] = true;
+        is_mutop_banned[OVERWRITE_WITH_CHUNK] = true;
+        is_mutop_banned[OVERWRITE_WITH_SAME_BYTE] = true;
+      }
+    }
+
+    // TODO: Add CustomBan for CustomCases
+  };
+
+  optimizer::Store::GetInstance().Set(optimizer::keys::SizeOfMutatedSeed, len);
+
   std::array<u32, NUM_CASE> selected_case_histogram;
 
-  std::array<u32, fuzzuf::mutator::NUM_CASE> selected_case_histogram;
-  selected_case_histogram.fill(0);
+  if (useSelectedCaseHistogram) {
+    selected_case_histogram.fill(0);
+  }
+
+  // We update is_mutop_banned before calling `CalcBatchSize()`
+  // because batch size and mutation operator can be determined
+  // simultaneously in the function
+  if (useIsMutopBanned) {
+    check_banned_mutops(len);
+  }
+
   u32 stacking = havoc_optimizer.CalcBatchSize();
   optimizer::Store::GetInstance().Set(optimizer::keys::LastHavocStacking,
                                       stacking);
@@ -698,10 +759,15 @@ void Mutator<Tag>::Havoc(const std::vector<AFLDictData> &extras,
         break;
     }
 
+    optimizer::Store::GetInstance().Set(optimizer::keys::SizeOfMutatedSeed,
+                                        len);
+
     if (useSelectedCaseHistogram) {
       optimizer::Store::GetInstance().Set(
           optimizer::keys::SelectedCaseHistogram, selected_case_histogram);
     }
+
+    if (useIsMutopBanned) check_banned_mutops(len);
   }
 }
 
