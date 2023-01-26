@@ -162,7 +162,7 @@ if( AFL_FOUND )
 add_test( NAME "algorithms.aflplusplus.cli" COMMAND test-aflplusplus-cli )
 endif()
 
-add_executable( test-aflplusplus-parallel cli.cpp )
+add_executable( test-aflplusplus-parallel parallel.cpp )
 target_link_libraries(
   test-aflplusplus-parallel
   test-common
@@ -193,5 +193,5 @@ if( ENABLE_CLANG_TIDY )
   )
 endif()
 if( AFL_FOUND )
-add_test( NAME "algorithms.aflplusplus.parallel" COMMAND test-aflplusplus-cli )
+add_test( NAME "algorithms.aflplusplus.parallel" COMMAND test-aflplusplus-parallel )
 endif()
