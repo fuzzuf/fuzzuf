@@ -34,5 +34,6 @@ set_target_properties(
 target_link_libraries(
   fuzzuf_core_rezzuf
   ${FUZZUF_LIBRARIES}
+  fuzzuf_core_aflplusplus
   fuzzuf_core_afl_common
 )
