@@ -14,6 +14,7 @@ endif()
 
 list( FIND ALGORITHMS "rezzuf" rezzuf_index )
 if( NOT "${rezzuf_index}" EQUAL "-1" )
+  list( REMOVE_ITEM ALGORITHMS "aflplusplus" )
   list(INSERT ALGORITHMS 0 "aflplusplus")
 endif()
 
