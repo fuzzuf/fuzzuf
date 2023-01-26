@@ -82,7 +82,7 @@ BOOST_AUTO_TEST_CASE(MutatorMoreHavoc) {
   using fuzzuf::executor::NativeLinuxExecutor;
   std::vector<std::string> argv{"non-existent-program", "someargument"};
   auto setting = std::make_shared<AFLplusplusSetting>(
-      argv, input_dir, output_dir, 1000, 0, false, false,
+      argv, input_dir.string(), output_dir.string(), 1000, 0, false, false,
       fuzzuf::utils::CPUID_BIND_WHICHEVER,
       fuzzuf::algorithm::aflfast::option::FAST, "test");
   auto native_executor = std::make_shared<NativeLinuxExecutor>(
