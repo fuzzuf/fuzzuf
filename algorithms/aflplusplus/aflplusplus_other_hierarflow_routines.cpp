@@ -226,7 +226,7 @@ double ComputeWeight(const AFLplusplusState &state,
   if (unlikely(testcase.favored)) {
     weight *= 5;
   }
-  if (unlikely(!(const_cast<AFLplusplusTestcase &>(testcase).WasFuzzed()))) {
+  if (unlikely(!testcase.WasFuzzed())) {
     weight *= 2;
   }
 

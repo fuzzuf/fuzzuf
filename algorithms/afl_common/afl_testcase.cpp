@@ -26,7 +26,7 @@ AFLTestcase::AFLTestcase(std::shared_ptr<exec_input::OnDiskExecInput> input)
 
 AFLTestcase::~AFLTestcase() {}
 
-bool AFLTestcase::WasFuzzed(void) { return fuzz_level > 0; }
+bool AFLTestcase::WasFuzzed(void) const { return fuzz_level > 0; }
 
 void AFLTestcase::MarkFuzzed(void) { fuzz_level = 1; }
 

@@ -29,7 +29,7 @@ struct AFLplusplusSetting : public afl::AFLSetting {
                               u64 exec_memlimit, bool forksrv, bool dumb_mode,
                               int cpuid_to_bind,
                               const aflfast::option::Schedule schedule,
-                              std::string& schedule_string);
+                              const std::string& schedule_string);
 
   ~AFLplusplusSetting();
 
