@@ -29,8 +29,6 @@
 #include "fuzzuf/optimizer/optimizer.hpp"
 #include "fuzzuf/utils/random.hpp"
 
-#define N_FUZZ_SIZE (1 << 21)
-
 namespace fuzzuf::algorithm::aflplusplus {
 
 using fuzzuf::utils::random::WalkerDiscreteDistribution;

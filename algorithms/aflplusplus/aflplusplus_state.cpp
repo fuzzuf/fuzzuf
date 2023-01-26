@@ -39,7 +39,7 @@ AFLplusplusState::AFLplusplusState(
       setting(setting),
       prev_queued_items(0),
       alias_probability(nullptr) {
-  n_fuzz.reset(new u32[N_FUZZ_SIZE]);
+  n_fuzz.reset(new u32[option::GetNFuzzSize<Tag>()]);
 }
 
 std::shared_ptr<AFLplusplusTestcase> AFLplusplusState::AddToQueue(
@@ -105,16 +105,18 @@ bool AFLplusplusState::SaveIfInteresting(
   /* Update path frequency. */
   u32 cksum = inp_feed.CalcCksum32();
 
+  using option::GetNFuzzSize;
+
   /* Saturated increment */
-  if (n_fuzz[cksum % N_FUZZ_SIZE] < 0xFFFFFFFF) {
-    n_fuzz[cksum % N_FUZZ_SIZE]++;
+  if (n_fuzz[cksum % GetNFuzzSize<Tag>()] < 0xFFFFFFFF) {
+    n_fuzz[cksum % GetNFuzzSize<Tag>()]++;
   }
 
   bool res = AFLStateTemplate<AFLplusplusTestcase>::SaveIfInteresting(
       buf, len, inp_feed, exit_status);
 
   if (res && (exit_status.exit_reason == crash_mode)) {
-    case_queue.back()->n_fuzz_entry = cksum % N_FUZZ_SIZE;
+    case_queue.back()->n_fuzz_entry = cksum % GetNFuzzSize<Tag>();
     n_fuzz[case_queue.back()->n_fuzz_entry] = 1;
   }
 
