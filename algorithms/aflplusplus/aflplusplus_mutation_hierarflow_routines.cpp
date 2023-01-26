@@ -39,10 +39,11 @@ AFLMutCalleeRef<AFLplusplusState> HavocTemplate<AFLplusplusState>::operator()(
 
   using afl::dictionary::AFLDictData;
 
-  if (this->DoHavoc(mutator, *state.havoc_optimizer,
-                    aflplusplus::havoc::AFLplusplusCustomCases, "more_havoc",
-                    "more_havoc", state.orig_perf, stage_max_multiplier,
-                    option::STAGE_HAVOC)) {
+  if (this->DoHavoc(
+          mutator, *state.havoc_optimizer,
+          aflplusplus::havoc::AFLplusplusCustomCases<AFLplusplusState>(state),
+          "more_havoc", "more_havoc", state.orig_perf, stage_max_multiplier,
+          option::STAGE_HAVOC)) {
     this->SetResponseValue(true);
     return this->GoToParent();
   }
@@ -99,11 +100,12 @@ SplicingTemplate<AFLplusplusState>::operator()(
 
     using afl::dictionary::AFLDictData;
 
-    if (this->DoHavoc(mutator, *state.havoc_optimizer,
-                      aflplusplus::havoc::AFLplusplusCustomCases,
-                      utils::StrPrintf("more_splice %u", splice_cycle),
-                      "more_splice", state.orig_perf,
-                      option::GetSpliceHavoc(state), option::STAGE_SPLICE)) {
+    if (this->DoHavoc(
+            mutator, *state.havoc_optimizer,
+            aflplusplus::havoc::AFLplusplusCustomCases<AFLplusplusState>(state),
+            utils::StrPrintf("more_splice %u", splice_cycle), "more_splice",
+            state.orig_perf, option::GetSpliceHavoc(state),
+            option::STAGE_SPLICE)) {
       this->SetResponseValue(true);
       return this->GoToParent();
     }

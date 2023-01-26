@@ -751,9 +751,6 @@ void Mutator<Tag>::Havoc(const std::vector<AFLDictData> &extras,
         break;
       }
 
-        // FIXME: implement this case later
-        // case SPLICE:
-
       default:
         custom_cases(r, outbuf, len, extras, a_extras);
         break;
