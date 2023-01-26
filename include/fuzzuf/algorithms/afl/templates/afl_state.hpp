@@ -50,11 +50,11 @@ AFLStateTemplate<Testcase>::AFLStateTemplate(
     : setting(setting),
       executor(executor),
       input_set(),
-      rand_fd(fuzzuf::utils::OpenFile("/dev/urandom", O_RDONLY | O_CLOEXEC)),
+      rand_fd(utils::OpenFile("/dev/urandom", O_RDONLY | O_CLOEXEC)),
       // This is a temporary implementation. Change the implementation properly
       // if the value need to be specified from user side.
-      cpu_core_count(fuzzuf::utils::GetCpuCore()),
-      cpu_aff(fuzzuf::utils::BindCpu(cpu_core_count, setting->cpuid_to_bind)),
+      cpu_core_count(utils::GetCpuCore()),
+      cpu_aff(utils::BindCpu(cpu_core_count, setting->cpuid_to_bind)),
       mutop_optimizer(_mutop_optimizer),
       should_construct_auto_dict(false) {
   if (in_bitmap.empty())

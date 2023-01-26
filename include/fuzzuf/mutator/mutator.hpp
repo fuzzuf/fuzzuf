@@ -299,16 +299,17 @@ void Mutator<Tag>::Havoc(u32 stacking, const std::vector<AFLDictData> &extras,
   // just an alias of afl::util::UR
   auto UR = [this](u32 limit) { return afl::util::UR(limit, rand_fd); };
 
-  using AFLDictRef = utils::NullableRef<
-      const std::vector<fuzzuf::algorithm::afl::dictionary::AFLDictData>>;
-  fuzzuf::optimizer::Store::GetInstance().Set(fuzzuf::optimizer::keys::Extras,
+  using AFLDictRef =
+      utils::NullableRef<const std::vector<afl::dictionary::AFLDictData>>;
+  optimizer::Store::GetInstance().Set(optimizer::keys::Extras,
                                               AFLDictRef(extras));
-  fuzzuf::optimizer::Store::GetInstance().Set(
-      fuzzuf::optimizer::keys::AutoExtras, AFLDictRef(a_extras));
+  optimizer::Store::GetInstance().Set(optimizer::keys::AutoExtras,
+                                      AFLDictRef(a_extras));
 
-  bool useSelectedCaseHistogram =
-      fuzzuf::optimizer::Store::GetInstance().Exists(
-          fuzzuf::optimizer::keys::SelectedCaseHistogram);
+  bool useSelectedCaseHistogram = optimizer::Store::GetInstance().Exists(
+      optimizer::keys::SelectedCaseHistogram);
+
+  std::array<u32, NUM_CASE> selected_case_histogram;
 
   std::array<u32, fuzzuf::mutator::NUM_CASE> selected_case_histogram;
   selected_case_histogram.fill(0);
@@ -691,9 +692,8 @@ void Mutator<Tag>::Havoc(u32 stacking, const std::vector<AFLDictData> &extras,
     }
 
     if (useSelectedCaseHistogram) {
-      fuzzuf::optimizer::Store::GetInstance().Set(
-          fuzzuf::optimizer::keys::SelectedCaseHistogram,
-          selected_case_histogram);
+      optimizer::Store::GetInstance().Set(
+          optimizer::keys::SelectedCaseHistogram, selected_case_histogram);
     }
   }
 }

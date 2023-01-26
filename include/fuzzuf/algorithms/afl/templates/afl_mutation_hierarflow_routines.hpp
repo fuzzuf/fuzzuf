@@ -566,8 +566,9 @@ AFLMutCalleeRef<State> SplicingTemplate<State>::operator()(
 
     mutator.RestoreSplice();
   }
-  fuzzuf::optimizer::Store::GetInstance().Set(
-      fuzzuf::optimizer::keys::LastSpliceCycle, splice_cycle);
+
+  optimizer::Store::GetInstance().Set(optimizer::keys::LastSpliceCycle,
+                                      splice_cycle);
 
   return this->GoToDefaultNext();
 }
