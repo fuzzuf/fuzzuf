@@ -34,10 +34,11 @@ SelectSeed::SelectSeed(struct IJONState &state) : state(state) {}
  */
 utils::NullableRef<hierarflow::HierarFlowCallee<void(void)>>
 SelectSeed::operator()(void) {
-  // Although IJON itself doesn't use current_entry, ShowState requires the value is pointing a valid seed.
-  // So if current_entry is at the end of seeds, it must be modified temporary.
+  // Although IJON itself doesn't use current_entry, ShowState requires the
+  // value is pointing a valid seed. So if current_entry is at the end of seeds,
+  // it must be modified temporary.
   if (state.current_entry >= state.case_queue.size()) {
-    if( !state.current_entry_is_swapped ) {
+    if (!state.current_entry_is_swapped) {
       state.current_entry_is_swapped = true;
       state.old_current_entry = state.current_entry;
     }

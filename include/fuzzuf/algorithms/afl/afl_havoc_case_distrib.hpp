@@ -1,7 +1,7 @@
 /*
  * fuzzuf
  * Copyright (C) 2022 Ricerca Security
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -21,20 +21,20 @@
 
 #include <variant>
 
-#include "fuzzuf/utils/common.hpp"
 #include "fuzzuf/mutator/havoc_case.hpp"
 #include "fuzzuf/optimizer/optimizer.hpp"
+#include "fuzzuf/utils/common.hpp"
 
 namespace fuzzuf::algorithm::afl {
 
 class AFLHavocCaseDistrib : public optimizer::Optimizer<u32> {
-public:
-    AFLHavocCaseDistrib();
-    ~AFLHavocCaseDistrib();
+ public:
+  AFLHavocCaseDistrib();
+  ~AFLHavocCaseDistrib();
 
-    u32 CalcValue() override;
+  u32 CalcValue() override;
 };
 
-} // namespace fuzzuf::algorithm::afl
+}  // namespace fuzzuf::algorithm::afl
 
 #endif

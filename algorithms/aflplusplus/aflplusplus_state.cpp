@@ -265,7 +265,8 @@ u32 AFLplusplusState::DoCalcScore(AFLplusplusTestcase &testcase) {
     case aflfast::option::QUAD:
       divisor = n_fuzz[testcase.n_fuzz_entry];
       if (divisor != 0xFFFFFFFF) divisor++;
-      factor = testcase.fuzz_level * testcase.fuzz_level / static_cast<double>(divisor);
+      factor = testcase.fuzz_level * testcase.fuzz_level /
+               static_cast<double>(divisor);
       break;
 
     default:

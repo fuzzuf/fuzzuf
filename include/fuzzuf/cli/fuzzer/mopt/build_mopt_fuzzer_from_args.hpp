@@ -106,9 +106,10 @@ std::unique_ptr<TFuzzer> BuildMOptFuzzerFromArgs(
           "while does not find any interesting test case for more than 30 min, "
           "MOpt-AFL will enter the pacemaker fuzzing mode (it may take three "
           "or four days for MOpt-AFL to enter the pacemaker fuzzing mode when "
-          "'-L 30').")("parallel-deterministic,M",
-                       po::value<std::string>(&mopt_options.instance_id),
-                       "distributed mode (see docs/algorithms/afl/parallel_fuzzing.md)")(
+          "'-L 30').")(
+          "parallel-deterministic,M",
+          po::value<std::string>(&mopt_options.instance_id),
+          "distributed mode (see docs/algorithms/afl/parallel_fuzzing.md)")(
           "parallel-random,S",
           po::value<std::string>(&mopt_options.instance_id),
           "distributed mode (see docs/algorithms/afl/parallel_fuzzing.md)");
