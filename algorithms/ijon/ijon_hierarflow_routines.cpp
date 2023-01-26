@@ -91,7 +91,7 @@ MaxHavoc::MaxHavoc(IJONState &state) : HavocBase(state) {}
  * https://github.com/RUB-SysSec/ijon/blob/4cb8ae04d/afl-fuzz.c#L6128-L6555
  */
 IJONMutCalleeRef MaxHavoc::operator()(IJONMutator &mutator) {
-  if (DoHavoc(mutator, *state.mutop_optimizer, havoc::IJONCustomCases,
+  if (DoHavoc(mutator, *state.havoc_optimizer, havoc::IJONCustomCases,
               "ijon-max", "ijon-max", state.orig_perf,
               afl::option::GetHavocCycles(state), afl::option::STAGE_HAVOC)) {
     SetResponseValue(true);

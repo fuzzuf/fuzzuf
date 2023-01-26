@@ -20,6 +20,7 @@
 #define FUZZUF_INCLUDE_CLI_FUZZER_AFL_BUILD_AFL_FROM_ARGS_HPP
 
 #include "fuzzuf/algorithms/afl/afl_havoc_case_distrib.hpp"
+#include "fuzzuf/algorithms/afl/afl_havoc_optimizer.hpp"
 #include "fuzzuf/algorithms/afl/afl_option.hpp"
 #include "fuzzuf/algorithms/afl/afl_setting.hpp"
 #include "fuzzuf/algorithms/afl/afl_state.hpp"
@@ -31,6 +32,7 @@
 #include "fuzzuf/executor/linux_fork_server_executor.hpp"
 #include "fuzzuf/executor/native_linux_executor.hpp"
 #include "fuzzuf/executor/qemu_executor.hpp"
+#include "fuzzuf/optimizer/havoc_optimizer.hpp"
 #include "fuzzuf/optimizer/optimizer.hpp"
 #include "fuzzuf/utils/optparser.hpp"
 #include "fuzzuf/utils/parallel_mode.hpp"
@@ -236,13 +238,15 @@ std::unique_ptr<TFuzzer> BuildFuzzer(
       EXIT("Unsupported executor: '%s'", global_options.executor.c_str());
   }
 
-  auto mutop_optimizer = std::unique_ptr<optimizer::Optimizer<u32>>(
+  auto mutop_optimizer = std::shared_ptr<optimizer::Optimizer<u32>>(
       new algorithm::afl::AFLHavocCaseDistrib());
+  std::unique_ptr<optimizer::HavocOptimizer> havoc_optimizer(
+      new algorithm::afl::AFLHavocOptimizer(mutop_optimizer));
 
   // Create AFLState
   using fuzzuf::algorithm::afl::AFLState;
   auto state =
-      std::make_unique<AFLState>(setting, executor, std::move(mutop_optimizer));
+      std::make_unique<AFLState>(setting, executor, std::move(havoc_optimizer));
 
   // Load dictionary
   for (const auto &d : afl_options.dict_file) {

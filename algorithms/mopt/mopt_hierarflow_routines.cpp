@@ -160,7 +160,7 @@ MOptMutCalleeRef MOptHavoc::operator()(MOptMutator &mutator) {
   using afl::dictionary::AFLDictData;
 
   if (this->DoHavoc(
-          mutator, *state.mutop_optimizer,
+          mutator, *state.havoc_optimizer,
           [](int, u8 *&, u32 &, const std::vector<AFLDictData> &,
              const std::vector<AFLDictData> &) {},
           "MOpt-havoc", "MOpt-havoc", state.orig_perf, stage_max_multiplier,
@@ -222,7 +222,7 @@ MOptMutCalleeRef MOptSplicing::operator()(MOptMutator &mutator) {
     using afl::dictionary::AFLDictData;
 
     if (this->DoHavoc(
-            mutator, *state.mutop_optimizer,
+            mutator, *state.havoc_optimizer,
             [](int, u8 *&, u32 &, const std::vector<AFLDictData> &,
                const std::vector<AFLDictData> &) {},
             fuzzuf::utils::StrPrintf("MOpt-splice %u", splice_cycle),

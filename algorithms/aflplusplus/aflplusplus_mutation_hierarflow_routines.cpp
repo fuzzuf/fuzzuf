@@ -39,7 +39,7 @@ AFLMutCalleeRef<AFLplusplusState> HavocTemplate<AFLplusplusState>::operator()(
 
   using afl::dictionary::AFLDictData;
 
-  if (this->DoHavoc(mutator, *state.mutop_optimizer,
+  if (this->DoHavoc(mutator, *state.havoc_optimizer,
                     aflplusplus::havoc::AFLplusplusCustomCases, "more_havoc",
                     "more_havoc", state.orig_perf, stage_max_multiplier,
                     option::STAGE_HAVOC)) {
@@ -99,7 +99,7 @@ SplicingTemplate<AFLplusplusState>::operator()(
 
     using afl::dictionary::AFLDictData;
 
-    if (this->DoHavoc(mutator, *state.mutop_optimizer,
+    if (this->DoHavoc(mutator, *state.havoc_optimizer,
                       aflplusplus::havoc::AFLplusplusCustomCases,
                       utils::StrPrintf("more_splice %u", splice_cycle),
                       "more_splice", state.orig_perf,

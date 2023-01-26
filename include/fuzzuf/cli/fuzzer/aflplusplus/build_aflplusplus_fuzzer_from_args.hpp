@@ -20,6 +20,7 @@
 #define FUZZUF_INCLUDE_CLI_FUZZER_AFLPLUSPLUS_BUILD_AFLPLUSPLUS_FROM_ARGS_HPP
 
 #include "fuzzuf/algorithms/afl/afl_havoc_case_distrib.hpp"
+#include "fuzzuf/algorithms/afl/afl_havoc_optimizer.hpp"
 #include "fuzzuf/algorithms/aflfast/aflfast_option.hpp"
 #include "fuzzuf/algorithms/aflplusplus/aflplusplus_havoc.hpp"
 #include "fuzzuf/algorithms/aflplusplus/aflplusplus_option.hpp"
@@ -266,13 +267,17 @@ std::unique_ptr<TFuzzer> BuildAFLplusplusFuzzerFromArgs(
       EXIT("Unsupported executor: '%s'", global_options.executor.c_str());
   }
 
-  auto mutop_optimizer = std::unique_ptr<optimizer::Optimizer<u32>>(
+  std::unique_ptr<optimizer::HavocOptimizer> havoc_optimizer;
+
+  std::unique_ptr<optimizer::Optimizer<u32>> mutop_optimizer(
       new algorithm::aflplusplus::havoc::AFLplusplusHavocCaseDistrib());
+  havoc_optimizer.reset(
+      new algorithm::afl::AFLHavocOptimizer(std::move(mutop_optimizer)));
 
   // Create AFLplusplusState
   using fuzzuf::algorithm::aflplusplus::AFLplusplusState;
   auto state = std::make_unique<AFLplusplusState>(setting, executor,
-                                                  std::move(mutop_optimizer));
+                                                  std::move(havoc_optimizer));
 
   state->skip_deterministic = !vm.count("det");
 

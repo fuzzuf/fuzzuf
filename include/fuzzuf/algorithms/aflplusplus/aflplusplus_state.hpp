@@ -26,7 +26,7 @@
 #include "fuzzuf/executor/afl_executor_interface.hpp"
 #include "fuzzuf/feedback/exit_status_feedback.hpp"
 #include "fuzzuf/feedback/inplace_memory_feedback.hpp"
-#include "fuzzuf/optimizer/optimizer.hpp"
+#include "fuzzuf/optimizer/havoc_optimizer.hpp"
 #include "fuzzuf/utils/random.hpp"
 
 namespace fuzzuf::algorithm::aflplusplus {
@@ -37,7 +37,7 @@ struct AFLplusplusState : public afl::AFLStateTemplate<AFLplusplusTestcase> {
   explicit AFLplusplusState(
       std::shared_ptr<const AFLplusplusSetting> setting,
       std::shared_ptr<executor::AFLExecutorInterface> executor,
-      std::unique_ptr<optimizer::Optimizer<u32>> &&mutop_optimizer);
+      std::unique_ptr<optimizer::HavocOptimizer> &&havoc_optimizer);
 
   std::shared_ptr<AFLplusplusTestcase> AddToQueue(const std::string &fn,
                                                   const u8 *buf, u32 len,

@@ -22,6 +22,7 @@
 #include <boost/program_options.hpp>
 #include <memory>
 
+#include "fuzzuf/algorithms/afl/afl_havoc_optimizer.hpp"
 #include "fuzzuf/algorithms/afl/afl_option.hpp"
 #include "fuzzuf/algorithms/mopt/mopt_optimizer.hpp"
 #include "fuzzuf/algorithms/mopt/mopt_option.hpp"
@@ -34,6 +35,7 @@
 #include "fuzzuf/executor/linux_fork_server_executor.hpp"
 #include "fuzzuf/executor/native_linux_executor.hpp"
 #include "fuzzuf/executor/qemu_executor.hpp"
+#include "fuzzuf/optimizer/havoc_optimizer.hpp"
 #include "fuzzuf/optimizer/optimizer.hpp"
 #include "fuzzuf/utils/common.hpp"
 #include "fuzzuf/utils/optparser.hpp"
@@ -233,11 +235,13 @@ std::unique_ptr<TFuzzer> BuildMOptFuzzerFromArgs(
   }
 
   auto mutop_optimizer = std::make_shared<optimizer::MOptOptimizer>();
+  std::unique_ptr<optimizer::HavocOptimizer> havoc_optimizer(
+      new algorithm::afl::AFLHavocOptimizer(mutop_optimizer));
 
   // Create MOptState
   using fuzzuf::algorithm::mopt::MOptState;
-  auto state = std::make_unique<MOptState>(setting, executor,
-                                           std::move(mutop_optimizer));
+  auto state = std::make_unique<MOptState>(
+      setting, executor, std::move(havoc_optimizer), mutop_optimizer);
 
   // Load dictionary
   for (const auto &d : mopt_options.dict_file) {

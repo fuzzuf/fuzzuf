@@ -32,9 +32,11 @@
 namespace fuzzuf::algorithm::mopt {
 
 struct MOptState : public afl::AFLStateTemplate<MOptTestcase> {
-  explicit MOptState(std::shared_ptr<const mopt::MOptSetting> setting,
-                     std::shared_ptr<executor::AFLExecutorInterface> executor,
-                     std::shared_ptr<optimizer::MOptOptimizer>&& mopt);
+  explicit MOptState(
+      std::shared_ptr<const mopt::MOptSetting> setting,
+      std::shared_ptr<executor::AFLExecutorInterface> executor,
+      std::unique_ptr<optimizer::HavocOptimizer>&& havoc_optimizer,
+      std::shared_ptr<optimizer::MOptOptimizer> mopt);
   ~MOptState();
 
   void UpdateSpliceCycles();

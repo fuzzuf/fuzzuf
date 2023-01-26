@@ -16,23 +16,29 @@
  * along with this program.  If not, see http://www.gnu.org/licenses/.
  */
 
-#include "fuzzuf/algorithms/ijon/ijon_state.hpp"
+#ifndef FUZZUF_INCLUDE_ALGORITHMS_AFL_AFL_HAVOC_OPTIMIZER_HPP
+#define FUZZUF_INCLUDE_ALGORITHMS_AFL_AFL_HAVOC_OPTIMIZER_HPP
 
-#include "fuzzuf/executor/afl_executor_interface.hpp"
+#include <memory>
 
-namespace fuzzuf::algorithm::ijon {
+#include "fuzzuf/optimizer/havoc_optimizer.hpp"
+#include "fuzzuf/optimizer/optimizer.hpp"
+#include "fuzzuf/utils/common.hpp"
 
-IJONState::IJONState(
-    std::shared_ptr<const afl::AFLSetting> setting,
-    std::shared_ptr<executor::IJONExecutorInterface> executor,
-    std::unique_ptr<optimizer::HavocOptimizer>&& havoc_optimizer)
-    : afl::AFLStateTemplate<IJONTestcase>(
-          setting,
-          // std::make_shared<executor::AFLExecutorInterface>(executor->ExposeExecutor()),
-          std::make_shared<executor::AFLExecutorInterface>(executor),
-          std::move(havoc_optimizer)),
-      ijon_executor(executor) {}
+namespace fuzzuf::algorithm::afl {
 
-IJONState::~IJONState() {}
+class AFLHavocOptimizer : public optimizer::HavocOptimizer {
+ public:
+  AFLHavocOptimizer(std::shared_ptr<optimizer::Optimizer<u32>> mutop_optimizer);
+  virtual ~AFLHavocOptimizer();
 
-}  // namespace fuzzuf::algorithm::ijon
+  u32 CalcBatchSize() override;
+  u32 CalcMutop(u32 batch_idx) override;
+
+ private:
+  std::shared_ptr<optimizer::Optimizer<u32>> mutop_optimizer;
+};
+
+}  // namespace fuzzuf::algorithm::afl
+
+#endif

@@ -3,6 +3,7 @@ add_library(
   STATIC
   afl_dict_data.cpp
   afl_havoc_case_distrib.cpp
+  afl_havoc_optimizer.cpp
   afl_setting.cpp
   afl_testcase.cpp
   afl_util.cpp

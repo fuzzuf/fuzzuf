@@ -28,6 +28,7 @@
 #include "fuzzuf/algorithms/afl/afl_util.hpp"
 #include "fuzzuf/exec_input/exec_input.hpp"
 #include "fuzzuf/mutator/havoc_case.hpp"
+#include "fuzzuf/optimizer/havoc_optimizer.hpp"
 #include "fuzzuf/optimizer/keys.hpp"
 #include "fuzzuf/optimizer/store.hpp"
 #include "fuzzuf/utils/common.hpp"
@@ -112,29 +113,32 @@ class Mutator {
    * @tparam CustomCases the type of the function that represents custom cases
    * in havoc. It should be `void(u32, u8*&, u32&, const
    * std::vector<AFLDictData>&, const std::vector<AFLDictData>&)`.
-   * @param stacking the number of times mutation operators are applied.
    * @param extras the vector of extras (constant strings) that works as a
    * dictionary.
    * @param a_extras the vector of auto extras (automatically generated constant
    * strings).
-   * @param mutop_optimizer (the reference of) the optimizer that selects
-   * mutation operators to be applied.
-   * @note About mutop_optimizer and CustomCases.
+   * @param havoc_optimizer (the reference of) the optimizer that selects
+   * mutation operators to be applied and the number of times mutation operators
+   * are applied.
+   * @note About havoc_optimizer and CustomCases.
    * To allow users to customize Havoc, two callable objects are provided.
    *
-   * mutop_optimizer should be an instance of
-   * `fuzzuf::optimizer::Optimizer<u32>`, and should return integers that
-   * describe switch cases of havoc(i.e., a constant defined in HavocCase). This
-   * works as a probability distribution with which Havoc decides which
-   * mutation(switch case) to be used. mutop_optimizer is provided with two
+   * havoc_optimizer should be an instance of
+   * `fuzzuf::optimizer::HavocOptimizer`. `HavocOptimizer::CalcMutop` should
+   * return integers that describe switch cases of havoc (i.e., a constant
+   * defined in HavocCase).
+   * This works as a probability distribution with which Havoc decides which
+   * mutation (switch case) to be used. `CalcMutop` is provided with two
    * dictionaries via `fuzzuf::optimizer::Store`: extras and a_extras. They can
    * be accessed with the keys `optimizer::keys::Extras` and
    * `optimizer::keys::AutoExtras`. If these dictionaries are available and
-   * non-empty, mutop_optimizer can select the mutation operators of placing
+   * non-empty, `CalcMutop` can select the mutation operators of placing
    * keywords picked from the dictionaries. Note that, conversely,
-   * mutop_optimizer MUST NOT return OVERWRITE_WITH_EXTRA and INSERT_EXTRA if
+   * `CalcMutop` MUST NOT return OVERWRITE_WITH_EXTRA and INSERT_EXTRA if
    * the value extras is empty. If it does, Havoc can cause access violations.
    * The same is true for OVERWRITE_WITH_AEXTRA and INSERT_AEXTRA.
+   * `HavocOptimizer::CalcBatchSize` should return how many times mutation
+   * operators should be applied to the retained buffer.
    *
    * CustomCases is a callable object used to execute your own cases instead of
    * preset cases. It should receive as its arguments a number representing
@@ -145,9 +149,9 @@ class Mutator {
    * receives HavocCase::NUM_CASE+1 as one of its arguments.
    */
   template <typename CustomCases>
-  void Havoc(u32 stacking, const std::vector<AFLDictData> &extras,
+  void Havoc(const std::vector<AFLDictData> &extras,
              const std::vector<AFLDictData> &a_extras,
-             fuzzuf::optimizer::Optimizer<u32> &mutop_optimizer,
+             optimizer::HavocOptimizer &havoc_optimizer,
              CustomCases custom_cases);
 
   void RestoreHavoc(void);
@@ -267,9 +271,9 @@ u32 Mutator<Tag>::InterestN(int pos, int idx, int be) {
 
 template <class Tag>
 template <typename CustomCases>
-void Mutator<Tag>::Havoc(u32 stacking, const std::vector<AFLDictData> &extras,
+void Mutator<Tag>::Havoc(const std::vector<AFLDictData> &extras,
                          const std::vector<AFLDictData> &a_extras,
-                         fuzzuf::optimizer::Optimizer<u32> &mutop_optimizer,
+                         optimizer::HavocOptimizer &havoc_optimizer,
                          CustomCases custom_cases) {
   using namespace fuzzuf::algorithm;
   using afl::option::GetArithMax;
@@ -313,9 +317,12 @@ void Mutator<Tag>::Havoc(u32 stacking, const std::vector<AFLDictData> &extras,
 
   std::array<u32, fuzzuf::mutator::NUM_CASE> selected_case_histogram;
   selected_case_histogram.fill(0);
+  u32 stacking = havoc_optimizer.CalcBatchSize();
+  optimizer::Store::GetInstance().Set(optimizer::keys::LastHavocStacking,
+                                      stacking);
 
-  for (std::size_t i = 0; i < stacking; i++) {
-    u32 r = mutop_optimizer.CalcValue();
+  for (u32 i = 0; i < stacking; i++) {
+    u32 r = havoc_optimizer.CalcMutop(i);
 
     switch (r) {
       case FLIP1:

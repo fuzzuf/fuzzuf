@@ -159,8 +159,10 @@ constexpr s32 GetHavocMin(State&) {
     In other words, the default (n = 7) produces 2, 4, 8, 16, 32, 64, or
     128 stacked tweaks: */
 
-template <class State>
-constexpr u32 GetHavocStackPow2(State&) {
+// NOTE: this function cannot have the argument
+// because this is used outside AFL.
+template <class Tag>
+constexpr u32 GetHavocStackPow2(void) {
   return 7;
 }
 

@@ -27,6 +27,7 @@
 #include "fuzzuf/feedback/inplace_memory_feedback.hpp"
 #include "fuzzuf/feedback/put_exit_reason_type.hpp"
 #include "fuzzuf/logger/logger.hpp"
+#include "fuzzuf/optimizer/havoc_optimizer.hpp"
 #include "fuzzuf/python/python_state.hpp"
 
 namespace fuzzuf::bindings::python::routine {
@@ -128,7 +129,9 @@ utils::NullableRef<hierarflow::HierarFlowCallee<void(u32)>> PyHavoc::operator()(
   if (stacking < 1 || 7 < stacking) ERROR("Havoc: 1 <= stack <= 7 must hold.");
 
   using algorithm::afl::dictionary::AFLDictData;
-  mutator.Havoc(1 << stacking, {}, {}, mutop_optimizer,
+
+  ConstantBatchHavocOptimizer havoc_optimizer(1 << stacking, mutop_optimizer);
+  mutator.Havoc({}, {}, havoc_optimizer,
                 [](u32, u8*&, u32&, const std::vector<AFLDictData>&,
                    const std::vector<AFLDictData>&) {});
   CallSuccessors(mutator.GetBuf(), mutator.GetLen());

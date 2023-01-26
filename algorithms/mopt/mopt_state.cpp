@@ -27,10 +27,13 @@ namespace fuzzuf::algorithm::mopt {
 
 using optimizer::MOptMode;
 
-MOptState::MOptState(std::shared_ptr<const MOptSetting> setting,
-                     std::shared_ptr<executor::AFLExecutorInterface> executor,
-                     std::shared_ptr<optimizer::MOptOptimizer>&& mopt)
-    : afl::AFLStateTemplate<MOptTestcase>(setting, executor, mopt),
+MOptState::MOptState(
+    std::shared_ptr<const MOptSetting> setting,
+    std::shared_ptr<executor::AFLExecutorInterface> executor,
+    std::unique_ptr<optimizer::HavocOptimizer>&& havoc_optimizer,
+    std::shared_ptr<optimizer::MOptOptimizer> mopt)
+    : afl::AFLStateTemplate<MOptTestcase>(setting, executor,
+                                          std::move(havoc_optimizer)),
       setting(setting),
       mopt(mopt) {
   // set mode to CoreMode if -L is 0
