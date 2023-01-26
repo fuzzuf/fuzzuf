@@ -15,7 +15,7 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see http://www.gnu.org/licenses/.
  */
-#include "fuzzuf/mutator/havoc_case.hpp"
+
 #define BOOST_TEST_MODULE mutator.more_havoc
 #define BOOST_TEST_DYN_LINK
 #include <boost/test/unit_test.hpp>
@@ -24,6 +24,7 @@
 #include "fuzzuf/algorithms/aflplusplus/aflplusplus_havoc.hpp"
 #include "fuzzuf/exec_input/exec_input_set.hpp"
 #include "fuzzuf/exec_input/on_memory_exec_input.hpp"
+#include "fuzzuf/mutator/havoc_case.hpp"
 #include "fuzzuf/mutator/mutator.hpp"
 #include "fuzzuf/optimizer/optimizer.hpp"
 #include "fuzzuf/utils/hex_dump.hpp"

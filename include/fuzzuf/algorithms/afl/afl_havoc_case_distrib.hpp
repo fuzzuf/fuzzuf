@@ -19,9 +19,6 @@
 #ifndef FUZZUF_INCLUDE_ALGORITHMS_AFL_AFL_HAVOC_CASE_DISTRIB_HPP
 #define FUZZUF_INCLUDE_ALGORITHMS_AFL_AFL_HAVOC_CASE_DISTRIB_HPP
 
-#include <variant>
-
-#include "fuzzuf/mutator/havoc_case.hpp"
 #include "fuzzuf/optimizer/optimizer.hpp"
 #include "fuzzuf/utils/common.hpp"
 
