@@ -88,7 +88,7 @@ BOOST_AUTO_TEST_CASE(ExecuteAFLplusplusWithoutParallel) {
   BOOST_TEST_CHECKPOINT("initialized dirs");
 
   const char *argv[] = {"fuzzuf",
-                        "rezuff",
+                        "rezzuf",
                         "-i",
                         input_dir.c_str(),
                         "-o",
