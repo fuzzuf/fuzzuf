@@ -21,7 +21,7 @@
 
 #include "fuzzuf/mutator/havoc_case.hpp"
 #include "fuzzuf/optimizer/optimizer.hpp"
-#include "fuzzuf/optimizer/pso.hpp"
+#include "fuzzuf/optimizer/pso/pso.hpp"
 #include "fuzzuf/optimizer/store.hpp"
 
 namespace fuzzuf::optimizer {

@@ -26,7 +26,6 @@
 #include <random>
 
 #include "fuzzuf/optimizer/optimizer.hpp"
-#include "fuzzuf/optimizer/pso.hpp"
 #include "fuzzuf/optimizer/store.hpp"
 #include "fuzzuf/utils/common.hpp"
 #include "fuzzuf/utils/random.hpp"
