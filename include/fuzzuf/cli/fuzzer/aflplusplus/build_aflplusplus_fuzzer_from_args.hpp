@@ -35,7 +35,9 @@
 #include "fuzzuf/executor/linux_fork_server_executor.hpp"
 #include "fuzzuf/executor/native_linux_executor.hpp"
 #include "fuzzuf/executor/qemu_executor.hpp"
+#include "fuzzuf/optimizer/havoc_optimizer.hpp"
 #include "fuzzuf/optimizer/optimizer.hpp"
+#include "fuzzuf/optimizer/slopt/slopt_optimizer.hpp"
 #include "fuzzuf/utils/optparser.hpp"
 #include "fuzzuf/utils/parallel_mode.hpp"
 #include "fuzzuf/utils/workspace.hpp"
@@ -52,6 +54,7 @@ struct AFLplusplusFuzzerOptions {
   bool forksrv;                        // Optional
   std::vector<std::string> dict_file;  // Optional
   bool frida_mode;                     // Optional
+  bool use_slopt;                      // Optional
   std::string schedule;                // Optional
   std::string instance_id;             // Optional
   utils::ParallelModeT parallel_mode =
@@ -91,8 +94,12 @@ std::unique_ptr<TFuzzer> BuildAFLplusplusFuzzerFromArgs(
           ->composing(),
       "Load additional dictionary file.")
       // If you want to add fuzzer specific options, add options here
-      ("pargs", po::value<std::vector<std::string>>(&pargs),
-       "Specify PUT and args for PUT.")(
+      ("slopt",
+       po::value<bool>(&aflplusplus_options.use_slopt)
+           ->default_value(aflplusplus_options.use_slopt),
+       "Do/don't use SLOPT as mutation operator optimizer. default is false.")(
+          "pargs", po::value<std::vector<std::string>>(&pargs),
+          "Specify PUT and args for PUT.")(
           "frida",
           po::value<bool>(&aflplusplus_options.frida_mode)
               ->default_value(aflplusplus_options.frida_mode),
@@ -269,10 +276,20 @@ std::unique_ptr<TFuzzer> BuildAFLplusplusFuzzerFromArgs(
 
   std::unique_ptr<optimizer::HavocOptimizer> havoc_optimizer;
 
-  std::unique_ptr<optimizer::Optimizer<u32>> mutop_optimizer(
-      new algorithm::aflplusplus::havoc::AFLplusplusHavocCaseDistrib());
-  havoc_optimizer.reset(
-      new algorithm::afl::AFLHavocOptimizer(std::move(mutop_optimizer)));
+  if (aflplusplus_options.use_slopt) {
+    using algorithm::afl::option::GetHavocStackPow2;
+    using algorithm::afl::option::GetMaxFile;
+    using algorithm::aflplusplus::havoc::AFLPLUSPLUS_NUM_CASE;
+
+    havoc_optimizer.reset(new optimizer::slopt::SloptOptimizer(
+        AFLPLUSPLUS_NUM_CASE, GetMaxFile<AFLplusplusTag>(),
+        GetHavocStackPow2<AFLplusplusTag>()));
+  } else {
+    std::unique_ptr<optimizer::Optimizer<u32>> mutop_optimizer(
+        new algorithm::aflplusplus::havoc::AFLplusplusHavocCaseDistrib());
+    havoc_optimizer.reset(
+        new algorithm::afl::AFLHavocOptimizer(std::move(mutop_optimizer)));
+  }
 
   // Create AFLplusplusState
   using fuzzuf::algorithm::aflplusplus::AFLplusplusState;
