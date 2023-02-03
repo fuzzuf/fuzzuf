@@ -196,8 +196,9 @@ u32 AFLplusplusState::DoCalcScore(AFLplusplusTestcase &testcase) {
       break;
   }
 
-  u32 n_paths, fuzz_mu;
+  u32 n_paths;
   double factor = 1.0;
+  long double fuzz_mu;
   u32 divisor;
 
   switch (setting->schedule) {

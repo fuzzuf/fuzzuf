@@ -200,7 +200,8 @@ u32 RezzufState::DoCalcScore(RezzufTestcase &testcase) {
       break;
   }
 
-  u32 n_paths, fuzz_mu;
+  u32 n_paths;
+  long double fuzz_mu;
   double factor = 1.0;
   u32 divisor;
 
