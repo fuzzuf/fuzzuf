@@ -399,11 +399,10 @@ void RezzufState::ShowStats(void) {
       strlen(GetVersion(*this)) + use_banner.size();
   u32 banner_pad = (80 - banner_len) / 2;
 
-  std::string afl_name =
-      fuzzuf::utils::StrPrintf(cYEL "fuzzuf american fuzzy lop++ (%s)",
-                               setting->schedule_string.c_str());
+  std::string afl_name = fuzzuf::utils::StrPrintf(
+      cYEL "rezzuf (%s)", setting->schedule_string.c_str());
   auto fuzzer_name = crash_mode != feedback::PUTExitReasonType::FAULT_NONE
-                         ? cPIN "fuzzuf peruvian were-rabbit"
+                         ? cPIN "rezzuf crash exploration mode"
                          : afl_name.c_str();
 
   std::string tmp(banner_pad, ' ');
