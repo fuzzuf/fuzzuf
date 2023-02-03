@@ -24,6 +24,7 @@
 #include "fuzzuf/algorithms/aflplusplus/aflplusplus_other_hierarflow_routines.hpp"
 #include "fuzzuf/algorithms/aflplusplus/aflplusplus_state.hpp"
 #include "fuzzuf/algorithms/aflplusplus/aflplusplus_testcase.hpp"
+#include "fuzzuf/algorithms/aflplusplus/aflplusplus_util.hpp"
 #include "fuzzuf/cli/fuzzer/aflplusplus/build_aflplusplus_fuzzer_from_args.hpp"
 #include "fuzzuf/cli/global_args.hpp"
 #include "fuzzuf/cli/global_fuzzer_options.hpp"
@@ -38,8 +39,8 @@ BOOST_AUTO_TEST_CASE(ComputeWeightThenCompare) {
   using fuzzuf::executor::AFLExecutorInterface;
   fuzzuf::cli::GlobalFuzzerOptions options;
   // dummy argv
-  const char *argv[] = {"fuzzuf", "aflplusplus", "-i", "/dev/null",
-                        "--forksrv=false", "--", "/bin/ls"};
+  const char *argv[] = {"fuzzuf",          "aflplusplus", "-i",     "/dev/null",
+                        "--forksrv=false", "--",          "/bin/ls"};
 
   fuzzuf::cli::GlobalArgs args = {
       .argc = Argc(argv),
@@ -64,7 +65,7 @@ BOOST_AUTO_TEST_CASE(ComputeWeightThenCompare) {
   // add dummy testcases
   for (std::size_t i = 0; i < count; ++i) {
     std::string devnull("/dev/null");
-    const u8 buf[] = { 'f', 'u', 'z', 'z' };
+    const u8 buf[] = {'f', 'u', 'z', 'z'};
     u32 len = sizeof(buf);
     auto tc = state.AddToQueue(devnull, buf, len, false);
     // just fill the required elems with random values
@@ -75,8 +76,8 @@ BOOST_AUTO_TEST_CASE(ComputeWeightThenCompare) {
   BOOST_CHECK_EQUAL(count, state.case_queue.size());
 
   std::vector<double> vw1, vw2;
-  fuzzuf::algorithm::afl::routine::other::ComputeWeightVector(state, vw1);
-  fuzzuf::algorithm::afl::routine::other::ComputeWeightVector(state, vw2);
+  fuzzuf::algorithm::aflplusplus::util::ComputeWeightVector(state, vw1);
+  fuzzuf::algorithm::aflplusplus::util::ComputeWeightVector(state, vw2);
 
   BOOST_CHECK_EQUAL(vw1.size(), vw2.size());
   BOOST_TEST((vw1 == vw2), boost::test_tools::per_element());

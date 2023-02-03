@@ -32,7 +32,7 @@
 #include "fuzzuf/executor/afl_executor_interface.hpp"
 #include "fuzzuf/feedback/exit_status_feedback.hpp"
 #include "fuzzuf/feedback/inplace_memory_feedback.hpp"
-#include "fuzzuf/optimizer/optimizer.hpp"
+#include "fuzzuf/optimizer/havoc_optimizer.hpp"
 #include "fuzzuf/utils/common.hpp"
 #include "fuzzuf/utils/filesystem.hpp"
 
@@ -61,7 +61,7 @@ struct AFLStateTemplate {
   explicit AFLStateTemplate(
       std::shared_ptr<const AFLSetting> setting,
       std::shared_ptr<executor::AFLExecutorInterface> executor,
-      std::shared_ptr<optimizer::Optimizer<u32>> mutop_optimizer);
+      std::unique_ptr<optimizer::HavocOptimizer> &&havoc_optimizer);
   virtual ~AFLStateTemplate();
 
   AFLStateTemplate(const AFLStateTemplate &) = delete;
@@ -315,7 +315,7 @@ struct AFLStateTemplate {
   /* Automatically selected extras    */
   std::vector<AFLDictData> a_extras;
 
-  std::shared_ptr<optimizer::Optimizer<u32>> mutop_optimizer;
+  std::shared_ptr<optimizer::HavocOptimizer> havoc_optimizer;
 
   bool sync_external_queue = false; /* Enable parallel mode */
   std::uint32_t sync_interval_cnt = 0u;

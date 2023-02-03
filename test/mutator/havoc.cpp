@@ -23,6 +23,7 @@
 #include "fuzzuf/exec_input/exec_input_set.hpp"
 #include "fuzzuf/exec_input/on_memory_exec_input.hpp"
 #include "fuzzuf/mutator/mutator.hpp"
+#include "fuzzuf/optimizer/havoc_optimizer.hpp"
 #include "fuzzuf/optimizer/optimizer.hpp"
 #include "fuzzuf/utils/hex_dump.hpp"
 
@@ -75,13 +76,15 @@ BOOST_AUTO_TEST_CASE(MutatorHavoc) {
 
     // Create the i-th distribution.
     auto case_dist = ConstantMutopSelector(i);
+    auto havoc_optimizer =
+        fuzzuf::optimizer::ConstantBatchHavocOptimizer(1024, case_dist);
 
-    auto custom_cases = [](u32, u8*, u32, const std::vector<AFLDictData>&,
+    auto custom_cases = [](u32, u8*&, u32&, const std::vector<AFLDictData>&,
                            const std::vector<AFLDictData>&) {
       BOOST_CHECK(false);  // this should be never called
     };
 
-    mutator.Havoc(1024, extras, a_extras, case_dist, custom_cases);
+    mutator.Havoc(extras, a_extras, havoc_optimizer, custom_cases);
 
     // Make sure that Havoc actually modified the input.
     std::vector<u8> modified_seed(mutator.GetBuf(),
@@ -96,6 +99,8 @@ BOOST_AUTO_TEST_CASE(MutatorHavoc) {
 
   // Create a distribution that always returns NUM_CASE.
   auto case_dist = ConstantMutopSelector(fuzzuf::mutator::NUM_CASE);
+  auto havoc_optimizer =
+      fuzzuf::optimizer::ConstantBatchHavocOptimizer(1, case_dist);
 
   bool passed_custom_cases = false;
   auto custom_cases = [&passed_custom_cases](u32, u8*, u32,
@@ -103,7 +108,7 @@ BOOST_AUTO_TEST_CASE(MutatorHavoc) {
                                              const std::vector<AFLDictData>&) {
     passed_custom_cases = true;
   };
-  mutator.Havoc(1, extras, a_extras, case_dist, custom_cases);
+  mutator.Havoc(extras, a_extras, havoc_optimizer, custom_cases);
 
   BOOST_CHECK(passed_custom_cases);
 

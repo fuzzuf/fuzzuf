@@ -15,17 +15,23 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see http://www.gnu.org/licenses/.
  */
-#include "fuzzuf/mutator/havoc_case.hpp"
+
 #define BOOST_TEST_MODULE mutator.more_havoc
 #define BOOST_TEST_DYN_LINK
 #include <boost/test/unit_test.hpp>
 #include <string>
 
 #include "fuzzuf/algorithms/aflplusplus/aflplusplus_havoc.hpp"
+#include "fuzzuf/algorithms/aflplusplus/aflplusplus_setting.hpp"
+#include "fuzzuf/algorithms/aflplusplus/aflplusplus_state.hpp"
 #include "fuzzuf/exec_input/exec_input_set.hpp"
 #include "fuzzuf/exec_input/on_memory_exec_input.hpp"
+#include "fuzzuf/executor/native_linux_executor.hpp"
+#include "fuzzuf/mutator/havoc_case.hpp"
 #include "fuzzuf/mutator/mutator.hpp"
+#include "fuzzuf/optimizer/havoc_optimizer.hpp"
 #include "fuzzuf/optimizer/optimizer.hpp"
+#include "fuzzuf/tests/standard_test_dirs.hpp"
 #include "fuzzuf/utils/hex_dump.hpp"
 
 // Mutator needs "Tag" which represents what algorithm is going to use Mutator.
@@ -48,6 +54,9 @@ class ConstantMutopSelector : public fuzzuf::optimizer::Optimizer<u32> {
 // At the same time, this test makes sure that all the switch cases
 // beyond mutator::NUM_CASE are implemented without omissions in Havoc.
 BOOST_AUTO_TEST_CASE(MutatorMoreHavoc) {
+  // NOLINTBEGIN(cppcoreguidelines-pro-type-cstyle-cast,cppcoreguidelines-pro-type-member-init,cppcoreguidelines-special-member-functions,hicpp-explicit-conversions)
+  FUZZUF_STANDARD_TEST_DIRS
+
   // We prepare (AFLPLUSPLUS_NUM_CASE - mutator::NUM_CASE) number of
   // distributions. The i-th distribution always returns i. That is, chances of
   // the integer i being returned are 100%. Using these distributions, we can
@@ -67,6 +76,20 @@ BOOST_AUTO_TEST_CASE(MutatorMoreHavoc) {
   fuzzuf::exec_input::ExecInputSet
       input_set;  // to create OnMemoryInputSet, we need the set(factory)
 
+  // The following objects are just dummy to create AFLplusplusState
+  using fuzzuf::algorithm::aflplusplus::AFLplusplusSetting;
+  using fuzzuf::executor::AFLExecutorInterface;
+  using fuzzuf::executor::NativeLinuxExecutor;
+  std::vector<std::string> argv{"non-existent-program", "someargument"};
+  auto setting = std::make_shared<AFLplusplusSetting>(
+      argv, input_dir.string(), output_dir.string(), 1000, 0, false, false,
+      fuzzuf::utils::CPUID_BIND_WHICHEVER,
+      fuzzuf::algorithm::aflfast::option::FAST, "test");
+  auto native_executor = std::make_shared<NativeLinuxExecutor>(
+      argv, 1000, 0, false, "non-existent-file", 0, 0);
+  auto executor =
+      std::make_shared<AFLExecutorInterface>(std::move(native_executor));
+
   std::cout
       << "Going to check mutations provided by AFLplusplus custom cases..."
       << std::endl;
@@ -80,9 +103,19 @@ BOOST_AUTO_TEST_CASE(MutatorMoreHavoc) {
 
     // Create the i-th distribution.
     auto case_dist = ConstantMutopSelector(i);
+    std::unique_ptr<fuzzuf::optimizer::HavocOptimizer> havoc_optimizer(
+        new fuzzuf::optimizer::ConstantBatchHavocOptimizer(1024, case_dist));
 
-    mutator.Havoc(1024, extras, a_extras, case_dist,
-                  pph::AFLplusplusCustomCases);
+    using fuzzuf::algorithm::aflplusplus::AFLplusplusState;
+    AFLplusplusState state(setting, executor, std::move(havoc_optimizer));
+
+    // valid seeds are needed for AFLPLUSPLUS_SPLICE_OVERWRITE and
+    // AFLPLUSPLUS_SPLICE_INSERT
+    state.AddToQueue("dummy_file1", (const u8*)"ABC", 3, true);
+    state.AddToQueue("dummy_file2", (const u8*)"XYZ", 3, true);
+
+    mutator.Havoc(extras, a_extras, *state.havoc_optimizer,
+                  pph::AFLplusplusCustomCases<AFLplusplusState>(state));
 
     // Make sure that Havoc actually modified the input.
     std::vector<u8> modified_seed(mutator.GetBuf(),
@@ -97,9 +130,11 @@ BOOST_AUTO_TEST_CASE(MutatorMoreHavoc) {
 
   // Create a distribution that always returns NUM_CASE.
   auto case_dist = ConstantMutopSelector(pph::AFLPLUSPLUS_NUM_CASE);
+  auto havoc_optimizer =
+      fuzzuf::optimizer::ConstantBatchHavocOptimizer(1, case_dist);
 
   bool passed_custom_cases = false;
-  auto custom_cases = [&passed_custom_cases](u32 r, u8*, u32,
+  auto custom_cases = [&passed_custom_cases](u32 r, u8*&, u32&,
                                              const std::vector<AFLDictData>&,
                                              const std::vector<AFLDictData>&) {
     // AFLplusplus's mutations always fall into custom cases.
@@ -107,7 +142,7 @@ BOOST_AUTO_TEST_CASE(MutatorMoreHavoc) {
     // expected.
     if (r >= pph::AFLPLUSPLUS_NUM_CASE) passed_custom_cases = true;
   };
-  mutator.Havoc(1, extras, a_extras, case_dist, custom_cases);
+  mutator.Havoc(extras, a_extras, havoc_optimizer, custom_cases);
 
   BOOST_CHECK(passed_custom_cases);
 

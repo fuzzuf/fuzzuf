@@ -21,11 +21,11 @@
 
 #include <memory>
 
-#include "fuzzuf/optimizer/optimizer.hpp"
 #include "fuzzuf/algorithms/afl/afl_state.hpp"
 #include "fuzzuf/algorithms/aflfast/aflfast_option.hpp"
 #include "fuzzuf/algorithms/aflfast/aflfast_setting.hpp"
 #include "fuzzuf/algorithms/aflfast/aflfast_testcase.hpp"
+#include "fuzzuf/optimizer/havoc_optimizer.hpp"
 #include "fuzzuf/optimizer/optimizer.hpp"
 
 namespace fuzzuf::algorithm::aflfast {
@@ -34,7 +34,7 @@ struct AFLFastState : public afl::AFLStateTemplate<AFLFastTestcase> {
   explicit AFLFastState(
       std::shared_ptr<const AFLFastSetting> setting,
       std::shared_ptr<executor::AFLExecutorInterface> executor,
-      std::unique_ptr<optimizer::Optimizer<u32>> &&mutop_optimizer);
+      std::unique_ptr<optimizer::HavocOptimizer> &&havoc_optimizer);
 
   std::shared_ptr<AFLFastTestcase> AddToQueue(const std::string &fn,
                                               const u8 *buf, u32 len,

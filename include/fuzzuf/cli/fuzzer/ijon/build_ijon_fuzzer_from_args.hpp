@@ -22,6 +22,7 @@
 #include <boost/program_options.hpp>
 #include <memory>
 
+#include "fuzzuf/algorithms/afl/afl_havoc_optimizer.hpp"
 #include "fuzzuf/algorithms/afl/afl_option.hpp"
 #include "fuzzuf/algorithms/ijon/ijon_havoc.hpp"
 #include "fuzzuf/algorithms/ijon/ijon_option.hpp"
@@ -33,6 +34,7 @@
 #include "fuzzuf/exceptions.hpp"
 #include "fuzzuf/executor/linux_fork_server_executor.hpp"
 #include "fuzzuf/executor/native_linux_executor.hpp"
+#include "fuzzuf/optimizer/havoc_optimizer.hpp"
 #include "fuzzuf/optimizer/optimizer.hpp"
 #include "fuzzuf/utils/common.hpp"
 #include "fuzzuf/utils/optparser.hpp"
@@ -179,11 +181,13 @@ std::unique_ptr<TFuzzer> BuildIJONFuzzerFromArgs(
 
   auto mutop_optimizer = std::unique_ptr<optimizer::Optimizer<u32>>(
       new algorithm::ijon::havoc::IJONHavocCaseDistrib());
+  std::unique_ptr<optimizer::HavocOptimizer> havoc_optimizer(
+      new algorithm::afl::AFLHavocOptimizer(std::move(mutop_optimizer)));
 
   // Create IJONState
   using fuzzuf::algorithm::ijon::IJONState;
   auto state = std::make_unique<IJONState>(setting, executor,
-                                           std::move(mutop_optimizer));
+                                           std::move(havoc_optimizer));
 
   // Load dictionary
   for (const auto &d : ijon_options.dict_file) {

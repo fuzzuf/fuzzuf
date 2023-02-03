@@ -68,6 +68,11 @@ AFLplusplusGetCaseWeights(bool has_extras, bool has_a_extras) {
   weights[AFLPLUSPLUS_SWITCH_BYTES] = 2.0;           // case 55 ... 56
   weights[mutator::DELETE_BYTES] = 8.0;              // case 57 ... 64
 
+  // FIXME: the weights of the following two cases increase depending
+  // on the progress of fuzzing campaign. It should be reflected.
+  weights[AFLPLUSPLUS_SPLICE_OVERWRITE] = 2.0;  // default case #1
+  weights[AFLPLUSPLUS_SPLICE_INSERT] = 2.0;     // default case #2
+
   if (has_extras && has_a_extras) {
     weights[mutator::INSERT_EXTRA] = 1.0;
     weights[mutator::OVERWRITE_WITH_EXTRA] = 1.0;
@@ -121,61 +126,6 @@ u32 AFLplusplusHavocCaseDistrib::CalcValue() {
   bool has_extras = !extras.empty();
   bool has_aextras = !a_extras.empty();
   return static_cast<u32>(dists[has_extras][has_aextras]());
-}
-
-void AFLplusplusCustomCases(
-    u32 case_idx, u8*& outbuf, u32& len,
-    [[maybe_unused]] const std::vector<afl::dictionary::AFLDictData>& extras,
-    [[maybe_unused]] const std::vector<afl::dictionary::AFLDictData>&
-        a_extras) {
-  auto UR = [](u32 limit) { return afl::util::UR(limit, -1); };
-  switch (case_idx) {
-    case AFLPLUSPLUS_ADDBYTE:
-      outbuf[UR(len)]++;
-      break;
-
-    case AFLPLUSPLUS_SUBBYTE:
-      outbuf[UR(len)]--;
-      break;
-
-    case AFLPLUSPLUS_SWITCH_BYTES: {
-      if (len < 4) {
-        break;
-      }
-
-      u32 to_end, switch_to, switch_len, switch_from;
-      switch_from = UR(len);
-      do {
-        switch_to = UR(len);
-      } while (switch_from == switch_to);
-
-      if (switch_from < switch_to) {
-        switch_len = switch_to - switch_from;
-        to_end = len - switch_to;
-      } else {
-        switch_len = switch_from - switch_to;
-        to_end = len - switch_from;
-      }
-
-      switch_len = ChooseBlockLen(std::min(switch_len, to_end));
-
-      std::unique_ptr<u8[]> new_buf(new u8[switch_len]);
-
-      /* Backup */
-      memcpy(new_buf.get(), outbuf + switch_from, switch_len);
-
-      /* Switch 1 */
-      memcpy(outbuf + switch_from, outbuf + switch_to, switch_len);
-
-      /* Switch 2 */
-      memcpy(outbuf + switch_to, new_buf.get(), switch_len);
-
-      break;
-    }
-
-    default:
-      break;
-  }
 }
 
 // Temporarily copy-and-paste ChooseBlockLen() function, rather than modifying

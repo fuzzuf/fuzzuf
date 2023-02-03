@@ -31,7 +31,7 @@ struct AFLTestcase {
   explicit AFLTestcase(std::shared_ptr<exec_input::OnDiskExecInput> input);
   virtual ~AFLTestcase();
 
-  bool WasFuzzed(void);
+  bool WasFuzzed(void) const;
   void MarkFuzzed(void);
 
   std::shared_ptr<exec_input::OnDiskExecInput> input;

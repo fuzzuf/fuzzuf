@@ -1,4 +1,5 @@
 *.swp
+*.swo
 *.log
 *.core
 core

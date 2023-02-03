@@ -26,7 +26,7 @@
 #include "fuzzuf/hierarflow/hierarflow_intermediates.hpp"
 #include "fuzzuf/hierarflow/hierarflow_node.hpp"
 #include "fuzzuf/hierarflow/hierarflow_routine.hpp"
-#include "fuzzuf/optimizer/optimizer.hpp"
+#include "fuzzuf/optimizer/havoc_optimizer.hpp"
 
 namespace fuzzuf::algorithm::afl::routine::mutation {
 
@@ -487,7 +487,7 @@ struct HavocBaseTemplate
 
   template <typename CustomCases>
   bool DoHavoc(AFLMutatorTemplate<State> &mutator,
-               optimizer::Optimizer<u32> &mutop_optimizer,
+               optimizer::HavocOptimizer &havoc_optimizer,
                CustomCases custom_cases, const std::string &stage_name,
                const std::string &stage_short, u32 perf_score,
                s32 stage_max_multiplier, int stage_idx);

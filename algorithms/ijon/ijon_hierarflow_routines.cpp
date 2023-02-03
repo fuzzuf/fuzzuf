@@ -34,10 +34,11 @@ SelectSeed::SelectSeed(struct IJONState &state) : state(state) {}
  */
 utils::NullableRef<hierarflow::HierarFlowCallee<void(void)>>
 SelectSeed::operator()(void) {
-  // Although IJON itself doesn't use current_entry, ShowState requires the value is pointing a valid seed.
-  // So if current_entry is at the end of seeds, it must be modified temporary.
+  // Although IJON itself doesn't use current_entry, ShowState requires the
+  // value is pointing a valid seed. So if current_entry is at the end of seeds,
+  // it must be modified temporary.
   if (state.current_entry >= state.case_queue.size()) {
-    if( !state.current_entry_is_swapped ) {
+    if (!state.current_entry_is_swapped) {
       state.current_entry_is_swapped = true;
       state.old_current_entry = state.current_entry;
     }
@@ -90,7 +91,7 @@ MaxHavoc::MaxHavoc(IJONState &state) : HavocBase(state) {}
  * https://github.com/RUB-SysSec/ijon/blob/4cb8ae04d/afl-fuzz.c#L6128-L6555
  */
 IJONMutCalleeRef MaxHavoc::operator()(IJONMutator &mutator) {
-  if (DoHavoc(mutator, *state.mutop_optimizer, havoc::IJONCustomCases,
+  if (DoHavoc(mutator, *state.havoc_optimizer, havoc::IJONCustomCases,
               "ijon-max", "ijon-max", state.orig_perf,
               afl::option::GetHavocCycles(state), afl::option::STAGE_HAVOC)) {
     SetResponseValue(true);

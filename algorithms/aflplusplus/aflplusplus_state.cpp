@@ -33,13 +33,13 @@ namespace fuzzuf::algorithm::aflplusplus {
 AFLplusplusState::AFLplusplusState(
     std::shared_ptr<const AFLplusplusSetting> setting,
     std::shared_ptr<executor::AFLExecutorInterface> executor,
-    std::unique_ptr<optimizer::Optimizer<u32>> &&mutop_optimizer)
+    std::unique_ptr<optimizer::HavocOptimizer> &&havoc_optimizer)
     : afl::AFLStateTemplate<AFLplusplusTestcase>(setting, executor,
-                                                 std::move(mutop_optimizer)),
+                                                 std::move(havoc_optimizer)),
       setting(setting),
       prev_queued_items(0),
       alias_probability(nullptr) {
-  n_fuzz.reset(new u32[N_FUZZ_SIZE]);
+  n_fuzz.reset(new u32[option::GetNFuzzSize<Tag>()]);
 }
 
 std::shared_ptr<AFLplusplusTestcase> AFLplusplusState::AddToQueue(
@@ -105,16 +105,18 @@ bool AFLplusplusState::SaveIfInteresting(
   /* Update path frequency. */
   u32 cksum = inp_feed.CalcCksum32();
 
+  using option::GetNFuzzSize;
+
   /* Saturated increment */
-  if (n_fuzz[cksum % N_FUZZ_SIZE] < 0xFFFFFFFF) {
-    n_fuzz[cksum % N_FUZZ_SIZE]++;
+  if (n_fuzz[cksum % GetNFuzzSize<Tag>()] < 0xFFFFFFFF) {
+    n_fuzz[cksum % GetNFuzzSize<Tag>()]++;
   }
 
   bool res = AFLStateTemplate<AFLplusplusTestcase>::SaveIfInteresting(
       buf, len, inp_feed, exit_status);
 
   if (res && (exit_status.exit_reason == crash_mode)) {
-    case_queue.back()->n_fuzz_entry = cksum % N_FUZZ_SIZE;
+    case_queue.back()->n_fuzz_entry = cksum % GetNFuzzSize<Tag>();
     n_fuzz[case_queue.back()->n_fuzz_entry] = 1;
   }
 
@@ -194,8 +196,9 @@ u32 AFLplusplusState::DoCalcScore(AFLplusplusTestcase &testcase) {
       break;
   }
 
-  u32 n_paths, fuzz_mu;
+  u32 n_paths;
   double factor = 1.0;
+  long double fuzz_mu;
   u32 divisor;
 
   switch (setting->schedule) {
@@ -265,7 +268,8 @@ u32 AFLplusplusState::DoCalcScore(AFLplusplusTestcase &testcase) {
     case aflfast::option::QUAD:
       divisor = n_fuzz[testcase.n_fuzz_entry];
       if (divisor != 0xFFFFFFFF) divisor++;
-      factor = testcase.fuzz_level * testcase.fuzz_level / static_cast<double>(divisor);
+      factor = testcase.fuzz_level * testcase.fuzz_level /
+               static_cast<double>(divisor);
       break;
 
     default:

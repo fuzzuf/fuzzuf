@@ -24,5 +24,10 @@ namespace fuzzuf::algorithm::aflplusplus::option {
 
 struct AFLplusplusTag {};
 
+template <class Tag>
+constexpr u32 GetNFuzzSize(void) {
+  return 1 << 21;
+}
+
 }  // namespace fuzzuf::algorithm::aflplusplus::option
 #endif

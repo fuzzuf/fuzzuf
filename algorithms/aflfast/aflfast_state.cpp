@@ -28,9 +28,9 @@ namespace fuzzuf::algorithm::aflfast {
 AFLFastState::AFLFastState(
     std::shared_ptr<const AFLFastSetting> setting,
     std::shared_ptr<executor::AFLExecutorInterface> executor,
-    std::unique_ptr<optimizer::Optimizer<u32>> &&mutop_optimizer)
+    std::unique_ptr<optimizer::HavocOptimizer> &&havoc_optimizer)
     : AFLStateTemplate<AFLFastTestcase>(setting, executor,
-                                        std::move(mutop_optimizer)),
+                                        std::move(havoc_optimizer)),
       setting(setting) {}
 
 std::shared_ptr<AFLFastTestcase> AFLFastState::AddToQueue(const std::string &fn,

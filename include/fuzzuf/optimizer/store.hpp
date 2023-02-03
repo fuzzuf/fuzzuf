@@ -52,10 +52,11 @@ class Store {
   static Store& GetInstance();
 
   template <typename Type>
-  void InitKey(const StoreKey<Type>& key);
+  void InitKey(const StoreKey<Type>& key, bool initialize_just_once = false);
 
   template <typename Type>
-  void InitKey(const StoreKey<Type>& key, Type val);
+  void InitKey(const StoreKey<Type>& key, Type val,
+               bool initialize_just_once = false);
 
   template <typename Type>
   Type Get(const StoreKey<Type>& key, bool assert = false);
@@ -79,16 +80,17 @@ void OnKeyDoesntExist(const std::string&);
 void OnKeyAlreadyExists(const std::string&);
 
 template <typename Type>
-void Store::InitKey(const StoreKey<Type>& key) {
-  if (Exists(key)) {
+void Store::InitKey(const StoreKey<Type>& key, bool initialize_just_once) {
+  if (initialize_just_once && Exists(key)) {
     OnKeyAlreadyExists(key.name);
   }
   data[key.name] = Type();
 }
 
 template <typename Type>
-void Store::InitKey(const StoreKey<Type>& key, Type val) {
-  if (Exists(key)) {
+void Store::InitKey(const StoreKey<Type>& key, Type val,
+                    bool initialize_just_once) {
+  if (initialize_just_once && Exists(key)) {
     OnKeyAlreadyExists(key.name);
   }
   data[key.name] = val;

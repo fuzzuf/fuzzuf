@@ -15,6 +15,7 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see http://www.gnu.org/licenses/.
  */
+
 #include "fuzzuf/algorithms/aflplusplus/aflplusplus_other_hierarflow_routines.hpp"
 
 #include <memory>
@@ -22,6 +23,7 @@
 
 #include "fuzzuf/algorithms/aflplusplus/aflplusplus_state.hpp"
 #include "fuzzuf/algorithms/aflplusplus/aflplusplus_testcase.hpp"
+#include "fuzzuf/algorithms/aflplusplus/aflplusplus_util.hpp"
 #include "fuzzuf/utils/random.hpp"
 
 namespace fuzzuf::algorithm::afl::routine::other {
@@ -161,7 +163,7 @@ SelectSeedTemplate<AFLplusplusState>::operator()(void) {
   if (state.prev_queued_items < state.case_queue.size()) {
     // we have new queue entries since the last run, recreate alias table
     state.prev_queued_items = state.case_queue.size();
-    CreateAliasTable(state);
+    aflplusplus::util::CreateAliasTable(state);
   }
 
   // get the testcase indexed by state.current_entry and start mutations
@@ -179,58 +181,6 @@ SelectSeedTemplate<AFLplusplusState>::operator()(void) {
 #endif
 
   return this->GoToDefaultNext();
-}
-
-/* create the alias table that allows weighted random selection - expensive */
-void CreateAliasTable(AFLplusplusState &state) {
-  std::vector<double> vw;
-  ComputeWeightVector(state, vw);
-  using fuzzuf::utils::random::WalkerDiscreteDistribution;
-  state.alias_probability.reset(new WalkerDiscreteDistribution<u32>(vw));
-}
-
-void ComputeWeightVector(AFLplusplusState &state, std::vector<double> &vw) {
-  u32 queued_items = state.case_queue.size();
-
-  double avg_exec_us = 0.0, avg_bitmap_size = 0.0, avg_top_size = 0.0;
-  for (auto &tc : state.case_queue) {
-    avg_exec_us += tc->exec_us;
-    avg_bitmap_size += std::log(tc->bitmap_size);
-    avg_top_size += tc->tc_ref;
-  }
-  avg_exec_us /= queued_items;
-  avg_bitmap_size /= queued_items;
-  avg_top_size /= queued_items;
-
-  std::transform(state.case_queue.begin(), state.case_queue.end(),
-                 std::back_inserter(vw), [&](auto &tc) {
-                   return ComputeWeight(state, *tc, avg_exec_us,
-                                        avg_bitmap_size, avg_top_size);
-                 });
-}
-
-double ComputeWeight(const AFLplusplusState &state,
-                     const AFLplusplusTestcase &testcase,
-                     const double &avg_exec_us, const double &avg_bitmap_size,
-                     const double &avg_top_size) {
-  double weight = 1.0;
-
-  u32 hits = state.n_fuzz[testcase.n_fuzz_entry];
-  if (likely(hits)) {
-    weight *= std::log10(hits) + 1;
-  }
-
-  weight *= (avg_exec_us / testcase.exec_us);
-  weight *= (std::log(testcase.bitmap_size) / avg_bitmap_size);
-  weight *= (1 + (testcase.tc_ref / avg_top_size));
-  if (unlikely(testcase.favored)) {
-    weight *= 5;
-  }
-  if (unlikely(!(const_cast<AFLplusplusTestcase &>(testcase).WasFuzzed()))) {
-    weight *= 2;
-  }
-
-  return weight;
 }
 
 }  // namespace fuzzuf::algorithm::afl::routine::other

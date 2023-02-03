@@ -376,7 +376,7 @@ template <class State>
 template <typename CustomCases>
 bool HavocBaseTemplate<State>::DoHavoc(
     AFLMutatorTemplate<State> &mutator,
-    optimizer::Optimizer<u32> &mutop_optimizer, CustomCases custom_cases,
+    optimizer::HavocOptimizer &havoc_optimizer, CustomCases custom_cases,
     const std::string &stage_name, const std::string &stage_short,
     u32 perf_score,
     s32 stage_max_multiplier,  // see directly below
@@ -412,12 +412,9 @@ bool HavocBaseTemplate<State>::DoHavoc(
        state.stage_cur++) {
     using afl::util::UR;
 
-    u32 use_stacking =
-        1 << (1 + UR(option::GetHavocStackPow2(state), state.rand_fd));
-
-    state.stage_cur_val = use_stacking;
-    mutator.Havoc(use_stacking, state.extras, state.a_extras, mutop_optimizer,
-                  custom_cases);
+    mutator.Havoc(state.extras, state.a_extras, havoc_optimizer, custom_cases);
+    state.stage_cur_val =
+        optimizer::Store::GetInstance().Get(optimizer::keys::LastHavocStacking);
 
     u64 prev_havoc_finds = state.queued_paths + state.unique_crashes;
 
@@ -489,7 +486,7 @@ AFLMutCalleeRef<State> HavocTemplate<State>::operator()(
   using afl::dictionary::AFLDictData;
 
   if (this->DoHavoc(
-          mutator, *state.mutop_optimizer,
+          mutator, *state.havoc_optimizer,
           [](int, u8 *&, u32 &, const std::vector<AFLDictData> &,
              const std::vector<AFLDictData> &) {},
           "havoc", "havoc", state.orig_perf, stage_max_multiplier,
@@ -554,7 +551,7 @@ AFLMutCalleeRef<State> SplicingTemplate<State>::operator()(
     using afl::dictionary::AFLDictData;
 
     if (this->DoHavoc(
-            mutator, *state.mutop_optimizer,
+            mutator, *state.havoc_optimizer,
             [](int, u8 *&, u32 &, const std::vector<AFLDictData> &,
                const std::vector<AFLDictData> &) {},
             fuzzuf::utils::StrPrintf("splice %u", splice_cycle), "splice",
@@ -566,8 +563,9 @@ AFLMutCalleeRef<State> SplicingTemplate<State>::operator()(
 
     mutator.RestoreSplice();
   }
-  fuzzuf::optimizer::Store::GetInstance().Set(
-      fuzzuf::optimizer::keys::LastSpliceCycle, splice_cycle);
+
+  optimizer::Store::GetInstance().Set(optimizer::keys::LastSpliceCycle,
+                                      splice_cycle);
 
   return this->GoToDefaultNext();
 }

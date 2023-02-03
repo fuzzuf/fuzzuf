@@ -22,6 +22,7 @@
 #include <boost/program_options.hpp>
 #include <memory>
 
+#include "fuzzuf/algorithms/afl/afl_havoc_optimizer.hpp"
 #include "fuzzuf/algorithms/afl/afl_option.hpp"
 #include "fuzzuf/algorithms/mopt/mopt_optimizer.hpp"
 #include "fuzzuf/algorithms/mopt/mopt_option.hpp"
@@ -34,6 +35,7 @@
 #include "fuzzuf/executor/linux_fork_server_executor.hpp"
 #include "fuzzuf/executor/native_linux_executor.hpp"
 #include "fuzzuf/executor/qemu_executor.hpp"
+#include "fuzzuf/optimizer/havoc_optimizer.hpp"
 #include "fuzzuf/optimizer/optimizer.hpp"
 #include "fuzzuf/utils/common.hpp"
 #include "fuzzuf/utils/optparser.hpp"
@@ -106,9 +108,10 @@ std::unique_ptr<TFuzzer> BuildMOptFuzzerFromArgs(
           "while does not find any interesting test case for more than 30 min, "
           "MOpt-AFL will enter the pacemaker fuzzing mode (it may take three "
           "or four days for MOpt-AFL to enter the pacemaker fuzzing mode when "
-          "'-L 30').")("parallel-deterministic,M",
-                       po::value<std::string>(&mopt_options.instance_id),
-                       "distributed mode (see docs/algorithms/afl/parallel_fuzzing.md)")(
+          "'-L 30').")(
+          "parallel-deterministic,M",
+          po::value<std::string>(&mopt_options.instance_id),
+          "distributed mode (see docs/algorithms/afl/parallel_fuzzing.md)")(
           "parallel-random,S",
           po::value<std::string>(&mopt_options.instance_id),
           "distributed mode (see docs/algorithms/afl/parallel_fuzzing.md)");
@@ -232,11 +235,13 @@ std::unique_ptr<TFuzzer> BuildMOptFuzzerFromArgs(
   }
 
   auto mutop_optimizer = std::make_shared<optimizer::MOptOptimizer>();
+  std::unique_ptr<optimizer::HavocOptimizer> havoc_optimizer(
+      new algorithm::afl::AFLHavocOptimizer(mutop_optimizer));
 
   // Create MOptState
   using fuzzuf::algorithm::mopt::MOptState;
-  auto state = std::make_unique<MOptState>(setting, executor,
-                                           std::move(mutop_optimizer));
+  auto state = std::make_unique<MOptState>(
+      setting, executor, std::move(havoc_optimizer), mutop_optimizer);
 
   // Load dictionary
   for (const auto &d : mopt_options.dict_file) {

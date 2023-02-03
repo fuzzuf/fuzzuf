@@ -19,6 +19,9 @@
 #ifndef FUZZUF_INCLUDE_OPTIMIZER_KEYS_HPP
 #define FUZZUF_INCLUDE_OPTIMIZER_KEYS_HPP
 
+#include <array>
+#include <vector>
+
 #include "fuzzuf/algorithms/afl/afl_dict_data.hpp"
 #include "fuzzuf/mutator/havoc_case.hpp"
 #include "fuzzuf/optimizer/store.hpp"
@@ -40,6 +43,9 @@ const StoreKey<std::array<u64, NUM_CASE>> HavocOperatorFinds{
     "havoc_operator_finds"};
 const StoreKey<u32> LastSpliceCycle{"last_splice_cycle"};
 const StoreKey<u64> LastHavocFinds{"last_havoc_finds"};
+const StoreKey<u32> LastHavocStacking{"last_havoc_stacking"};
+const StoreKey<u32> SizeOfMutatedSeed{"size_of_mutated_seed"};
+const StoreKey<std::vector<bool>> IsMutopBanned{"is_mutop_banned"};
 
 }  // namespace fuzzuf::optimizer::keys
 
