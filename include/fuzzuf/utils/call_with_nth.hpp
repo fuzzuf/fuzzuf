@@ -1,7 +1,7 @@
 /*
  * fuzzuf
- * Copyright (C) 2021 Ricerca Security
- * 
+ * Copyright (C) 2021-2023 Ricerca Security
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -21,60 +21,77 @@
  */
 #ifndef FUZZUF_INCLUDE_UTILS_CALL_WITH_NTH_HPP
 #define FUZZUF_INCLUDE_UTILS_CALL_WITH_NTH_HPP
-#include "fuzzuf/utils/type_traits/remove_cvr.hpp"
 #include <cstddef>
 #include <iostream>
 #include <utility>
+
+#include "fuzzuf/utils/type_traits/remove_cvr.hpp"
 namespace fuzzuf::utils::struct_path {
 
 struct DerefT {};
 constexpr auto deref = DerefT();
 
-template <typename T> struct IdentT {};
-template <typename T> constexpr auto ident = IdentT<T>();
+template <typename T>
+struct IdentT {};
+template <typename T>
+constexpr auto ident = IdentT<T>();
 
-template <typename T, T v> struct IntT {};
-template <typename T, T v> constexpr auto int_ = IntT<T, v>();
+template <typename T, T v>
+struct IntT {};
+template <typename T, T v>
+constexpr auto int_ = IntT<T, v>();
 
-template <typename T, typename U, U T::*m> struct MemT {};
-template <typename T, typename U, U T::*m> constexpr auto mem = MemT<T, U, m>();
+template <typename T, typename U, U T::*m>
+struct MemT {};
+template <typename T, typename U, U T::*m>
+constexpr auto mem = MemT<T, U, m>();
 
-template <std::size_t i> struct ElemT {};
-template <std::size_t i> constexpr auto elem = ElemT<i>();
+template <std::size_t i>
+struct ElemT {};
+template <std::size_t i>
+constexpr auto elem = ElemT<i>();
 
-template <std::size_t i> struct ArgT {};
-template <std::size_t i> constexpr auto arg = ArgT<i>();
+template <std::size_t i>
+struct ArgT {};
+template <std::size_t i>
+constexpr auto arg = ArgT<i>();
 
 namespace detail {
-template <typename P> struct GetValue;
-template <template <typename...> typename L> struct GetValue<L<>> {
-  template <typename T> decltype(auto) operator()(T &&v) const {
+template <typename P>
+struct GetValue;
+template <template <typename...> typename L>
+struct GetValue<L<>> {
+  template <typename T>
+  decltype(auto) operator()(T &&v) const {
     return std::forward<T>(v);
   }
 };
 template <template <typename...> typename L, typename T, typename... Tail>
 struct GetValue<L<IdentT<T>, Tail...>> {
-  template <typename... U> decltype(auto) operator()(U &&...) const {
+  template <typename... U>
+  decltype(auto) operator()(U &&...) const {
     value = T();
     return value;
   }
 
-private:
+ private:
   mutable T value;
 };
 template <template <typename...> typename L, typename T, T v, typename... Tail>
 struct GetValue<L<IntT<T, v>, Tail...>> {
-  template <typename... U> decltype(auto) operator()(U &&...) const {
+  template <typename... U>
+  decltype(auto) operator()(U &&...) const {
     value = v;
     return value;
   }
 
-private:
+ private:
   mutable T value;
 };
 template <template <typename...> typename L, typename... Tail>
 struct GetValue<L<DerefT, Tail...>> {
-  template <typename T> decltype(auto) operator()(T &&v) const {
+  template <typename T>
+  decltype(auto) operator()(T &&v) const {
     return GetValue<L<Tail...>>()(*v);
   }
 };
@@ -88,10 +105,12 @@ struct GetValue<L<MemT<T, U, m>, Tail...>> {
 };
 template <template <typename...> typename L, typename... Tail, std::size_t i>
 struct GetValue<L<ElemT<i>, Tail...>> {
-  template <typename T> decltype(auto) operator()(T &&v) const {
+  template <typename T>
+  decltype(auto) operator()(T &&v) const {
     return GetValue<L<Tail...>>()(v[i]);
   }
-  template <typename T> decltype(auto) operator()(T &v) const {
+  template <typename T>
+  decltype(auto) operator()(T &v) const {
     return GetValue<L<Tail...>>()(v[i]);
   }
 };
@@ -113,13 +132,15 @@ struct GetNth<cur, end, std::enable_if_t<cur != end>> {
 };
 template <template <typename...> typename L, typename... Tail, std::size_t i>
 struct GetValue<L<ArgT<i>, Tail...>> {
-  template <typename... T> decltype(auto) operator()(T &&...v) const {
+  template <typename... T>
+  decltype(auto) operator()(T &&...v) const {
     return GetValue<L<Tail...>>()(GetNth<0u, i>()(std::forward<T>(v)...));
   }
 };
-} // namespace detail
+}  // namespace detail
 
-template <typename P, typename... T> decltype(auto) GetValue(T &&...v) {
+template <typename P, typename... T>
+decltype(auto) GetValue(T &&...v) {
   return detail::GetValue<P>()(std::forward<T>(v)...);
 }
 
@@ -129,7 +150,8 @@ auto CallWithNthSingle(F &&func, Args &&...args) {
   func(GetValue<Path>(std::forward<Args>(args)...));
 }
 
-template <typename Path> struct CallWithNthMultiple {
+template <typename Path>
+struct CallWithNthMultiple {
   template <typename F, typename... Args>
   void operator()(F &&func, Args &&...) const {
     func();
@@ -151,9 +173,10 @@ struct CallWithNthMultiple<L<Head, Tail...>> {
         std::forward<Args>(args)...);
   }
 };
-} // namespace call_with_nth
+}  // namespace call_with_nth
 
-template <typename... T> struct Path {
+template <typename... T>
+struct Path {
   template <typename F, typename... Args>
   void operator()(F &&func, Args &&...args) const {
     call_with_nth::CallWithNthSingle<Path>(std::forward<F>(func),
@@ -162,7 +185,8 @@ template <typename... T> struct Path {
   constexpr auto operator*() const { return Path<T..., DerefT>(); }
 };
 
-template <typename... T> struct Paths {
+template <typename... T>
+struct Paths {
   template <typename F, typename... Args>
   auto operator()(F &&func, Args &&...args) const {
     call_with_nth::CallWithNthMultiple<Paths>()(std::forward<F>(func),
@@ -199,7 +223,8 @@ constexpr auto operator&&(const Paths<L...> &, const Paths<R...> &) {
   return Paths<L..., R...>();
 }
 
-template <typename F, typename P> struct PointedType {};
+template <typename F, typename P>
+struct PointedType {};
 template <typename R, typename... Args, typename... Node>
 struct PointedType<R(Args...), Path<Node...>> {
   using type = decltype(GetValue<Path<Node...>>(std::declval<Args>()...));
@@ -207,6 +232,6 @@ struct PointedType<R(Args...), Path<Node...>> {
 template <typename F, typename P>
 using PointedTypeT = typename PointedType<F, type_traits::RemoveCvrT<P>>::type;
 
-} // namespace fuzzuf::utils::struct_path
+}  // namespace fuzzuf::utils::struct_path
 
 #endif

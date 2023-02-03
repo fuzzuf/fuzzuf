@@ -1,7 +1,7 @@
 /*
  * fuzzuf
- * Copyright (C) 2021 Ricerca Security
- * 
+ * Copyright (C) 2021-2023 Ricerca Security
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -19,64 +19,65 @@
 #ifndef FUZZUF_INCLUDE_ALGORITHM_IJON_IJON_OPTION_HPP
 #define FUZZUF_INCLUDE_ALGORITHM_IJON_IJON_OPTION_HPP
 
-#include "fuzzuf/utils/common.hpp"
 #include "fuzzuf/algorithms/afl/afl_option.hpp"
+#include "fuzzuf/utils/common.hpp"
 
-namespace fuzzuf::algorithm::ijon { struct IJONState; }
+namespace fuzzuf::algorithm::ijon {
+struct IJONState;
+}
 
 namespace fuzzuf::algorithm::ijon::option {
 
 struct IJONTag {};
 
-template<class Tag>
-constexpr u32 GetMaxMapSize(void) { 
-    return 512;
+template <class Tag>
+constexpr u32 GetMaxMapSize(void) {
+  return 512;
 }
 
-} // namespace fuzzuf::algorithm::ijon::option
+}  // namespace fuzzuf::algorithm::ijon::option
 
 namespace fuzzuf::algorithm::afl::option {
 
-template<>
-constexpr const char* GetVersion<ijon::IJONState>(ijon::IJONState&) { 
-    return "2.57b-ijon";
+template <>
+constexpr const char* GetVersion<ijon::IJONState>(ijon::IJONState&) {
+  return "2.57b-ijon";
 }
 
-template<>
-constexpr u32 GetHavocBlkSmall<ijon::option::IJONTag>(void) { 
-    return 8;
+template <>
+constexpr u32 GetHavocBlkSmall<ijon::option::IJONTag>(void) {
+  return 8;
 }
 
-template<>
-constexpr u32 GetHavocBlkMedium<ijon::option::IJONTag>(void) { 
-    return 32;
+template <>
+constexpr u32 GetHavocBlkMedium<ijon::option::IJONTag>(void) {
+  return 32;
 }
 
-template<>
-constexpr u32 GetHavocBlkLarge<ijon::option::IJONTag>(void) { 
-    return 512;
+template <>
+constexpr u32 GetHavocBlkLarge<ijon::option::IJONTag>(void) {
+  return 512;
 }
 
-template<>
-constexpr u32 GetHavocBlkXl<ijon::option::IJONTag>(void) { 
-    return 512;
+template <>
+constexpr u32 GetHavocBlkXl<ijon::option::IJONTag>(void) {
+  return 512;
 }
 
-template<>
-constexpr u32 GetSpliceCycles<ijon::IJONState>(ijon::IJONState&) { 
-    return 8;
+template <>
+constexpr u32 GetSpliceCycles<ijon::IJONState>(ijon::IJONState&) {
+  return 8;
 }
 
-// IJON uses `stage_max = SPLICE_HAVOC * perf_score / havoc_div / 200` in the splice stage
-// instead of `SPLICE_HAVOC * perf_score / havoc_div / 100` for some reason.
-// Therefore, we deal with this by dividing SPLICE_HAVOC(=32) by 2.
+// IJON uses `stage_max = SPLICE_HAVOC * perf_score / havoc_div / 200` in the
+// splice stage instead of `SPLICE_HAVOC * perf_score / havoc_div / 100` for
+// some reason. Therefore, we deal with this by dividing SPLICE_HAVOC(=32) by 2.
 // See https://github.com/RUB-SysSec/ijon/blob/4cb8ae04d/afl-fuzz.c#L6125
-template<>
-constexpr u32 GetSpliceHavoc<ijon::IJONState>(ijon::IJONState&) { 
-    return 16;
+template <>
+constexpr u32 GetSpliceHavoc<ijon::IJONState>(ijon::IJONState&) {
+  return 16;
 }
 
-} // namespace fuzzuf::algorithm::afl::option
-
+}  // namespace fuzzuf::algorithm::afl::option
 
 #endif

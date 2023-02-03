@@ -1,7 +1,7 @@
 /*
  * fuzzuf
- * Copyright (C) 2022 Ricerca Security
- * 
+ * Copyright (C) 2021-2023 Ricerca Security
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -24,17 +24,18 @@
  *          Rule parses terminal and nonterminal symbols written in text.
  *          It can also unparse a rule into text.
  */
+#include "fuzzuf/algorithms/nautilus/grammartec/rule.hpp"
+
 #include <iomanip>
 #include <iterator>
 #include <regex>
 #include <sstream>
 #include <string>
+
 #include "fuzzuf/algorithms/nautilus/grammartec/context.hpp"
-#include "fuzzuf/algorithms/nautilus/grammartec/rule.hpp"
 #include "fuzzuf/algorithms/nautilus/grammartec/tree.hpp"
 #include "fuzzuf/exceptions.hpp"
 #include "fuzzuf/utils/common.hpp"
-
 
 namespace fuzzuf::algorithm::nautilus::grammartec {
 
@@ -54,18 +55,20 @@ namespace fuzzuf::algorithm::nautilus::grammartec {
  *          replaced with.
  *          You can use any nonterminal symbols in this format.
  */
-Rule::Rule(Context& ctx, const std::string& nonterm, const std::string& format) {
+Rule::Rule(Context& ctx, const std::string& nonterm,
+           const std::string& format) {
   std::vector<RuleChild> children = Rule::Tokenize(format, ctx);
   std::vector<NTermID> nonterms;
 
   // Filter only NTerm items from children
-  for (RuleChild child: children) {
+  for (RuleChild child : children) {
     if (std::holds_alternative<NTerm>(child.value())) {
       nonterms.emplace_back(std::get<NTerm>(child.value()));
     }
   }
 
-  _rule = PlainRule{ctx.AquireNTID(nonterm), std::move(children), std::move(nonterms)};
+  _rule = PlainRule{ctx.AquireNTID(nonterm), std::move(children),
+                    std::move(nonterms)};
 }
 
 /**
@@ -96,10 +99,10 @@ std::string Rule::Unescape(const std::string& bytes) {
   std::string res;
   size_t i;
   for (i = 0; i < bytes.size() - 1; i++) {
-    if (bytes[i] == '\\' && bytes[i+1] == '{') {
+    if (bytes[i] == '\\' && bytes[i + 1] == '{') {
       res += "{";
       i++;
-    } else if (bytes[i] == '\\' && bytes[i+1] == '}') {
+    } else if (bytes[i] == '\\' && bytes[i + 1] == '}') {
       res += "}";
       i++;
     } else {
@@ -128,8 +131,7 @@ std::vector<RuleChild> Rule::Tokenize(const std::string& format, Context& ctx) {
 
   std::vector<RuleChild> r;
   for (std::sregex_iterator it(format.begin(), format.end(), TOKENIZER), end;
-       it != end;
-       ++it) {
+       it != end; ++it) {
     std::smatch m = *it;
 
     if (m[1].matched) {
@@ -139,9 +141,8 @@ std::vector<RuleChild> Rule::Tokenize(const std::string& format, Context& ctx) {
       // "abc\{def\}ghi" --> "abc{def}ghi"
       r.emplace_back(Rule::Unescape(m.str()));
     } else {
-      throw exceptions::unreachable(
-        "Unexpected capturing group", __FILE__, __LINE__
-      );
+      throw exceptions::unreachable("Unexpected capturing group", __FILE__,
+                                    __LINE__);
     }
   }
 
@@ -159,9 +160,8 @@ const std::vector<NTermID>& Rule::Nonterms() const {
     return std::get<PlainRule>(_rule).nonterms;
 
   } else {
-    throw exceptions::not_implemented(
-      "Only PlainRule is supported", __FILE__, __LINE__
-    );
+    throw exceptions::not_implemented("Only PlainRule is supported", __FILE__,
+                                      __LINE__);
   }
 }
 
@@ -171,9 +171,7 @@ const std::vector<NTermID>& Rule::Nonterms() const {
  * @brief Get number of nonterminals
  * @return Number of nonterminals
  */
-size_t Rule::NumberOfNonterms() const {
-  return Nonterms().size();
-}
+size_t Rule::NumberOfNonterms() const { return Nonterms().size(); }
 
 /**
  * @fn
@@ -197,10 +195,9 @@ const NTermID& Rule::Nonterm() const {
 size_t Rule::Generate(Tree& tree, Context& ctx, size_t len) const {
   /* Calculate required length */
   size_t minimal_needed_len = 0;
-  for (NTermID nt: Nonterms())
-    minimal_needed_len += ctx.GetMinLenForNT(nt);
+  for (NTermID nt : Nonterms()) minimal_needed_len += ctx.GetMinLenForNT(nt);
 
-  DEBUG_ASSERT (minimal_needed_len <= len);
+  DEBUG_ASSERT(minimal_needed_len <= len);
 
   size_t remaining_len = len - minimal_needed_len;
 
@@ -224,22 +221,21 @@ size_t Rule::Generate(Tree& tree, Context& ctx, size_t len) const {
     // NOTE: RegExpRule should work differently here
     RuleIDOrCustom rule_or_custom = RuleIDOrCustom(rid);
 
-    DEBUG_ASSERT (tree.rules().size() == tree.sizes().size());
-    DEBUG_ASSERT (tree.paren().size() == tree.sizes().size());
+    DEBUG_ASSERT(tree.rules().size() == tree.sizes().size());
+    DEBUG_ASSERT(tree.paren().size() == tree.sizes().size());
 
     size_t offset = tree.Size();
     tree.rules().emplace_back(rule_or_custom);
     tree.sizes().emplace_back(0);
     tree.paren().emplace_back(0);
 
-    size_t consumed_len = ctx.GetRule(rid).Generate(
-      tree, ctx, cur_child_max_len - 1
-    );
+    size_t consumed_len =
+        ctx.GetRule(rid).Generate(tree, ctx, cur_child_max_len - 1);
     tree.sizes()[offset] = consumed_len;
     tree.paren()[offset] = paren;
 
-    DEBUG_ASSERT (consumed_len <= cur_child_max_len);
-    DEBUG_ASSERT (consumed_len >= ctx.GetMinLenForNT(nonterms[i]));
+    DEBUG_ASSERT(consumed_len <= cur_child_max_len);
+    DEBUG_ASSERT(consumed_len >= ctx.GetMinLenForNT(nonterms[i]));
 
     remaining_len += ctx.GetMinLenForNT(nonterms[i]);
     remaining_len -= consumed_len;
@@ -258,9 +254,7 @@ size_t Rule::Generate(Tree& tree, Context& ctx, size_t len) const {
  * @details This constructor takes a terminal symbol (literal).
  *          The type of this RuleChild becomes Term.
  */
-RuleChild::RuleChild(const std::string& lit) {
-  _rule_child = lit;
-}
+RuleChild::RuleChild(const std::string& lit) { _rule_child = lit; }
 
 /**
  * @fn
@@ -306,17 +300,18 @@ std::string RuleChild::DebugShow(Context& ctx) const {
  */
 std::string RuleChild::SplitNTDescription(const std::string& nonterm) const {
   std::smatch m;
-  static std::regex SPLITTER(R"(^\{([A-Z][a-zA-Z_\-0-9]*)(?::([a-zA-Z_\-0-9]*))?\}$)");
+  static std::regex SPLITTER(
+      R"(^\{([A-Z][a-zA-Z_\-0-9]*)(?::([a-zA-Z_\-0-9]*))?\}$)");
 
   // Splits {A:a} or {A} into A and maybe a
   if (!std::regex_match(nonterm, m, SPLITTER)) {
     throw exceptions::fuzzuf_runtime_error(
-      fuzzuf::utils::StrPrintf("Could not interpret Nonterminal %s. "
-                      "Nonterminal Descriptions need to match "
-                      "start with a capital letter and can only "
-                      "contain [a-zA-Z_-0-9]", nonterm.c_str()),
-      __FILE__, __LINE__
-    );
+        fuzzuf::utils::StrPrintf("Could not interpret Nonterminal %s. "
+                                 "Nonterminal Descriptions need to match "
+                                 "start with a capital letter and can only "
+                                 "contain [a-zA-Z_-0-9]",
+                                 nonterm.c_str()),
+        __FILE__, __LINE__);
   }
 
   return m[1].str();
@@ -345,9 +340,8 @@ const RuleID& RuleIDOrCustom::ID() const {
  */
 const std::string& RuleIDOrCustom::Data() const {
   if (std::holds_alternative<RuleID>(_rule_id_or_custom)) {
-    throw exceptions::fuzzuf_runtime_error(
-      "Cannot get data on a normal rule", __FILE__, __LINE__
-    );
+    throw exceptions::fuzzuf_runtime_error("Cannot get data on a normal rule",
+                                           __FILE__, __LINE__);
   } else {
     return std::get<Custom>(_rule_id_or_custom).second;
   }
@@ -387,16 +381,27 @@ std::string ShowBytes(const std::string& bs) {
       ss << c;
     } else {
       switch (c) {
-        case '\t': ss << "\\t"; break;
-        case '\r': ss << "\\r"; break;
-        case '\n': ss << "\\n"; break;
-        case '\'': ss << "\\'"; break;
-        case '"': ss << "\\\""; break;
-        case '\\': ss << "\\\\"; break;
+        case '\t':
+          ss << "\\t";
+          break;
+        case '\r':
+          ss << "\\r";
+          break;
+        case '\n':
+          ss << "\\n";
+          break;
+        case '\'':
+          ss << "\\'";
+          break;
+        case '"':
+          ss << "\\\"";
+          break;
+        case '\\':
+          ss << "\\\\";
+          break;
         default:
-          ss << "\\x"
-             << std::setfill('0') << std::setw(2)
-             << std::hex << (uint8_t)c;
+          ss << "\\x" << std::setfill('0') << std::setw(2) << std::hex
+             << (uint8_t)c;
           break;
       }
     }
@@ -405,4 +410,4 @@ std::string ShowBytes(const std::string& bs) {
   return ss.str();
 }
 
-} // namespace fuzzuf::algorithm::nautilus::grammartec
+}  // namespace fuzzuf::algorithm::nautilus::grammartec

@@ -1,7 +1,7 @@
 /*
  * fuzzuf
- * Copyright (C) 2021 Ricerca Security
- * 
+ * Copyright (C) 2021-2023 Ricerca Security
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -21,10 +21,11 @@
  */
 #ifndef FUZZUF_INCLUDE_ALGORITHM_LIBFUZZER_CALC_MAX_LENGTH_HPP
 #define FUZZUF_INCLUDE_ALGORITHM_LIBFUZZER_CALC_MAX_LENGTH_HPP
-#include "fuzzuf/utils/range_traits.hpp"
 #include <cstddef>
 #include <type_traits>
 #include <utility>
+
+#include "fuzzuf/utils/range_traits.hpp"
 
 /**
  * Decide max input value length using initial input values.
@@ -54,6 +55,6 @@ auto CalcMaxLength(const Range &inputs) -> std::enable_if_t<
   max = std::min(max, max_sane_length);
   return max;
 }
-} // namespace fuzzuf::algorithm::libfuzzer
+}  // namespace fuzzuf::algorithm::libfuzzer
 
 #endif

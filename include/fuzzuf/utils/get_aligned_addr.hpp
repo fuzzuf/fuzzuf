@@ -1,6 +1,6 @@
 /*
  * fuzzuf
- * Copyright (C) 2022 Ricerca Security
+ * Copyright (C) 2021-2023 Ricerca Security
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
@@ -25,14 +25,16 @@
 
 namespace fuzzuf::utils {
 /*
- * Get minimum address that is aligned to specified alignment and not less than specified address.
+ * Get minimum address that is aligned to specified alignment and not less than
+ * specified address.
  * @param p address
  * @param align alignment
  * @return aligned address
  */
 void *get_aligned_addr(void *p, std::size_t align);
 /*
- * Get minimum offset that is aligned to specified alignment and not less than specified offset.
+ * Get minimum offset that is aligned to specified alignment and not less than
+ * specified offset.
  * @param p offset
  * @param align alignment
  * @return aligned offset

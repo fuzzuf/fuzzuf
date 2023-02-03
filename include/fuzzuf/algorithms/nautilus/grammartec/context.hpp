@@ -1,7 +1,7 @@
 /*
  * fuzzuf
- * Copyright (C) 2022 Ricerca Security
- * 
+ * Copyright (C) 2021-2023 Ricerca Security
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -27,8 +27,8 @@
 #include <string>
 #include <unordered_map>
 #include <vector>
-#include "fuzzuf/algorithms/nautilus/grammartec/newtypes.hpp"
 
+#include "fuzzuf/algorithms/nautilus/grammartec/newtypes.hpp"
 
 namespace fuzzuf::algorithm::nautilus::grammartec {
 
@@ -37,7 +37,7 @@ class Rule;
 class Tree;
 
 class Context {
-public:
+ public:
   Context() : _max_len(0) {}
 
   void Initialize(size_t max_len);
@@ -59,12 +59,10 @@ public:
   void CalcMinLen();
 
   bool CheckIfNTermHasMultiplePossibilities(const NTermID& nt) const;
-  size_t GetRandomLen(
-    size_t number_of_children, size_t total_remaining_len
-  ) const;
-  std::vector<RuleID> GetApplicableRules(
-    size_t max_len, const NTermID& nt, size_t p_include_short_rules
-  ) const;
+  size_t GetRandomLen(size_t number_of_children,
+                      size_t total_remaining_len) const;
+  std::vector<RuleID> GetApplicableRules(size_t max_len, const NTermID& nt,
+                                         size_t p_include_short_rules) const;
   RuleID GetRandomRuleForNT(const NTermID& nt, size_t len) const;
   size_t GetRandomLenForRuleID(const RuleID&) const;
   size_t GetRandomLenForNT(const NTermID&) const;
@@ -72,7 +70,7 @@ public:
   Tree GenerateTreeFromNT(const NTermID& nt, size_t max_len);
   Tree GenerateTreeFromRule(const RuleID& r, size_t len);
 
-private:
+ private:
   std::vector<Rule> _rules;
   std::unordered_map<NTermID, std::vector<RuleID>> _nts_to_rules;
   std::unordered_map<NTermID, std::string> _nt_ids_to_name;
@@ -84,6 +82,6 @@ private:
   size_t _max_len;
 };
 
-} // namespace fuzzuf::algorithm::nautilus::grammartec
+}  // namespace fuzzuf::algorithm::nautilus::grammartec
 
 #endif

@@ -1,6 +1,6 @@
 /*
  * fuzzuf
- * Copyright (C) 2022 Ricerca Security
+ * Copyright (C) 2021-2023 Ricerca Security
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
@@ -21,14 +21,12 @@
 
 int main() {
   const auto val = std::getenv("OUTPUT_DIR");
-  if (!val)
-    std::abort();
-  const auto outdir = fs::path( val );
-  fs::create_directory( outdir );
-  for( auto &filename: std::array< std::string, 3 >{ "foo", "bar", "moo" } ) {
-    if( fs::exists( outdir / filename ) ) std::abort();
-    std::fstream f( ( outdir / filename ).string(), std::ios::out );
+  if (!val) std::abort();
+  const auto outdir = fs::path(val);
+  fs::create_directory(outdir);
+  for (auto &filename : std::array<std::string, 3>{"foo", "bar", "moo"}) {
+    if (fs::exists(outdir / filename)) std::abort();
+    std::fstream f((outdir / filename).string(), std::ios::out);
     f << "Hello, " << filename << std::endl;
   }
 }
-

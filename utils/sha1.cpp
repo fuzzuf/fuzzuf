@@ -1,7 +1,7 @@
 /*
  * fuzzuf
- * Copyright (C) 2021 Ricerca Security
- * 
+ * Copyright (C) 2021-2023 Ricerca Security
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -20,14 +20,17 @@
  * @author Ricerca Security <fuzzuf-dev@ricsec.co.jp>
  */
 #include "fuzzuf/utils/sha1.hpp"
-#include "fuzzuf/utils/type_traits/remove_cvr.hpp"
-#include <boost/spirit/include/karma.hpp>
+
 #include <cryptopp/cryptlib.h>
 #include <cryptopp/sha.h>
+
+#include <boost/spirit/include/karma.hpp>
 #include <cstddef>
 #include <cstdint>
 #include <string>
 #include <vector>
+
+#include "fuzzuf/utils/type_traits/remove_cvr.hpp"
 
 namespace fuzzuf::utils::detail {
 #if CRYPTOPP_MAJOR < 6
@@ -53,4 +56,4 @@ auto ToSerializedSha1Contiguous(const std::vector<std::uint8_t> &range)
   sha1.Final(digest.data());
   return ToHex(digest);
 }
-} // namespace fuzzuf::utils::detail
+}  // namespace fuzzuf::utils::detail

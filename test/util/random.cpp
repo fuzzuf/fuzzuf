@@ -1,7 +1,7 @@
 /*
  * fuzzuf
- * Copyright (C) 2022 Ricerca Security
- * 
+ * Copyright (C) 2021-2023 Ricerca Security
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -18,6 +18,8 @@
 #define BOOST_TEST_MODULE util.random
 #define BOOST_TEST_DYN_LINK
 
+#include "fuzzuf/utils/random.hpp"
+
 #include <algorithm>
 #include <boost/test/unit_test.hpp>
 #include <future>
@@ -26,10 +28,8 @@
 #include <thread>
 #include <utility>
 #include <vector>
-#include "fuzzuf/utils/random.hpp"
 
-#define Z_SCORE(N, M, P) ((M - N*P) / std::sqrt(N*P*(1-P)))
-
+#define Z_SCORE(N, M, P) ((M - N * P) / std::sqrt(N * P * (1 - P)))
 
 using namespace fuzzuf::utils::random;
 
@@ -55,10 +55,9 @@ BOOST_AUTO_TEST_CASE(TestRandomAndChoose) {
   BOOST_CHECK_THROW(Choose<int>(v4), std::out_of_range);
 }
 
-
 BOOST_AUTO_TEST_CASE(TestWalkerDiscreteDistributionSimple) {
-  constexpr double Z = 3.32; // alpha=0.001, Z_{0.0005} (0.1% error)
-  constexpr size_t iter = 500000; // large enough tests
+  constexpr double Z = 3.32;       // alpha=0.001, Z_{0.0005} (0.1% error)
+  constexpr size_t iter = 500000;  // large enough tests
 
   /* Get random probabilities */
   size_t len = Random<size_t>(3, 9);
@@ -69,7 +68,7 @@ BOOST_AUTO_TEST_CASE(TestWalkerDiscreteDistributionSimple) {
 
   /* Normalize */
   double sum = std::accumulate(base.begin(), base.end(), 0.0);
-  for (double& v: base) {
+  for (double& v : base) {
     v /= sum;
   }
 
@@ -99,8 +98,8 @@ BOOST_AUTO_TEST_CASE(TestWalkerDiscreteDistributionSimple) {
 }
 
 BOOST_AUTO_TEST_CASE(TestWalkerDiscreteDistributionBiased) {
-  constexpr double Z = 3.32; // alpha=0.001, Z_{0.0005} (0.1% error)
-  constexpr size_t iter = 100000; // smaller than simple test
+  constexpr double Z = 3.32;       // alpha=0.001, Z_{0.0005} (0.1% error)
+  constexpr size_t iter = 100000;  // smaller than simple test
 
   /* 1. Test biased weights */
   std::vector<double> w1{1000.0, 0.0, 0.0, 100.0, 100.0};
@@ -131,25 +130,19 @@ BOOST_AUTO_TEST_CASE(TestWalkerDiscreteDistributionBiased) {
   /* 2. Test invalid weights */
   // empty weight
   std::vector<int> w2{};
-  BOOST_CHECK_THROW(WalkerDiscreteDistribution<int> s2(w2),
-                    std::out_of_range);
+  BOOST_CHECK_THROW(WalkerDiscreteDistribution<int> s2(w2), std::out_of_range);
   // negative weight
   std::vector<int> w3{314, -1592, 0, 1};
-  BOOST_CHECK_THROW(WalkerDiscreteDistribution<int> s3(w3),
-                    std::range_error);
+  BOOST_CHECK_THROW(WalkerDiscreteDistribution<int> s3(w3), std::range_error);
   // NaN weight
   std::vector<float> w4{3.14, 15.92, std::nanf("")};
-  BOOST_CHECK_THROW(WalkerDiscreteDistribution<float> s4(w4),
-                    std::range_error);
+  BOOST_CHECK_THROW(WalkerDiscreteDistribution<float> s4(w4), std::range_error);
   // zero weights
   std::vector<char> w5{0, 0, 0};
-  BOOST_CHECK_THROW(WalkerDiscreteDistribution<char> s5(w5),
-                    std::range_error);
+  BOOST_CHECK_THROW(WalkerDiscreteDistribution<char> s5(w5), std::range_error);
   // infinity sum
-  std::vector<double> w6{
-    std::numeric_limits<double>::max(),
-    std::numeric_limits<double>::max()
-  };
+  std::vector<double> w6{std::numeric_limits<double>::max(),
+                         std::numeric_limits<double>::max()};
   BOOST_CHECK_THROW(WalkerDiscreteDistribution<double> s6(w6),
                     std::range_error);
 
@@ -177,5 +170,4 @@ BOOST_AUTO_TEST_CASE(TestWalkerDiscreteDistributionBiased) {
     const double z = (res8[i] - E) / std::sqrt(V);
     BOOST_CHECK(std::abs(z) < Z);
   }
-  
 }

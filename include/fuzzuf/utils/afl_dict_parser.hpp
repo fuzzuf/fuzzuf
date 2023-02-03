@@ -1,7 +1,7 @@
 /*
  * fuzzuf
- * Copyright (C) 2021 Ricerca Security
- * 
+ * Copyright (C) 2021-2023 Ricerca Security
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -21,6 +21,17 @@
  */
 #ifndef FUZZUF_INCLUDE_UTILS_AFL_DICT_PARSER_HPP
 #define FUZZUF_INCLUDE_UTILS_AFL_DICT_PARSER_HPP
+#include <fcntl.h>
+
+#include <boost/phoenix.hpp>
+#include <boost/spirit/home/support/char_encoding/standard.hpp>
+#include <boost/spirit/include/qi.hpp>
+#include <boost/version.hpp>
+#include <cstdint>
+#include <functional>
+#include <string>
+#include <system_error>
+
 #include "fuzzuf/exceptions.hpp"
 #include "fuzzuf/utils/check_capability.hpp"
 #include "fuzzuf/utils/filesystem.hpp"
@@ -28,18 +39,11 @@
 #include "fuzzuf/utils/range_traits.hpp"
 #include "fuzzuf/utils/type_traits/remove_cvr.hpp"
 #include "fuzzuf/utils/void_t.hpp"
-#include <boost/phoenix.hpp>
-#include <boost/spirit/include/qi.hpp>
-#include <boost/version.hpp>
-#include <boost/spirit/home/support/char_encoding/standard.hpp>
-#include <cstdint>
-#include <fcntl.h>
-#include <functional>
-#include <string>
-#include <system_error>
 /**
  * Enables loading AFL dictionary
- * Destination type should be Sequential container of T where T::word_t is defined and word_t is a sequential container with value_type that is compatible to char, and T has a constructor with word_t as an argument
+ * Destination type should be Sequential container of T where T::word_t is
+ * defined and word_t is a sequential container with value_type that is
+ * compatible to char, and T has a constructor with word_t as an argument
  */
 namespace fuzzuf::utils::dictionary {
 FUZZUF_CHECK_CAPABILITY(HasGet, has_get, std::declval<T>().get())
@@ -47,10 +51,12 @@ FUZZUF_CHECK_CAPABILITY(HasGet, has_get, std::declval<T>().get())
 /**
  * @class DictionaryWord
  * @brief Meta function to return word_t type of the dictionary type T
- * type is defined only if T has word_t and value_type of T has member function get()
+ * type is defined only if T has word_t and value_type of T has member function
+ * get()
  * @tparam T Dictionary type
  */
-template <typename T, typename Enable = void> struct DictionaryWord {};
+template <typename T, typename Enable = void>
+struct DictionaryWord {};
 template <typename T>
 struct DictionaryWord<T, std::enable_if_t<has_get_v<range::RangeValueT<T>>>> {
   using type = typename range::RangeValueT<T>::word_t;
@@ -74,9 +80,9 @@ class AFLDictRule : public boost::spirit::qi::grammar<Iterator, Dict()> {
   using dictionary_t = Dict;
   using word_t = DictionaryWordT<dictionary_t>;
 
-public:
+ public:
   AFLDictRule(unsigned int filter, bool strict,
-                const std::function<void(std::string &&)> &eout)
+              const std::function<void(std::string &&)> &eout)
       : AFLDictRule::base_type(root) {
     namespace qi = boost::spirit::qi;
     namespace phx = boost::phoenix;
@@ -93,8 +99,8 @@ public:
                           qi::standard::graph))[qi::_pass = true];
     } else {
       escaped_text = qi::as_string[*((qi::byte_ - '"' - '\\') | escape)];
-      name = qi::as_string[+(qi::byte_ - '@' - '=' - '"' - '#' -
-                             ' ' - qi::eol )];
+      name =
+          qi::as_string[+(qi::byte_ - '@' - '=' - '"' - '#' - ' ' - qi::eol)];
       comment = ('#' >> *(qi::byte_ - qi::eol))[qi::_pass = true];
     }
 
@@ -110,8 +116,8 @@ public:
                  ((name >> '@' >> qi::uint_ >> '=' >> quoted_text >>
                    qi::omit[*qi::standard::blank >> -comment])
                       [qi::_pass =
-                           phx::bind(&AFLDictRule::with_level, qi::_val,
-                                     qi::_1, qi::_2, filter, qi::_3, eout)]) |
+                           phx::bind(&AFLDictRule::with_level, qi::_val, qi::_1,
+                                     qi::_2, filter, qi::_3, eout)]) |
                  ((name >> '=' >> quoted_text >>
                    qi::omit[*qi::standard::blank >> -comment])
                       [qi::_pass = phx::bind(&AFLDictRule::without_level,
@@ -121,13 +127,12 @@ public:
         qi::omit[*qi::standard::space];
   }
 
-private:
+ private:
   static bool with_level(dictionary_t &dest, const std::string &name,
                          unsigned int level, unsigned int threshold,
                          const std::string &text,
                          const std::function<void(std::string &&)> &eout) {
-    if (level < threshold)
-      return true;
+    if (level < threshold) return true;
 
     return without_level(dest, name, text, eout);
   }
@@ -162,9 +167,8 @@ private:
 
 template <typename T>
 auto LoadAFLDictionary(const std::string &filename_, T &dest, bool strict,
-                         const std::function<void(std::string &&)> &eout)
+                       const std::function<void(std::string &&)> &eout)
     -> utils::void_t<DictionaryWordT<T>> {
-
   namespace qi = boost::spirit::qi;
 
   unsigned int level = 0u;
@@ -203,14 +207,10 @@ auto LoadAFLDictionary(const std::string &filename_, T &dest, bool strict,
    * According by the implementation, it looks like a unexpected behaviour yet
    * it need to be avoided.
    */
-  if( strict ) {
-    if( std::find_if(
-      iter,
-      end,
-      []( char ch ) {
-        return !boost::spirit::char_encoding::standard::strict_ischar( ch );
-      }
-    ) != end )
+  if (strict) {
+    if (std::find_if(iter, end, [](char ch) {
+          return !boost::spirit::char_encoding::standard::strict_ischar(ch);
+        }) != end)
       throw exceptions::invalid_file("invalid dictionary file", __FILE__,
                                      __LINE__);
   }
@@ -222,5 +222,5 @@ auto LoadAFLDictionary(const std::string &filename_, T &dest, bool strict,
 
   dest.insert(dest.end(), temp.begin(), temp.end());
 }
-} // namespace fuzzuf::utils::dictionary
+}  // namespace fuzzuf::utils::dictionary
 #endif

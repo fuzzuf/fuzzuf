@@ -1,7 +1,7 @@
 /*
  * fuzzuf
- * Copyright (C) 2022 Ricerca Security
- * 
+ * Copyright (C) 2021-2023 Ricerca Security
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -26,19 +26,20 @@
  *          It also has an interface to generate a random tree
  *          by nonterminal ID or Rule ID.
  */
+#include "fuzzuf/algorithms/nautilus/grammartec/context.hpp"
+
 #include <algorithm>
 #include <iostream>
 #include <limits>
 #include <memory>
 #include <optional>
 #include <vector>
-#include "fuzzuf/algorithms/nautilus/grammartec/context.hpp"
+
 #include "fuzzuf/algorithms/nautilus/grammartec/rule.hpp"
 #include "fuzzuf/algorithms/nautilus/grammartec/tree.hpp"
 #include "fuzzuf/exceptions.hpp"
 #include "fuzzuf/utils/common.hpp"
 #include "fuzzuf/utils/random.hpp"
-
 
 namespace fuzzuf::algorithm::nautilus::grammartec {
 
@@ -47,7 +48,7 @@ namespace fuzzuf::algorithm::nautilus::grammartec {
  * Prepare this context to be used.
  * @brief Initialize this context
  * @param (max_len) Maximum length of the tree to be generated.
- * 
+ *
  * @details This method calculates the minimum required length of tree
  *          and the number of options.
  *          It must be called after you add every rule by AddRule method.
@@ -132,11 +133,11 @@ size_t Context::GetMinLenForNT(const NTermID& nt) const {
  *          and returns a new ID.
  */
 NTermID Context::AquireNTID(const std::string& nt) {
-  NTermID next_id(_nt_ids_to_name.size()); // New NTermID
+  NTermID next_id(_nt_ids_to_name.size());  // New NTermID
 
   NTermID& id = _names_to_nt_id.find(nt) == _names_to_nt_id.end()
-    ? (_names_to_nt_id[nt] = next_id) // not exists
-    : _names_to_nt_id[nt];            // exists
+                    ? (_names_to_nt_id[nt] = next_id)  // not exists
+                    : _names_to_nt_id[nt];             // exists
 
   if (_nt_ids_to_name.find(id) == _nt_ids_to_name.end())
     _nt_ids_to_name[id] = nt;
@@ -165,14 +166,13 @@ const NTermID& Context::NTID(const std::string& nt) const {
  * @return Registered rule ID
  */
 RuleID Context::AddRule(const std::string& nt, const std::string& format) {
-  RuleID rid(_rules.size()); // New rule ID
+  RuleID rid(_rules.size());  // New rule ID
   const NTermID& ntid = AquireNTID(nt);
 
   /* Register this rule */
   _rules.emplace_back(*this, nt, format);
 
-  if (_nts_to_rules.find(ntid) == _nts_to_rules.end())
-    _nts_to_rules[ntid] = {};
+  if (_nts_to_rules.find(ntid) == _nts_to_rules.end()) _nts_to_rules[ntid] = {};
   _nts_to_rules[ntid].emplace_back(rid);
 
   return rid;
@@ -188,10 +188,10 @@ RuleID Context::AddRule(const std::string& nt, const std::string& format) {
 size_t Context::CalcNumOptionsForRule(const RuleID& r) const {
   size_t res = 1;
 
-  for (const NTermID& nt_id: GetRule(r).Nonterms()) {
+  for (const NTermID& nt_id : GetRule(r).Nonterms()) {
     size_t v = _nts_to_num_options.find(nt_id) == _nts_to_num_options.end()
-      ? 1
-      : _nts_to_num_options.at(nt_id);
+                   ? 1
+                   : _nts_to_num_options.at(nt_id);
 
     if (__builtin_mul_overflow(res, v, &res)) {
       /* Saturate instead of overflow */
@@ -208,7 +208,7 @@ size_t Context::CalcNumOptionsForRule(const RuleID& r) const {
  * @brief Calculate number of options
  */
 void Context::CalcNumOptions() {
-  for (auto& elem: _nts_to_rules) {
+  for (auto& elem : _nts_to_rules) {
     if (_nts_to_num_options.find(elem.first) == _nts_to_num_options.end()) {
       _nts_to_num_options[elem.first] = elem.second.size();
     }
@@ -247,7 +247,7 @@ void Context::CalcNumOptions() {
 std::optional<size_t> Context::CalcMinLenForRule(const RuleID& r) const {
   size_t res = 1;
 
-  for (const NTermID& nt_id: GetRule(r).Nonterms()) {
+  for (const NTermID& nt_id : GetRule(r).Nonterms()) {
     if (_nts_to_min_size.find(nt_id) == _nts_to_min_size.end()) {
       return std::nullopt;
 
@@ -264,12 +264,11 @@ std::optional<size_t> Context::CalcMinLenForRule(const RuleID& r) const {
  * @brief Sort rules
  */
 void Context::CalcRuleOrder() {
-  for (auto& elem: _nts_to_rules) {
+  for (auto& elem : _nts_to_rules) {
     std::vector<RuleID>& rules = elem.second;
-    std::sort(rules.begin(), rules.end(),
-              [this](RuleID& r1, RuleID& r2) {
-                return _rules_to_min_size.at(r1) < _rules_to_min_size.at(r2);
-              });
+    std::sort(rules.begin(), rules.end(), [this](RuleID& r1, RuleID& r2) {
+      return _rules_to_min_size.at(r1) < _rules_to_min_size.at(r2);
+    });
   }
 }
 
@@ -294,37 +293,37 @@ void Context::CalcMinLen() {
 
       /* Remove every rule with known minimum length */
       auto r = std::remove_if(
-        unknown_rules.begin(), unknown_rules.end(),
-        [this, &something_changed](const RuleID& rule) {
-          if (std::optional<size_t> min = CalcMinLenForRule(rule)) {
-            const NTermID& nt = GetRule(rule).Nonterm();
+          unknown_rules.begin(), unknown_rules.end(),
+          [this, &something_changed](const RuleID& rule) {
+            if (std::optional<size_t> min = CalcMinLenForRule(rule)) {
+              const NTermID& nt = GetRule(rule).Nonterm();
 
-            if (_nts_to_min_size.find(nt) == _nts_to_min_size.end())
-              _nts_to_min_size[nt] = min.value();
+              if (_nts_to_min_size.find(nt) == _nts_to_min_size.end())
+                _nts_to_min_size[nt] = min.value();
 
-            if (_nts_to_min_size[nt] > min.value()) {
-              /* Update minimum value */
-              _nts_to_min_size[nt] = min.value();
-              something_changed = true;
+              if (_nts_to_min_size[nt] > min.value()) {
+                /* Update minimum value */
+                _nts_to_min_size[nt] = min.value();
+                something_changed = true;
+              }
+
+              _rules_to_min_size[rule] = min.value();
+              return true;
             }
 
-            _rules_to_min_size[rule] = min.value();
-            return true;
-          }
-
-          return false;
-        }
-      );
+            return false;
+          });
       unknown_rules.erase(r, unknown_rules.end());
 
       if (last_len == unknown_rules.size()) {
-        std::cerr << "Found unproductive rules: (missing base/non recursive case?)" << std::endl;
-        for (RuleID& r: unknown_rules) {
+        std::cerr
+            << "Found unproductive rules: (missing base/non recursive case?)"
+            << std::endl;
+        for (RuleID& r : unknown_rules) {
           std::cerr << GetRule(r).DebugShow(*this) << std::endl;
         }
-        throw exceptions::fuzzuf_runtime_error(
-          "Broken grammar", __FILE__, __LINE__
-        );
+        throw exceptions::fuzzuf_runtime_error("Broken grammar", __FILE__,
+                                               __LINE__);
       }
     }
   } while (something_changed);
@@ -357,11 +356,9 @@ size_t Context::GetRandomLen(size_t number_of_children,
   ssize_t iters = number_of_children - 1;
 
   for (ssize_t i = 0; i < iters; i++) {
-    ssize_t proposal = utils::random::Random<ssize_t>(
-      0, total_remaining_len + 1
-    );
-    if (proposal < res)
-      res = proposal;
+    ssize_t proposal =
+        utils::random::Random<ssize_t>(0, total_remaining_len + 1);
+    if (proposal < res) res = proposal;
   }
 
   return res;
@@ -377,16 +374,13 @@ size_t Context::GetRandomLen(size_t number_of_children,
  * @return Vector of rule IDs
  */
 std::vector<RuleID> Context::GetApplicableRules(
-  size_t max_len,
-  const NTermID& nt,
-  size_t p_include_short_rules
-) const {
+    size_t max_len, const NTermID& nt, size_t p_include_short_rules) const {
   std::vector<RuleID> res;
 
-  for (const RuleID& rid: _nts_to_rules.at(nt)) {
+  for (const RuleID& rid : _nts_to_rules.at(nt)) {
     if (_rules_to_min_size.at(rid) > max_len) break;
-    if (_rules_to_num_options.at(rid) > 1
-        || utils::random::Random<size_t>(0, 99) <= p_include_short_rules)
+    if (_rules_to_num_options.at(rid) > 1 ||
+        utils::random::Random<size_t>(0, 99) <= p_include_short_rules)
       res.emplace_back(rid);
   }
 
@@ -416,9 +410,8 @@ RuleID Context::GetRandomRuleForNT(const NTermID& nt, size_t max_len) const {
     p_include_short_rules = 100 * 0;
   }
 
-  std::vector<RuleID> applicable_rules = GetApplicableRules(
-    max_len, nt, p_include_short_rules
-  );
+  std::vector<RuleID> applicable_rules =
+      GetApplicableRules(max_len, nt, p_include_short_rules);
   if (applicable_rules.size() > 0) {
     return fuzzuf::utils::random::Choose(applicable_rules);
   }
@@ -429,10 +422,9 @@ RuleID Context::GetRandomRuleForNT(const NTermID& nt, size_t max_len) const {
   }
 
   throw exceptions::fuzzuf_runtime_error(
-    fuzzuf::utils::StrPrintf("There is no way to derive %s within %d steps",
-                    _nt_ids_to_name.at(nt).c_str(), max_len),
-    __FILE__, __LINE__
-  );
+      fuzzuf::utils::StrPrintf("There is no way to derive %s within %d steps",
+                               _nt_ids_to_name.at(nt).c_str(), max_len),
+      __FILE__, __LINE__);
 }
 
 /**
@@ -442,7 +434,7 @@ RuleID Context::GetRandomRuleForNT(const NTermID& nt, size_t max_len) const {
  * @return Length
  */
 size_t Context::GetRandomLenForRuleID(const RuleID&) const {
-  return _max_len; // TODO: this should be random
+  return _max_len;  // TODO: this should be random
 }
 
 /**
@@ -452,7 +444,7 @@ size_t Context::GetRandomLenForRuleID(const RuleID&) const {
  * @return Length
  */
 size_t Context::GetRandomLenForNT(const NTermID&) const {
-  return _max_len; // TODO: this should be random
+  return _max_len;  // TODO: this should be random
 }
 
 /**
@@ -476,7 +468,7 @@ const std::vector<RuleID>& Context::GetRulesForNT(const NTermID& nt) const {
  * @return Generated tree
  */
 Tree Context::GenerateTreeFromNT(const NTermID& nt, size_t max_len) {
-  return GenerateTreeFromRule(GetRandomRuleForNT(nt, max_len), max_len-1);
+  return GenerateTreeFromRule(GetRandomRuleForNT(nt, max_len), max_len - 1);
 }
 
 /**
@@ -493,4 +485,4 @@ Tree Context::GenerateTreeFromRule(const RuleID& r, size_t len) {
   return tree;
 }
 
-} // namespace fuzzuf::algorithm::nautilus::grammartec
+}  // namespace fuzzuf::algorithm::nautilus::grammartec

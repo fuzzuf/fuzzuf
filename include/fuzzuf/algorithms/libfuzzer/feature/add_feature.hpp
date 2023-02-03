@@ -1,7 +1,7 @@
 /*
  * fuzzuf
- * Copyright (C) 2021 Ricerca Security
- * 
+ * Copyright (C) 2021-2023 Ricerca Security
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -21,17 +21,18 @@
  */
 #ifndef FUZZUF_INCLUDE_ALGORITHM_LIBFUZZER_FEATURE_ADD_FEATURE_HPP
 #define FUZZUF_INCLUDE_ALGORITHM_LIBFUZZER_FEATURE_ADD_FEATURE_HPP
+#include <cassert>
+#include <cstddef>
+#include <cstdint>
+#include <iterator>
+#include <type_traits>
+
 #include "fuzzuf/algorithms/libfuzzer/corpus/delete_input.hpp"
 #include "fuzzuf/algorithms/libfuzzer/feature/add_rare_feature.hpp"
 #include "fuzzuf/algorithms/libfuzzer/state/corpus.hpp"
 #include "fuzzuf/algorithms/libfuzzer/state/state.hpp"
 #include "fuzzuf/algorithms/libfuzzer/utils.hpp"
 #include "fuzzuf/utils/range_traits.hpp"
-#include <cassert>
-#include <cstddef>
-#include <cstdint>
-#include <iterator>
-#include <type_traits>
 namespace fuzzuf::algorithm::libfuzzer::feature {
 
 /**
@@ -46,7 +47,8 @@ namespace fuzzuf::algorithm::libfuzzer::feature {
  * @param corpus FullCorpus
  * @param index Feature ID to add
  * @param new_size Length of input which produced this feature
- * @param shrink If true and the input value is shorter than known input value producing this feature ID, existing input value is removed from the corpus.
+ * @param shrink If true and the input value is shorter than known input value
+ * producing this feature ID, existing input value is removed from the corpus.
  */
 template <typename State, typename Corpus>
 auto AddFeature(State &state, Corpus &corpus, size_t index,
@@ -67,8 +69,7 @@ auto AddFeature(State &state, Corpus &corpus, size_t index,
             if (testcase) {
               assert(testcase.features_count > 0);
               testcase.features_count--;
-              if (testcase.features_count == 0)
-                drop = true;
+              if (testcase.features_count == 0) drop = true;
             }
           });
       if (drop)
@@ -89,6 +90,6 @@ auto AddFeature(State &state, Corpus &corpus, size_t index,
   return false;
 }
 
-} // namespace fuzzuf::algorithm::libfuzzer::feature
+}  // namespace fuzzuf::algorithm::libfuzzer::feature
 
 #endif

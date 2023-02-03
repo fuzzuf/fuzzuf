@@ -1,7 +1,7 @@
 /*
  * fuzzuf
- * Copyright (C) 2021 Ricerca Security
- * 
+ * Copyright (C) 2021-2023 Ricerca Security
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -64,21 +64,21 @@ struct erase_nth<i, std::integer_sequence<T, prev...>,
                  std::enable_if_t<i == 0u>> {
   using type = std::integer_sequence<T, prev..., tail...>;
 };
-} // namespace detail
+}  // namespace detail
 
 /**
  * @class erase_nth
  * @brief
- * Meta function to remove i-th element from template parameters or function argument types
- * example:
- * erase_nth_t< 1, bool( int, float, double, char ) >
+ * Meta function to remove i-th element from template parameters or function
+ * argument types example: erase_nth_t< 1, bool( int, float, double, char ) >
  * This is equivalent to bool( int, double, char )
  * erase_nth_t< 2, std::tuple< int, float, double, char > >
  * This is equivalent to std::tuple< int, float, char >
  * @tparam i Remove i-th element
  * @tparam U A type with template parameters or function type
  */
-template <unsigned int i, typename U> struct erase_nth {};
+template <unsigned int i, typename U>
+struct erase_nth {};
 template <unsigned int i, template <typename...> typename L, typename... U>
 struct erase_nth<i, L<U...>> : public detail::erase_nth<i, L<>, L<U...>> {};
 template <unsigned int i, typename R, typename... U>
@@ -91,5 +91,5 @@ struct erase_nth<i, std::integer_sequence<T, u...>>
 
 template <unsigned int i, typename T>
 using erase_nth_t = typename erase_nth<i, T>::type;
-} // namespace fuzzuf::utils::type_traits
+}  // namespace fuzzuf::utils::type_traits
 #endif

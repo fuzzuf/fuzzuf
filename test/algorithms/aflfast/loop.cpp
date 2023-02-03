@@ -1,7 +1,7 @@
 /*
  * fuzzuf
- * Copyright (C) 2021 Ricerca Security
- * 
+ * Copyright (C) 2021-2023 Ricerca Security
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -22,9 +22,9 @@
 #include <iostream>
 #include <random>
 
+#include "fuzzuf/cli/create_fuzzer_instance_from_argv.hpp"
 #include "fuzzuf/utils/filesystem.hpp"
 #include "fuzzuf/utils/workspace.hpp"
-#include "fuzzuf/cli/create_fuzzer_instance_from_argv.hpp"
 #include "move_to_program_location.hpp"
 
 // to test both fork server mode and non fork server mode, we specify forksrv
@@ -36,8 +36,7 @@ static void AFLLoop(bool forksrv) {
   // Create root directory
   std::string root_dir_template("/tmp/fuzzuf_test.XXXXXX");
   const auto raw_dirname = mkdtemp(root_dir_template.data());
-  if (!raw_dirname)
-    throw -1;
+  if (!raw_dirname) throw -1;
   BOOST_CHECK(raw_dirname != nullptr);
 
   auto root_dir = fs::path(raw_dirname);
@@ -52,12 +51,20 @@ static void AFLLoop(bool forksrv) {
   auto input_dir = put_dir / "seeds";
   auto output_dir = root_dir / "output";
 
-  auto input_dir_opt  =  "--in_dir=" +  input_dir.string();
+  auto input_dir_opt = "--in_dir=" + input_dir.string();
   auto output_dir_opt = "--out_dir=" + output_dir.string();
   const char *forksrv_opt = forksrv ? "--forksrv=1" : "--forksrv=0";
 
-  const char *argv[] = {"fuzzuf", "aflfast", input_dir_opt.c_str(), output_dir_opt.c_str(), forksrv_opt, "../../put_binaries/libjpeg/libjpeg_turbo_fuzzer", "@@", nullptr};
-  int argc = static_cast<int>(sizeof(argv) / sizeof(const char *)) - 1; // subtract 1 for nullptr
+  const char *argv[] = {"fuzzuf",
+                        "aflfast",
+                        input_dir_opt.c_str(),
+                        output_dir_opt.c_str(),
+                        forksrv_opt,
+                        "../../put_binaries/libjpeg/libjpeg_turbo_fuzzer",
+                        "@@",
+                        nullptr};
+  int argc = static_cast<int>(sizeof(argv) / sizeof(const char *)) -
+             1;  // subtract 1 for nullptr
   auto fuzzer = fuzzuf::cli::CreateFuzzerInstanceFromArgv(argc, argv);
 
   for (int i = 0; i < 1; i++) {

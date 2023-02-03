@@ -1,7 +1,7 @@
 /*
  * fuzzuf
- * Copyright (C) 2022 Ricerca Security
- * 
+ * Copyright (C) 2021-2023 Ricerca Security
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -18,19 +18,19 @@
 #define BOOST_TEST_MODULE nautilus.tree
 #define BOOST_TEST_DYN_LINK
 
+#include "fuzzuf/algorithms/nautilus/grammartec/tree.hpp"
+
 #include <boost/test/unit_test.hpp>
 #include <vector>
+
 #include "fuzzuf/algorithms/nautilus/grammartec/context.hpp"
 #include "fuzzuf/algorithms/nautilus/grammartec/recursion_info.hpp"
 #include "fuzzuf/algorithms/nautilus/grammartec/rule.hpp"
-#include "fuzzuf/algorithms/nautilus/grammartec/tree.hpp"
-
 
 using namespace fuzzuf::algorithm::nautilus::grammartec;
 
-size_t CalcSubTreeSizesAndParentsRecTest(
-  Tree& tree, const NodeID& n, Context& ctx
-) {
+size_t CalcSubTreeSizesAndParentsRecTest(Tree& tree, const NodeID& n,
+                                         Context& ctx) {
   NodeID cur(n + 1);
   size_t size = 1;
   size_t iter_n = tree.GetRule(n, ctx).NumberOfNonterms();
@@ -144,16 +144,15 @@ BOOST_AUTO_TEST_CASE(NautilusGrammartecTreeFindRecursions) {
     if (auto recursions = tree.CalcRecursions(ctx)) {
       BOOST_CHECK(recursions.value().size() != 0);
 
-      for (RecursionInfo& recursion_info: recursions.value()) {
-        for (size_t offset = 0;
-             offset < recursion_info.GetNumberOfRecursions();
+      for (RecursionInfo& recursion_info : recursions.value()) {
+        for (size_t offset = 0; offset < recursion_info.GetNumberOfRecursions();
              offset++) {
-          std::pair<NodeID, NodeID> tuple
-            = recursion_info.GetRecursionPairByOffset(offset);
+          std::pair<NodeID, NodeID> tuple =
+              recursion_info.GetRecursionPairByOffset(offset);
           some_recursion = true;
 
-          BOOST_CHECK(static_cast<size_t>(tuple.first)
-                      < static_cast<size_t>(tuple.second));
+          BOOST_CHECK(static_cast<size_t>(tuple.first) <
+                      static_cast<size_t>(tuple.second));
         }
       }
     }

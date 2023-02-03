@@ -1,7 +1,7 @@
 /*
  * fuzzuf
- * Copyright (C) 2021 Ricerca Security
- * 
+ * Copyright (C) 2021-2023 Ricerca Security
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -26,11 +26,12 @@
 namespace fuzzuf::utils {
 /**
  * Convert errno value to corresponding std::system_error
- * If the direct corresponding code is not available, the code which has close meaning is used
+ * If the direct corresponding code is not available, the code which has close
+ * meaning is used
  */
 auto errno_to_system_error(int e) -> std::system_error;
 auto errno_to_system_error(int e, const char *) -> std::system_error;
 auto errno_to_system_error(int e, const std::string &) -> std::system_error;
 
-} // namespace fuzzuf::utils
+}  // namespace fuzzuf::utils
 #endif

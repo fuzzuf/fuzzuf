@@ -1,6 +1,6 @@
 /*
  * fuzzuf
- * Copyright (C) 2021 Ricerca Security
+ * Copyright (C) 2021-2023 Ricerca Security
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
@@ -39,8 +39,7 @@ struct NoNewCoverage {
    */
   template <typename State, typename InputInfo>
   bool operator()(const State &state, const InputInfo &exec_result) const {
-    if (exec_result.added_to_corpus)
-      return false;
+    if (exec_result.added_to_corpus) return false;
     if (state.create_info.config.reduce_depth &&
         !exec_result.found_unique_features)
       return false;
@@ -50,14 +49,13 @@ struct NoNewCoverage {
 struct NewCoverage {
   template <typename State, typename InputInfo>
   bool operator()(const State &state, const InputInfo &exec_result) const {
-    if (exec_result.added_to_corpus)
-      return true;
+    if (exec_result.added_to_corpus) return true;
     if (state.create_info.config.reduce_depth &&
         !exec_result.found_unique_features)
       return true;
     return false;
   }
 };
-} // namespace fuzzuf::algorithm::libfuzzer
+}  // namespace fuzzuf::algorithm::libfuzzer
 
 #endif

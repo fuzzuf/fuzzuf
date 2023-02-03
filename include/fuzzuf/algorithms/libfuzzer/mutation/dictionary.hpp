@@ -1,7 +1,7 @@
 /*
  * fuzzuf
- * Copyright (C) 2021 Ricerca Security
- * 
+ * Copyright (C) 2021-2023 Ricerca Security
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -21,13 +21,14 @@
  */
 #ifndef FUZZUF_INCLUDE_ALGORITHM_LIBFUZZER_MUTATION_DICTIONARY_HPP
 #define FUZZUF_INCLUDE_ALGORITHM_LIBFUZZER_MUTATION_DICTIONARY_HPP
+#include <cassert>
+#include <iterator>
+#include <type_traits>
+
 #include "fuzzuf/algorithms/libfuzzer/mutation/utils.hpp"
 #include "fuzzuf/algorithms/libfuzzer/mutation_history.hpp"
 #include "fuzzuf/algorithms/libfuzzer/random.hpp"
 #include "fuzzuf/utils/range_traits.hpp"
-#include <cassert>
-#include <iterator>
-#include <type_traits>
 namespace fuzzuf::algorithm::libfuzzer::mutator {
 
 /**
@@ -60,8 +61,7 @@ auto Dictionary(RNG &rng, Range &data, std::size_t max_size,
         std::size_t> {
   static const char name[] = "Dict";
   history.push_back(MutationHistoryEntry{name});
-  return detail::AddWordFromDictionary(rng, dict, data, max_size,
-                                          dict_entry);
+  return detail::AddWordFromDictionary(rng, dict, data, max_size, dict_entry);
 }
 
 /**
@@ -90,8 +90,7 @@ void UpdateDictionary(
   for (auto &dict_entry : copied_dict_entries) {
     const auto &new_word = dict_entry.get();
     if (std::find_if(dict.begin(), dict.end(), [&](auto &v) {
-          if (dict_entry.get_hash() != v.get_hash())
-            return false;
+          if (dict_entry.get_hash() != v.get_hash()) return false;
           const auto &existing_word = v.get();
           // Linear search is fine here as this happens seldom.
           return std::equal(existing_word.begin(), existing_word.end(),
@@ -103,5 +102,5 @@ void UpdateDictionary(
   }
 }
 
-} // namespace fuzzuf::algorithm::libfuzzer::mutator
+}  // namespace fuzzuf::algorithm::libfuzzer::mutator
 #endif

@@ -1,7 +1,7 @@
 /*
  * fuzzuf
- * Copyright (C) 2022 Ricerca Security
- * 
+ * Copyright (C) 2021-2023 Ricerca Security
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -28,13 +28,13 @@ namespace fuzzuf::algorithm::nautilus::fuzzer::option {
 struct NautilusTag {};
 
 /* Default configuration */
-constexpr uint8_t  GetDefaultNumOfThreads() { return 1; }
-constexpr size_t   GetDefaultThreadSize() { return 4194304; }
+constexpr uint8_t GetDefaultNumOfThreads() { return 1; }
+constexpr size_t GetDefaultThreadSize() { return 4194304; }
 constexpr uint16_t GetDefaultNumOfGenInputs() { return 100; }
-constexpr size_t   GetDefaultNumOfDetMuts() { return 1; }
-constexpr size_t   GetDefaultMaxTreeSize() { return 1000; }
-constexpr size_t   GetDefaultBitmapSize() { return 1 << 16; }
+constexpr size_t GetDefaultNumOfDetMuts() { return 1; }
+constexpr size_t GetDefaultMaxTreeSize() { return 1000; }
+constexpr size_t GetDefaultBitmapSize() { return 1 << 16; }
 
-} // namespace fuzzuf::algorithm::nautilus::fuzzer::option
+}  // namespace fuzzuf::algorithm::nautilus::fuzzer::option
 
 #endif

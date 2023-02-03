@@ -1,7 +1,7 @@
 /*
  * fuzzuf
- * Copyright (C) 2021 Ricerca Security
- * 
+ * Copyright (C) 2021-2023 Ricerca Security
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -21,11 +21,12 @@
  */
 #ifndef FUZZUF_INCLUDE_UTILS_SHA1_HPP
 #define FUZZUF_INCLUDE_UTILS_SHA1_HPP
-#include "fuzzuf/utils/type_traits/remove_cvr.hpp"
 #include <cstdint>
 #include <string>
 #include <type_traits>
 #include <vector>
+
+#include "fuzzuf/utils/type_traits/remove_cvr.hpp"
 namespace fuzzuf::utils {
 
 namespace detail {
@@ -66,5 +67,5 @@ auto ToSerializedSha1(const Range &range)
   return detail::ToSerializedSha1Contiguous(range);
 }
 
-} // namespace fuzzuf::utils
+}  // namespace fuzzuf::utils
 #endif

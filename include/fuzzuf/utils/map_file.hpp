@@ -1,7 +1,7 @@
 /*
  * fuzzuf
- * Copyright (C) 2021 Ricerca Security
- * 
+ * Copyright (C) 2021-2023 Ricerca Security
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -21,16 +21,18 @@
  */
 #ifndef FUZZUF_INCLUDE_UTILS_MAP_FILE_HPP
 #define FUZZUF_INCLUDE_UTILS_MAP_FILE_HPP
-#include "fuzzuf/utils/shared_range.hpp"
 #include <boost/range/iterator_range.hpp>
 #include <cstdint>
 #include <memory>
+
+#include "fuzzuf/utils/shared_range.hpp"
 namespace fuzzuf::utils {
 using mapped_file_t = boost::iterator_range<
     range::shared_iterator<uint8_t *, std::shared_ptr<uint8_t>>>;
 
 /**
- * mmap the file specified by filename, then return mmaped range using shared_range
+ * mmap the file specified by filename, then return mmaped range using
+ * shared_range
  * @param filename Filename
  * @param flags Flags passed to open(2)
  * @param populate If true, require all pages to be loaded at mmap
@@ -39,5 +41,5 @@ using mapped_file_t = boost::iterator_range<
 auto map_file(const std::string &filename, unsigned int flags, bool populate)
     -> mapped_file_t;
 
-} // namespace fuzzuf::utils
+}  // namespace fuzzuf::utils
 #endif

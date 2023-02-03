@@ -1,6 +1,6 @@
 /*
  * fuzzuf
- * Copyright (C) 2021 Ricerca Security
+ * Copyright (C) 2021-2023 Ricerca Security
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
@@ -15,13 +15,14 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see http://www.gnu.org/licenses/.
  */
+#include <boost/program_options.hpp>
+
 #include "fuzzuf/cli/fuzzer/afl_symcc/build_from_args.hpp"
 #include "fuzzuf/cli/fuzzer_builder_register.hpp"
 #include "fuzzuf/executor/afl_executor_interface.hpp"
-#include <boost/program_options.hpp>
 
 namespace fuzzuf::cli::fuzzer::afl_symcc {
 
 static FuzzerBuilderRegister global_afl_register("afl_symcc", BuildFromArgs);
 
-} // namespace fuzzuf::cli::fuzzer::afl_symcc
+}  // namespace fuzzuf::cli::fuzzer::afl_symcc

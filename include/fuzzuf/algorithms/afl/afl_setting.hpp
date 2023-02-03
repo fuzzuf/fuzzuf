@@ -1,7 +1,7 @@
 /*
  * fuzzuf
- * Copyright (C) 2021 Ricerca Security
- * 
+ * Copyright (C) 2021-2023 Ricerca Security
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -17,38 +17,33 @@
  */
 #pragma once
 
-#include <vector>
-#include <string>
 #include <optional>
-#include "fuzzuf/utils/filesystem.hpp"
+#include <string>
+#include <vector>
+
 #include "fuzzuf/utils/common.hpp"
+#include "fuzzuf/utils/filesystem.hpp"
 
 namespace fuzzuf::algorithm::afl {
 
 struct AFLSetting {
-    explicit AFLSetting(
-        const std::vector<std::string> &argv,
-        const std::string &in_dir,
-        const std::string &out_dir,
-        u32 exec_timelimit_ms,
-        u64 exec_memlimit,
-        bool forksrv,
-        bool dumb_mode,
-        int cpuid_to_bind
-    );
+  explicit AFLSetting(const std::vector<std::string> &argv,
+                      const std::string &in_dir, const std::string &out_dir,
+                      u32 exec_timelimit_ms, u64 exec_memlimit, bool forksrv,
+                      bool dumb_mode, int cpuid_to_bind);
 
-    ~AFLSetting();
+  ~AFLSetting();
 
-    const std::vector<std::string> argv;
-    const fs::path in_dir;
-    const fs::path out_dir;
-    const u32 exec_timelimit_ms;
-    const u64 exec_memlimit; 
-    const bool forksrv;
-    const bool dumb_mode;
-    const bool simple_files = false;
-    const bool ignore_finds = false;
-    const int cpuid_to_bind;
+  const std::vector<std::string> argv;
+  const fs::path in_dir;
+  const fs::path out_dir;
+  const u32 exec_timelimit_ms;
+  const u64 exec_memlimit;
+  const bool forksrv;
+  const bool dumb_mode;
+  const bool simple_files = false;
+  const bool ignore_finds = false;
+  const int cpuid_to_bind;
 };
 
-} // namespace fuzzuf::algorithm::afl;
+}  // namespace fuzzuf::algorithm::afl

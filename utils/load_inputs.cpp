@@ -1,7 +1,7 @@
 /*
  * fuzzuf
- * Copyright (C) 2021 Ricerca Security
- * 
+ * Copyright (C) 2021-2023 Ricerca Security
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -20,10 +20,13 @@
  * @author Ricerca Security <fuzzuf-dev@ricsec.co.jp>
  */
 #include "fuzzuf/utils/load_inputs.hpp"
-#include "fuzzuf/utils/sha1.hpp"
-#include "fuzzuf/logger/logger.hpp"
+
 #include <fcntl.h>
+
 #include <iostream>
+
+#include "fuzzuf/logger/logger.hpp"
+#include "fuzzuf/utils/sha1.hpp"
 
 namespace fuzzuf::utils {
 auto LoadInputs(const fs::path &dir, bool check_sha1)
@@ -48,4 +51,4 @@ auto LoadInputs(const fs::path &dir, bool check_sha1)
   }
   return inputs;
 }
-} // namespace fuzzuf::utils
+}  // namespace fuzzuf::utils

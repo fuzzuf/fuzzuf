@@ -1,7 +1,7 @@
 /*
  * fuzzuf
- * Copyright (C) 2021 Ricerca Security
- * 
+ * Copyright (C) 2021-2023 Ricerca Security
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -18,13 +18,19 @@
 #define BOOST_TEST_MODULE util.count_bytes
 #define BOOST_TEST_DYN_LINK
 #include <array>
-#include <iostream>
 #include <boost/test/unit_test.hpp>
+#include <iostream>
+
 #include "fuzzuf/utils/common.hpp"
 #include "random_data.hpp"
 BOOST_AUTO_TEST_CASE(UtilCountBytes) {
-  BOOST_CHECK_EQUAL( ( fuzzuf::utils::CountNon255Bytes( random_data1.data(), random_data1.size() ) ), 65260 );
-  BOOST_CHECK_EQUAL( ( fuzzuf::utils::CountNon255Bytes( random_data2.data(), random_data2.size() ) ), 478 );
-  BOOST_CHECK_EQUAL( ( fuzzuf::utils::CountNon255Bytes( random_data3.data(), random_data3.size() ) ), 111 );
+  BOOST_CHECK_EQUAL((fuzzuf::utils::CountNon255Bytes(random_data1.data(),
+                                                     random_data1.size())),
+                    65260);
+  BOOST_CHECK_EQUAL((fuzzuf::utils::CountNon255Bytes(random_data2.data(),
+                                                     random_data2.size())),
+                    478);
+  BOOST_CHECK_EQUAL((fuzzuf::utils::CountNon255Bytes(random_data3.data(),
+                                                     random_data3.size())),
+                    111);
 }
-

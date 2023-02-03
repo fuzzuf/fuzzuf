@@ -1,6 +1,6 @@
 /*
  * fuzzuf
- * Copyright (C) 2022 Ricerca Security
+ * Copyright (C) 2021-2023 Ricerca Security
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
@@ -21,11 +21,13 @@
  */
 #ifndef FUZZUF_INCLUDE_UTILS_VFS_VFS_HPP
 #define FUZZUF_INCLUDE_UTILS_VFS_VFS_HPP
-#include "fuzzuf/utils/filesystem.hpp"
-#include "fuzzuf/utils/map_file.hpp"
 #include <fcntl.h>
+
 #include <fstream>
 #include <optional>
+
+#include "fuzzuf/utils/filesystem.hpp"
+#include "fuzzuf/utils/map_file.hpp"
 #ifndef HAS_CXX_STD_FILESYSTEM
 #include <chrono>
 #endif
@@ -39,7 +41,7 @@ namespace fuzzuf::utils::vfs {
  * and path range check.
  */
 class VFS {
-public:
+ public:
   /**
    * Constructor.
    * @param allowed_path_ list of paths which are allowed to access from this
@@ -126,9 +128,9 @@ public:
   virtual void CreateSymlink(const fs::path &to,
                              const fs::path &new_symlink) = 0;
 #ifdef HAS_CXX_STD_FILESYSTEM
-  virtual void
-  Permissions(const fs::path &p, fs::perms prms,
-              fs::perm_options opts = fs::perm_options::replace) = 0;
+  virtual void Permissions(
+      const fs::path &p, fs::perms prms,
+      fs::perm_options opts = fs::perm_options::replace) = 0;
 #else
   virtual void Permissions(const fs::path &p, fs::perms prms) = 0;
 #endif
@@ -154,14 +156,14 @@ public:
 #ifdef HAS_CXX_STD_FILESYSTEM
   virtual fs::file_time_type LastWriteTime(const fs::path &p) = 0;
 #else
-  virtual std::chrono::system_clock::time_point
-  LastWriteTime(const fs::path &p) = 0;
+  virtual std::chrono::system_clock::time_point LastWriteTime(
+      const fs::path &p) = 0;
 #endif
   virtual fs::space_info Space(const fs::path &p) = 0;
   virtual mapped_file_t Mmap(const fs::path &, unsigned int flags,
                              bool populate) = 0;
 
-protected:
+ protected:
   VFS(const VFS &) = default;
   VFS(VFS &&) = default;
   VFS &operator=(const VFS &) = default;
@@ -170,6 +172,6 @@ protected:
   std::shared_ptr<std::vector<fs::path>> allowed_path;
 };
 
-} // namespace fuzzuf::utils::vfs
+}  // namespace fuzzuf::utils::vfs
 
 #endif

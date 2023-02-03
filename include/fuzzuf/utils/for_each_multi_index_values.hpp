@@ -1,7 +1,7 @@
 /*
  * fuzzuf
- * Copyright (C) 2021 Ricerca Security
- * 
+ * Copyright (C) 2021-2023 Ricerca Security
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -47,8 +47,7 @@ void ForEachMultiIndexValues(I &index, F &&func) {
   iters.reserve(index.size());
   for (auto iter = index.begin(); iter != index.end(); ++iter) {
     if constexpr (valid_only) {
-      if (bool(*iter))
-        iters.push_back(iter);
+      if (bool(*iter)) iters.push_back(iter);
     } else {
       iters.push_back(iter);
     }
@@ -58,6 +57,6 @@ void ForEachMultiIndexValues(I &index, F &&func) {
   }
 }
 
-} // namespace fuzzuf::utils
+}  // namespace fuzzuf::utils
 
 #endif

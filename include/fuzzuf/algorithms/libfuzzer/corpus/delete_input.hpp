@@ -1,7 +1,7 @@
 /*
  * fuzzuf
- * Copyright (C) 2021 Ricerca Security
- * 
+ * Copyright (C) 2021-2023 Ricerca Security
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -21,11 +21,12 @@
  */
 #ifndef FUZZUF_INCLUDE_ALGORITHM_LIBFUZZER_CORPUS_DELETE_INPUT_HPP
 #define FUZZUF_INCLUDE_ALGORITHM_LIBFUZZER_CORPUS_DELETE_INPUT_HPP
+#include <algorithm>
+#include <type_traits>
+
 #include "fuzzuf/algorithms/libfuzzer/state/corpus.hpp"
 #include "fuzzuf/algorithms/libfuzzer/state/state.hpp"
 #include "fuzzuf/exec_input/exec_input_set.hpp"
-#include <algorithm>
-#include <type_traits>
 
 namespace fuzzuf::algorithm::libfuzzer::corpus {
 
@@ -56,5 +57,5 @@ auto deleteInput(State &state, Corpus &corpus, std::size_t index)
   state.distribution_needs_update = true;
 }
 
-} // namespace fuzzuf::algorithm::libfuzzer::corpus
+}  // namespace fuzzuf::algorithm::libfuzzer::corpus
 #endif

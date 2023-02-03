@@ -1,6 +1,6 @@
 /*
  * fuzzuf
- * Copyright (C) 2021 Ricerca Security
+ * Copyright (C) 2021-2023 Ricerca Security
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
@@ -21,13 +21,14 @@
  */
 #ifndef FUZZUF_INCLUDE_ALGORITHM_LIBFUZZER_HIERARFLOW_EXECUTE_HPP
 #define FUZZUF_INCLUDE_ALGORITHM_LIBFUZZER_HIERARFLOW_EXECUTE_HPP
+#include <memory>
+
 #include "fuzzuf/algorithms/libfuzzer/executor/execute.hpp"
 #include "fuzzuf/algorithms/libfuzzer/hierarflow/standard_end.hpp"
 #include "fuzzuf/algorithms/libfuzzer/hierarflow/standard_typedef.hpp"
 #include "fuzzuf/algorithms/libfuzzer/hierarflow/trace.hpp"
 #include "fuzzuf/hierarflow/hierarflow_routine.hpp"
 #include "fuzzuf/utils/call_with_nth.hpp"
-#include <memory>
 
 namespace fuzzuf::algorithm::libfuzzer {
 
@@ -56,7 +57,7 @@ using ExecuteSymCCStdArgOrderT =
 template <typename F, typename Ord>
 using ExecuteSymCC = libfuzzer::Execute<F, ExecuteSymCCStdArgOrderT<Ord>>;
 
-} // namespace standard_order
+}  // namespace standard_order
 
-} // namespace fuzzuf::algorithm::libfuzzer
+}  // namespace fuzzuf::algorithm::libfuzzer
 #endif

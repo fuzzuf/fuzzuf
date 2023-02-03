@@ -1,7 +1,7 @@
 /*
  * fuzzuf
- * Copyright (C) 2022 Ricerca Security
- * 
+ * Copyright (C) 2021-2023 Ricerca Security
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -21,6 +21,7 @@
 #include <boost/test/unit_test.hpp>
 #include <string>
 #include <vector>
+
 #include "fuzzuf/utils/common.hpp"
 
 BOOST_AUTO_TEST_CASE(ExecuteCommand) {
@@ -44,7 +45,7 @@ BOOST_AUTO_TEST_CASE(ExecuteCommand) {
   cmd = {"sh", "-c", "exit 123"};
   BOOST_CHECK_EQUAL(fuzzuf::utils::ExecuteCommand(cmd), 123);
 
-  cmd = {"sh", "-c", "exit 777"}; // WEXITSTATUS(0x309) == 9
+  cmd = {"sh", "-c", "exit 777"};  // WEXITSTATUS(0x309) == 9
   BOOST_CHECK_EQUAL(fuzzuf::utils::ExecuteCommand(cmd), 9);
 
   cmd = {"non-existing_command", "--hello", "world"};

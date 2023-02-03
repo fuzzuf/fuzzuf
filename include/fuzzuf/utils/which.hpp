@@ -1,7 +1,7 @@
 /*
  * fuzzuf
- * Copyright (C) 2021 Ricerca Security
- * 
+ * Copyright (C) 2021-2023 Ricerca Security
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -35,5 +35,5 @@ namespace fuzzuf::utils {
 // それ以外の場合、nameがそのまま返る
 auto which(const fs::path &name) -> fs::path;
 
-} // namespace fuzzuf::utils
+}  // namespace fuzzuf::utils
 #endif

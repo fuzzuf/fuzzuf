@@ -1,6 +1,6 @@
 /*
  * fuzzuf
- * Copyright (C) 2021 Ricerca Security
+ * Copyright (C) 2021-2023 Ricerca Security
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
@@ -19,11 +19,14 @@
  * @file select_seed.hpp
  * @author Ricerca Security <fuzzuf-dev@ricsec.co.jp>
  */
+
 #ifndef FUZZUF_INCLUDE_ALGORITHM_LIBFUZZER_SELECT_SEED_HPP
 #define FUZZUF_INCLUDE_ALGORITHM_LIBFUZZER_SELECT_SEED_HPP
 #include <boost/range/iterator_range.hpp>
 
 #include "fuzzuf/algorithms/libfuzzer/random.hpp"
+#include "fuzzuf/algorithms/libfuzzer/state/corpus.hpp"
+#include "fuzzuf/algorithms/libfuzzer/state/state.hpp"
 #include "fuzzuf/utils/for_each_multi_index_values.hpp"
 #include "fuzzuf/utils/range_traits.hpp"
 #include "fuzzuf/utils/void_t.hpp"

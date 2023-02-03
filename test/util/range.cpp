@@ -1,7 +1,7 @@
 /*
  * fuzzuf
- * Copyright (C) 2021 Ricerca Security
- * 
+ * Copyright (C) 2021-2023 Ricerca Security
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -17,12 +17,13 @@
  */
 #define BOOST_TEST_MODULE util.range
 #define BOOST_TEST_DYN_LINK
+#include <boost/test/unit_test.hpp>
+#include <vector>
+
 #include "fuzzuf/utils/filtered_range.hpp"
 #include "fuzzuf/utils/nth_range.hpp"
 #include "fuzzuf/utils/shared_range.hpp"
 #include "fuzzuf/utils/zip_range.hpp"
-#include <boost/test/unit_test.hpp>
-#include <vector>
 
 // shared_rangeしたvectorのiteratorがrandom_access_iteratorの要件を満たす事を確認
 BOOST_AUTO_TEST_CASE(SharedRange) {

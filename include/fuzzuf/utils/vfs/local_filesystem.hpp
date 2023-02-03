@@ -1,6 +1,6 @@
 /*
  * fuzzuf
- * Copyright (C) 2022 Ricerca Security
+ * Copyright (C) 2021-2023 Ricerca Security
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
@@ -21,11 +21,13 @@
  */
 #ifndef FUZZUF_INCLUDE_UTILS_VFS_LOCAL_FILESYSTEM_HPP
 #define FUZZUF_INCLUDE_UTILS_VFS_LOCAL_FILESYSTEM_HPP
+#include <fcntl.h>
+
+#include <fstream>
+
 #include "fuzzuf/utils/filesystem.hpp"
 #include "fuzzuf/utils/map_file.hpp"
 #include "fuzzuf/utils/vfs/vfs.hpp"
-#include <fcntl.h>
-#include <fstream>
 
 namespace fuzzuf::utils::vfs {
 
@@ -35,7 +37,7 @@ namespace fuzzuf::utils::vfs {
  * This is a wrapper to the standard filesystem functions with path filtering.
  */
 class LocalFilesystem : public VFS {
-public:
+ public:
   /**
    * Constructor.
    * @param allowed_path_ Only paths listed here are accessible from the VFS.
@@ -156,9 +158,9 @@ public:
    * @param opts enum to specify how to modify permission
    */
 #ifdef HAS_CXX_STD_FILESYSTEM
-  virtual void
-  Permissions(const fs::path &p, fs::perms prms,
-              fs::perm_options opts = fs::perm_options::replace) override;
+  virtual void Permissions(
+      const fs::path &p, fs::perms prms,
+      fs::perm_options opts = fs::perm_options::replace) override;
 #else
   virtual void Permissions(const fs::path &p, fs::perms prms) override;
 #endif
@@ -275,8 +277,8 @@ public:
 #ifdef HAS_CXX_STD_FILESYSTEM
   virtual fs::file_time_type LastWriteTime(const fs::path &p) override;
 #else
-  virtual std::chrono::system_clock::time_point
-  LastWriteTime(const fs::path &p) override;
+  virtual std::chrono::system_clock::time_point LastWriteTime(
+      const fs::path &p) override;
 #endif
   /**
    * wrapper to fs::space
@@ -314,6 +316,6 @@ public:
   std::fstream Open(const fs::path &p, std::ios_base::openmode mode);
 };
 
-} // namespace fuzzuf::utils::vfs
+}  // namespace fuzzuf::utils::vfs
 
 #endif

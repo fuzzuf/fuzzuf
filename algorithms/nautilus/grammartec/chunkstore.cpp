@@ -1,7 +1,7 @@
 /*
  * fuzzuf
- * Copyright (C) 2022 Ricerca Security
- * 
+ * Copyright (C) 2021-2023 Ricerca Security
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -24,10 +24,10 @@
  *          These trees are used by the mutation engine.
  */
 #include "fuzzuf/algorithms/nautilus/grammartec/chunkstore.hpp"
+
 #include "fuzzuf/exceptions.hpp"
 #include "fuzzuf/utils/common.hpp"
 #include "fuzzuf/utils/random.hpp"
-
 
 namespace fuzzuf::algorithm::nautilus::grammartec {
 
@@ -65,17 +65,13 @@ void ChunkStore::AddTree(Tree& tree, Context& ctx) {
 
       /* Save tree to file */
       std::string filepath = fuzzuf::utils::StrPrintf(
-        "%s/chunks/chunk_%09ld",
-        _work_dir.c_str(), _number_of_chunks++
-      );
-      int fd = fuzzuf::utils::OpenFile(filepath,
-                              O_WRONLY | O_CREAT | O_TRUNC,
-                              S_IWUSR | S_IRUSR); // 0600
+          "%s/chunks/chunk_%09ld", _work_dir.c_str(), _number_of_chunks++);
+      int fd = fuzzuf::utils::OpenFile(filepath, O_WRONLY | O_CREAT | O_TRUNC,
+                                       S_IWUSR | S_IRUSR);  // 0600
       if (fd == -1) {
         throw exceptions::unable_to_create_file(
-          fuzzuf::utils::StrPrintf("Cannot save tree: %s", filepath.c_str()),
-          __FILE__, __LINE__
-        );
+            fuzzuf::utils::StrPrintf("Cannot save tree: %s", filepath.c_str()),
+            __FILE__, __LINE__);
       }
       fuzzuf::utils::WriteFile(fd, buffer.data(), buffer.size());
       fuzzuf::utils::CloseFile(fd);
@@ -102,8 +98,7 @@ void ChunkStore::AddTree(Tree& tree, Context& ctx) {
  *          This function is used by the random recursive mutation.
  */
 std::optional<AlternativePair> ChunkStore::GetAlternativeTo(
-  const RuleID& r, Context& ctx
-) const {
+    const RuleID& r, Context& ctx) const {
   NTermID nt = ctx.GetNT(RuleIDOrCustom(r));
 
   if (_nts_to_chunks.find(nt) == _nts_to_chunks.end()) {
@@ -114,7 +109,7 @@ std::optional<AlternativePair> ChunkStore::GetAlternativeTo(
   const std::vector<Chunk>& chunks = _nts_to_chunks.at(nt);
 
   std::vector<Chunk> relevant;
-  for (const Chunk& chunk: chunks) {
+  for (const Chunk& chunk : chunks) {
     auto& [tid, nid] = chunk;
     if (_trees.at(tid).GetRuleID(nid) != r) {
       relevant.emplace_back(tid, nid);
@@ -127,9 +122,8 @@ std::optional<AlternativePair> ChunkStore::GetAlternativeTo(
 
   Chunk selected = utils::random::Choose(relevant);
   return std::make_pair(
-    std::move(std::make_unique<Tree>(_trees.at(selected.first))),
-    selected.second
-  );
+      std::move(std::make_unique<Tree>(_trees.at(selected.first))),
+      selected.second);
 }
 
-} // namespace fuzzuf::algorithm::nautilus::grammartec
+}  // namespace fuzzuf::algorithm::nautilus::grammartec

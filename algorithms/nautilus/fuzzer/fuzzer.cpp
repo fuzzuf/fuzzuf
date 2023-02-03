@@ -1,7 +1,7 @@
 /*
  * fuzzuf
- * Copyright (C) 2022 Ricerca Security
- * 
+ * Copyright (C) 2021-2023 Ricerca Security
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -20,12 +20,14 @@
  * @brief Fuzzing loop of Nautilus.
  * @author Ricerca Security <fuzzuf-dev@ricsec.co.jp>
  */
+#include "fuzzuf/algorithms/nautilus/fuzzer/fuzzer.hpp"
+
 #include <algorithm>
 #include <fstream>
 #include <memory>
 #include <string>
 #include <vector>
-#include "fuzzuf/algorithms/nautilus/fuzzer/fuzzer.hpp"
+
 #include "fuzzuf/algorithms/nautilus/fuzzer/mutation_hierarflow_routines.hpp"
 #include "fuzzuf/algorithms/nautilus/fuzzer/other_hierarflow_routines.hpp"
 #include "fuzzuf/algorithms/nautilus/fuzzer/update_hierarflow_routines.hpp"
@@ -36,7 +38,6 @@
 #include "fuzzuf/utils/common.hpp"
 #include "fuzzuf/utils/filesystem.hpp"
 
-
 namespace fuzzuf::algorithm::nautilus::fuzzer {
 
 /**
@@ -45,7 +46,7 @@ namespace fuzzuf::algorithm::nautilus::fuzzer {
  * @param (state_ref) Reference to the state of Nautilus fuzzer
  */
 NautilusFuzzer::NautilusFuzzer(std::unique_ptr<NautilusState>&& state_ref)
-  : state(std::move(state_ref)) {
+    : state(std::move(state_ref)) {
   /* Check files */
   CheckPathExistence();
 
@@ -65,8 +66,8 @@ NautilusFuzzer::NautilusFuzzer(std::unique_ptr<NautilusState>&& state_ref)
  * @brief Build HierarFlow of Nautilus
  */
 void NautilusFuzzer::BuildFuzzFlow() {
-  using fuzzuf::hierarflow::CreateNode;
   using fuzzuf::hierarflow::CreateIrregularNode;
+  using fuzzuf::hierarflow::CreateNode;
   using namespace fuzzuf::algorithm::nautilus::fuzzer::routine::other;
   using namespace fuzzuf::algorithm::nautilus::fuzzer::routine::mutation;
   using namespace fuzzuf::algorithm::nautilus::fuzzer::routine::update;
@@ -75,52 +76,35 @@ void NautilusFuzzer::BuildFuzzFlow() {
 
   /* Mutation flow */
   auto mut_rules = CreateNode<MutRules>(*state);
-  auto splice    = CreateNode<MutSplice>(*state);
-  auto havoc     = CreateNode<MutHavoc>(*state);
+  auto splice = CreateNode<MutSplice>(*state);
+  auto havoc = CreateNode<MutHavoc>(*state);
   auto havoc_rec = CreateNode<MutHavocRec>(*state);
 
   /* Processing flow */
   auto initialize_state = CreateNode<InitializeState>(*state);
-  auto apply_det_muts   = CreateNode<ApplyDetMuts>(*state);
-  auto apply_rand_muts  = CreateNode<ApplyRandMuts>(*state);
+  auto apply_det_muts = CreateNode<ApplyDetMuts>(*state);
+  auto apply_rand_muts = CreateNode<ApplyRandMuts>(*state);
 
   /* Main flow */
-  auto process_next_input      = CreateIrregularNode<ProcessInput>(
-    *state,
-    initialize_state.GetCalleeIndexRef(),
-    apply_det_muts.GetCalleeIndexRef(),
-    apply_rand_muts.GetCalleeIndexRef()
-  );
-  auto generate_input          = CreateNode<GenerateInput>(*state);
+  auto process_next_input = CreateIrregularNode<ProcessInput>(
+      *state, initialize_state.GetCalleeIndexRef(),
+      apply_det_muts.GetCalleeIndexRef(), apply_rand_muts.GetCalleeIndexRef());
+  auto generate_input = CreateNode<GenerateInput>(*state);
   auto select_input_and_switch = CreateIrregularNode<SelectInput>(
-    *state,
-    process_next_input.GetCalleeIndexRef(),
-    generate_input.GetCalleeIndexRef()
-  );
-  auto update_state            = CreateNode<UpdateState>(*state);
+      *state, process_next_input.GetCalleeIndexRef(),
+      generate_input.GetCalleeIndexRef());
+  auto update_state = CreateNode<UpdateState>(*state);
 
-  fuzz_loop << (
-    select_input_and_switch <= (
-      process_next_input
-      || generate_input
-    )
-    || update_state
-  );
+  fuzz_loop << (select_input_and_switch <=
+                    (process_next_input || generate_input) ||
+                update_state);
 
-  process_next_input <= (
-    initialize_state
-    || apply_det_muts << (
-      mut_rules
-      || splice.HardLink()
-      || havoc.HardLink()
-      || havoc_rec.HardLink()
-    )
-    || apply_rand_muts << (
-      splice.HardLink()
-      || havoc.HardLink()
-      || havoc_rec.HardLink()
-    )
-  );
+  process_next_input <=
+      (initialize_state ||
+       apply_det_muts << (mut_rules || splice.HardLink() || havoc.HardLink() ||
+                          havoc_rec.HardLink()) ||
+       apply_rand_muts << (splice.HardLink() || havoc.HardLink() ||
+                           havoc_rec.HardLink()));
 }
 
 /**
@@ -133,42 +117,40 @@ void NautilusFuzzer::CheckPathExistence() {
   // NOTE: this check might be unnecessary as NativeLinuxExecutor would die
   if (!fs::exists(setting->args[0])) {
     throw exceptions::invalid_file(
-      fuzzuf::utils::StrPrintf("Target binary does not exist!\nGiven path: %s",
-                      setting->args[0].c_str()),
-      __FILE__, __LINE__
-    );
+        fuzzuf::utils::StrPrintf(
+            "Target binary does not exist!\nGiven path: %s",
+            setting->args[0].c_str()),
+        __FILE__, __LINE__);
   }
 
   // NOTE: this check might be unnecessary as NativeLinuxExecutor would die
-  if (!fs::exists(setting->path_to_workdir)
-      || !fs::is_directory(setting->path_to_workdir)) {
+  if (!fs::exists(setting->path_to_workdir) ||
+      !fs::is_directory(setting->path_to_workdir)) {
     throw exceptions::invalid_file(
-      fuzzuf::utils::StrPrintf("Specified working directory does not exist!\n"
-                      "Given path: %s",
-                      setting->path_to_workdir.c_str()),
-      __FILE__, __LINE__
-    );
+        fuzzuf::utils::StrPrintf("Specified working directory does not exist!\n"
+                                 "Given path: %s",
+                                 setting->path_to_workdir.c_str()),
+        __FILE__, __LINE__);
   }
 
   /* Check grammar file path */
   if (!fs::exists(setting->path_to_grammar)) {
     throw exceptions::invalid_file(
-      fuzzuf::utils::StrPrintf("Grammar does not exist!\n"
-                      "Given path: %s",
-                      setting->path_to_grammar.c_str()),
-      __FILE__, __LINE__
-    );
+        fuzzuf::utils::StrPrintf("Grammar does not exist!\n"
+                                 "Given path: %s",
+                                 setting->path_to_grammar.c_str()),
+        __FILE__, __LINE__);
   }
 
   /* Check output directories */
   std::vector<std::string> folders{"signaled", "queue", "timeout", "chunks"};
-  for (auto f: folders) {
+  for (auto f : folders) {
     fs::path dir = setting->path_to_workdir / f;
     if (!fs::exists(dir) || !fs::is_directory(dir)) {
       throw exceptions::execution_failure(
-        fuzzuf::utils::StrPrintf("Output directory does not exist: %s", dir.c_str()),
-        __FILE__, __LINE__
-      );
+          fuzzuf::utils::StrPrintf("Output directory does not exist: %s",
+                                   dir.c_str()),
+          __FILE__, __LINE__);
     }
   }
 }
@@ -181,9 +163,7 @@ void NautilusFuzzer::CheckPathExistence() {
  * @param (rule) Rule for NT in JSON object
  * @param ()
  */
-bool NautilusFuzzer::ParseAndAddRule(Context& ctx,
-                                     std::string nt,
-                                     json rule,
+bool NautilusFuzzer::ParseAndAddRule(Context& ctx, std::string nt, json rule,
                                      bool recursive /*=false*/) {
   if (rule.is_string()) {
     /* Simple string rule: just add it */
@@ -195,14 +175,13 @@ bool NautilusFuzzer::ParseAndAddRule(Context& ctx,
 
     /* Check if every rule is integer or string */
     bool has_integer = false;
-    if (std::all_of(rule.begin(), rule.end(),
-                    [&has_integer](const json& e) {
-                      has_integer |= e.is_number_integer();
-                      return e.is_number_integer() || e.is_string();
-                    })) {
+    if (std::all_of(rule.begin(), rule.end(), [&has_integer](const json& e) {
+          has_integer |= e.is_number_integer();
+          return e.is_number_integer() || e.is_string();
+        })) {
       if (!has_integer) {
         /* Union rule if every rule is string */
-        for (const json& e: rule) {
+        for (const json& e : rule) {
           if (!NautilusFuzzer::ParseAndAddRule(ctx, nt, e, true)) {
             std::cerr << "[-] Invalid rule" << std::endl
                       << "    NT   : " << nt << std::endl
@@ -216,7 +195,7 @@ bool NautilusFuzzer::ParseAndAddRule(Context& ctx,
       } else {
         /* This is a binary rule */
         std::string r;
-        for (const json& e: rule) {
+        for (const json& e : rule) {
           if (e.is_string()) {
             /* Simply concat string */
             r += e.get<std::string>();
@@ -228,7 +207,8 @@ bool NautilusFuzzer::ParseAndAddRule(Context& ctx,
               std::cerr << "[-] Invalid character code" << std::endl
                         << "    NT  : " << nt << std::endl
                         << "    RULE: " << rule << std::endl
-                        << "    The value " << c << " is out-of-range." << std::endl;
+                        << "    The value " << c << " is out-of-range."
+                        << std::endl;
               std::exit(1);
             }
 
@@ -242,7 +222,7 @@ bool NautilusFuzzer::ParseAndAddRule(Context& ctx,
 
     } else if (!recursive) {
       /* Union rule with binary rule inside */
-      for (const json& e: rule) {
+      for (const json& e : rule) {
         if (!NautilusFuzzer::ParseAndAddRule(ctx, nt, e, true)) {
           std::cerr << "[-] Invalid rule" << std::endl
                     << "    NT   : " << nt << std::endl
@@ -257,7 +237,6 @@ bool NautilusFuzzer::ParseAndAddRule(Context& ctx,
       /* Invalid recursive array */
       return false;
     }
-
   }
 
   /* Invalid type */
@@ -294,12 +273,13 @@ void NautilusFuzzer::LoadGrammar(Context& ctx, fs::path grammar_path) {
       } else if (rules.size() == 0) {
         std::cerr << "[-] Rule file doesn't include any rules" << std::endl;
         std::exit(1);
-      } else if (!rules[0].is_array()
-                 || rules[0].size() != 2
-                 || !rules[0].get<json>()[0].is_string()) {
+      } else if (!rules[0].is_array() || rules[0].size() != 2 ||
+                 !rules[0].get<json>()[0].is_string()) {
         std::cerr << "[-] First rule is invalid" << std::endl
-                  << "    It must be an array with 2 elements. The first" << std::endl
-                  << "    one must be  a string representing the name" << std::endl
+                  << "    It must be an array with 2 elements. The first"
+                  << std::endl
+                  << "    one must be  a string representing the name"
+                  << std::endl
                   << "    of the nonterminal." << std::endl;
         std::exit(1);
       }
@@ -308,20 +288,19 @@ void NautilusFuzzer::LoadGrammar(Context& ctx, fs::path grammar_path) {
       std::string root = "{" + rules[0].get<json>()[0].get<std::string>() + "}";
       NautilusFuzzer::ParseAndAddRule(ctx, "START", root);
 
-      for (auto& rule: rules) {
-        if (!rule.is_array()
-            || rule.size() != 2
-            || !rule[0].is_string()) {
+      for (auto& rule : rules) {
+        if (!rule.is_array() || rule.size() != 2 || !rule[0].is_string()) {
           std::cerr << "[-] Invalid rule" << std::endl
-                    << "    It must be an array with 2 elements. The first" << std::endl
-                    << "    one must be  a string representing the name" << std::endl
+                    << "    It must be an array with 2 elements. The first"
+                    << std::endl
+                    << "    one must be  a string representing the name"
+                    << std::endl
                     << "    of the nonterminal." << std::endl;
           std::cerr << "    RULE: " << rule << std::endl;
           std::exit(1);
         }
 
-        NautilusFuzzer::ParseAndAddRule(ctx,
-                                        rule[0].get<std::string>(),
+        NautilusFuzzer::ParseAndAddRule(ctx, rule[0].get<std::string>(),
                                         rule[1].get<json>());
       }
 
@@ -335,24 +314,19 @@ void NautilusFuzzer::LoadGrammar(Context& ctx, fs::path grammar_path) {
   } else if (grammar_path.extension() == ".py") {
     /* TODO: Support Python-written grammar */
     throw exceptions::not_implemented(
-      "Grammar defined in Python is not supported yet", __FILE__, __LINE__
-    );
+        "Grammar defined in Python is not supported yet", __FILE__, __LINE__);
 
   } else {
     throw exceptions::fuzzuf_runtime_error(
-      "Unknown grammar type ('.json' expected)", __FILE__, __LINE__
-    );
+        "Unknown grammar type ('.json' expected)", __FILE__, __LINE__);
   }
 }
-
 
 /**
  * @fn
  * @brief Run fuzzing loop once
  */
-void NautilusFuzzer::OneLoop(void) {
-  fuzz_loop();
-}
+void NautilusFuzzer::OneLoop(void) { fuzz_loop(); }
 
 /**
  * @fn
@@ -360,7 +334,7 @@ void NautilusFuzzer::OneLoop(void) {
  */
 void NautilusFuzzer::ReceiveStopSignal(void) {
   // TODO: comment out
-  //state->ReceiveStopSignal();
+  // state->ReceiveStopSignal();
 }
 
 /**
@@ -368,15 +342,12 @@ void NautilusFuzzer::ReceiveStopSignal(void) {
  * @brief Check if fuzzing should terminate
  * @return True if fuzzing ends, otherwise false
  */
-bool NautilusFuzzer::ShouldEnd(void) {
-  return false;
-}
+bool NautilusFuzzer::ShouldEnd(void) { return false; }
 
 /**
  * @fn
  * @brief Destroy this instance
  */
-NautilusFuzzer::~NautilusFuzzer() {
-}
+NautilusFuzzer::~NautilusFuzzer() {}
 
-} // namespace fuzzuf::algorithm::nautilus
+}  // namespace fuzzuf::algorithm::nautilus::fuzzer

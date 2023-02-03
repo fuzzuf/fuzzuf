@@ -1,7 +1,7 @@
 /*
  * fuzzuf
- * Copyright (C) 2021 Ricerca Security
- * 
+ * Copyright (C) 2021-2023 Ricerca Security
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -21,6 +21,10 @@
  */
 #ifndef FUZZUF_INCLUDE_ALGORITHM_LIBFUZZER_CORPUS_ADD_TO_CORPUS_HPP
 #define FUZZUF_INCLUDE_ALGORITHM_LIBFUZZER_CORPUS_ADD_TO_CORPUS_HPP
+#include <algorithm>
+#include <cassert>
+#include <type_traits>
+
 #include "fuzzuf/algorithms/libfuzzer/state/corpus.hpp"
 #include "fuzzuf/algorithms/libfuzzer/state/input_info.hpp"
 #include "fuzzuf/algorithms/libfuzzer/state/state.hpp"
@@ -28,17 +32,15 @@
 #include "fuzzuf/executor/native_linux_executor.hpp"
 #include "fuzzuf/feedback/exit_status_feedback.hpp"
 #include "fuzzuf/utils/sha1.hpp"
-#include <algorithm>
-#include <cassert>
-#include <type_traits>
 
 namespace fuzzuf::algorithm::libfuzzer::corpus {
 
 /**
  * Insert execution result to corpus if that has features
- * Unlike executor::AddToCorpus, this function always append the execution result to the corpus.
- * This function puts id and sha1 hash on the execution result.
- * If the execution result doesn't have filename and persistent is true, the sha1 hash is used as the filename.
+ * Unlike executor::AddToCorpus, this function always append the execution
+ * result to the corpus. This function puts id and sha1 hash on the execution
+ * result. If the execution result doesn't have filename and persistent is true,
+ * the sha1 hash is used as the filename.
  *
  * Corresponding code of original libFuzzer implementation
  * https://github.com/llvm/llvm-project/blob/llvmorg-12.0.1/compiler-rt/lib/fuzzer/FuzzerCorpus.h#L208
@@ -58,7 +60,6 @@ auto AddToCorpus(Corpus &corpus, Range &range, InputInfo &testcase_,
                  bool persistent, const fs::path &path_prefix)
     -> std::enable_if_t<is_full_corpus_v<Corpus> &&
                         is_input_info_v<InputInfo>> {
-
   assert(!utils::range::rangeEmpty(range));
   // Inputs.size() is cast to uint32_t below.
   assert(corpus.corpus.size() < std::numeric_limits<uint32_t>::max());
@@ -66,8 +67,7 @@ auto AddToCorpus(Corpus &corpus, Range &range, InputInfo &testcase_,
   std::uint64_t id = 0u;
   testcase_.sha1 = utils::ToSerializedSha1(range);
   testcase_.input_size = utils::range::rangeSize(range);
-  if (testcase_.name.empty())
-    testcase_.name = testcase_.sha1;
+  if (testcase_.name.empty()) testcase_.name = testcase_.sha1;
   auto &hashed = corpus.corpus.template get<ByName>();
   const auto existing = hashed.find(testcase_.name);
   if (existing != hashed.end()) {
@@ -116,6 +116,6 @@ auto AddToCorpus(Corpus &corpus, Range &range, InputInfo &testcase_,
   */
 }
 
-} // namespace fuzzuf::algorithm::libfuzzer::corpus
+}  // namespace fuzzuf::algorithm::libfuzzer::corpus
 
 #endif

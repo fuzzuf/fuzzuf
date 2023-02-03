@@ -1,7 +1,7 @@
 /*
  * fuzzuf
- * Copyright (C) 2021 Ricerca Security
- * 
+ * Copyright (C) 2021-2023 Ricerca Security
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -21,21 +21,24 @@
  */
 #ifndef FUZZUF_INCLUDE_ALGORITHM_NEZHA_EXECUTOR_COLLECT_FEATURES_HPP
 #define FUZZUF_INCLUDE_ALGORITHM_NEZHA_EXECUTOR_COLLECT_FEATURES_HPP
-#include "fuzzuf/algorithms/nezha/state.hpp"
+#include <type_traits>
+
 #include "fuzzuf/algorithms/libfuzzer/feature/add_feature.hpp"
 #include "fuzzuf/algorithms/libfuzzer/feature/collect_features.hpp"
 #include "fuzzuf/algorithms/libfuzzer/feature/update_feature_frequency.hpp"
 #include "fuzzuf/algorithms/libfuzzer/state/corpus.hpp"
 #include "fuzzuf/algorithms/libfuzzer/state/state.hpp"
+#include "fuzzuf/algorithms/nezha/state.hpp"
 #include "fuzzuf/utils/range_traits.hpp"
-#include <type_traits>
 
 namespace fuzzuf::algorithm::nezha::executor {
 
 /**
  * Calculate features of specified execution result.
- * Unlike CollectFeatures in libFuzzer, this function consider every features detected on the execution as unique_features of the execution.
- * (This means unique_features is no longer unique. As the Reflection of that difference, original Nezha implementation renames unique_features to features.)
+ * Unlike CollectFeatures in libFuzzer, this function consider every features
+ * detected on the execution as unique_features of the execution. (This means
+ * unique_features is no longer unique. As the Reflection of that difference,
+ * original Nezha implementation renames unique_features to features.)
  *
  * Corresponding code of original Nezha implementation
  * https://github.com/nezha-dt/nezha/blob/master/Fuzzer/FuzzerLoop.cpp#L433
@@ -49,7 +52,8 @@ namespace fuzzuf::algorithm::nezha::executor {
  * @param range Input value that was passed to the executor
  * @param exec_result Execution result that was produced by the executor
  * @param cov Coverage retrived from the executor
- * @param module_offset Offset value of feature. if module_offset is 3000 and cov[ 2 ] is non zero value, the feature 3002 is activated.
+ * @param module_offset Offset value of feature. if module_offset is 3000 and
+ * cov[ 2 ] is non zero value, the feature 3002 is activated.
  */
 template <typename State, typename Corpus, typename Range, typename InputInfo,
           typename Cov>
@@ -88,6 +92,6 @@ auto CollectFeatures(State &state, Corpus &corpus, Range &range,
   exec_result.unique_feature_set = unique_feature_set_temp;
 }
 
-} // namespace fuzzuf::algorithm::nezha::executor
+}  // namespace fuzzuf::algorithm::nezha::executor
 
 #endif

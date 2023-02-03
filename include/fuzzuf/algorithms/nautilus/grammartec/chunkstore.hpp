@@ -1,7 +1,7 @@
 /*
  * fuzzuf
- * Copyright (C) 2022 Ricerca Security
- * 
+ * Copyright (C) 2021-2023 Ricerca Security
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -23,18 +23,18 @@
 #ifndef FUZZUF_INCLUDE_ALGORITHMS_NAUTILUS_GRAMMARTEC_CHUNKSTORE_HPP
 #define FUZZUF_INCLUDE_ALGORITHMS_NAUTILUS_GRAMMARTEC_CHUNKSTORE_HPP
 
-#include <optional>
 #include <memory>
+#include <optional>
 #include <string>
 #include <unordered_map>
 #include <unordered_set>
 #include <utility>
 #include <vector>
+
 #include "fuzzuf/algorithms/nautilus/grammartec/context.hpp"
 #include "fuzzuf/algorithms/nautilus/grammartec/newtypes.hpp"
 #include "fuzzuf/algorithms/nautilus/grammartec/tree.hpp"
 #include "fuzzuf/utils/filesystem.hpp"
-
 
 namespace fuzzuf::algorithm::nautilus::grammartec {
 
@@ -42,9 +42,9 @@ using Chunk = std::pair<size_t, NodeID>;
 using AlternativePair = std::pair<std::unique_ptr<Tree>, NodeID>;
 
 class ChunkStore {
-public:
+ public:
   ChunkStore(const std::string& work_dir)
-    : _work_dir(work_dir), _number_of_chunks(0) {}
+      : _work_dir(work_dir), _number_of_chunks(0) {}
   std::unordered_map<NTermID, std::vector<Chunk>>& nts_to_chunks() {
     return _nts_to_chunks;
   }
@@ -52,11 +52,10 @@ public:
   std::unordered_set<std::string>& seen_outputs() { return _seen_outputs; }
 
   void AddTree(Tree& tree, Context& ctx);
-  std::optional<AlternativePair> GetAlternativeTo(
-    const RuleID& r, Context& ctx
-  ) const;
+  std::optional<AlternativePair> GetAlternativeTo(const RuleID& r,
+                                                  Context& ctx) const;
 
-private:
+ private:
   std::unordered_map<NTermID, std::vector<Chunk>> _nts_to_chunks;
   std::unordered_set<std::string> _seen_outputs;
   std::vector<Tree> _trees;
@@ -64,6 +63,6 @@ private:
   size_t _number_of_chunks;
 };
 
-} // namespace fuzzuf::algorithm::nautilus::grammartec
+}  // namespace fuzzuf::algorithm::nautilus::grammartec
 
 #endif

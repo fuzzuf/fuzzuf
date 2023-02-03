@@ -1,7 +1,7 @@
 /*
  * fuzzuf
- * Copyright (C) 2021 Ricerca Security
- * 
+ * Copyright (C) 2021-2023 Ricerca Security
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -21,6 +21,9 @@
  */
 #ifndef FUZZUF_INCLUDE_ALGORITHM_LIBFUZZER_EXECUTOR_COLLECT_FEATURE_HPP
 #define FUZZUF_INCLUDE_ALGORITHM_LIBFUZZER_EXECUTOR_COLLECT_FEATURE_HPP
+#include <algorithm>
+#include <type_traits>
+
 #include "fuzzuf/algorithms/libfuzzer/feature/add_feature.hpp"
 #include "fuzzuf/algorithms/libfuzzer/feature/collect_features.hpp"
 #include "fuzzuf/algorithms/libfuzzer/feature/update_feature_frequency.hpp"
@@ -29,8 +32,6 @@
 #include "fuzzuf/algorithms/libfuzzer/state/state.hpp"
 #include "fuzzuf/utils/range_traits.hpp"
 #include "fuzzuf/utils/type_traits/remove_cvr.hpp"
-#include <algorithm>
-#include <type_traits>
 
 namespace fuzzuf::algorithm::libfuzzer::executor {
 
@@ -88,6 +89,6 @@ auto CollectFeatures(State &state, Corpus &corpus, Range &range,
   exec_result.unique_feature_set = unique_feature_set_temp;
 }
 
-} // namespace fuzzuf::algorithm::libfuzzer::executor
+}  // namespace fuzzuf::algorithm::libfuzzer::executor
 
 #endif

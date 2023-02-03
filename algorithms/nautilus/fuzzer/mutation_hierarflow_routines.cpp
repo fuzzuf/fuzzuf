@@ -1,7 +1,7 @@
 /*
  * fuzzuf
- * Copyright (C) 2022 Ricerca Security
- * 
+ * Copyright (C) 2021-2023 Ricerca Security
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -21,9 +21,9 @@
  * @author Ricerca Security <fuzzuf-dev@ricsec.co.jp>
  */
 #include "fuzzuf/algorithms/nautilus/fuzzer/mutation_hierarflow_routines.hpp"
+
 #include "fuzzuf/algorithms/nautilus/fuzzer/state.hpp"
 #include "fuzzuf/utils/common.hpp"
-
 
 namespace fuzzuf::algorithm::nautilus::fuzzer::routine::mutation {
 
@@ -32,7 +32,7 @@ namespace fuzzuf::algorithm::nautilus::fuzzer::routine::mutation {
  * @brief HierarFlow routine for InitializeState (initialize_state)
  */
 RInitializeState InitializeState::operator()(QueueItem& inp) {
-  DEBUG_ASSERT (std::holds_alternative<InitState>(inp.state));
+  DEBUG_ASSERT(std::holds_alternative<InitState>(inp.state));
 
   /* Minimize testcase */
   size_t start_index = std::get<InitState>(inp.state);
@@ -44,7 +44,7 @@ RInitializeState InitializeState::operator()(QueueItem& inp) {
     inp.state = InitState(end_index);
   }
 
-  return GoToParent(); // back to process_next_input
+  return GoToParent();  // back to process_next_input
 }
 
 /**
@@ -52,12 +52,12 @@ RInitializeState InitializeState::operator()(QueueItem& inp) {
  * @brief HierarFlow routine for ApplyDetMuts (apply_det_muts)
  */
 RApplyDetMuts ApplyDetMuts::operator()(QueueItem& inp) {
-  DEBUG_ASSERT (std::holds_alternative<DetState>(inp.state));
+  DEBUG_ASSERT(std::holds_alternative<DetState>(inp.state));
 
   /* Rules, Splice, Havoc, and HavocRecursion */
-  CallSuccessors(inp); // mut_rules
+  CallSuccessors(inp);  // mut_rules
 
-  return GoToParent(); // back to process_next_input
+  return GoToParent();  // back to process_next_input
 }
 
 /**
@@ -65,12 +65,12 @@ RApplyDetMuts ApplyDetMuts::operator()(QueueItem& inp) {
  * @brief HierarFlow routine for ApplyRandMuts (apply_rand_muts)
  */
 RApplyRandMuts ApplyRandMuts::operator()(QueueItem& inp) {
-  DEBUG_ASSERT (std::holds_alternative<RandomState>(inp.state));
+  DEBUG_ASSERT(std::holds_alternative<RandomState>(inp.state));
 
   /* Splice, Havoc, and HavocRecursion */
-  CallSuccessors(inp); // splice
+  CallSuccessors(inp);  // splice
 
-  return GoToParent(); // back to process_next_input
+  return GoToParent();  // back to process_next_input
 }
 
 /**
@@ -102,10 +102,9 @@ RMutRules MutRules::operator()(QueueItem& inp) {
  * @brief HierarFlow routine for Splice (splice)
  */
 RMutSplice MutSplice::operator()(QueueItem& inp) {
-  FTesterMut tester
-    = [this](TreeMutation& t, Context& ctx) -> bool {
-        return this->state.RunOnWithDedup(t, ExecutionReason::Splice, ctx);
-      };
+  FTesterMut tester = [this](TreeMutation& t, Context& ctx) -> bool {
+    return this->state.RunOnWithDedup(t, ExecutionReason::Splice, ctx);
+  };
 
   for (size_t i = 0; i < 100; i++) {
     // TODO: Wait lock for cks when threaded
@@ -120,10 +119,9 @@ RMutSplice MutSplice::operator()(QueueItem& inp) {
  * @brief HierarFlow routine for Havoc (havoc)
  */
 RMutHavoc MutHavoc::operator()(QueueItem& inp) {
-  FTesterMut tester
-    = [this](TreeMutation& t, Context& ctx) {
-        this->state.RunOnWithDedup(t, ExecutionReason::Havoc, ctx);
-      };
+  FTesterMut tester = [this](TreeMutation& t, Context& ctx) {
+    this->state.RunOnWithDedup(t, ExecutionReason::Havoc, ctx);
+  };
 
   for (size_t i = 0; i < 100; i++) {
     state.mutator.MutRandom(inp.tree, state.ctx, tester);
@@ -140,20 +138,17 @@ RMutHavocRec MutHavocRec::operator()(QueueItem& inp) {
   if (inp.recursions) {
     /* If input has recursions */
 
-    FTesterMut tester
-      = [this](TreeMutation& t, Context& ctx) {
-          this->state.RunOnWithDedup(t, ExecutionReason::HavocRec, ctx);
-        };
+    FTesterMut tester = [this](TreeMutation& t, Context& ctx) {
+      this->state.RunOnWithDedup(t, ExecutionReason::HavocRec, ctx);
+    };
 
     for (size_t i = 0; i < 20; i++) {
-      state.mutator.MutRandomRecursion(
-        inp.tree, inp.recursions.value(), state.ctx, tester
-      );
+      state.mutator.MutRandomRecursion(inp.tree, inp.recursions.value(),
+                                       state.ctx, tester);
     }
-
   }
 
   return GoToDefaultNext();
 }
 
-} // namespace fuzzuf::algorithm::nautilus::fuzzer::routine::mutation
+}  // namespace fuzzuf::algorithm::nautilus::fuzzer::routine::mutation

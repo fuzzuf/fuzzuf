@@ -1,7 +1,7 @@
 /*
  * fuzzuf
- * Copyright (C) 2021 Ricerca Security
- * 
+ * Copyright (C) 2021-2023 Ricerca Security
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -26,8 +26,9 @@ namespace fuzzuf::algorithm::libfuzzer {
 /**
  * A function accepting any arguments and does nothing.
  */
-template <typename... Args> void DoNothing(Args &&...) {}
+template <typename... Args>
+void DoNothing(Args &&...) {}
 
-} // namespace fuzzuf::algorithm::libfuzzer
+}  // namespace fuzzuf::algorithm::libfuzzer
 
 #endif

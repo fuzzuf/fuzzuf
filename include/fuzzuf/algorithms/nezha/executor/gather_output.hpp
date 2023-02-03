@@ -1,7 +1,7 @@
 /*
  * fuzzuf
- * Copyright (C) 2021 Ricerca Security
- * 
+ * Copyright (C) 2021-2023 Ricerca Security
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -21,8 +21,9 @@
  */
 #ifndef FUZZUF_INCLUDE_ALGORITHM_NEZHA_EXECUTOR_GATHER_OUTPUT_HPP
 #define FUZZUF_INCLUDE_ALGORITHM_NEZHA_EXECUTOR_GATHER_OUTPUT_HPP
-#include "fuzzuf/utils/range_traits.hpp"
 #include <type_traits>
+
+#include "fuzzuf/utils/range_traits.hpp"
 
 namespace fuzzuf::algorithm::nezha::executor {
 
@@ -41,6 +42,6 @@ auto GatherOutput(const Range &output, OutputDiff &output_diff)
   utils::range::append(output_hash()(output), output_diff);
 }
 
-} // namespace fuzzuf::algorithm::nezha::executor
+}  // namespace fuzzuf::algorithm::nezha::executor
 
 #endif

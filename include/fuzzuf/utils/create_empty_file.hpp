@@ -1,7 +1,7 @@
 /*
  * fuzzuf
- * Copyright (C) 2021 Ricerca Security
- * 
+ * Copyright (C) 2021-2023 Ricerca Security
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -28,13 +28,10 @@ namespace fuzzuf::utils {
  * Create file at the specified path
  * The created file has size of undefined data
  * If the filesystem supports sparse file, created file become sparse.
- * If the file is already exists and existing file size is smaller than size, file is extended to size.
+ * If the file is already exists and existing file size is smaller than size,
+ * file is extended to size.
  */
-void create_empty_file(
-  const std::string &filename,
-  std::size_t size
-);
+void create_empty_file(const std::string &filename, std::size_t size);
 
-}
+}  // namespace fuzzuf::utils
 #endif
-

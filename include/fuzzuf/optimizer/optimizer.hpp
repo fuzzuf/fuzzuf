@@ -1,7 +1,7 @@
 /*
  * fuzzuf
- * Copyright (C) 2022 Ricerca Security
- * 
+ * Copyright (C) 2021-2023 Ricerca Security
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -21,15 +21,15 @@
 
 namespace fuzzuf::optimizer {
 
-template<typename T>
+template <typename T>
 class Optimizer {
-public:
-    Optimizer() {}
-    ~Optimizer() {}
+ public:
+  Optimizer() {}
+  ~Optimizer() {}
 
-    virtual T CalcValue() = 0;
+  virtual T CalcValue() = 0;
 };
 
-} // fuzzuf::optimizer
+}  // namespace fuzzuf::optimizer
 
 #endif

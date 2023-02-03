@@ -1,7 +1,7 @@
 /*
  * fuzzuf
- * Copyright (C) 2021 Ricerca Security
- * 
+ * Copyright (C) 2021-2023 Ricerca Security
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -26,13 +26,13 @@
 /**
  * Macro to generate standard child nodes invocation.
  */
-#define FUZZUF_ALGORITHM_LIBFUZZER_HIERARFLOW_STANDARD_END(name)               \
-  if (this->CallSuccessors(std::forward<Args>(args)...)) {                     \
-    base_type::SetResponseValue(true);                                         \
-    FUZZUF_ALGORITHM_LIBFUZZER_HIERARFLOW_CHECKPOINT(#name, abort)             \
-    return base_type::GoToParent();                                            \
-  }                                                                            \
-  FUZZUF_ALGORITHM_LIBFUZZER_HIERARFLOW_CHECKPOINT(#name, leave)               \
+#define FUZZUF_ALGORITHM_LIBFUZZER_HIERARFLOW_STANDARD_END(name)   \
+  if (this->CallSuccessors(std::forward<Args>(args)...)) {         \
+    base_type::SetResponseValue(true);                             \
+    FUZZUF_ALGORITHM_LIBFUZZER_HIERARFLOW_CHECKPOINT(#name, abort) \
+    return base_type::GoToParent();                                \
+  }                                                                \
+  FUZZUF_ALGORITHM_LIBFUZZER_HIERARFLOW_CHECKPOINT(#name, leave)   \
   return base_type::GoToDefaultNext();
 
 #endif

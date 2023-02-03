@@ -1,7 +1,7 @@
 /*
  * fuzzuf
- * Copyright (C) 2021 Ricerca Security
- * 
+ * Copyright (C) 2021-2023 Ricerca Security
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -21,9 +21,10 @@
  */
 #ifndef FUZZUF_INCLUDE_ALGORITHM_LIBFUZZER_MUTATION_INCREMENT_MUTATIONS_COUNT_HPP
 #define FUZZUF_INCLUDE_ALGORITHM_LIBFUZZER_MUTATION_INCREMENT_MUTATIONS_COUNT_HPP
+#include <type_traits>
+
 #include "fuzzuf/algorithms/libfuzzer/state/input_info.hpp"
 #include "fuzzuf/algorithms/libfuzzer/state/state.hpp"
-#include <type_traits>
 
 namespace fuzzuf::algorithm::libfuzzer::mutator {
 
@@ -34,6 +35,6 @@ auto IncrementMutationsCount(State &state, InputInfo &exec_result)
   ++exec_result.executed_mutations_count;
 }
 
-} // namespace fuzzuf::algorithm::libfuzzer::mutator
+}  // namespace fuzzuf::algorithm::libfuzzer::mutator
 
 #endif

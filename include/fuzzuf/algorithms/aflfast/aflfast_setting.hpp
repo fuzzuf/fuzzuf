@@ -1,7 +1,7 @@
 /*
  * fuzzuf
- * Copyright (C) 2021 Ricerca Security
- * 
+ * Copyright (C) 2021-2023 Ricerca Security
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -23,21 +23,15 @@
 namespace fuzzuf::algorithm::aflfast {
 
 struct AFLFastSetting : public afl::AFLSetting {
-    explicit AFLFastSetting(
-        const std::vector<std::string> &argv,
-        const std::string &in_dir,
-        const std::string &out_dir,
-        u32 exec_timelimit_ms,
-        u64 exec_memlimit,
-        bool forksrv,
-        bool dumb_mode,
-        int cpuid_to_bind,
-        const option::Schedule schedule
-    );
+  explicit AFLFastSetting(const std::vector<std::string> &argv,
+                          const std::string &in_dir, const std::string &out_dir,
+                          u32 exec_timelimit_ms, u64 exec_memlimit,
+                          bool forksrv, bool dumb_mode, int cpuid_to_bind,
+                          const option::Schedule schedule);
 
-    ~AFLFastSetting();
+  ~AFLFastSetting();
 
-    const option::Schedule schedule = option::FAST;
+  const option::Schedule schedule = option::FAST;
 };
 
-} // namespace fuzzuf::algorithm::aflfast
+}  // namespace fuzzuf::algorithm::aflfast

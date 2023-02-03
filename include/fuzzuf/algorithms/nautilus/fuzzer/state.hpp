@@ -1,7 +1,7 @@
 /*
  * fuzzuf
- * Copyright (C) 2022 Ricerca Security
- * 
+ * Copyright (C) 2021-2023 Ricerca Security
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -30,6 +30,7 @@
 #include <unordered_map>
 #include <unordered_set>
 #include <vector>
+
 #include "fuzzuf/algorithms/nautilus/fuzzer/queue.hpp"
 #include "fuzzuf/algorithms/nautilus/fuzzer/setting.hpp"
 #include "fuzzuf/algorithms/nautilus/grammartec/chunkstore.hpp"
@@ -38,46 +39,35 @@
 #include "fuzzuf/algorithms/nautilus/grammartec/tree.hpp"
 #include "fuzzuf/executor/afl_executor_interface.hpp"
 
-
 namespace fuzzuf::algorithm::nautilus::fuzzer {
 
 using namespace fuzzuf::algorithm::nautilus::grammartec;
 
-enum ExecutionReason {
-  Havoc, HavocRec, Min, MinRec, Splice, Det, Gen
-};
+enum ExecutionReason { Havoc, HavocRec, Min, MinRec, Splice, Det, Gen };
 
 /* Shared global state */
 struct NautilusState {
   explicit NautilusState(
-    std::shared_ptr<const NautilusSetting> setting,
-    std::shared_ptr<executor::AFLExecutorInterface> executor
-  );
+      std::shared_ptr<const NautilusSetting> setting,
+      std::shared_ptr<executor::AFLExecutorInterface> executor);
 
-  bool RunOnWithDedup(const TreeLike& tree,
-                      ExecutionReason exec_reason,
-                      Context &ctx);
-  void RunOnWithoutDedup(const TreeLike& tree,
-                         ExecutionReason exec_reason,
-                         Context &ctx);
-  void RunOn(std::string& code,
-             const TreeLike& tree,
-             ExecutionReason exec_reason,
-             Context &ctx);
+  bool RunOnWithDedup(const TreeLike& tree, ExecutionReason exec_reason,
+                      Context& ctx);
+  void RunOnWithoutDedup(const TreeLike& tree, ExecutionReason exec_reason,
+                         Context& ctx);
+  void RunOn(std::string& code, const TreeLike& tree,
+             ExecutionReason exec_reason, Context& ctx);
   u64 ExecRaw(const std::string& code);
   void CheckForDeterministicBehavior(const std::vector<uint8_t>& old_bitmap,
                                      std::vector<size_t>& new_bits,
                                      const std::string& code);
 
-  bool HasBits(const TreeLike& tree,
-               std::unordered_set<size_t>& bits,
-               ExecutionReason exec_reason,
-               Context& ctx);
+  bool HasBits(const TreeLike& tree, std::unordered_set<size_t>& bits,
+               ExecutionReason exec_reason, Context& ctx);
 
   // TODO: put them into HierarFlow
   bool Minimize(QueueItem& input, size_t start_index, size_t end_index);
-  bool DeterministicTreeMutation(QueueItem& input,
-                                 size_t start_index,
+  bool DeterministicTreeMutation(QueueItem& input, size_t start_index,
                                  size_t end_index);
 
   std::shared_ptr<const NautilusSetting> setting;
@@ -90,7 +80,7 @@ struct NautilusState {
 
   /* Global shared state */
   Queue queue;
-  std::unordered_map<bool, std::vector<uint8_t>> bitmaps; // is_crash-->bitmap
+  std::unordered_map<bool, std::vector<uint8_t>> bitmaps;  // is_crash-->bitmap
   uint64_t execution_count;
   uint64_t average_executions_per_sec;
   uint64_t bits_found_by_havoc;
@@ -124,6 +114,6 @@ struct NautilusState {
   std::deque<std::string> last_inputs_ring_buffer;
 };
 
-} // namespace fuzzuf::algorithm::nautilus::fuzzer
+}  // namespace fuzzuf::algorithm::nautilus::fuzzer
 
 #endif

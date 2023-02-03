@@ -1,7 +1,7 @@
 /*
  * fuzzuf
- * Copyright (C) 2021 Ricerca Security
- * 
+ * Copyright (C) 2021-2023 Ricerca Security
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -37,5 +37,5 @@ void toHex(std::string &message, const std::vector<std::uint8_t> &range);
  * @param value Address to serialize
  */
 void toHex(std::string &message, std::uintptr_t value);
-} // namespace fuzzuf::utils
+}  // namespace fuzzuf::utils
 #endif

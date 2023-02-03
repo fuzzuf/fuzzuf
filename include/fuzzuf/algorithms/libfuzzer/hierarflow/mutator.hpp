@@ -1,7 +1,7 @@
 /*
  * fuzzuf
- * Copyright (C) 2021 Ricerca Security
- * 
+ * Copyright (C) 2021-2023 Ricerca Security
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -61,7 +61,8 @@ namespace standard_order {
 template <typename T>
 using CrossoverStdArgOrderT = decltype(T::rng && T::input && T::max_length &&
                                        T::mutation_history && T::crossover);
-template <typename T> using ToASCIIStdArgOrderT = decltype(T::input);
+template <typename T>
+using ToASCIIStdArgOrderT = decltype(T::input);
 template <typename T>
 using IncrementMutationsCountStdArgOrderT =
     decltype(T::state && T::exec_result);
@@ -93,7 +94,7 @@ using IncrementMutationsCount = libfuzzer::IncrementMutationsCount<
     F, IncrementMutationsCountStdArgOrderT<Ord>>;
 template <typename F, typename Ord>
 using ToASCII = libfuzzer::ToASCII<F, ToASCIIStdArgOrderT<Ord>>;
-} // namespace standard_order
+}  // namespace standard_order
 
-} // namespace fuzzuf::algorithm::libfuzzer
+}  // namespace fuzzuf::algorithm::libfuzzer
 #endif

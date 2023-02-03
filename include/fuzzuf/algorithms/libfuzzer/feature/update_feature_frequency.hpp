@@ -1,7 +1,7 @@
 /*
  * fuzzuf
- * Copyright (C) 2021 Ricerca Security
- * 
+ * Copyright (C) 2021-2023 Ricerca Security
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -21,19 +21,21 @@
  */
 #ifndef FUZZUF_INCLUDE_ALGORITHM_LIBFUZZER_FEATURE_UPDATE_FEATURE_FREQUENCY_HPP
 #define FUZZUF_INCLUDE_ALGORITHM_LIBFUZZER_FEATURE_UPDATE_FEATURE_FREQUENCY_HPP
+#include <cstddef>
+#include <cstdint>
+#include <type_traits>
+
 #include "fuzzuf/algorithms/libfuzzer/state/input_info.hpp"
 #include "fuzzuf/algorithms/libfuzzer/state/state.hpp"
 #include "fuzzuf/algorithms/libfuzzer/utils.hpp"
 #include "fuzzuf/utils/range_traits.hpp"
-#include <cstddef>
-#include <cstdint>
-#include <type_traits>
 namespace fuzzuf::algorithm::libfuzzer::feature {
 
 /**
  * Increment counter at index-th element of global_feature_freqs
  * The counter value saturates
- * Since n-th element of global_feature_freqs indicates detection count of feature ID n, index should be a valid feature ID.
+ * Since n-th element of global_feature_freqs indicates detection count of
+ * feature ID n, index should be a valid feature ID.
  *
  * Corresponding code of original libFuzzer implementation
  * https://github.com/llvm/llvm-project/blob/llvmorg-12.0.1/compiler-rt/lib/fuzzer/FuzzerCorpus.h#L437
@@ -52,8 +54,7 @@ auto UpdateFeatureFrequency(State &state, InputInfo &exec_result,
       index % utils::range::rangeSize(state.global_feature_freqs);
 
   // Saturated increment.
-  if (state.global_feature_freqs[index32] == 0xFFFF)
-    return;
+  if (state.global_feature_freqs[index32] == 0xFFFF) return;
   std::uint16_t freq = state.global_feature_freqs[index32]++;
 
   // Skip if abundant.
@@ -68,6 +69,6 @@ auto UpdateFeatureFrequency(State &state, InputInfo &exec_result,
   exec_result.updateFeatureFrequency(index);
 }
 
-} // namespace fuzzuf::algorithm::libfuzzer::feature
+}  // namespace fuzzuf::algorithm::libfuzzer::feature
 
 #endif

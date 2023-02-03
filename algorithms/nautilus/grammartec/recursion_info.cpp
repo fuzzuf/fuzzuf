@@ -1,7 +1,7 @@
 /*
  * fuzzuf
- * Copyright (C) 2022 Ricerca Security
- * 
+ * Copyright (C) 2021-2023 Ricerca Security
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -27,15 +27,16 @@
  *          and check if the parents share the same non-terminal
  *          (recursion) as that of children.
  */
+#include "fuzzuf/algorithms/nautilus/grammartec/recursion_info.hpp"
+
 #include <algorithm>
 #include <iostream>
 #include <limits>
 #include <numeric>
 #include <utility>
-#include "fuzzuf/algorithms/nautilus/grammartec/recursion_info.hpp"
+
 #include "fuzzuf/exceptions.hpp"
 #include "fuzzuf/utils/random.hpp"
-
 
 namespace fuzzuf::algorithm::nautilus::grammartec {
 
@@ -49,8 +50,7 @@ using fuzzuf::utils::random::WalkerDiscreteDistribution;
  * @param (ctx) Context
  * @return std::nullopt if it cannot find parents, otherwise RecursionInfo
  */
-std::optional<RecursionInfo> RecursionInfo::New(Tree& t,
-                                                const NTermID& n,
+std::optional<RecursionInfo> RecursionInfo::New(Tree& t, const NTermID& n,
                                                 Context& ctx) {
   std::unordered_map<NodeID, NodeID> recursive_parents;
   std::vector<NodeID> node_by_offset;
@@ -65,10 +65,8 @@ std::optional<RecursionInfo> RecursionInfo::New(Tree& t,
 
   auto sampler = WalkerDiscreteDistribution<size_t>(depth_by_offset);
 
-  return RecursionInfo(std::move(recursive_parents),
-                       std::move(sampler),
-                       std::move(depth_by_offset),
-                       std::move(node_by_offset));
+  return RecursionInfo(std::move(recursive_parents), std::move(sampler),
+                       std::move(depth_by_offset), std::move(node_by_offset));
 }
 
 /**
@@ -77,11 +75,11 @@ std::optional<RecursionInfo> RecursionInfo::New(Tree& t,
  * @params (t) Tree
  * @params (nt) Nonterminal ID
  * @params (ctx) Context
- * @return A tuple of NodeID->NodeID map, vector of NodeID, and vector of depth (std::optional)
+ * @return A tuple of NodeID->NodeID map, vector of NodeID, and vector of depth
+ * (std::optional)
  */
-std::optional<Parent> RecursionInfo::FindParents(
-  Tree& t, const NTermID& nt, Context& ctx
-) {
+std::optional<Parent> RecursionInfo::FindParents(Tree& t, const NTermID& nt,
+                                                 Context& ctx) {
   using Stack = std::pair<std::optional<NodeID>, size_t>;
   std::vector<Stack> stack;
   stack.emplace_back(std::nullopt, 0);
@@ -98,8 +96,7 @@ std::optional<Parent> RecursionInfo::FindParents(
         std::unordered_map<NodeID, NodeID> parents;
         std::vector<NodeID> ids;
         std::vector<size_t> weights;
-        if (res)
-          std::tie(parents, ids, weights) = res.value();
+        if (res) std::tie(parents, ids, weights) = res.value();
 
         parents[node] = maybe_parent.value();
         ids.emplace_back(node);
@@ -136,8 +133,7 @@ std::pair<NodeID, NodeID> RecursionInfo::GetRandomRecursionPair() const {
  * @return A pair of Node IDs
  */
 std::pair<NodeID, NodeID> RecursionInfo::GetRecursionPairByOffset(
-  size_t offset
-) const {
+    size_t offset) const {
   NodeID node1 = _node_by_offset.at(offset);
   NodeID node2 = node1;
 
@@ -157,4 +153,4 @@ size_t RecursionInfo::GetNumberOfRecursions() const {
   return _node_by_offset.size();
 }
 
-} // namespace fuzzuf::algorithm::nautilus::grammartec
+}  // namespace fuzzuf::algorithm::nautilus::grammartec

@@ -1,7 +1,7 @@
 /*
  * fuzzuf
- * Copyright (C) 2021 Ricerca Security
- * 
+ * Copyright (C) 2021-2023 Ricerca Security
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -21,8 +21,6 @@
  */
 #ifndef FUZZUF_INCLUDE_ALGORITHM_LIBFUZZER_DICTIONARY_HPP
 #define FUZZUF_INCLUDE_ALGORITHM_LIBFUZZER_DICTIONARY_HPP
-#include "fuzzuf/utils/filesystem.hpp"
-#include "fuzzuf/utils/range_traits.hpp"
 #include <algorithm>
 #include <boost/container/static_vector.hpp>
 #include <cstddef>
@@ -32,9 +30,13 @@
 #include <string_view>
 #include <vector>
 
+#include "fuzzuf/utils/filesystem.hpp"
+#include "fuzzuf/utils/range_traits.hpp"
+
 namespace fuzzuf::algorithm::libfuzzer::dictionary {
-template <typename Word> class BasicDictionaryEntry {
-public:
+template <typename Word>
+class BasicDictionaryEntry {
+ public:
   using word_t = Word;
 
   BasicDictionaryEntry() {}
@@ -89,15 +91,14 @@ public:
   nlohmann::json to_json() const {
     auto root = nlohmann::json::object();
     root["word"] = nlohmann::json::array();
-    for (const auto &v : word)
-      root["word"].push_back(v);
+    for (const auto &v : word) root["word"].push_back(v);
     root["position_hint"] = position_hint;
     root["use_count"] = use_count;
     root["success_count"] = success_count;
     return root;
   }
 
-private:
+ private:
   word_t word;
   std::size_t position_hint = std::numeric_limits<std::size_t>::max();
   // How many times the value was choosed
@@ -123,16 +124,17 @@ std::size_t GetPositionHint(const BasicDictionaryEntry<Word> &v) {
 }
 
 template <typename Traits, typename T>
-std::basic_ostream<char, Traits> &
-operator<<(std::basic_ostream<char, Traits> &l,
-           const BasicDictionaryEntry<T> &r) {
+std::basic_ostream<char, Traits> &operator<<(
+    std::basic_ostream<char, Traits> &l, const BasicDictionaryEntry<T> &r) {
   l << r.to_json().dump();
   return l;
 }
 
 /**
- * Static dictionary uses static_vector for both container to store byte sequence and container to store dictionary entries.
- * Static dictionary has much closer behaviour to original libFuzzer implementation and it has same size limitation.
+ * Static dictionary uses static_vector for both container to store byte
+ * sequence and container to store dictionary entries. Static dictionary has
+ * much closer behaviour to original libFuzzer implementation and it has same
+ * size limitation.
  */
 using StaticDictionaryEntry =
     BasicDictionaryEntry<boost::container::static_vector<std::uint8_t, 64u>>;
@@ -140,28 +142,27 @@ using StaticDictionary =
     boost::container::static_vector<StaticDictionaryEntry, 1u << 14>;
 
 template <typename Traits>
-std::basic_ostream<char, Traits> &
-operator<<(std::basic_ostream<char, Traits> &l, const StaticDictionary &r) {
+std::basic_ostream<char, Traits> &operator<<(
+    std::basic_ostream<char, Traits> &l, const StaticDictionary &r) {
   auto root = nlohmann::json::array();
-  for (auto &v : r)
-    root.push_back(v.to_json());
+  for (auto &v : r) root.push_back(v.to_json());
   l << root.dump();
   return l;
 }
 
 /**
  * Dynamic dictionary uses vector for the continers.
- * Dynamic dictionary may allocate memory during fuzzing, but the size limitation is much looser.
+ * Dynamic dictionary may allocate memory during fuzzing, but the size
+ * limitation is much looser.
  */
 using DynamicDictionaryEntry = BasicDictionaryEntry<std::vector<uint8_t>>;
 using DynamicDictionary = std::vector<DynamicDictionaryEntry>;
 
 template <typename Traits>
-std::basic_ostream<char, Traits> &
-operator<<(std::basic_ostream<char, Traits> &l, const DynamicDictionary &r) {
+std::basic_ostream<char, Traits> &operator<<(
+    std::basic_ostream<char, Traits> &l, const DynamicDictionary &r) {
   auto root = nlohmann::json::array();
-  for (auto &v : r)
-    root.push_back(v.to_json());
+  for (auto &v : r) root.push_back(v.to_json());
   l << root.dump();
   return l;
 }
@@ -178,7 +179,8 @@ void Load(const std::vector<fs::path> &paths, StaticDictionary &dest,
 void Load(const std::vector<fs::path> &paths, DynamicDictionary &dest,
           bool strict, const std::function<void(std::string &&)> &eout);
 
-template <typename T> struct IsDictionaryEntry : public std::false_type {};
+template <typename T>
+struct IsDictionaryEntry : public std::false_type {};
 template <typename T>
 struct IsDictionaryEntry<BasicDictionaryEntry<T>> : public std::true_type {};
 template <typename T>
@@ -190,19 +192,23 @@ template <typename T>
 struct IsDictionary<
     T, std::enable_if_t<is_dictionary_entry_v<utils::range::RangeValueT<T>>>>
     : public std::true_type {};
-template <typename T> constexpr bool is_dictionary_v = IsDictionary<T>::value;
+template <typename T>
+constexpr bool is_dictionary_v = IsDictionary<T>::value;
 
-template <typename T, typename Enable = void> struct WordType {};
+template <typename T, typename Enable = void>
+struct WordType {};
 template <typename T>
 struct WordType<T, std::enable_if_t<is_dictionary_entry_v<T>>> {
   using type = typename T::word_t;
 };
-template <typename T> struct WordType<T, std::enable_if_t<is_dictionary_v<T>>> {
+template <typename T>
+struct WordType<T, std::enable_if_t<is_dictionary_v<T>>> {
   using type = typename WordType<utils::range::RangeValueT<T>>::type;
 };
-template <typename T> using WordTypeT = typename WordType<T>::type;
+template <typename T>
+using WordTypeT = typename WordType<T>::type;
 
 template <typename Dict>
 using DictionaryHistory = std::vector<utils::range::RangeValueT<Dict> *>;
-} // namespace fuzzuf::algorithm::libfuzzer::dictionary
+}  // namespace fuzzuf::algorithm::libfuzzer::dictionary
 #endif

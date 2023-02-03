@@ -1,6 +1,6 @@
 /*
  * fuzzuf
- * Copyright (C) 2022 Ricerca Security
+ * Copyright (C) 2021-2023 Ricerca Security
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
@@ -19,7 +19,6 @@
 #include <cstdlib>
 int main() {
   const auto val = std::getenv("FOO");
-  if (!val)
-    std::abort();
+  if (!val) std::abort();
   std::puts(val);
 }

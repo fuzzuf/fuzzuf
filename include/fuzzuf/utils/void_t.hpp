@@ -1,7 +1,7 @@
 /*
  * fuzzuf
- * Copyright (C) 2021 Ricerca Security
- * 
+ * Copyright (C) 2021-2023 Ricerca Security
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -28,16 +28,22 @@
 
 namespace fuzzuf::utils {
 /**
- * clang has problem described in C++ core issue 1558 even if -std=c++17 or higher is specified.
- * As the result, void_t must be re-defined with workaround to avoid this problem.
+ * clang has problem described in C++ core issue 1558 even if -std=c++17 or
+ * higher is specified. As the result, void_t must be re-defined with workaround
+ * to avoid this problem.
  * http://www.open-std.org/jtc1/sc22/wg21/docs/cwg_defects.html#1558
  */
 #ifdef __clang__
-template <typename... T> struct voider { using type = void; };
-template <typename... T> using void_t = typename voider<T...>::type;
+template <typename... T>
+struct voider {
+  using type = void;
+};
+template <typename... T>
+using void_t = typename voider<T...>::type;
 #else
-template <typename... T> using void_t = std::void_t<T...>;
+template <typename... T>
+using void_t = std::void_t<T...>;
 #endif
-} // namespace fuzzuf::utils
+}  // namespace fuzzuf::utils
 
 #endif

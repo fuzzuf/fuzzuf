@@ -1,6 +1,6 @@
 /*
  * fuzzuf
- * Copyright (C) 2022 Ricerca Security
+ * Copyright (C) 2021-2023 Ricerca Security
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
@@ -24,9 +24,9 @@
 #include <iostream>
 
 #include "fuzzuf/cli/create_fuzzer_instance_from_argv.hpp"
+#include "fuzzuf/tests/standard_test_dirs.hpp"
 #include "fuzzuf/utils/count_regular_files.hpp"
 #include "fuzzuf/utils/filesystem.hpp"
-#include "fuzzuf/tests/standard_test_dirs.hpp"
 
 BOOST_AUTO_TEST_CASE(ExecuteSymCCWithParallel) {
   // Setup root directory
@@ -113,7 +113,7 @@ BOOST_AUTO_TEST_CASE(ExecuteSymCCWithoutParallel) {
   for (size_t i = 0u; i != 2u; ++i) {
     fuzzer->OneLoop();
   }
-  
+
   // AFL+SymCC cannot find the crash path
   BOOST_CHECK_EQUAL(
       fuzzuf::utils::CountRegularFiles(output_dir / "fuzzer0" / "crashes"), 0);

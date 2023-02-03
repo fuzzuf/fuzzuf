@@ -1,7 +1,7 @@
 /*
  * fuzzuf
- * Copyright (C) 2021 Ricerca Security
- * 
+ * Copyright (C) 2021-2023 Ricerca Security
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -20,6 +20,7 @@
  * @author Ricerca Security <fuzzuf-dev@ricsec.co.jp>
  */
 #include "fuzzuf/utils/to_hex.hpp"
+
 #include <boost/spirit/include/karma.hpp>
 namespace fuzzuf::utils {
 void toHex(std::string &message, const std::vector<std::uint8_t> &range) {
@@ -37,4 +38,4 @@ void toHex(std::string &message, std::uintptr_t value) {
   karma::generate(std::back_inserter(message),
                   karma::right_align(16, '0')[long_int_g], value);
 }
-} // namespace fuzzuf::utils
+}  // namespace fuzzuf::utils

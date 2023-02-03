@@ -1,6 +1,6 @@
 /*
  * fuzzuf
- * Copyright (C) 2021 Ricerca Security
+ * Copyright (C) 2021-2023 Ricerca Security
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
@@ -22,6 +22,10 @@
  */
 #ifndef FUZZUF_INCLUDE_ALGORITHMS_LIBFUZZER_TEST_UTILS_HPP
 #define FUZZUF_INCLUDE_ALGORITHMS_LIBFUZZER_TEST_UTILS_HPP
+#include <chrono>
+#include <cstdint>
+#include <vector>
+
 #include "fuzzuf/algorithms/libfuzzer/dictionary.hpp"
 #include "fuzzuf/algorithms/libfuzzer/hierarflow.hpp"
 #include "fuzzuf/algorithms/libfuzzer/mutation_history.hpp"
@@ -33,9 +37,6 @@
 #include "fuzzuf/utils/detect_copy.hpp"
 #include "fuzzuf/utils/node_tracer.hpp"
 #include "fuzzuf/utils/not_random.hpp"
-#include <chrono>
-#include <cstdint>
-#include <vector>
 
 namespace fuzzuf::algorithm::libfuzzer::test {
 
@@ -47,7 +48,7 @@ namespace fuzzuf::algorithm::libfuzzer::test {
 using RNG = fuzzuf::utils::not_random::Sequential<unsigned int>;
 using Dict = fuzzuf::algorithm::libfuzzer::dictionary::StaticDictionary;
 using Range = utils::DetectCopy<std::vector<std::uint8_t>>;
-using Ranges = std::array<Range, 3u>; // { input, crossover, mask }
+using Ranges = std::array<Range, 3u>;  // { input, crossover, mask }
 using State = fuzzuf::algorithm::libfuzzer::State;
 using ElapsedTimeClock = std::chrono::system_clock::time_point;
 using DictHistory = dictionary::DictionaryHistory<Dict>;
@@ -137,8 +138,8 @@ struct Order {
   constexpr static auto stuck_count =
       arg0 / sp::mem<V, unsigned int, &V::stuck_count>;
   constexpr static auto symcc_freq =
-      create_info / sp::mem<FuzzerCreateInfo, unsigned int,
-                            &FuzzerCreateInfo::symcc_freq>;
+      create_info /
+      sp::mem<FuzzerCreateInfo, unsigned int, &FuzzerCreateInfo::symcc_freq>;
 };
 using MutationPaths = decltype(Order::rng && Order::input &&
                                Order::max_length && Order::mutation_history);
@@ -243,44 +244,44 @@ void run_direct_twice(Func func, Input &data) {
   func(rng, data, 40000u, history);
 }
 
-} // namespace fuzzuf::algorithm::libfuzzer::test
+}  // namespace fuzzuf::algorithm::libfuzzer::test
 
-#define FUZZUF_TEST_ALGORITHM_LIBFUZZER_HIERARFLOW(camel_name, node_name)      \
-  auto data = fuzzuf::algorithm::libfuzzer::test::getSeed1();                  \
-  fuzzuf::algorithm::libfuzzer::test::run_hierarflow<                          \
-      fuzzuf::algorithm::libfuzzer::camel_name>(data);                         \
-  auto expected = fuzzuf::algorithm::libfuzzer::test::getSeed1();              \
-  fuzzuf::algorithm::libfuzzer::test::run_direct(                              \
-      fuzzuf::algorithm::libfuzzer::mutator::node_name<                        \
-          std::minstd_rand, fuzzuf::algorithm::libfuzzer::test::Range>,        \
-      expected);                                                               \
-  BOOST_CHECK_EQUAL_COLLECTIONS(data.begin(), data.end(), expected.begin(),    \
+#define FUZZUF_TEST_ALGORITHM_LIBFUZZER_HIERARFLOW(camel_name, node_name)   \
+  auto data = fuzzuf::algorithm::libfuzzer::test::getSeed1();               \
+  fuzzuf::algorithm::libfuzzer::test::run_hierarflow<                       \
+      fuzzuf::algorithm::libfuzzer::camel_name>(data);                      \
+  auto expected = fuzzuf::algorithm::libfuzzer::test::getSeed1();           \
+  fuzzuf::algorithm::libfuzzer::test::run_direct(                           \
+      fuzzuf::algorithm::libfuzzer::mutator::node_name<                     \
+          std::minstd_rand, fuzzuf::algorithm::libfuzzer::test::Range>,     \
+      expected);                                                            \
+  BOOST_CHECK_EQUAL_COLLECTIONS(data.begin(), data.end(), expected.begin(), \
                                 expected.end());
 
-#define FUZZUF_TEST_ALGORITHM_LIBFUZZER_HIERARFLOW_LOGICAL_OR(camel_name,      \
-                                                              node_name)       \
-  auto data = fuzzuf::algorithm::libfuzzer::test::getSeed1();                  \
-  fuzzuf::algorithm::libfuzzer::test::run_hierarflow_logical_or<               \
-      fuzzuf::algorithm::libfuzzer::camel_name>(data);                         \
-  auto expected = fuzzuf::algorithm::libfuzzer::test::getSeed1();              \
-  fuzzuf::algorithm::libfuzzer::test::run_direct_twice(                        \
-      fuzzuf::algorithm::libfuzzer::mutator::node_name<                        \
-          std::minstd_rand, fuzzuf::algorithm::libfuzzer::test::Range>,        \
-      expected);                                                               \
-  BOOST_CHECK_EQUAL_COLLECTIONS(data.begin(), data.end(), expected.begin(),    \
+#define FUZZUF_TEST_ALGORITHM_LIBFUZZER_HIERARFLOW_LOGICAL_OR(camel_name,   \
+                                                              node_name)    \
+  auto data = fuzzuf::algorithm::libfuzzer::test::getSeed1();               \
+  fuzzuf::algorithm::libfuzzer::test::run_hierarflow_logical_or<            \
+      fuzzuf::algorithm::libfuzzer::camel_name>(data);                      \
+  auto expected = fuzzuf::algorithm::libfuzzer::test::getSeed1();           \
+  fuzzuf::algorithm::libfuzzer::test::run_direct_twice(                     \
+      fuzzuf::algorithm::libfuzzer::mutator::node_name<                     \
+          std::minstd_rand, fuzzuf::algorithm::libfuzzer::test::Range>,     \
+      expected);                                                            \
+  BOOST_CHECK_EQUAL_COLLECTIONS(data.begin(), data.end(), expected.begin(), \
                                 expected.end());
 
-#define FUZZUF_TEST_ALGORITHM_LIBFUZZER_HIERARFLOW_SHIFT_LEFT(camel_name,      \
-                                                              node_name)       \
-  auto data = fuzzuf::algorithm::libfuzzer::test::getSeed1();                  \
-  fuzzuf::algorithm::libfuzzer::test::run_hierarflow_shift_left<               \
-      fuzzuf::algorithm::libfuzzer::camel_name>(data);                         \
-  auto expected = fuzzuf::algorithm::libfuzzer::test::getSeed1();              \
-  fuzzuf::algorithm::libfuzzer::test::run_direct_twice(                        \
-      fuzzuf::algorithm::libfuzzer::mutator::node_name<                        \
-          std::minstd_rand, fuzzuf::algorithm::libfuzzer::test::Range>,        \
-      expected);                                                               \
-  BOOST_CHECK_EQUAL_COLLECTIONS(data.begin(), data.end(), expected.begin(),    \
+#define FUZZUF_TEST_ALGORITHM_LIBFUZZER_HIERARFLOW_SHIFT_LEFT(camel_name,   \
+                                                              node_name)    \
+  auto data = fuzzuf::algorithm::libfuzzer::test::getSeed1();               \
+  fuzzuf::algorithm::libfuzzer::test::run_hierarflow_shift_left<            \
+      fuzzuf::algorithm::libfuzzer::camel_name>(data);                      \
+  auto expected = fuzzuf::algorithm::libfuzzer::test::getSeed1();           \
+  fuzzuf::algorithm::libfuzzer::test::run_direct_twice(                     \
+      fuzzuf::algorithm::libfuzzer::mutator::node_name<                     \
+          std::minstd_rand, fuzzuf::algorithm::libfuzzer::test::Range>,     \
+      expected);                                                            \
+  BOOST_CHECK_EQUAL_COLLECTIONS(data.begin(), data.end(), expected.begin(), \
                                 expected.end());
 
 #define FUZZUF_TEST_ALGORITHM_LIBFUZZER_HIERARFLOW_TRIPLE(                     \
@@ -296,10 +297,10 @@ void run_direct_twice(Func func, Input &data) {
                                                           node_name)           \
   }
 
-#define FUZZUF_TEST_ALGORITHM_LIBFUZZER_HIERARFLOW_MUTATOR(camel_name, name)   \
-  auto name = fuzzuf::hierarflow::CreateNode<                                  \
-      fuzzuf::algorithm::libfuzzer::standard_order::camel_name<                \
-          fuzzuf::algorithm::libfuzzer::test::Full,                            \
+#define FUZZUF_TEST_ALGORITHM_LIBFUZZER_HIERARFLOW_MUTATOR(camel_name, name) \
+  auto name = fuzzuf::hierarflow::CreateNode<                                \
+      fuzzuf::algorithm::libfuzzer::standard_order::camel_name<              \
+          fuzzuf::algorithm::libfuzzer::test::Full,                          \
           fuzzuf::algorithm::libfuzzer::test::Order>>();
 
 #endif

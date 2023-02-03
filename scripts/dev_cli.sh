@@ -2,7 +2,7 @@
 
 # Copyright 2018 Amazon.com, Inc. or its affiliates. All Rights Reserved.
 # Copyright © 2020 Intel Corporation
-# Copyright (C) 2021 Ricerca Security
+# Copyright (C) 2021-2023 Ricerca Security
 # SPDX-License-Identifier: Apache-2.0
 
 # Based on: https://github.com/cloud-hypervisor/cloud-hypervisor/blob/main/scripts/dev_cli.sh

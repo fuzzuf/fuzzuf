@@ -1,6 +1,6 @@
 /*
  * fuzzuf
- * Copyright (C) 2021 Ricerca Security
+ * Copyright (C) 2021-2023 Ricerca Security
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
@@ -22,12 +22,6 @@
 #ifndef FUZZUF_INCLUDE_ALGORITHM_LIBFUZZER_CLI_VARIABLES_HPP
 #define FUZZUF_INCLUDE_ALGORITHM_LIBFUZZER_CLI_VARIABLES_HPP
 
-#include "fuzzuf/algorithms/libfuzzer/dictionary.hpp"
-#include "fuzzuf/algorithms/libfuzzer/mutation_history.hpp"
-#include "fuzzuf/algorithms/libfuzzer/state/common_types.hpp"
-#include "fuzzuf/algorithms/libfuzzer/state/corpus.hpp"
-#include "fuzzuf/algorithms/libfuzzer/state/state.hpp"
-#include "fuzzuf/utils/call_with_nth.hpp"
 #include <array>
 #include <chrono>
 #include <cstddef>
@@ -35,12 +29,20 @@
 #include <random>
 #include <vector>
 
+#include "fuzzuf/algorithms/libfuzzer/dictionary.hpp"
+#include "fuzzuf/algorithms/libfuzzer/mutation_history.hpp"
+#include "fuzzuf/algorithms/libfuzzer/state/common_types.hpp"
+#include "fuzzuf/algorithms/libfuzzer/state/corpus.hpp"
+#include "fuzzuf/algorithms/libfuzzer/state/state.hpp"
+#include "fuzzuf/utils/call_with_nth.hpp"
+
 namespace fuzzuf::algorithm::libfuzzer {
 struct Variables {
   State state;
   FullCorpus corpus;
   std::minstd_rand rng;
-  std::array<std::vector<std::uint8_t>, 3u> input; // { input, crossover, mask }
+  std::array<std::vector<std::uint8_t>, 3u>
+      input;  // { input, crossover, mask }
   std::size_t max_input_size = 0u;
   MutationHistory mutation_history;
   dictionary::StaticDictionary persistent_auto_dict;
@@ -112,9 +114,9 @@ struct Order {
   constexpr static auto stuck_count =
       arg0 / sp::mem<V, unsigned int, &V::stuck_count>;
   constexpr static auto symcc_freq =
-      create_info / sp::mem<FuzzerCreateInfo, unsigned int,
-                            &FuzzerCreateInfo::symcc_freq>;
+      create_info /
+      sp::mem<FuzzerCreateInfo, unsigned int, &FuzzerCreateInfo::symcc_freq>;
 };
-} // namespace fuzzuf::algorithm::libfuzzer
+}  // namespace fuzzuf::algorithm::libfuzzer
 
 #endif

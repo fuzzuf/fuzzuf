@@ -1,7 +1,7 @@
 /*
  * fuzzuf
- * Copyright (C) 2022 Ricerca Security
- * 
+ * Copyright (C) 2021-2023 Ricerca Security
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -18,16 +18,17 @@
 #define BOOST_TEST_MODULE nautilus.mutator
 #define BOOST_TEST_DYN_LINK
 
+#include "fuzzuf/algorithms/nautilus/grammartec/mutator.hpp"
+
 #include <boost/test/unit_test.hpp>
 #include <unordered_set>
+
 #include "fuzzuf/algorithms/nautilus/grammartec/chunkstore.hpp"
 #include "fuzzuf/algorithms/nautilus/grammartec/context.hpp"
-#include "fuzzuf/algorithms/nautilus/grammartec/mutator.hpp"
 #include "fuzzuf/algorithms/nautilus/grammartec/newtypes.hpp"
 #include "fuzzuf/algorithms/nautilus/grammartec/recursion_info.hpp"
 #include "fuzzuf/algorithms/nautilus/grammartec/rule.hpp"
 #include "fuzzuf/algorithms/nautilus/grammartec/tree.hpp"
-
 
 using namespace fuzzuf::algorithm::nautilus::grammartec;
 
@@ -46,25 +47,25 @@ BOOST_AUTO_TEST_CASE(NautilusGrammartecMutatorMutRandomRecursion) {
   ctx.AddRule("N4", "r5");
 
   std::vector<RuleIDOrCustom> rules{
-    RuleIDOrCustom(r1), RuleIDOrCustom(r2), RuleIDOrCustom(r3),
-    RuleIDOrCustom(r4), RuleIDOrCustom(r5),
+      RuleIDOrCustom(r1), RuleIDOrCustom(r2), RuleIDOrCustom(r3),
+      RuleIDOrCustom(r4), RuleIDOrCustom(r5),
   };
   Tree tree(std::move(rules), ctx);
 
   Mutator mutator(ctx);
-  FTesterMut tester =
-    [&r1, &r2, &r3, &r4, &r5](TreeMutation& tree_mut, Context&) {
-      BOOST_CHECK(tree_mut.prefix().at(0) == RuleIDOrCustom(r1));
-      BOOST_CHECK(tree_mut.prefix().at(1) == RuleIDOrCustom(r2));
-      BOOST_CHECK(tree_mut.prefix().at(2) == RuleIDOrCustom(r3));
+  FTesterMut tester = [&r1, &r2, &r3, &r4, &r5](TreeMutation& tree_mut,
+                                                Context&) {
+    BOOST_CHECK(tree_mut.prefix().at(0) == RuleIDOrCustom(r1));
+    BOOST_CHECK(tree_mut.prefix().at(1) == RuleIDOrCustom(r2));
+    BOOST_CHECK(tree_mut.prefix().at(2) == RuleIDOrCustom(r3));
 
-      BOOST_CHECK(tree_mut.postfix().at(0) == RuleIDOrCustom(r5));
+    BOOST_CHECK(tree_mut.postfix().at(0) == RuleIDOrCustom(r5));
 
-      BOOST_CHECK(tree_mut.repl().at(0) == RuleIDOrCustom(r1));
-      BOOST_CHECK(tree_mut.repl().at(1) == RuleIDOrCustom(r2));
-      BOOST_CHECK(tree_mut.repl().at(2) == RuleIDOrCustom(r3));
-      BOOST_CHECK(tree_mut.repl().back() == RuleIDOrCustom(r5));
-    };
+    BOOST_CHECK(tree_mut.repl().at(0) == RuleIDOrCustom(r1));
+    BOOST_CHECK(tree_mut.repl().at(1) == RuleIDOrCustom(r2));
+    BOOST_CHECK(tree_mut.repl().at(2) == RuleIDOrCustom(r3));
+    BOOST_CHECK(tree_mut.repl().back() == RuleIDOrCustom(r5));
+  };
 
   auto recursions = tree.CalcRecursions(ctx);
   BOOST_CHECK(recursions);
@@ -85,23 +86,19 @@ BOOST_AUTO_TEST_CASE(NautilusGrammartecMutatorMinimizeTree) {
   ctx.AddRule("B", "b3{B}");
   ctx.Initialize(10);
 
-
   for (size_t i = 0; i < 100; i++) {
-    std::vector<RuleIDOrCustom> rules{
-      RuleIDOrCustom(r1), RuleIDOrCustom(r2), RuleIDOrCustom(r3)
-    };
+    std::vector<RuleIDOrCustom> rules{RuleIDOrCustom(r1), RuleIDOrCustom(r2),
+                                      RuleIDOrCustom(r3)};
     Tree tree(std::move(rules), ctx);
     Mutator mutator(ctx);
-    FTester tester =
-      [](TreeMutation& tree_mut,
-         std::unordered_set<size_t>&,
-         Context& ctx) -> bool {
-        if (tree_mut.UnparseToVec(ctx).find("a1") != std::string::npos) {
-          return true;
-        } else {
-          return false;
-        }
-      };
+    FTester tester = [](TreeMutation& tree_mut, std::unordered_set<size_t>&,
+                        Context& ctx) -> bool {
+      if (tree_mut.UnparseToVec(ctx).find("a1") != std::string::npos) {
+        return true;
+      } else {
+        return false;
+      }
+    };
 
     std::unordered_set<size_t> bits;
     mutator.MinimizeTree(tree, bits, ctx, 0, tree.Size(), tester);
@@ -127,21 +124,18 @@ BOOST_AUTO_TEST_CASE(NautilusGrammartecMutatorMinimizeRec) {
   ctx.Initialize(10);
 
   for (size_t i = 0; i < 100; i++) {
-    std::vector<RuleIDOrCustom> rules{
-      RuleIDOrCustom(r1), RuleIDOrCustom(r2), RuleIDOrCustom(r3)
-    };
+    std::vector<RuleIDOrCustom> rules{RuleIDOrCustom(r1), RuleIDOrCustom(r2),
+                                      RuleIDOrCustom(r3)};
     Tree tree(std::move(rules), ctx);
     Mutator mutator(ctx);
-    FTester tester =
-      [](TreeMutation& tree_mut,
-         std::unordered_set<size_t>&,
-         Context& ctx) -> bool {
-        if (tree_mut.UnparseToVec(ctx).find("a1") != std::string::npos) {
-          return true;
-        } else {
-          return false;
-        }
-      };
+    FTester tester = [](TreeMutation& tree_mut, std::unordered_set<size_t>&,
+                        Context& ctx) -> bool {
+      if (tree_mut.UnparseToVec(ctx).find("a1") != std::string::npos) {
+        return true;
+      } else {
+        return false;
+      }
+    };
 
     std::unordered_set<size_t> bits;
     mutator.MinimizeRec(tree, bits, ctx, 0, tree.Size(), tester);
@@ -167,13 +161,13 @@ BOOST_AUTO_TEST_CASE(NautilusGrammartecMutatorDeterministicRule) {
     std::string unparse = tree.UnparseToVec(ctx);
     size_t count = 0;
 
-    FTesterMut tester =
-      [&count, &unparse](TreeMutation& tree_mut, Context& ctx) {
-        BOOST_CHECK(tree_mut.UnparseToVec(ctx) != unparse);
-        count++;
-      };
+    FTesterMut tester = [&count, &unparse](TreeMutation& tree_mut,
+                                           Context& ctx) {
+      BOOST_CHECK(tree_mut.UnparseToVec(ctx) != unparse);
+      count++;
+    };
 
-    mutator.MutRules(tree,ctx, 0, tree.Size(), tester);
+    mutator.MutRules(tree, ctx, 0, tree.Size(), tester);
     BOOST_CHECK(count > 2);
   }
 }
@@ -197,12 +191,11 @@ BOOST_AUTO_TEST_CASE(NautilusGrammartecMutatorDeterministicSplice) {
     Mutator mutator(ctx);
     std::string unparse = tree.UnparseToVec(ctx);
 
-    FTesterMut tester =
-      [&unparse](TreeMutation& tree_mut, Context& ctx) {
-        BOOST_CHECK(tree_mut.UnparseToVec(ctx) != unparse);
-      };
+    FTesterMut tester = [&unparse](TreeMutation& tree_mut, Context& ctx) {
+      BOOST_CHECK(tree_mut.UnparseToVec(ctx) != unparse);
+    };
 
-    mutator.MutSplice(tree, ctx,cks, tester);
+    mutator.MutSplice(tree, ctx, cks, tester);
   }
 }
 
@@ -217,26 +210,24 @@ BOOST_AUTO_TEST_CASE(NautilusGrammartecMutatorDetRulesValues) {
   ctx.Initialize(10);
 
   for (size_t i = 0; i < 100; i++) {
-    std::vector<RuleIDOrCustom> rules{
-      RuleIDOrCustom(r1), RuleIDOrCustom(r2), RuleIDOrCustom(r3)
-    };
+    std::vector<RuleIDOrCustom> rules{RuleIDOrCustom(r1), RuleIDOrCustom(r2),
+                                      RuleIDOrCustom(r3)};
     Tree tree(std::move(rules), ctx);
     Mutator mutator(ctx);
     std::unordered_set<std::string> unparses;
 
-    FTesterMut tester =
-      [&unparses](TreeMutation& tree_mut, Context& ctx) {
-        unparses.insert(tree_mut.UnparseToVec(ctx));
-      };
+    FTesterMut tester = [&unparses](TreeMutation& tree_mut, Context& ctx) {
+      unparses.insert(tree_mut.UnparseToVec(ctx));
+    };
 
     mutator.MutRules(tree, ctx, 0, tree.Size(), tester);
 
     BOOST_CHECK(unparses.find("s1 a1 b2") != unparses.end());
-    BOOST_CHECK(unparses.find("s1 a2 b1") != unparses.end()
-                || unparses.find("s1 a2 b2") != unparses.end());
-    BOOST_CHECK(unparses.find("s2 a1 b1") != unparses.end()
-                || unparses.find("s2 a2 b2") != unparses.end()
-                || unparses.find("s2 a1 b2") != unparses.end()
-                || unparses.find("s2 a2 b1") != unparses.end());
+    BOOST_CHECK(unparses.find("s1 a2 b1") != unparses.end() ||
+                unparses.find("s1 a2 b2") != unparses.end());
+    BOOST_CHECK(unparses.find("s2 a1 b1") != unparses.end() ||
+                unparses.find("s2 a2 b2") != unparses.end() ||
+                unparses.find("s2 a1 b2") != unparses.end() ||
+                unparses.find("s2 a2 b1") != unparses.end());
   }
 }

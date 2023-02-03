@@ -1,7 +1,7 @@
 /*
  * fuzzuf
- * Copyright (C) 2021 Ricerca Security
- * 
+ * Copyright (C) 2021-2023 Ricerca Security
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -55,6 +55,6 @@ struct minimum_iterator_category<L<>, void> {
 template <typename T>
 using minimum_iterator_category_t = typename minimum_iterator_category<T>::type;
 
-} // namespace fuzzuf::utils::range
+}  // namespace fuzzuf::utils::range
 
 #endif
