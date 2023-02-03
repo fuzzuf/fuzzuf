@@ -1,7 +1,7 @@
 /*
  * fuzzuf
- * Copyright (C) 2021 Ricerca Security
- * 
+ * Copyright (C) 2021-2023 Ricerca Security
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -21,11 +21,12 @@
  */
 #ifndef FUZZUF_INCLUDE_ALGORITHM_LIBFUZZER_MUTATION_CHANGE_BYTE_HPP
 #define FUZZUF_INCLUDE_ALGORITHM_LIBFUZZER_MUTATION_CHANGE_BYTE_HPP
+#include <iterator>
+#include <type_traits>
+
 #include "fuzzuf/algorithms/libfuzzer/mutation_history.hpp"
 #include "fuzzuf/algorithms/libfuzzer/random.hpp"
 #include "fuzzuf/utils/range_traits.hpp"
-#include <iterator>
-#include <type_traits>
 namespace fuzzuf::algorithm::libfuzzer::mutator {
 
 /**
@@ -48,8 +49,7 @@ auto ChangeByte(RNG &rng, Range &data, size_t max_size,
         // Rangeは整数のrangeである
         utils::range::is_integral_range_v<Range>, size_t> {
   const size_t size = utils::range::rangeSize(data);
-  if (size > max_size)
-    return 0u;
+  if (size > max_size) return 0u;
   const size_t index = random_value(rng, size);
   using value_t = utils::range::RangeValueT<Range>;
   *std::next(data.begin(), index) = random_value<value_t>(rng);
@@ -58,5 +58,5 @@ auto ChangeByte(RNG &rng, Range &data, size_t max_size,
   return utils::range::rangeSize(data);
 }
 
-} // namespace fuzzuf::algorithm::libfuzzer::mutator
+}  // namespace fuzzuf::algorithm::libfuzzer::mutator
 #endif

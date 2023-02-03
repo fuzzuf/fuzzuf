@@ -1,7 +1,7 @@
 /*
  * fuzzuf
- * Copyright (C) 2021 Ricerca Security
- * 
+ * Copyright (C) 2021-2023 Ricerca Security
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -18,44 +18,32 @@
 #pragma once
 
 #include <cstdlib>
-#include <vector>
-#include <string>
 #include <functional>
+#include <string>
+#include <vector>
+
 #include "fuzzuf/utils/common.hpp"
 
 namespace fuzzuf::algorithm::afl::dictionary {
 
 struct AFLDictData {
-    using word_t = std::vector<u8>;
+  using word_t = std::vector<u8>;
 
-    AFLDictData() {
-    }
+  AFLDictData() {}
 
-    AFLDictData( const word_t &v ) :
-      data( v ) {
-    }
+  AFLDictData(const word_t &v) : data(v) {}
 
-    AFLDictData( const word_t &v, u32 h ) :
-      data( v ), hit_cnt( h ) {
-    }
+  AFLDictData(const word_t &v, u32 h) : data(v), hit_cnt(h) {}
 
-    const std::vector<u8> get() const {
-      return data;
-    }
+  const std::vector<u8> get() const { return data; }
 
-    std::vector<u8> data;
-    u32 hit_cnt = 0u;
+  std::vector<u8> data;
+  u32 hit_cnt = 0u;
 };
 
-void load(
-  const std::string &filename_,
-  std::vector< AFLDictData > &dest,
-  bool strict,
-  const std::function< void( std::string&& ) > &eout
-);
+void load(const std::string &filename_, std::vector<AFLDictData> &dest,
+          bool strict, const std::function<void(std::string &&)> &eout);
 
-void SortDictByLength(
-  std::vector< AFLDictData > &dict
-);
+void SortDictByLength(std::vector<AFLDictData> &dict);
 
-} // fuzzuf::algorithm::afl::dictionary
+}  // namespace fuzzuf::algorithm::afl::dictionary

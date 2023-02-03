@@ -1,7 +1,7 @@
 /*
  * fuzzuf
- * Copyright (C) 2022 Ricerca Security
- * 
+ * Copyright (C) 2021-2023 Ricerca Security
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -24,13 +24,12 @@
 
 #include "fuzzuf/algorithms/afl/afl_option.hpp"
 
-
 namespace fuzzuf::algorithm::die::option {
 
 struct DIETag {};
 
-constexpr u32 GetMaxFile(void) { 
-  return 4 * 1024 * 1024; // 4MB
+constexpr u32 GetMaxFile(void) {
+  return 4 * 1024 * 1024;  // 4MB
 }
 
-} // namespace fuzzuf::algorithm::die::option
+}  // namespace fuzzuf::algorithm::die::option

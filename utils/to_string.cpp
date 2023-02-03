@@ -1,7 +1,7 @@
 /*
  * fuzzuf
- * Copyright (C) 2021 Ricerca Security
- * 
+ * Copyright (C) 2021-2023 Ricerca Security
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -20,6 +20,7 @@
  * @author Ricerca Security <fuzzuf-dev@ricsec.co.jp>
  */
 #include "fuzzuf/utils/to_string.hpp"
+
 #include <boost/spirit/include/karma.hpp>
 #include <cstddef>
 
@@ -93,12 +94,11 @@ auto toString(std::string &dest, long double value) -> bool {
       std::back_inserter(dest), boost::spirit::karma::long_double, value);
 }
 
-#define FUZZUF_UTILS_CHRONO_TO_STRING(name)                                    \
-  auto toString(std::string &dest, const std::chrono::name &value)->bool {     \
-    if (!toString(dest, value.count()))                                        \
-      return false;                                                            \
-    dest += #name;                                                             \
-    return true;                                                               \
+#define FUZZUF_UTILS_CHRONO_TO_STRING(name)                                \
+  auto toString(std::string &dest, const std::chrono::name &value)->bool { \
+    if (!toString(dest, value.count())) return false;                      \
+    dest += #name;                                                         \
+    return true;                                                           \
   }
 
 FUZZUF_UTILS_CHRONO_TO_STRING(nanoseconds)
@@ -129,4 +129,4 @@ void make_indent(std::string &dest, std::size_t indent_count,
   }
 }
 
-} // namespace fuzzuf::utils
+}  // namespace fuzzuf::utils

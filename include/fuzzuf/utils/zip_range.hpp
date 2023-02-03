@@ -1,7 +1,7 @@
 /*
  * fuzzuf
- * Copyright (C) 2021 Ricerca Security
- * 
+ * Copyright (C) 2021-2023 Ricerca Security
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -21,28 +21,32 @@
  */
 #ifndef FUZZUF_INCLUDE_UTILS_ZIP_RANGE_HPP
 #define FUZZUF_INCLUDE_UTILS_ZIP_RANGE_HPP
-#include "fuzzuf/utils/minimum_iterator_category.hpp"
-#include "fuzzuf/utils/range_traits.hpp"
-#include "fuzzuf/utils/type_traits/remove_cvr.hpp"
 #include <boost/range/iterator_range.hpp>
 #include <memory>
 #include <type_traits>
+
+#include "fuzzuf/utils/minimum_iterator_category.hpp"
+#include "fuzzuf/utils/range_traits.hpp"
+#include "fuzzuf/utils/type_traits/remove_cvr.hpp"
 namespace fuzzuf::utils::range {
 
 /**
  * @class zip_iterator
  * @brief
- * Iterator adaptor that combine multiple iterators and return an iterator that std::get is available for the dereferenced value
+ * Iterator adaptor that combine multiple iterators and return an iterator that
+ * std::get is available for the dereferenced value
  * @tparam T Type of iterators
  *
  * example:
  * std::vector< int > a{ ... };
  * std::vector< float > b{ ... };
  * c = zip( a, b );
- * c is a range with iterator that returns std::tuple< int&, float& > that refers each element from a and b
+ * c is a range with iterator that returns std::tuple< int&, float& > that
+ * refers each element from a and b
  */
-template <typename... T> class zip_iterator {
-public:
+template <typename... T>
+class zip_iterator {
+ public:
   using iterator_category = minimum_iterator_category_t<
       std::tuple<std::forward_iterator_tag,
                  typename std::iterator_traits<T>::iterator_category...>>;
@@ -75,7 +79,7 @@ public:
 
   bool operator!=(const zip_iterator &r) const { return p != r.p; }
 
-private:
+ private:
   template <size_t begin, size_t end>
   auto dereference(std::enable_if_t<(begin == end)> * = 0) const {
     return std::tuple<>();
@@ -113,7 +117,8 @@ auto minimum_rangeSize(const Head &head, const Tail &...tail) -> std::size_t {
  * @tparam R Type of ranges
  * @param v Ranges
  */
-template <typename... R> auto zip(R &...v) {
+template <typename... R>
+auto zip(R &...v) {
   const auto size = minimum_rangeSize(v...);
   return boost::make_iterator_range(
       zip_iterator<
@@ -123,15 +128,17 @@ template <typename... R> auto zip(R &...v) {
           std::remove_reference_t<decltype(std::declval<R>().begin())>...>(
           std::next(v.begin(), size)...));
 }
-template <typename... R> auto zip(const R &...v) {
+template <typename... R>
+auto zip(const R &...v) {
   const auto size = minimum_rangeSize(v...);
   return boost::make_iterator_range(
-      zip_iterator<utils::type_traits::RemoveCvrT<decltype(
-          std::declval<const R>().begin())>...>(v.begin()...),
-      zip_iterator<utils::type_traits::RemoveCvrT<decltype(
-          std::declval<const R>().begin())>...>(std::next(v.begin(), size)...));
+      zip_iterator<utils::type_traits::RemoveCvrT<
+          decltype(std::declval<const R>().begin())>...>(v.begin()...),
+      zip_iterator<utils::type_traits::RemoveCvrT<
+          decltype(std::declval<const R>().begin())>...>(
+          std::next(v.begin(), size)...));
 }
 
-} // namespace fuzzuf::utils::range
+}  // namespace fuzzuf::utils::range
 
 #endif

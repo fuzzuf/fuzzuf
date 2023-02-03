@@ -1,7 +1,7 @@
 /*
  * fuzzuf
- * Copyright (C) 2021 Ricerca Security
- * 
+ * Copyright (C) 2021-2023 Ricerca Security
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -21,15 +21,16 @@
  */
 #ifndef FUZZUF_INCLUDE_ALGORITHM_LIBFUZZER_EXECUTOR_ADD_TO_CORPUS_HPP
 #define FUZZUF_INCLUDE_ALGORITHM_LIBFUZZER_EXECUTOR_ADD_TO_CORPUS_HPP
+#include <algorithm>
+#include <iterator>
+#include <type_traits>
+
 #include "fuzzuf/algorithms/libfuzzer/corpus/add_to_corpus.hpp"
 #include "fuzzuf/algorithms/libfuzzer/corpus/replace_corpus.hpp"
 #include "fuzzuf/algorithms/libfuzzer/state/corpus.hpp"
 #include "fuzzuf/algorithms/libfuzzer/state/input_info.hpp"
 #include "fuzzuf/algorithms/libfuzzer/state/state.hpp"
 #include "fuzzuf/utils/range_traits.hpp"
-#include <algorithm>
-#include <iterator>
-#include <type_traits>
 
 namespace fuzzuf::algorithm::libfuzzer::executor {
 
@@ -78,7 +79,7 @@ auto AddToCorpus(State &state, Corpus &corpus, Range &range,
   if (exec_result.features_count || force_add_to_corpus) {
     exec_result.never_reduce = force_add_to_corpus;
     exec_result.may_delete_file = may_delete_file;
-    exec_result.has_focus_function = false; // TPC.ObservedFocusFunction();
+    exec_result.has_focus_function = false;  // TPC.ObservedFocusFunction();
     exec_result.needs_energy_update = false;
 
     // Assign maximal energy to the new seed.
@@ -124,7 +125,7 @@ auto AddToCorpus(State &state, Corpus &corpus, Range &range,
       }
       exec_result.never_reduce = force_add_to_corpus;
       exec_result.may_delete_file = may_delete_file;
-      exec_result.has_focus_function = false; // TPC.ObservedFocusFunction();
+      exec_result.has_focus_function = false;  // TPC.ObservedFocusFunction();
       exec_result.needs_energy_update = false;
 
       // Assign maximal energy to the new seed.
@@ -143,6 +144,6 @@ auto AddToCorpus(State &state, Corpus &corpus, Range &range,
   return false;
 }
 
-} // namespace fuzzuf::algorithm::libfuzzer::executor
+}  // namespace fuzzuf::algorithm::libfuzzer::executor
 
 #endif

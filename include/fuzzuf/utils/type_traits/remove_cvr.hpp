@@ -1,7 +1,7 @@
 /*
  * fuzzuf
- * Copyright (C) 2021 Ricerca Security
- * 
+ * Copyright (C) 2021-2023 Ricerca Security
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -41,7 +41,7 @@ template <typename T>
 #if __cplusplus >= 202002L
 using RemoveCvrT = std::remove_cvref_t<T>;
 #else
-using RemoveCvrT = std::remove_cv_t<std::remove_reference_t<T>>;
+using RemoveCvrT = std::remove_cv_t<std::remove_reference_t<T> >;
 #endif
-} // namespace fuzzuf::utils::type_traits
+}  // namespace fuzzuf::utils::type_traits
 #endif

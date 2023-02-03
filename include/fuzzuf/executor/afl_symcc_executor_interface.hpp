@@ -1,6 +1,6 @@
 /*
  * fuzzuf
- * Copyright (C) 2022 Ricerca Security
+ * Copyright (C) 2021-2023 Ricerca Security
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
@@ -22,9 +22,10 @@
  */
 #ifndef FUZZUF_INCLUDE_EXECUTOR_AFL_SYMCC_EXECUTOR_INTERFACE_HPP
 #define FUZZUF_INCLUDE_EXECUTOR_AFL_SYMCC_EXECUTOR_INTERFACE_HPP
+#include <memory>
+
 #include "fuzzuf/executor/executor.hpp"
 #include "fuzzuf/utils/vfs/local_filesystem.hpp"
-#include <memory>
 
 namespace fuzzuf::executor {
 
@@ -38,7 +39,7 @@ namespace fuzzuf::executor {
  * - fuzzuf::utils::vfs::LocalFilesystem &Filesystem() const
  */
 class AFLSymCCExecutorInterface {
-public:
+ public:
   template <class T>
   AFLSymCCExecutorInterface(const std::shared_ptr<T> &executor)
       : _container(new DynContainerDerived<T>(executor)) {}
@@ -49,8 +50,8 @@ public:
 
   AFLSymCCExecutorInterface(const AFLSymCCExecutorInterface &) = delete;
   AFLSymCCExecutorInterface(AFLSymCCExecutorInterface &&) = default;
-  AFLSymCCExecutorInterface &
-  operator=(const AFLSymCCExecutorInterface &) = delete;
+  AFLSymCCExecutorInterface &operator=(const AFLSymCCExecutorInterface &) =
+      delete;
   AFLSymCCExecutorInterface &operator=(AFLSymCCExecutorInterface &&) = default;
   AFLSymCCExecutorInterface() = delete;
 
@@ -70,15 +71,16 @@ public:
     return _container->Filesystem();
   }
 
-private:
+ private:
   class DynContainerBase {
-  public:
+   public:
     virtual ~DynContainerBase() {}
     virtual void Run(const u8 *buf, u32 len, u32 timeout_ms = 0) = 0;
     virtual fuzzuf::utils::vfs::LocalFilesystem &Filesystem() const = 0;
   };
-  template <class T> class DynContainerDerived : public DynContainerBase {
-  public:
+  template <class T>
+  class DynContainerDerived : public DynContainerBase {
+   public:
     DynContainerDerived(std::shared_ptr<T> const &executor)
         : _executor(executor) {}
     DynContainerDerived(std::shared_ptr<T> &&executor) noexcept
@@ -90,12 +92,12 @@ private:
       return _executor->Filesystem();
     }
 
-  private:
+   private:
     std::shared_ptr<T> _executor;
   };
   std::unique_ptr<DynContainerBase> _container;
 };
 
-} // namespace fuzzuf::executor
+}  // namespace fuzzuf::executor
 
-#endif // FUZZUF_INCLUDE_EXECUTOR_AFL_SYMCC_EXECUTOR_INTERFACE_HPP
+#endif  // FUZZUF_INCLUDE_EXECUTOR_AFL_SYMCC_EXECUTOR_INTERFACE_HPP

@@ -1,7 +1,7 @@
 /*
  * fuzzuf
- * Copyright (C) 2021 Ricerca Security
- * 
+ * Copyright (C) 2021-2023 Ricerca Security
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -25,15 +25,15 @@
 namespace fuzzuf::utils::type_traits {
 /**
  * @class replace_return_type
- * @brief Meta function to return a functin type with same arguments as U but returns T
- * example:
- * replace_return_type_t< int, void( bool ) >
- * This is equivalent to int( bool )
+ * @brief Meta function to return a functin type with same arguments as U but
+ * returns T example: replace_return_type_t< int, void( bool ) > This is
+ * equivalent to int( bool )
  * @tparam T New return type
  * @tparam U Function type
  *
  */
-template <typename T, typename U> struct replace_return_type {};
+template <typename T, typename U>
+struct replace_return_type {};
 
 template <typename T, typename R, typename... Args>
 struct replace_return_type<T, R(Args...)> {
@@ -42,6 +42,6 @@ struct replace_return_type<T, R(Args...)> {
 
 template <typename T, typename U>
 using replace_return_type_t = typename replace_return_type<T, U>::type;
-} // namespace fuzzuf::utils::type_traits
+}  // namespace fuzzuf::utils::type_traits
 
 #endif

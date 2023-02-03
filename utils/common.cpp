@@ -1,6 +1,6 @@
 /*
  * fuzzuf
- * Copyright (C) 2021 Ricerca Security
+ * Copyright (C) 2021-2023 Ricerca Security
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
@@ -214,12 +214,25 @@ ssize_t ReadFileAll(int fd, fuzzuf::executor::output_t &buf) {
 /**
  * @fn
  * @brief Timed read from a file descriptor
- * @param fd File descriptor 
- * @param buf Buffer pointer for read data 
+ * @param fd File descriptor
+ * @param buf Buffer pointer for read data
  * @param len Length of read data in bytes
  * @param timeout_ms Timeout in milliseconds
- * @return 0 on error, timeout_ms+1 on timeout, otherwise the time taken in milliseconds
- * @note In addition to errors such as invalid fd, an error occurs if len bytes cannot be read from fd. Timer is implemented by the select system call. select, read can fail due to signal interrupt, etc. The read system call does not always read the specified number of bytes len at a time. Therefore, it is necessary to process multiple times by looping. One of the caveats of multiple executions is the update of the remaining time. In Linux, select rewrites the value of the timeout argument and "subtracts the time elapsed during select from the timeout value" is executed. In other words, the remaining time is automatically updated. In other environments, it is known that the timeout value cannot be rewritten, so it is necessary to measure the time and calculate the remaining time on one's own. However, since this does not seem to be a behavior guaranteed by the documentation, we will have to consider how to handle this in the future.
+ * @return 0 on error, timeout_ms+1 on timeout, otherwise the time taken in
+ * milliseconds
+ * @note In addition to errors such as invalid fd, an error occurs if len bytes
+ * cannot be read from fd. Timer is implemented by the select system call.
+ * select, read can fail due to signal interrupt, etc. The read system call does
+ * not always read the specified number of bytes len at a time. Therefore, it is
+ * necessary to process multiple times by looping. One of the caveats of
+ * multiple executions is the update of the remaining time. In Linux, select
+ * rewrites the value of the timeout argument and "subtracts the time elapsed
+ * during select from the timeout value" is executed. In other words, the
+ * remaining time is automatically updated. In other environments, it is known
+ * that the timeout value cannot be rewritten, so it is necessary to measure the
+ * time and calculate the remaining time on one's own. However, since this does
+ * not seem to be a behavior guaranteed by the documentation, we will have to
+ * consider how to handle this in the future.
  * https://github.com/AFLplusplus/AFLplusplus/blob/stable/src/afl-forkserver.c#L135-L210
  */
 u32 ReadFileTimed(int fd, void *buf, u32 len, u32 timeout_ms) {

@@ -1,7 +1,7 @@
 /*
  * fuzzuf
- * Copyright (C) 2021 Ricerca Security
- * 
+ * Copyright (C) 2021-2023 Ricerca Security
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -19,13 +19,15 @@
  * @file which.cpp
  * @author Ricerca Security <fuzzuf-dev@ricsec.co.jp>
  */
-#include "fuzzuf/utils/filesystem.hpp"
+#include <unistd.h>
+
 #include <algorithm>
 #include <cassert>
 #include <cstdlib>
 #include <cstring>
-#include <unistd.h>
 #include <vector>
+
+#include "fuzzuf/utils/filesystem.hpp"
 
 namespace fuzzuf::utils {
 
@@ -80,4 +82,4 @@ auto which(const fs::path &name) -> fs::path {
   return name;
 }
 
-} // namespace fuzzuf::utils
+}  // namespace fuzzuf::utils

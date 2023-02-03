@@ -1,7 +1,7 @@
 /*
  * fuzzuf
- * Copyright (C) 2021 Ricerca Security
- * 
+ * Copyright (C) 2021-2023 Ricerca Security
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -21,12 +21,13 @@
  */
 #ifndef FUZZUF_INCLUDE_ALGORITHM_LIBFUZZER_MUTATION_SHUFFLE_BYTES_HPP
 #define FUZZUF_INCLUDE_ALGORITHM_LIBFUZZER_MUTATION_SHUFFLE_BYTES_HPP
-#include "fuzzuf/algorithms/libfuzzer/mutation_history.hpp"
-#include "fuzzuf/algorithms/libfuzzer/random.hpp"
-#include "fuzzuf/utils/range_traits.hpp"
 #include <cassert>
 #include <iterator>
 #include <type_traits>
+
+#include "fuzzuf/algorithms/libfuzzer/mutation_history.hpp"
+#include "fuzzuf/algorithms/libfuzzer/random.hpp"
+#include "fuzzuf/utils/range_traits.hpp"
 namespace fuzzuf::algorithm::libfuzzer::mutator {
 
 /**
@@ -48,8 +49,7 @@ auto ShuffleBytes(RNG &rng, Range &data, std::size_t max_size,
     -> std::enable_if_t<utils::range::is_range_of_v<Range, std::uint8_t>,
                         std::size_t> {
   const std::size_t size = utils::range::rangeSize(data);
-  if (size > max_size || size == 0u)
-    return 0u;
+  if (size > max_size || size == 0u) return 0u;
   const std::size_t shuffle_amount =
       random_value(rng, std::min(size, std::size_t(8u))) + 1u;
   const std::size_t shuffle_start = random_value(rng, size - shuffle_amount);
@@ -61,5 +61,5 @@ auto ShuffleBytes(RNG &rng, Range &data, std::size_t max_size,
   return utils::range::rangeSize(data);
 }
 
-} // namespace fuzzuf::algorithm::libfuzzer::mutator
+}  // namespace fuzzuf::algorithm::libfuzzer::mutator
 #endif

@@ -1,6 +1,6 @@
 /*
  * fuzzuf
- * Copyright (C) 2021 Ricerca Security
+ * Copyright (C) 2021-2023 Ricerca Security
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
@@ -21,14 +21,15 @@
  */
 #ifndef FUZZUF_INCLUDE_ALGORITHM_LIBFUZZER_EXECUTOR_EXECUTE_HPP
 #define FUZZUF_INCLUDE_ALGORITHM_LIBFUZZER_EXECUTOR_EXECUTE_HPP
-#include "fuzzuf/algorithms/libfuzzer/state/common_types.hpp"
-#include "fuzzuf/algorithms/libfuzzer/state/input_info.hpp"
-#include "fuzzuf/utils/range_traits.hpp"
-#include "fuzzuf/utils/vfs/read_once.hpp"
 #include <algorithm>
 #include <cctype>
 #include <iterator>
 #include <type_traits>
+
+#include "fuzzuf/algorithms/libfuzzer/state/common_types.hpp"
+#include "fuzzuf/algorithms/libfuzzer/state/input_info.hpp"
+#include "fuzzuf/utils/range_traits.hpp"
+#include "fuzzuf/utils/vfs/read_once.hpp"
 
 namespace fuzzuf::algorithm::libfuzzer::executor {
 
@@ -133,6 +134,6 @@ auto Execute(Range &range, Output &output, output_files_t &files,
   output.insert(output.end(), err.begin(), err.end());
 }
 
-} // namespace fuzzuf::algorithm::libfuzzer::executor
+}  // namespace fuzzuf::algorithm::libfuzzer::executor
 
 #endif

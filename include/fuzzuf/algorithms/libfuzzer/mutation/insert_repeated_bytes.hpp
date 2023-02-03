@@ -1,7 +1,7 @@
 /*
  * fuzzuf
- * Copyright (C) 2021 Ricerca Security
- * 
+ * Copyright (C) 2021-2023 Ricerca Security
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -21,12 +21,13 @@
  */
 #ifndef FUZZUF_INCLUDE_ALGORITHM_LIBFUZZER_MUTATION_INSERT_REPEATED_BYTES_HPP
 #define FUZZUF_INCLUDE_ALGORITHM_LIBFUZZER_MUTATION_INSERT_REPEATED_BYTES_HPP
-#include "fuzzuf/algorithms/libfuzzer/mutation_history.hpp"
-#include "fuzzuf/algorithms/libfuzzer/random.hpp"
-#include "fuzzuf/utils/range_traits.hpp"
 #include <cassert>
 #include <iterator>
 #include <type_traits>
+
+#include "fuzzuf/algorithms/libfuzzer/mutation_history.hpp"
+#include "fuzzuf/algorithms/libfuzzer/random.hpp"
+#include "fuzzuf/utils/range_traits.hpp"
 namespace fuzzuf::algorithm::libfuzzer::mutator {
 
 /**
@@ -53,8 +54,7 @@ auto InsertRepeatedBytes(RNG &rng, Range &data, size_t max_size,
         size_t> {
   constexpr size_t min_bytes_to_insert = 3u;
   const size_t size = utils::range::rangeSize(data);
-  if (size + min_bytes_to_insert >= max_size)
-    return 0u;
+  if (size + min_bytes_to_insert >= max_size) return 0u;
   const size_t max_bytes_to_insert = std::min(max_size - size, size_t(128u));
   const size_t n =
       random_value(rng, max_bytes_to_insert - min_bytes_to_insert + 1) +
@@ -73,5 +73,5 @@ auto InsertRepeatedBytes(RNG &rng, Range &data, size_t max_size,
   return utils::range::rangeSize(data);
 }
 
-} // namespace fuzzuf::algorithm::libfuzzer::mutator
+}  // namespace fuzzuf::algorithm::libfuzzer::mutator
 #endif

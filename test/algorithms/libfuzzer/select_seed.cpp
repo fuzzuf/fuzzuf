@@ -1,7 +1,7 @@
 /*
  * fuzzuf
- * Copyright (C) 2021 Ricerca Security
- * 
+ * Copyright (C) 2021-2023 Ricerca Security
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -17,21 +17,24 @@
  */
 #define BOOST_TEST_MODULE algorithms.libfuzzer.select_seed
 #define BOOST_TEST_DYN_LINK
+#include "fuzzuf/algorithms/libfuzzer/select_seed.hpp"
+
+#include <config.h>
+
+#include <array>
+#include <boost/scope_exit.hpp>
+#include <boost/test/unit_test.hpp>
+#include <iostream>
+#include <vector>
+
 #include "fuzzuf/algorithms/libfuzzer/exec_input_set_range.hpp"
 #include "fuzzuf/algorithms/libfuzzer/hierarflow.hpp"
 #include "fuzzuf/algorithms/libfuzzer/mutation.hpp"
-#include "fuzzuf/algorithms/libfuzzer/select_seed.hpp"
 #include "fuzzuf/algorithms/libfuzzer/test_utils.hpp"
 #include "fuzzuf/hierarflow/hierarflow_intermediates.hpp"
 #include "fuzzuf/utils/node_tracer.hpp"
 #include "fuzzuf/utils/not_random.hpp"
 #include "fuzzuf/utils/which.hpp"
-#include <array>
-#include <boost/scope_exit.hpp>
-#include <boost/test/unit_test.hpp>
-#include <config.h>
-#include <iostream>
-#include <vector>
 
 /**
  * Insert 1 input value to empty corpus, select an input from the corpus, and

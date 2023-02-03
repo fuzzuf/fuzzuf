@@ -1,7 +1,7 @@
 /*
  * fuzzuf
- * Copyright (C) 2021 Ricerca Security
- * 
+ * Copyright (C) 2021-2023 Ricerca Security
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -21,16 +21,17 @@
  */
 #ifndef FUZZUF_INCLUDE_ALGORITHM_LIBFUZZER_STATE_STATE_HPP
 #define FUZZUF_INCLUDE_ALGORITHM_LIBFUZZER_STATE_STATE_HPP
-#include "fuzzuf/algorithms/libfuzzer/config.hpp"
-#include "fuzzuf/algorithms/libfuzzer/state/random_traits.hpp"
-#include "fuzzuf/algorithms/libfuzzer/utils.hpp"
-#include "fuzzuf/algorithms/libfuzzer/version.hpp"
-#include "fuzzuf/utils/to_string.hpp"
 #include <cstdint>
 #include <functional>
 #include <string>
 #include <type_traits>
 #include <vector>
+
+#include "fuzzuf/algorithms/libfuzzer/config.hpp"
+#include "fuzzuf/algorithms/libfuzzer/state/random_traits.hpp"
+#include "fuzzuf/algorithms/libfuzzer/utils.hpp"
+#include "fuzzuf/algorithms/libfuzzer/version.hpp"
+#include "fuzzuf/utils/to_string.hpp"
 
 namespace fuzzuf::algorithm::libfuzzer {
 
@@ -61,10 +62,12 @@ struct State {
   bool distribution_needs_update = true;
 
   // List of seldomly detected features.
-  // In entropic mode, common features are ignored and never affect on the energy.
+  // In entropic mode, common features are ignored and never affect on the
+  // energy.
   std::vector<std::uint32_t> rare_features;
 
-  // Features listed in the rare features but detected number is larger than the value will be dropped from rare features.
+  // Features listed in the rare features but detected number is larger than the
+  // value will be dropped from rare features.
   std::uint16_t freq_of_most_abundant_rare_feature = 0u;
   std::vector<std::uint16_t> global_feature_freqs;
   std::size_t executed_mutations_count = 0u;
@@ -91,38 +94,40 @@ template <typename T>
 struct IsState<
     T,
     std::enable_if_t<
-        std::is_same_v<utils::type_traits::RemoveCvrT<decltype(
-                           std::declval<T &>().create_info)>,
+        std::is_same_v<utils::type_traits::RemoveCvrT<
+                           decltype(std::declval<T &>().create_info)>,
                        FuzzerCreateInfo> &&
-        is_std_distribution_v<utils::type_traits::RemoveCvrT<decltype(
-            std::declval<T &>().corpus_distribution)>> &&
+        is_std_distribution_v<utils::type_traits::RemoveCvrT<
+            decltype(std::declval<T &>().corpus_distribution)>> &&
         std::is_convertible_v<
-            utils::type_traits::RemoveCvrT<decltype(
-                std::declval<T &>().distribution_needs_update)>,
+            utils::type_traits::RemoveCvrT<
+                decltype(std::declval<T &>().distribution_needs_update)>,
             bool> &&
         std::is_integral_v<
-            utils::range::RangeValueT<utils::type_traits::RemoveCvrT<decltype(
-                std::declval<T &>().rare_features)>>> &&
-        std::is_integral_v<utils::type_traits::RemoveCvrT<decltype(
-            std::declval<T &>().freq_of_most_abundant_rare_feature)>> &&
+            utils::range::RangeValueT<utils::type_traits::RemoveCvrT<
+                decltype(std::declval<T &>().rare_features)>>> &&
+        std::is_integral_v<utils::type_traits::RemoveCvrT<
+            decltype(std::declval<T &>()
+                         .freq_of_most_abundant_rare_feature)>> &&
         std::is_integral_v<
-            utils::range::RangeValueT<utils::type_traits::RemoveCvrT<decltype(
-                std::declval<T &>().global_feature_freqs)>>> &&
-        std::is_integral_v<utils::type_traits::RemoveCvrT<decltype(
-            std::declval<T &>().executed_mutations_count)>> &&
-        std::is_integral_v<utils::type_traits::RemoveCvrT<decltype(
-            std::declval<T &>().added_features_count)>> &&
-        std::is_integral_v<utils::type_traits::RemoveCvrT<decltype(
-            std::declval<T &>().updated_features_count)>> &&
+            utils::range::RangeValueT<utils::type_traits::RemoveCvrT<
+                decltype(std::declval<T &>().global_feature_freqs)>>> &&
+        std::is_integral_v<utils::type_traits::RemoveCvrT<
+            decltype(std::declval<T &>().executed_mutations_count)>> &&
+        std::is_integral_v<utils::type_traits::RemoveCvrT<
+            decltype(std::declval<T &>().added_features_count)>> &&
+        std::is_integral_v<utils::type_traits::RemoveCvrT<
+            decltype(std::declval<T &>().updated_features_count)>> &&
         std::is_integral_v<
-            utils::range::RangeValueT<utils::type_traits::RemoveCvrT<decltype(
-                std::declval<T &>().input_sizes_per_feature)>>> &&
+            utils::range::RangeValueT<utils::type_traits::RemoveCvrT<
+                decltype(std::declval<T &>().input_sizes_per_feature)>>> &&
         std::is_integral_v<
-            utils::range::RangeValueT<utils::type_traits::RemoveCvrT<decltype(
-                std::declval<T &>().smallest_element_per_feature)>>>>>
+            utils::range::RangeValueT<utils::type_traits::RemoveCvrT<
+                decltype(std::declval<T &>().smallest_element_per_feature)>>>>>
     : public std::true_type {};
-template <typename T> constexpr bool is_state_v = IsState<T>::value;
+template <typename T>
+constexpr bool is_state_v = IsState<T>::value;
 
-} // namespace fuzzuf::algorithm::libfuzzer
+}  // namespace fuzzuf::algorithm::libfuzzer
 
 #endif

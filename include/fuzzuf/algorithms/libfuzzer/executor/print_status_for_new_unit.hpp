@@ -1,7 +1,7 @@
 /*
  * fuzzuf
- * Copyright (C) 2021 Ricerca Security
- * 
+ * Copyright (C) 2021-2023 Ricerca Security
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -21,16 +21,17 @@
  */
 #ifndef FUZZUF_INCLUDE_ALGORITHM_LIBFUZZER_EXECUTE_PRINT_STATUS_FOR_NEW_UNIT_HPP
 #define FUZZUF_INCLUDE_ALGORITHM_LIBFUZZER_EXECUTE_PRINT_STATUS_FOR_NEW_UNIT_HPP
+#include <chrono>
+#include <functional>
+#include <string>
+#include <type_traits>
+
 #include "fuzzuf/algorithms/libfuzzer/mutation_history.hpp"
 #include "fuzzuf/algorithms/libfuzzer/state/corpus.hpp"
 #include "fuzzuf/algorithms/libfuzzer/state/state.hpp"
 #include "fuzzuf/utils/range_traits.hpp"
 #include "fuzzuf/utils/to_hex.hpp"
 #include "fuzzuf/utils/type_traits/remove_cvr.hpp"
-#include <chrono>
-#include <functional>
-#include <string>
-#include <type_traits>
 
 namespace fuzzuf::algorithm::libfuzzer::executor {
 
@@ -162,6 +163,6 @@ auto PrintStatusForNewUnit(
   sink(std::move(message));
 }
 
-} // namespace fuzzuf::algorithm::libfuzzer::executor
+}  // namespace fuzzuf::algorithm::libfuzzer::executor
 
 #endif

@@ -1,7 +1,7 @@
 /*
  * fuzzuf
- * Copyright (C) 2021 Ricerca Security
- * 
+ * Copyright (C) 2021-2023 Ricerca Security
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -19,27 +19,23 @@
 #ifndef FUZZUF_INCLUDE_ALGORITHM_IJON_IJON_HAVOC_HPP
 #define FUZZUF_INCLUDE_ALGORITHM_IJON_IJON_HAVOC_HPP
 
-#include "fuzzuf/optimizer/optimizer.hpp"
 #include "fuzzuf/algorithms/afl/afl_dict_data.hpp"
+#include "fuzzuf/optimizer/optimizer.hpp"
 
 namespace fuzzuf::algorithm::ijon::havoc {
 
-void IJONCustomCases(
-    u32 case_idx,
-    u8*& outbuf,
-    u32& len,
-    const std::vector<afl::dictionary::AFLDictData>& extras,
-    const std::vector<afl::dictionary::AFLDictData>& a_extras
-);
+void IJONCustomCases(u32 case_idx, u8*& outbuf, u32& len,
+                     const std::vector<afl::dictionary::AFLDictData>& extras,
+                     const std::vector<afl::dictionary::AFLDictData>& a_extras);
 
 class IJONHavocCaseDistrib : public optimizer::Optimizer<u32> {
-public:
-    IJONHavocCaseDistrib();
-    ~IJONHavocCaseDistrib();
+ public:
+  IJONHavocCaseDistrib();
+  ~IJONHavocCaseDistrib();
 
-    u32 CalcValue() override;
+  u32 CalcValue() override;
 };
 
-} // namespace fuzzuf::algorithm::ijon::havoc
+}  // namespace fuzzuf::algorithm::ijon::havoc
 
 #endif

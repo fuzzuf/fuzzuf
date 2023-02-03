@@ -1,7 +1,7 @@
 /*
  * fuzzuf
- * Copyright (C) 2021 Ricerca Security
- * 
+ * Copyright (C) 2021-2023 Ricerca Security
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -22,22 +22,25 @@
 #ifndef FUZZUF_INCLUDE_UTILS_NODE_TRACER_HPP
 #define FUZZUF_INCLUDE_UTILS_NODE_TRACER_HPP
 
+#include <config.h>
+
+#include <chrono>
+#include <functional>
+#include <string>
+#include <type_traits>
+
+#include "config.h"
 #include "fuzzuf/exceptions.hpp"
 #include "fuzzuf/utils/to_hex.hpp"
 #include "fuzzuf/utils/to_string.hpp"
 #include "fuzzuf/utils/type_traits/remove_cvr.hpp"
-#include "config.h"
-#include <chrono>
-#include <config.h>
-#include <functional>
-#include <string>
-#include <type_traits>
 namespace fuzzuf::utils {
 
 /**
  * @class NodeTracerTag
  * @brief
- * If the fuzzer argument type T has member type T::tag and T::tag is NodeTracerTag, the argument is considered as node tracer to send events
+ * If the fuzzer argument type T has member type T::tag and T::tag is
+ * NodeTracerTag, the argument is considered as node tracer to send events
  */
 struct NodeTracerTag {};
 
@@ -48,16 +51,17 @@ struct IsNodeTracer<
     T, std::enable_if_t<std::is_same_v<
            typename utils::type_traits::RemoveCvrT<T>::tag, NodeTracerTag>>>
     : public std::true_type {};
-template <typename T> constexpr bool is_node_tracer_v = IsNodeTracer<T>::value;
+template <typename T>
+constexpr bool is_node_tracer_v = IsNodeTracer<T>::value;
 
 enum class Checkpoint {
-  enter,     // entered to the node
-  leave,     // leaved from the node
-  abort,     // aborted from the node
-  break_,    // loop node finished the loop
-  continue_, // loop node is going to run at least one more cycle
-  finalize, // no longer used
-  mark // entered to the Marker node
+  enter,      // entered to the node
+  leave,      // leaved from the node
+  abort,      // aborted from the node
+  break_,     // loop node finished the loop
+  continue_,  // loop node is going to run at least one more cycle
+  finalize,   // no longer used
+  mark        // entered to the Marker node
 };
 
 /**
@@ -67,12 +71,12 @@ enum class Checkpoint {
  * This node ignore all additional arguments
  */
 class DumpTracer {
-public:
+ public:
   using tag = NodeTracerTag;
   DumpTracer(std::function<void(std::string &&)> &&s) : sink(std::move(s)) {}
   /**
-   * The function is called when an event with non-string value and without code location infomation is sent
-   * Serialize the value then output to sink
+   * The function is called when an event with non-string value and without code
+   * location infomation is sent Serialize the value then output to sink
    */
   template <typename T>
   auto operator()(const T &v) const -> std::enable_if_t<
@@ -83,13 +87,13 @@ public:
     sink(std::move(m));
   }
   /**
-   * The function is called when an event with std::string value and without code location infomation is sent
-   * Just output value to sink
+   * The function is called when an event with std::string value and without
+   * code location infomation is sent Just output value to sink
    */
   void operator()(const std::string &v) const;
   /**
-   * The function is called when an event with const char* value and without code location infomation is sent
-   * Just output value to sink
+   * The function is called when an event with const char* value and without
+   * code location infomation is sent Just output value to sink
    */
   void operator()(const char *v) const;
   /**
@@ -119,8 +123,7 @@ public:
     std::string m;
 #endif
 #ifndef ENABLE_NODE_TRACER_TRANSPARENT_DUMPER
-    if (node_name == std::string("Nop"))
-      return;
+    if (node_name == std::string("Nop")) return;
 #endif
     if (checkpoint == Checkpoint::enter)
       m += "enter ";
@@ -149,41 +152,46 @@ public:
     sink(std::move(m));
   }
 
-private:
+ private:
   std::function<void(std::string &&)> sink;
 };
 
 /**
  * @class MarkingTracer
  * @brief Record only detail of markers
- * This tracer is intended to check if control node is controlling flow properly in unit tests.
- * This node uses first additional argument as the infomation to identify markers
+ * This tracer is intended to check if control node is controlling flow properly
+ * in unit tests. This node uses first additional argument as the infomation to
+ * identify markers
  */
 class MarkingTracer {
-public:
+ public:
   using tag = NodeTracerTag;
   using log_type = std::vector<std::pair<const char *, std::string>>;
   /**
-   * The function is called when an event with non-string value and without code location infomation is sent
-   * MarkingTracer ignores all events without Checkpoint::mark
+   * The function is called when an event with non-string value and without code
+   * location infomation is sent MarkingTracer ignores all events without
+   * Checkpoint::mark
    */
   template <typename T>
   auto operator()(const T &) const -> std::enable_if_t<
       !std::is_same_v<utils::type_traits::RemoveCvrT<T>, char *> &&
       !std::is_same_v<utils::type_traits::RemoveCvrT<T>, std::string>> {}
   /**
-   * The function is called when an event with std::string value and without code location infomation is sent
-   * MarkingTracer ignores all events without Checkpoint::mark
+   * The function is called when an event with std::string value and without
+   * code location infomation is sent MarkingTracer ignores all events without
+   * Checkpoint::mark
    */
   void operator()(const std::string &) const {}
   /**
-   * The function is called when an event with const char* value and without code location infomation is sent
-   * MarkingTracer ignores all events without Checkpoint::mark
+   * The function is called when an event with const char* value and without
+   * code location infomation is sent MarkingTracer ignores all events without
+   * Checkpoint::mark
    */
   void operator()(const char *) const {}
   /**
    * The function is called when an event with code location infomation is sent
-   * record node name and identifier to the log if checkpoint is Checkpoint::mark
+   * record node name and identifier to the log if checkpoint is
+   * Checkpoint::mark
    */
   template <typename Node, typename Head, typename... Tail>
   void operator()(const char *, int, const char *node_name, const Node &,
@@ -210,17 +218,17 @@ public:
    */
   const log_type &get_log() const { return log; }
 
-private:
+ private:
   log_type log;
 };
 
 /**
  * @class ElapsedTimeTracer
- * @brief Record time duration from Checkpoint::enter to Checkpoint::leave for each node names
- * The tracer is intended to detect heavy node
- * The tracer records two kind of durations
- * Inclusive duration is elapsed time between enter and leave including whole child node execution time
- * Exclusive duration is elapsed time between enter and leave excluding child node execution time
+ * @brief Record time duration from Checkpoint::enter to Checkpoint::leave for
+ * each node names The tracer is intended to detect heavy node The tracer
+ * records two kind of durations Inclusive duration is elapsed time between
+ * enter and leave including whole child node execution time Exclusive duration
+ * is elapsed time between enter and leave excluding child node execution time
  */
 class ElapsedTimeTracer {
   struct ElapsedTimeT {
@@ -239,7 +247,7 @@ class ElapsedTimeTracer {
     std::uint64_t count = 0ull;
   };
 
-public:
+ public:
   using tag = NodeTracerTag;
   void dump(const std::function<void(std::string &&)> &s) {
     {
@@ -284,14 +292,16 @@ public:
     }
   }
   /**
-   * The function is called when an event without code location infomation is sent
-   * The tracer ignores events without location infomation
+   * The function is called when an event without code location infomation is
+   * sent The tracer ignores events without location infomation
    */
-  template <typename T> auto operator()(const T &v) const -> void {}
+  template <typename T>
+  auto operator()(const T &v) const -> void {}
   /**
    * The function is called when an event with code location infomation is sent
    * If the checkpoint is enter, record begin date
-   * If the checkpoint is leave, subtract begin date from current date, then append the duration to total duration
+   * If the checkpoint is leave, subtract begin date from current date, then
+   * append the duration to total duration
    */
   template <typename Node, typename... Args>
   void operator()(const char *, int, const char *node_name, const Node &,
@@ -340,11 +350,11 @@ public:
     }
   }
 
-private:
+ private:
   std::vector<ElapsedTimeT> call_stack;
   std::unordered_map<std::string, SumT> summary;
 };
 
-} // namespace fuzzuf::utils
+}  // namespace fuzzuf::utils
 
 #endif

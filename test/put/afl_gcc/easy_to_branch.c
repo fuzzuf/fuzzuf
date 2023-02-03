@@ -1,6 +1,6 @@
 /*
  * fuzzuf
- * Copyright (C) 2022 Ricerca Security
+ * Copyright (C) 2021-2023 Ricerca Security
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
@@ -18,11 +18,10 @@
 
 #include <stdlib.h>
 
-int main(int argc, char **argv ) {
+int main(int argc, char **argv) {
   const int c = getchar();
-  if( c & 0x1 ) {
-    exit( 0 );
+  if (c & 0x1) {
+    exit(0);
   }
   abort();
 }
-

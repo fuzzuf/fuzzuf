@@ -1,7 +1,7 @@
 /*
  * fuzzuf
- * Copyright (C) 2021 Ricerca Security
- * 
+ * Copyright (C) 2021-2023 Ricerca Security
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -20,14 +20,16 @@
  * @author Ricerca Security <fuzzuf-dev@ricsec.co.jp>
  */
 #include "fuzzuf/utils/map_file.hpp"
+
+#include <fcntl.h>
+#include <sys/mman.h>
+#include <sys/stat.h>
+
 #include <boost/scope_exit.hpp>
 #include <cerrno>
 #include <cstdint>
-#include <fcntl.h>
 #include <memory>
 #include <string>
-#include <sys/mman.h>
-#include <sys/stat.h>
 #include <system_error>
 
 namespace fuzzuf::utils {
@@ -105,4 +107,4 @@ auto map_file(const std::string &filename, unsigned int flags, bool populate)
           std::next(addr_sp.get(), file_size), addr_sp));
 }
 
-} // namespace fuzzuf::utils
+}  // namespace fuzzuf::utils

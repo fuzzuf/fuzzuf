@@ -1,7 +1,7 @@
 /*
  * fuzzuf
- * Copyright (C) 2021 Ricerca Security
- * 
+ * Copyright (C) 2021-2023 Ricerca Security
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -21,15 +21,16 @@
  */
 #ifndef FUZZUF_INCLUDE_ALGORITHM_LIBFUZZER_FEATURE_FOR_EACH_NON_ZERO_BYTE_HPP
 #define FUZZUF_INCLUDE_ALGORITHM_LIBFUZZER_FEATURE_FOR_EACH_NON_ZERO_BYTE_HPP
-#include "fuzzuf/utils/bswap.hpp"
-#include "fuzzuf/utils/range_traits.hpp"
-#include "fuzzuf/utils/void_t.hpp"
 #include <boost/range/iterator_range.hpp>
 #include <cmath>
 #include <cstddef>
 #include <cstdint>
 #include <iterator>
 #include <type_traits>
+
+#include "fuzzuf/utils/bswap.hpp"
+#include "fuzzuf/utils/range_traits.hpp"
+#include "fuzzuf/utils/void_t.hpp"
 namespace fuzzuf::algorithm::libfuzzer::feature {
 
 /**
@@ -41,10 +42,12 @@ namespace fuzzuf::algorithm::libfuzzer::feature {
  *
  * @tparam Range Range compliant type of input values
  * @tparam Integer Type of first_feature
- * @tparam Callback Callable with three integer arguments for first_feature, distance from begin() to current element and value of current element. 
+ * @tparam Callback Callable with three integer arguments for first_feature,
+ * distance from begin() to current element and value of current element.
  * @param data Call cb for each non-zero elements of this range
  * @param first_feature This value is always passed to the first argument of cb
- * @param cb Callable with three integer arguments for first_feature, distance from begin() to current element and value of current element.
+ * @param cb Callable with three integer arguments for first_feature, distance
+ * from begin() to current element and value of current element.
  * @return length of data
  */
 template <typename Range, typename Integer, typename Callback>
@@ -90,10 +93,12 @@ auto ForEachNonZeroByte(const Range &data, Integer first_feature, Callback cb)
  *
  * @tparam Range Range compliant type of input values
  * @tparam Integer Type of first_feature
- * @tparam Callback Callable with three integer arguments for first_feature, distance from begin() to current element and value of current element. 
+ * @tparam Callback Callable with three integer arguments for first_feature,
+ * distance from begin() to current element and value of current element.
  * @param data Call cb for each non-zero elements of this range
  * @param first_feature This value is always passed to the first argument of cb
- * @param cb Callable with three integer arguments for first_feature, distance from begin() to current element and value of current element.
+ * @param cb Callable with three integer arguments for first_feature, distance
+ * from begin() to current element and value of current element.
  * @return length of data
  */
 template <typename Range, typename Integer, typename Callback>
@@ -108,13 +113,12 @@ auto ForEachNonZeroByte(const Range &data, Integer first_feature, Callback cb)
   std::size_t index = 0u;
   // Iterate by 1 byte until the end.
   for (auto v : data) {
-    if (v)
-      cb(first_feature, Integer(index), v);
+    if (v) cb(first_feature, Integer(index), v);
     ++index;
   }
   return std::distance(data.begin(), data.end());
 }
 
-} // namespace fuzzuf::algorithm::libfuzzer::feature
+}  // namespace fuzzuf::algorithm::libfuzzer::feature
 
 #endif

@@ -1,7 +1,7 @@
 /*
  * fuzzuf
- * Copyright (C) 2021 Ricerca Security
- * 
+ * Copyright (C) 2021-2023 Ricerca Security
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -18,10 +18,12 @@
 #define BOOST_TEST_MODULE util.SortTypes
 #define BOOST_TEST_DYN_LINK
 #include "fuzzuf/utils/type_traits/sort_types.hpp"
+
 #include <boost/test/unit_test.hpp>
 #include <type_traits>
 
-template <unsigned int i> struct num_t {};
+template <unsigned int i>
+struct num_t {};
 
 BOOST_AUTO_TEST_CASE(SortTemplateParameters) {
   BOOST_CHECK(

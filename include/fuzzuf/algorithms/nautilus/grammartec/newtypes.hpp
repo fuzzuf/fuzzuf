@@ -1,7 +1,7 @@
 /*
  * fuzzuf
- * Copyright (C) 2022 Ricerca Security
- * 
+ * Copyright (C) 2021-2023 Ricerca Security
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -25,30 +25,29 @@
 
 #include <boost/range/irange.hpp>
 
-
 namespace fuzzuf::algorithm::nautilus::grammartec {
 
 class IDBase {
-public:
+ public:
   IDBase() : _id(0) {}
   IDBase(size_t id) : _id(id) {}
   size_t id() const { return _id; }
   virtual ~IDBase() {}
 
-  IDBase(const IDBase& other) { _id = other.id(); } // copy constructor
-  inline operator size_t() const { return _id; } // cast to size_t
-  inline IDBase& operator=(const IDBase& other) { // assignment
+  IDBase(const IDBase& other) { _id = other.id(); }  // copy constructor
+  inline operator size_t() const { return _id; }     // cast to size_t
+  inline IDBase& operator=(const IDBase& other) {    // assignment
     _id = other.id();
     return *this;
   }
-  inline bool operator==(const IDBase& rhs) const { // eq comparison
+  inline bool operator==(const IDBase& rhs) const {  // eq comparison
     return _id == rhs.id();
   }
-  inline bool operator!=(const IDBase& rhs) const { // neq comparison
+  inline bool operator!=(const IDBase& rhs) const {  // neq comparison
     return _id != rhs.id();
   }
 
-protected:
+ protected:
   size_t _id;
 };
 
@@ -70,35 +69,28 @@ struct NTermID : IDBase {
   using IDBase::IDBase;
 };
 
-} // namespace fuzzuf::algorithm::nautilus::grammartec
-
+}  // namespace fuzzuf::algorithm::nautilus::grammartec
 
 namespace std {
 
 using namespace fuzzuf::algorithm::nautilus::grammartec;
 
 /* Define hash function for use in unordered_map */
-template<>
+template <>
 struct hash<RuleID> {
-  std::size_t operator()(const RuleID& key) const {
-    return key.id();
-  }
+  std::size_t operator()(const RuleID& key) const { return key.id(); }
 };
 
-template<>
+template <>
 struct hash<NodeID> {
-  std::size_t operator()(const NodeID& key) const {
-    return key.id();
-  }
+  std::size_t operator()(const NodeID& key) const { return key.id(); }
 };
 
-template<>
+template <>
 struct hash<NTermID> {
-  std::size_t operator()(const NTermID& key) const {
-    return key.id();
-  }
+  std::size_t operator()(const NTermID& key) const { return key.id(); }
 };
 
-} // namespace std
+}  // namespace std
 
 #endif

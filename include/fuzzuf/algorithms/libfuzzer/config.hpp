@@ -1,6 +1,6 @@
 /*
  * fuzzuf
- * Copyright (C) 2021 Ricerca Security
+ * Copyright (C) 2021-2023 Ricerca Security
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
@@ -22,10 +22,11 @@
 #ifndef FUZZUF_INCLUDE_ALGORITHM_LIBFUZZER_CONFIG_HPP
 #define FUZZUF_INCLUDE_ALGORITHM_LIBFUZZER_CONFIG_HPP
 
+#include <vector>
+
 #include "fuzzuf/executor/libfuzzer_executor_interface.hpp"
 #include "fuzzuf/utils/filesystem.hpp"
 #include "fuzzuf/utils/setter.hpp"
-#include <vector>
 
 namespace fuzzuf::algorithm::libfuzzer {
 
@@ -140,7 +141,8 @@ auto toString(std::string &dest, const Config &value, std::size_t indent_count,
 
 struct FuzzerCreateInfo {
   FuzzerCreateInfo()
-      : input_dir("./input"), output_dir("./output"),
+      : input_dir("./input"),
+        output_dir("./output"),
         // This is a temporary implementation. Change the implementation
         // properly if the value need to be specified from user side.
         cpu_core_count(fuzzuf::utils::GetCpuCore()),
@@ -425,8 +427,9 @@ struct FuzzerCreateInfo {
   std::size_t symcc_target_count = 0u;
 
   /**
-    * If 0, SymCC is never executed.
-    * Otherwise, SymCC is executed if recent n local loop blocks didn't change the corpus.
+   * If 0, SymCC is never executed.
+   * Otherwise, SymCC is executed if recent n local loop blocks didn't change
+   * the corpus.
    */
   unsigned int symcc_freq = 1u;
 };
@@ -434,6 +437,6 @@ struct FuzzerCreateInfo {
 auto toString(std::string &dest, const FuzzerCreateInfo &value,
               std::size_t indent_count, const std::string &indent) -> bool;
 
-} // namespace fuzzuf::algorithm::libfuzzer
+}  // namespace fuzzuf::algorithm::libfuzzer
 
 #endif

@@ -1,6 +1,6 @@
 /*
  * fuzzuf
- * Copyright (C) 2022 Ricerca Security
+ * Copyright (C) 2021-2023 Ricerca Security
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
@@ -30,4 +30,4 @@ void SetupExecutionEnvironment();
 
 }
 
-#endif // FUZZUF_INCLUDE_CLI_SETUP_EXECUTION_ENVIRONMENT_HPP
+#endif  // FUZZUF_INCLUDE_CLI_SETUP_EXECUTION_ENVIRONMENT_HPP

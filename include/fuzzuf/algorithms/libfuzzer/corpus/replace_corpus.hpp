@@ -1,7 +1,7 @@
 /*
  * fuzzuf
- * Copyright (C) 2021 Ricerca Security
- * 
+ * Copyright (C) 2021-2023 Ricerca Security
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -21,6 +21,10 @@
  */
 #ifndef FUZZUF_INCLUDE_ALGORITHM_LIBFUZZER_CORPUS_REPLACE_CORPUS_HPP
 #define FUZZUF_INCLUDE_ALGORITHM_LIBFUZZER_CORPUS_REPLACE_CORPUS_HPP
+#include <algorithm>
+#include <cassert>
+#include <type_traits>
+
 #include "fuzzuf/algorithms/libfuzzer/state/corpus.hpp"
 #include "fuzzuf/algorithms/libfuzzer/state/input_info.hpp"
 #include "fuzzuf/algorithms/libfuzzer/state/state.hpp"
@@ -29,16 +33,14 @@
 #include "fuzzuf/feedback/exit_status_feedback.hpp"
 #include "fuzzuf/utils/filesystem.hpp"
 #include "fuzzuf/utils/sha1.hpp"
-#include <algorithm>
-#include <cassert>
-#include <type_traits>
 
 namespace fuzzuf::algorithm::libfuzzer::corpus {
 
 /**
  * Replace index-th element of the corpus
  * This function puts id and sha1 hash on the execution result.
- * If the execution result doesn't have filename and persistent is true, the sha1 hash is used as the filename.
+ * If the execution result doesn't have filename and persistent is true, the
+ * sha1 hash is used as the filename.
  *
  * Corresponding code of original libFuzzer implementation
  * https://github.com/llvm/llvm-project/blob/llvmorg-12.0.1/compiler-rt/lib/fuzzer/FuzzerCorpus.h#L346
@@ -64,8 +66,7 @@ auto replaceCorpus(Corpus &corpus, Range &range, InputInfo &testcase_,
   std::uint64_t id = 0u;
   testcase_.sha1 = utils::ToSerializedSha1(range);
   testcase_.input_size = utils::range::rangeSize(range);
-  if (testcase_.name.empty())
-    testcase_.name = testcase_.sha1;
+  if (testcase_.name.empty()) testcase_.name = testcase_.sha1;
   const auto old_id = testcase_.id;
   auto &hashed = corpus.corpus.template get<ById>();
   const auto existing = hashed.find(old_id);
@@ -95,6 +96,6 @@ auto replaceCorpus(Corpus &corpus, Range &range, InputInfo &testcase_,
     hashed.insert(testcase_);
 }
 
-} // namespace fuzzuf::algorithm::libfuzzer::corpus
+}  // namespace fuzzuf::algorithm::libfuzzer::corpus
 
 #endif

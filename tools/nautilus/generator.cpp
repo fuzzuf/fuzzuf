@@ -1,7 +1,7 @@
 /*
  * fuzzuf
- * Copyright (C) 2022 Ricerca Security
- * 
+ * Copyright (C) 2021-2023 Ricerca Security
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -21,6 +21,7 @@
  * @author Ricerca Security <fuzzuf-dev@ricsec.co.jp>
  */
 #include <boost/program_options.hpp>
+
 #include "fuzzuf/algorithms/nautilus/fuzzer/fuzzer.hpp"
 #include "fuzzuf/algorithms/nautilus/grammartec/context.hpp"
 #include "fuzzuf/algorithms/nautilus/grammartec/rule.hpp"
@@ -29,12 +30,11 @@
 #include "fuzzuf/utils/common.hpp"
 #include "fuzzuf/utils/filesystem.hpp"
 
-
 namespace po = boost::program_options;
 using namespace fuzzuf::algorithm::nautilus::fuzzer;
 using namespace fuzzuf::algorithm::nautilus::grammartec;
 
-int main(int argc, char **argv) {
+int main(int argc, char** argv) {
   std::string grammar;
   fs::path grammar_path;
   size_t tree_depth, number_of_trees;
@@ -42,24 +42,22 @@ int main(int argc, char **argv) {
 
   try {
     po::options_description desc("Options");
-    desc.add_options()
-      ("help,h", "Show this help")
-      ("grammar_path,g",
-       po::value<std::string>(&grammar)->value_name("GRAMMAR")->required(),
-       "Path to grammar")
-      ("tree_depth,t",
-       po::value<size_t>(&tree_depth)->value_name("DEPTH")->required(),
-       "Size of trees that are generated")
-      ("number_of_trees,n",
-       po::value<size_t>(&number_of_trees)->value_name("NUMBER")->default_value(1),
-       "Number of trees to generate [default: 1]")
-      ("store,s",
-       po::bool_switch(&store),
-       "Store output to files. This will create a folder called corpus containing one file for each generated tree.")
-      ("verbose,v",
-       po::bool_switch(&verbose),
-       "Be verbose")
-      ;
+    desc.add_options()("help,h", "Show this help")(
+        "grammar_path,g",
+        po::value<std::string>(&grammar)->value_name("GRAMMAR")->required(),
+        "Path to grammar")(
+        "tree_depth,t",
+        po::value<size_t>(&tree_depth)->value_name("DEPTH")->required(),
+        "Size of trees that are generated")(
+        "number_of_trees,n",
+        po::value<size_t>(&number_of_trees)
+            ->value_name("NUMBER")
+            ->default_value(1),
+        "Number of trees to generate [default: 1]")(
+        "store,s", po::bool_switch(&store),
+        "Store output to files. This will create a folder called corpus "
+        "containing one file for each generated tree.")(
+        "verbose,v", po::bool_switch(&verbose), "Be verbose");
 
     po::variables_map vm;
     po::store(po::parse_command_line(argc, argv, desc), vm);
@@ -95,8 +93,8 @@ int main(int argc, char **argv) {
     Tree generated_tree = ctx.GenerateTreeFromNT(nonterm, len);
 
     if (verbose) {
-      std::cout << "Generating tree " << i+1
-                << " from " << number_of_trees << std::endl;
+      std::cout << "Generating tree " << i + 1 << " from " << number_of_trees
+                << std::endl;
     }
 
     std::string buffer;
@@ -104,11 +102,11 @@ int main(int argc, char **argv) {
 
     if (store) {
       /* Write to file */
-      int fd = fuzzuf::utils::OpenFile(
-        fuzzuf::utils::StrPrintf("corpus/%ld", i+1),
-        O_WRONLY | O_CREAT | O_TRUNC,
-        S_IWUSR | S_IRUSR // 0600
-      );
+      int fd =
+          fuzzuf::utils::OpenFile(fuzzuf::utils::StrPrintf("corpus/%ld", i + 1),
+                                  O_WRONLY | O_CREAT | O_TRUNC,
+                                  S_IWUSR | S_IRUSR  // 0600
+          );
       fuzzuf::utils::WriteFile(fd, buffer.data(), buffer.size());
       fuzzuf::utils::CloseFile(fd);
 

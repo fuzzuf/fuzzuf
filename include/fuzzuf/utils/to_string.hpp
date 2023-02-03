@@ -1,7 +1,7 @@
 /*
  * fuzzuf
- * Copyright (C) 2021 Ricerca Security
- * 
+ * Copyright (C) 2021-2023 Ricerca Security
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -21,10 +21,6 @@
  */
 #ifndef FUZZUF_INCLUDE_UTILS_TO_STRING_HPP
 #define FUZZUF_INCLUDE_UTILS_TO_STRING_HPP
-#include "fuzzuf/utils/range_traits.hpp"
-#include "fuzzuf/utils/type_traits/equality_comparable.hpp"
-#include "fuzzuf/utils/type_traits/remove_cvr.hpp"
-#include "fuzzuf/utils/void_t.hpp"
 #include <boost/range/iterator_range.hpp>
 #include <chrono>
 #include <cstddef>
@@ -32,9 +28,15 @@
 #include <tuple>
 #include <utility>
 
+#include "fuzzuf/utils/range_traits.hpp"
+#include "fuzzuf/utils/type_traits/equality_comparable.hpp"
+#include "fuzzuf/utils/type_traits/remove_cvr.hpp"
+#include "fuzzuf/utils/void_t.hpp"
+
 namespace fuzzuf::utils {
 
-template <typename... T> bool toStringADL(std::string &dest, T &&...value);
+template <typename... T>
+bool toStringADL(std::string &dest, T &&...value);
 
 /*
  * Serialize built-in numeric types
@@ -71,8 +73,8 @@ void make_indent(std::string &dest, std::size_t indent_count,
  */
 template <typename T>
 auto toString(std::string &dest, const T &value) -> std::enable_if_t<
-    std::is_void_v<utils::void_t<decltype(
-        toStringADL(std::declval<std::string &>(), std::declval<T>().t))>>,
+    std::is_void_v<utils::void_t<decltype(toStringADL(
+        std::declval<std::string &>(), std::declval<T>().t))>>,
     bool> {
   using underlying_t =
       utils::type_traits::RemoveCvrT<decltype(std::declval<T>().t)>;
@@ -119,11 +121,9 @@ auto toString(std::string &dest, const std::pair<T1, T2> &value)
                            bool>,
         bool> {
   dest += "{ ";
-  if (!toStringADL(dest, value.first))
-    return false;
+  if (!toStringADL(dest, value.first)) return false;
   dest += ", ";
-  if (!toStringADL(dest, value.second))
-    return false;
+  if (!toStringADL(dest, value.second)) return false;
   dest += " }";
   return true;
 }
@@ -143,17 +143,15 @@ auto toString(std::string &dest, const std::tuple<T...> &value)
     dest += "{ ";
   else
     dest += ", ";
-  if (!toStringADL(dest, std::get<i>(value)))
-    return false;
+  if (!toStringADL(dest, std::get<i>(value))) return false;
   if constexpr (i + 1 == size)
     dest += " }";
   else {
-    if (!toString<i + 1, size>(dest, value))
-      return false;
+    if (!toString<i + 1, size>(dest, value)) return false;
   }
   return true;
 }
-} // namespace detail
+}  // namespace detail
 
 /**
  * Serialize std::tuple
@@ -198,8 +196,7 @@ auto toString(std::string &dest, const T &value) -> std::enable_if_t<
       first = false;
     else
       dest += ", ";
-    if (!toStringADL(dest, v))
-      return false;
+    if (!toStringADL(dest, v)) return false;
   }
   dest += " }";
   return true;
@@ -230,30 +227,26 @@ auto toString(std::string &dest, const T &value) -> std::enable_if_t<
   for (const auto &v : value) {
     if (first) {
       first = false;
-      if (!toStringADL(dest, v))
-        return false;
+      if (!toStringADL(dest, v)) return false;
     } else {
       if (*prev == v) {
         dup_count += 1u;
       } else {
         if (dup_count != 1u) {
           dest += " * ";
-          if (!toString(dest, dup_count))
-            return false;
+          if (!toString(dest, dup_count)) return false;
           dest += "times";
           dup_count = 1u;
         }
         dest += ", ";
-        if (!toStringADL(dest, v))
-          return false;
+        if (!toStringADL(dest, v)) return false;
       }
       ++prev;
     }
   }
   if (dup_count != 1u) {
     dest += " * ";
-    if (!toString(dest, dup_count))
-      return false;
+    if (!toString(dest, dup_count)) return false;
     dest += "times";
     dup_count = 1u;
   }
@@ -269,8 +262,8 @@ auto toString(std::string &dest, const T &value) -> std::enable_if_t<
  */
 template <typename T>
 auto toString(std::string &dest, const T &value) -> std::enable_if_t<
-    std::is_void_v<utils::void_t<decltype(
-        toStringADL(std::declval<std::string &>(), *std::declval<T>()))>>,
+    std::is_void_v<utils::void_t<decltype(toStringADL(
+        std::declval<std::string &>(), *std::declval<T>()))>>,
     bool> {
   if (!value) {
     dest += "(null)";
@@ -281,7 +274,8 @@ auto toString(std::string &dest, const T &value) -> std::enable_if_t<
 
 /**
  * @class ToStringShortReady
- * @brief Meta function that returns true if function ToString( dest, value ) is defined for type T
+ * @brief Meta function that returns true if function ToString( dest, value ) is
+ * defined for type T
  * @tparam T Any type
  */
 template <typename T, typename Enable = void>
@@ -297,7 +291,8 @@ constexpr bool to_string_short_ready_v = ToStringShortReady<T>::value;
 
 /**
  * @class ToStringLongReady
- * @brief Meta function that returns true if function ToString( dest, value, indent_depth, indent_str ) is defined for type T
+ * @brief Meta function that returns true if function ToString( dest, value,
+ * indent_depth, indent_str ) is defined for type T
  * @tparam T Any type
  */
 template <typename T, typename Enable = void>
@@ -314,7 +309,8 @@ template <typename T>
 constexpr bool to_string_long_ready_v = ToStringLongReady<T>::value;
 
 /**
- * Serialize value without indentation specifier using implementation above or user defined implementation that is available in the rage of ADL
+ * Serialize value without indentation specifier using implementation above or
+ * user defined implementation that is available in the rage of ADL
  * @tparam T Type of value
  * @param dest Destination
  * @param value Value
@@ -326,7 +322,8 @@ auto toStringADLInternal(std::string &dest, const T &value)
 }
 
 /**
- * Serialize value with indentation specifier using implementation above or user defined implementation that is available in the rage of ADL
+ * Serialize value with indentation specifier using implementation above or user
+ * defined implementation that is available in the rage of ADL
  * @tparam T Type of value
  * @param dest Destination
  * @param value Value
@@ -341,9 +338,10 @@ auto toStringADLInternal(std::string &dest, const T &value,
 }
 
 /**
- * Serialize value without indentation specifier using implementation above or user defined implementation that is available in the rage of ADL
- * For the case only toString with indentation specifier is available
- * This is equivalent to call toString( dest, value, 0, "  " )
+ * Serialize value without indentation specifier using implementation above or
+ * user defined implementation that is available in the rage of ADL For the case
+ * only toString with indentation specifier is available This is equivalent to
+ * call toString( dest, value, 0, "  " )
  * @tparam T Type of value
  * @param dest Destination
  * @param value Value
@@ -355,9 +353,10 @@ auto toStringADLInternal(std::string &dest, const T &value) -> std::enable_if_t<
 }
 
 /**
- * Serialize value with indentation specifier using implementation above or user defined implementation that is available in the rage of ADL
- * For the case only toString without indentation specifier is available
- * This insert indent first, then call toString( dest, value )
+ * Serialize value with indentation specifier using implementation above or user
+ * defined implementation that is available in the rage of ADL For the case only
+ * toString without indentation specifier is available This insert indent first,
+ * then call toString( dest, value )
  * @tparam T Type of value
  * @param dest Destination
  * @param value Value
@@ -376,12 +375,13 @@ auto toStringADLInternal(std::string &dest, const T &value,
 }
 
 /**
- * In most case, this is the only function that is expected to be called directly for serialization
+ * In most case, this is the only function that is expected to be called
+ * directly for serialization
  */
-template <typename... T> bool toStringADL(std::string &dest, T &&...value) {
+template <typename... T>
+bool toStringADL(std::string &dest, T &&...value) {
   return toStringADLInternal(dest, std::forward<T>(value)...);
 }
 
-} // namespace fuzzuf::utils
+}  // namespace fuzzuf::utils
 #endif
-

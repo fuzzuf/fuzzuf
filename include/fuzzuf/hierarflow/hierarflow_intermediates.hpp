@@ -1,7 +1,7 @@
 /*
  * fuzzuf
- * Copyright (C) 2021 Ricerca Security
- * 
+ * Copyright (C) 2021-2023 Ricerca Security
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -18,9 +18,8 @@
 #ifndef FUZZUF_INCLUDE_HIERARFLOW_HIERARFLOW_INTERMEDIATES_HPP
 #define FUZZUF_INCLUDE_HIERARFLOW_HIERARFLOW_INTERMEDIATES_HPP
 
-#include "fuzzuf/hierarflow/hierarflow_path.hpp"
 #include "fuzzuf/hierarflow/hierarflow_children.hpp"
+#include "fuzzuf/hierarflow/hierarflow_path.hpp"
 #include "fuzzuf/hierarflow/utility.hpp"
 
 #endif
-

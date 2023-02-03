@@ -1,6 +1,6 @@
 /*
  * fuzzuf
- * Copyright (C) 2022 Ricerca Security
+ * Copyright (C) 2021-2023 Ricerca Security
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
@@ -22,9 +22,9 @@
 #include <boost/test/unit_test.hpp>
 
 #include "fuzzuf/cli/create_fuzzer_instance_from_argv.hpp"
+#include "fuzzuf/tests/standard_test_dirs.hpp"
 #include "fuzzuf/utils/count_regular_files.hpp"
 #include "fuzzuf/utils/filesystem.hpp"
-#include "fuzzuf/tests/standard_test_dirs.hpp"
 
 BOOST_AUTO_TEST_CASE(ExecuteIJONWithParallel) {
   // Setup root directory

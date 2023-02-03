@@ -1,6 +1,6 @@
 /*
  * fuzzuf
- * Copyright (C) 2022 Ricerca Security
+ * Copyright (C) 2021-2023 Ricerca Security
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
@@ -21,11 +21,13 @@
  */
 #ifndef FUZZUF_INCLUDE_UTILS_VFS_READ_ONCE_HPP
 #define FUZZUF_INCLUDE_UTILS_VFS_READ_ONCE_HPP
+#include <fcntl.h>
+
+#include <type_traits>
+
 #include "fuzzuf/utils/filesystem.hpp"
 #include "fuzzuf/utils/map_file.hpp"
 #include "fuzzuf/utils/range_traits.hpp"
-#include <fcntl.h>
-#include <type_traits>
 
 namespace fuzzuf::utils::vfs::adaptor {
 
@@ -46,31 +48,25 @@ namespace fuzzuf::utils::vfs::adaptor {
 template <typename T>
 concept AdaptableToReadOnce = requires(T &v, const fs::path &p) {
   // Member function GetAllowedPath returns a range
-  { v.GetAllowedPath() }
-  ->std::ranges::range<>;
+  { v.GetAllowedPath() } -> std::ranges::range<>;
   // Element of range retrived by GetAllowedPath is a path
-  { *v.GetAllowedPath().begin() }
-  ->std::convertible_to<fs::path>;
+  { *v.GetAllowedPath().begin() } -> std::convertible_to<fs::path>;
   // Member function OpenDirectoryRecursive returns a range compatible iterator
-  { begin(v.OpenDirectoryRecursive(p)) }
-  ->std::input_iterator<>;
+  { begin(v.OpenDirectoryRecursive(p)) } -> std::input_iterator<>;
   // value of iterator retrived by OpenDirectoryRecursive has member function
   // path() and it returns fs::path value
-  { v.OpenDirectoryRecursive(p)->path() }
-  ->std::convertible_to<fs::path>;
+  { v.OpenDirectoryRecursive(p)->path() } -> std::convertible_to<fs::path>;
   // Member function IsRegularFile returns a bool
-  { v.IsRegularFile(p) }
-  ->std::convertible_to<bool>;
+  { v.IsRegularFile(p) } -> std::convertible_to<bool>;
   // Member function FileSize returns an integral value
-  { v.FileSize(p) }
-  ->std::integral<>;
+  { v.FileSize(p) } -> std::integral<>;
   // Member function Mmap returns a mapped_file_t
-  { v.Mmap(p, O_RDONLY, false) }
-  ->std::convertible_to<mapped_file_t>;
+  { v.Mmap(p, O_RDONLY, false) } -> std::convertible_to<mapped_file_t>;
   // Member function Remove is available
   {v.Remove(p)};
 };
-template <AdaptableToReadOnce Base> class ReadOnce {
+template <AdaptableToReadOnce Base>
+class ReadOnce {
 #else
 // For traditional compilers. The requirements are same as above.
 template <typename T, typename Enable = void>
@@ -86,8 +82,8 @@ struct AdaptableToReadOnce<
                    fs::path> &&
                // Member function OpenDirectoryRecursive returns a range
                // compatible iterator
-               range::is_iterator_v<decltype(
-                   begin(std::declval<T>().OpenDirectoryRecursive(
+               range::is_iterator_v<decltype(begin(
+                   std::declval<T>().OpenDirectoryRecursive(
                        std::declval<const fs::path &>())))> &&
                // value of iterator retrived by OpenDirectoryRecursive has
                // member function path() and it returns fs::path value
@@ -114,19 +110,21 @@ struct AdaptableToReadOnce<
                std::declval<const fs::path &>()))>>> : public std::true_type {};
 template <typename T>
 constexpr bool adaptable_to_read_once_v = AdaptableToReadOnce<T>::value;
-template <typename Base, typename Enable = void> class ReadOnce;
+template <typename Base, typename Enable = void>
+class ReadOnce;
 template <typename Base>
 class ReadOnce<Base, std::enable_if_t<adaptable_to_read_once_v<Base>>> {
 #endif
-public:
+ public:
   template <typename... Args>
   ReadOnce(Args &&...args) : base(std::forward<Args>(args)...) {}
   const std::vector<fs::path> &GetAllowedPath() const {
     return base.GetAllowedPath();
   }
   /**
-   * mmap all non-empty regular files in the allowed directories, then remove them.
-   * "all files" in the directory means the files which are contained in the range retrived by OpenDirectoryRecursive.
+   * mmap all non-empty regular files in the allowed directories, then remove
+   * them. "all files" in the directory means the files which are contained in
+   * the range retrived by OpenDirectoryRecursive.
    * @return vector of file path and corresponding mmaped file.
    */
   std::vector<std::pair<fs::path, mapped_file_t>> MmapAll() {
@@ -166,19 +164,19 @@ public:
     }
   }
 
-private:
+ private:
   Base base;
 };
 namespace detail {
 struct ReadOnceParams {};
 template <typename Base>
-ReadOnce<utils::type_traits::RemoveCvrT<Base>>
-operator|(Base &&b, const detail::ReadOnceParams &) {
+ReadOnce<utils::type_traits::RemoveCvrT<Base>> operator|(
+    Base &&b, const detail::ReadOnceParams &) {
   return ReadOnce<utils::type_traits::RemoveCvrT<Base>>(std::forward<Base>(b));
 }
-} // namespace detail
+}  // namespace detail
 constexpr detail::ReadOnceParams read_once;
 
-} // namespace fuzzuf::utils::vfs::adaptor
+}  // namespace fuzzuf::utils::vfs::adaptor
 
 #endif

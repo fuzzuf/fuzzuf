@@ -1,7 +1,7 @@
 /*
  * fuzzuf
- * Copyright (C) 2021 Ricerca Security
- * 
+ * Copyright (C) 2021-2023 Ricerca Security
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -23,8 +23,9 @@
 #define FUZZUF_INCLUDE_UTILS_DETECT_COPY_HPP
 
 namespace fuzzuf::utils {
-template <typename T> class DetectCopy : public T {
-public:
+template <typename T>
+class DetectCopy : public T {
+ public:
   using T::T;
   DetectCopy(const DetectCopy &) = delete;
   DetectCopy &operator=(const DetectCopy &) = delete;
@@ -33,6 +34,6 @@ public:
   operator T &() { return *this; }
   operator const T &() const { return *this; }
 };
-} // namespace fuzzuf::utils
+}  // namespace fuzzuf::utils
 
 #endif

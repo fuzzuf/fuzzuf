@@ -1,7 +1,7 @@
 /*
  * fuzzuf
- * Copyright (C) 2021 Ricerca Security
- * 
+ * Copyright (C) 2021-2023 Ricerca Security
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -27,16 +27,15 @@ namespace fuzzuf::utils::type_traits {
 /**
  * @class GetNth
  * @brief
- * Meta function to extract i-th type from template parameters or function argument types
- * example:
- * GetNthT< 1, bool( int, float, double, char ) >
- * This is equivalent to float
- * GetNthT< 2, std::tuple< int, float, double, char > >
+ * Meta function to extract i-th type from template parameters or function
+ * argument types example: GetNthT< 1, bool( int, float, double, char ) > This
+ * is equivalent to float GetNthT< 2, std::tuple< int, float, double, char > >
  * This is equivalent to double
  * @tparam i i-th element is extracted
  * @tparam U A type with template parameters or function type
  */
-template <unsigned int i, typename T, typename Enable = void> struct GetNth {};
+template <unsigned int i, typename T, typename Enable = void>
+struct GetNth {};
 
 template <unsigned int i, template <typename...> typename L, typename Head,
           typename... Tail>
@@ -73,5 +72,5 @@ using GetNthT = typename GetNth<i, T>::type;
 
 template <unsigned int i, typename T>
 constexpr auto GetNth_v = GetNth<i, T>::value;
-} // namespace fuzzuf::utils::type_traits
+}  // namespace fuzzuf::utils::type_traits
 #endif

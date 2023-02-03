@@ -1,7 +1,7 @@
 /*
  * fuzzuf
- * Copyright (C) 2021 Ricerca Security
- * 
+ * Copyright (C) 2021-2023 Ricerca Security
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -22,8 +22,9 @@
 #ifndef FUZZUF_INCLUDE_UTILS_CALL_WITH_DETECTED_HPP
 #define FUZZUF_INCLUDE_UTILS_CALL_WITH_DETECTED_HPP
 
-#include "fuzzuf/utils/type_traits/remove_cvr.hpp"
 #include <type_traits>
+
+#include "fuzzuf/utils/type_traits/remove_cvr.hpp"
 
 namespace fuzzuf::utils {
 
@@ -44,6 +45,6 @@ auto callWithDetected(F &&func, Head &&, Tail &&...tail)
   callWithDetected<T>(std::forward<F>(func), std::forward<Tail>(tail)...);
 }
 
-} // namespace fuzzuf::utils
+}  // namespace fuzzuf::utils
 
 #endif

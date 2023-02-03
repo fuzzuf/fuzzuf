@@ -1,6 +1,6 @@
 /*
  * fuzzuf
- * Copyright (C) 2021 Ricerca Security
+ * Copyright (C) 2021-2023 Ricerca Security
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
@@ -38,6 +38,6 @@ using IfNewCoverageStdArgOrderT =
                  fuzzuf::utils::struct_path::int_<bool, true>);
 template <typename F, typename Ord>
 using IfNewCoverage = libfuzzer::If<F, IfNewCoverageStdArgOrderT<Ord>>;
-} // namespace standard_order
-} // namespace fuzzuf::algorithm::libfuzzer
+}  // namespace standard_order
+}  // namespace fuzzuf::algorithm::libfuzzer
 #endif

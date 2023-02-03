@@ -1,7 +1,7 @@
 /*
  * fuzzuf
- * Copyright (C) 2021 Ricerca Security
- * 
+ * Copyright (C) 2021-2023 Ricerca Security
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -21,9 +21,10 @@
  */
 #ifndef FUZZUF_INCLUDE_ALGORITHM_LIBFUZZER_RANDOM_TRAITS_HPP
 #define FUZZUF_INCLUDE_ALGORITHM_LIBFUZZER_RANDOM_TRAITS_HPP
-#include "fuzzuf/utils/check_capability.hpp"
 #include <random>
 #include <type_traits>
+
+#include "fuzzuf/utils/check_capability.hpp"
 
 namespace fuzzuf::algorithm::libfuzzer {
 
@@ -39,6 +40,6 @@ template <typename T>
 constexpr bool is_piecewise_constant_distribution_v =
     IsPiecewiseConstantDistribution<T>::value;
 
-} // namespace fuzzuf::algorithm::libfuzzer
+}  // namespace fuzzuf::algorithm::libfuzzer
 
 #endif

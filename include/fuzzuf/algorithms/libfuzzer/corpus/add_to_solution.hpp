@@ -1,7 +1,7 @@
 /*
  * fuzzuf
- * Copyright (C) 2021 Ricerca Security
- * 
+ * Copyright (C) 2021-2023 Ricerca Security
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -21,6 +21,12 @@
  */
 #ifndef FUZZUF_INCLUDE_ALGORITHM_LIBFUZZER_CORPUS_ADD_TO_SOLUTION_HPP
 #define FUZZUF_INCLUDE_ALGORITHM_LIBFUZZER_CORPUS_ADD_TO_SOLUTION_HPP
+#include <algorithm>
+#include <cassert>
+#include <fstream>
+#include <iterator>
+#include <type_traits>
+
 #include "fuzzuf/algorithms/libfuzzer/state/corpus.hpp"
 #include "fuzzuf/algorithms/libfuzzer/state/input_info.hpp"
 #include "fuzzuf/algorithms/libfuzzer/state/state.hpp"
@@ -28,11 +34,6 @@
 #include "fuzzuf/executor/native_linux_executor.hpp"
 #include "fuzzuf/feedback/exit_status_feedback.hpp"
 #include "fuzzuf/utils/sha1.hpp"
-#include <algorithm>
-#include <cassert>
-#include <fstream>
-#include <iterator>
-#include <type_traits>
 
 namespace fuzzuf::algorithm::libfuzzer::corpus {
 
@@ -52,18 +53,16 @@ template <typename Range, typename InputInfo>
 auto AddToSolution(Range &range, InputInfo &testcase_,
                    const fs::path &path_prefix)
     -> std::enable_if_t<is_input_info_v<InputInfo>> {
-
   assert(!utils::range::rangeEmpty(range));
 
   testcase_.sha1 = utils::ToSerializedSha1(range);
   testcase_.input_size = utils::range::rangeSize(range);
-  if (testcase_.name.empty())
-    testcase_.name = testcase_.sha1;
+  if (testcase_.name.empty()) testcase_.name = testcase_.sha1;
   std::ofstream fd((path_prefix / fs::path(testcase_.name)).string(),
                    std::ios::out | std::ios::binary);
   std::copy(range.begin(), range.end(), std::ostreambuf_iterator(fd));
 }
 
-} // namespace fuzzuf::algorithm::libfuzzer::corpus
+}  // namespace fuzzuf::algorithm::libfuzzer::corpus
 
 #endif

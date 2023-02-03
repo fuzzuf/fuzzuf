@@ -1,7 +1,7 @@
 /*
  * fuzzuf
- * Copyright (C) 2021 Ricerca Security
- * 
+ * Copyright (C) 2021-2023 Ricerca Security
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -22,9 +22,10 @@
 #ifndef FUZZUF_INCLUDE_UTILS_LOAD_INPUTS_HPP
 #define FUZZUF_INCLUDE_UTILS_LOAD_INPUTS_HPP
 
+#include <vector>
+
 #include "fuzzuf/utils/filesystem.hpp"
 #include "fuzzuf/utils/map_file.hpp"
-#include <vector>
 
 namespace fuzzuf::utils {
 /**
@@ -37,6 +38,6 @@ namespace fuzzuf::utils {
  */
 auto LoadInputs(const fs::path &dir, bool check_sha1)
     -> std::vector<utils::mapped_file_t>;
-} // namespace fuzzuf::utils
+}  // namespace fuzzuf::utils
 
 #endif

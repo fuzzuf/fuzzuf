@@ -1,7 +1,7 @@
 /*
  * fuzzuf
- * Copyright (C) 2021 Ricerca Security
- * 
+ * Copyright (C) 2021-2023 Ricerca Security
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -21,14 +21,15 @@
  */
 #ifndef FUZZUF_INCLUDE_ALGORITHM_LIBFUZZER_MUTATION_MASK_HPP
 #define FUZZUF_INCLUDE_ALGORITHM_LIBFUZZER_MUTATION_MASK_HPP
-#include "fuzzuf/utils/filtered_range.hpp"
-#include "fuzzuf/utils/nth_range.hpp"
-#include "fuzzuf/utils/range_traits.hpp"
-#include "fuzzuf/utils/zip_range.hpp"
 #include <cassert>
 #include <iterator>
 #include <type_traits>
 #include <vector>
+
+#include "fuzzuf/utils/filtered_range.hpp"
+#include "fuzzuf/utils/nth_range.hpp"
+#include "fuzzuf/utils/range_traits.hpp"
+#include "fuzzuf/utils/zip_range.hpp"
 namespace fuzzuf::algorithm::libfuzzer::mutator {
 
 /**
@@ -67,7 +68,8 @@ auto Mask(const R1 &data, const Mask_ &mask, R2 &dest) -> std::enable_if_t<
 }
 
 /**
- * Update elements in data which corresponding mask value is non-zero by values from src
+ * Update elements in data which corresponding mask value is non-zero by values
+ * from src
  *
  * Corresponding code of original libFuzzer implementation
  * https://github.com/llvm/llvm-project/blob/llvmorg-12.0.1/compiler-rt/lib/fuzzer/FuzzerMutate.cpp#L545
@@ -100,8 +102,7 @@ auto Unmask(const R1 &src, const Mask &mask, R2 &data) -> std::enable_if_t<
       temp.push_back(*di);
   }
   for (; mi != mask.end() && di != data.end(); ++mi, ++di) {
-    if (!*mi)
-      temp.push_back(*di);
+    if (!*mi) temp.push_back(*di);
   }
   for (; di != data.end(); ++di) {
     temp.push_back(*di);
@@ -109,5 +110,5 @@ auto Unmask(const R1 &src, const Mask &mask, R2 &data) -> std::enable_if_t<
   utils::range::assign(temp, data);
 }
 
-} // namespace fuzzuf::algorithm::libfuzzer::mutator
+}  // namespace fuzzuf::algorithm::libfuzzer::mutator
 #endif

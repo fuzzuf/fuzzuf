@@ -1,6 +1,6 @@
 /*
  * fuzzuf
- * Copyright (C) 2021 Ricerca Security
+ * Copyright (C) 2021-2023 Ricerca Security
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
@@ -17,6 +17,13 @@
  */
 #define BOOST_TEST_MODULE algorithms.libfuzzer.mutator
 #define BOOST_TEST_DYN_LINK
+#include <config.h>
+
+#include <array>
+#include <boost/test/unit_test.hpp>
+#include <iostream>
+#include <vector>
+
 #include "fuzzuf/algorithms/libfuzzer/dictionary.hpp"
 #include "fuzzuf/algorithms/libfuzzer/hierarflow.hpp"
 #include "fuzzuf/algorithms/libfuzzer/mutation.hpp"
@@ -25,11 +32,6 @@
 #include "fuzzuf/hierarflow/hierarflow_intermediates.hpp"
 #include "fuzzuf/utils/node_tracer.hpp"
 #include "fuzzuf/utils/not_random.hpp"
-#include <array>
-#include <boost/test/unit_test.hpp>
-#include <config.h>
-#include <iostream>
-#include <vector>
 
 /**
  * libFuzzerのmutator

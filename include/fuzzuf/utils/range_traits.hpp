@@ -1,7 +1,7 @@
 /*
  * fuzzuf
- * Copyright (C) 2021 Ricerca Security
- * 
+ * Copyright (C) 2021-2023 Ricerca Security
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -21,18 +21,20 @@
  */
 #ifndef FUZZUF_INCLUDE_UTILS_RANGE_TRAITS_HPP
 #define FUZZUF_INCLUDE_UTILS_RANGE_TRAITS_HPP
-#include "fuzzuf/utils/check_capability.hpp"
-#include "fuzzuf/utils/type_traits/remove_cvr.hpp"
-#include "fuzzuf/utils/void_t.hpp"
 #include <cstddef>
 #include <iterator>
 #include <type_traits>
 #include <utility>
+
+#include "fuzzuf/utils/check_capability.hpp"
+#include "fuzzuf/utils/type_traits/remove_cvr.hpp"
+#include "fuzzuf/utils/void_t.hpp"
 namespace fuzzuf::utils::range {
 
 /**
  * @class IsIterator
- * @brief Meta function that returns true if T satisfies C++17 §24.2.1-1 requirements
+ * @brief Meta function that returns true if T satisfies C++17 §24.2.1-1
+ * requirements
  * @tparam T Type to check
  */
 template <typename T, typename Enable = void>
@@ -45,11 +47,13 @@ struct IsIterator<
                      decltype(std::declval<utils::type_traits::RemoveCvrT<
                                   unsigned char *> &>()++)>>
     : public std::true_type {};
-template <typename T> constexpr bool is_iterator_v = IsIterator<T>::value;
+template <typename T>
+constexpr bool is_iterator_v = IsIterator<T>::value;
 
 /**
  * @class IsRange
- * @brief Meta function that returns true if T has member function begin() and end() and the return type of those functions satisfies is_iterator
+ * @brief Meta function that returns true if T has member function begin() and
+ * end() and the return type of those functions satisfies is_iterator
  * @tparam T Type to check
  */
 template <typename T, typename Enable = void>
@@ -58,39 +62,43 @@ template <typename T>
 struct IsRange<
     T,
     std::enable_if_t<
-        is_iterator_v<decltype(
-            std::declval<T>().begin())> && // Tにはbegin()がある
-        is_iterator_v<decltype(std::declval<T>().end())> // Tにはend()がある
+        is_iterator_v<
+            decltype(std::declval<T>().begin())> &&  // Tにはbegin()がある
+        is_iterator_v<decltype(std::declval<T>().end())>  // Tにはend()がある
         >> : public std::true_type {};
-template <typename T> constexpr bool is_range_v = IsRange<T>::value;
+template <typename T>
+constexpr bool is_range_v = IsRange<T>::value;
 
 /**
  * @class RangeValue
- * @brief Meta function that returns value_type of Range if Range satisfies is_range
- * Otherwise, type is not defined
+ * @brief Meta function that returns value_type of Range if Range satisfies
+ * is_range Otherwise, type is not defined
  * @tparam Range Range type
  */
-template <typename Range, typename Enable = void> struct RangeValue {};
+template <typename Range, typename Enable = void>
+struct RangeValue {};
 template <typename Range>
 struct RangeValue<Range,
-                  std::enable_if_t<is_range_v<Range> // Range is range
+                  std::enable_if_t<is_range_v<Range>  // Range is range
                                    >> {
   using type =
       type_traits::RemoveCvrT<decltype(*std::declval<Range>().begin())>;
 };
 
-template <typename Range> using RangeValueT = typename RangeValue<Range>::type;
+template <typename Range>
+using RangeValueT = typename RangeValue<Range>::type;
 
 /**
  * @class RangeIterator
- * @brief Meta function that returns iterator of Range if Range satisfies is_range
- * Otherwise, type is not defined
+ * @brief Meta function that returns iterator of Range if Range satisfies
+ * is_range Otherwise, type is not defined
  * @tparam Range Range type
  */
-template <typename Range, typename Enable = void> struct RangeIterator {};
+template <typename Range, typename Enable = void>
+struct RangeIterator {};
 template <typename Range>
 struct RangeIterator<Range,
-                     std::enable_if_t<is_range_v<Range> // Range is range
+                     std::enable_if_t<is_range_v<Range>  // Range is range
                                       >> {
   using type = type_traits::RemoveCvrT<decltype(std::declval<Range>().begin())>;
 };
@@ -99,8 +107,9 @@ using RangeIteratorT = typename RangeIterator<Range>::type;
 
 /**
  * @class is_range_of
- * @brief Meta function that returns true if Range satisfies is_range and the value_type is same as T
- * If Range doesn't satisfy is_range, value is not defined
+ * @brief Meta function that returns true if Range satisfies is_range and the
+ * value_type is same as T If Range doesn't satisfy is_range, value is not
+ * defined
  * @tparam Range Range type
  * @tparam T Expected value type
  */
@@ -114,8 +123,9 @@ constexpr bool is_range_of_v = IsRangeOf<Range, T>::value;
 
 /**
  * @class is_integral_range
- * @brief Meta function that returns true if Range satisfies is_range and the value_type is integral
- * If Range doesn't satisfy is_range, value is not defined
+ * @brief Meta function that returns true if Range satisfies is_range and the
+ * value_type is integral If Range doesn't satisfy is_range, value is not
+ * defined
  * @tparam Range Range type
  */
 template <typename Range, typename Enable = void>
@@ -171,9 +181,8 @@ FUZZUF_CHECK_CAPABILITY(HasResize, has_resize, std::declval<T &>().resize(1u))
  * @param r Value of R
  */
 template <typename R>
-auto rangeSize(const R &r)
-    -> std::enable_if_t<has_size_v<R>, // R has size()
-                        std::size_t> {
+auto rangeSize(const R &r) -> std::enable_if_t<has_size_v<R>,  // R has size()
+                                               std::size_t> {
   return r.size();
 }
 
@@ -185,7 +194,7 @@ auto rangeSize(const R &r)
  */
 template <typename R>
 auto rangeSize(const R &r)
-    -> std::enable_if_t<!has_size_v<R>, // R doesn't have size()
+    -> std::enable_if_t<!has_size_v<R>,  // R doesn't have size()
                         std::size_t> {
   return std::distance(r.begin(), r.end());
 }
@@ -198,7 +207,7 @@ auto rangeSize(const R &r)
  */
 template <typename R>
 auto rangeEmpty(const R &r)
-    -> std::enable_if_t<has_empty_v<R>, // R has empty()
+    -> std::enable_if_t<has_empty_v<R>,  // R has empty()
                         std::size_t> {
   return r.empty();
 }
@@ -211,7 +220,7 @@ auto rangeEmpty(const R &r)
  */
 template <typename R>
 auto rangeEmpty(const R &r)
-    -> std::enable_if_t<!has_empty_v<R>, // Rにはメンバ関数empty()がない
+    -> std::enable_if_t<!has_empty_v<R>,  // Rにはメンバ関数empty()がない
                         std::size_t> {
   return r.begin() == r.end();
 }
@@ -308,7 +317,8 @@ constexpr bool directly_appendable_v = DirectlyAppendable<R1, R2>::value;
 
 /**
  * @class is_convertible_range
- * @brief Meta function that returns true if RangeValue of R1 can cast to RangeValue of R2 implicitly
+ * @brief Meta function that returns true if RangeValue of R1 can cast to
+ * RangeValue of R2 implicitly
  * @tparam R1 Any type
  * @tparam R2 Any type
  */
@@ -337,8 +347,10 @@ auto append(const R1 &r1, R2 &r2)
 
 /**
  * Append r1 to r2
- * @tparam R1 Type with member function begin() and end() that satisfies convertible_range with R2
- * @tparam R2 Type with member function end() and insert() that satisfies convertible_range with R1
+ * @tparam R1 Type with member function begin() and end() that satisfies
+ * convertible_range with R2
+ * @tparam R2 Type with member function end() and insert() that satisfies
+ * convertible_range with R1
  * @param r1 This value is appended
  * @param r2 Append to this value
  */
@@ -368,8 +380,10 @@ auto append(const R1 &r1, R2 &r2)
 /**
  * Append r1 to r2
  * @tparam R1 Type that can cast to value_type of R2 implicitly
- * @tparam R1 Type with member function begin() and end() that satisfies convertible_range with R2
- * @tparam R2 Type with member function end() and push_back() that satisfies convertible_range with R1
+ * @tparam R1 Type with member function begin() and end() that satisfies
+ * convertible_range with R2
+ * @tparam R2 Type with member function end() and push_back() that satisfies
+ * convertible_range with R1
  * @param r1 This value is appended
  * @param r2 Append to this value
  */
@@ -399,8 +413,10 @@ auto append(const R1 &r1, R2 &r2)
 /**
  * Append r1 to r2
  * @tparam R1 Type that can cast to value_type of R2 implicitly
- * @tparam R1 Type with member function begin() and end() that satisfies convertible_range with R2
- * @tparam R2 Type with member function resize) and begin() that satisfies convertible_range with R1
+ * @tparam R1 Type with member function begin() and end() that satisfies
+ * convertible_range with R2
+ * @tparam R2 Type with member function resize) and begin() that satisfies
+ * convertible_range with R1
  * @param r1 This value is appended
  * @param r2 Append to this value
  */
@@ -439,7 +455,8 @@ auto append(const R1 &r1, R2 &r2)
  * @tparam R A type that meets the standard range concept and has clear()
  * @param r Range to remove elements
  */
-template <typename R> auto clear(R &r) -> std::enable_if_t<has_clear_v<R>> {
+template <typename R>
+auto clear(R &r) -> std::enable_if_t<has_clear_v<R>> {
   r.clear();
 }
 
@@ -450,13 +467,15 @@ template <typename R> auto clear(R &r) -> std::enable_if_t<has_clear_v<R>> {
  * available
  * @param r Range to remove elements
  */
-template <typename R> auto clear(R &r) -> std::enable_if_t<!has_clear_v<R>> {
+template <typename R>
+auto clear(R &r) -> std::enable_if_t<!has_clear_v<R>> {
   r = R();
 }
 
 /**
  * @class
- * @brief Meta function that returns true if T is range that can be left hand side value of assign()
+ * @brief Meta function that returns true if T is range that can be left hand
+ * side value of assign()
  * @tparam T Type to check
  */
 template <typename T, typename Enable = void>
@@ -510,6 +529,5 @@ auto copy(const R &r, I dest)
   std::copy(r.begin(), r.end(), dest);
 }
 
-} // namespace fuzzuf::utils::range
+}  // namespace fuzzuf::utils::range
 #endif
-

@@ -1,7 +1,7 @@
 /*
  * fuzzuf
- * Copyright (C) 2021 Ricerca Security
- * 
+ * Copyright (C) 2021-2023 Ricerca Security
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -21,13 +21,15 @@
  */
 #ifndef FUZZUF_INCLUDE_UTILS_INTERPROCESS_SHARED_OBJECT_HPP
 #define FUZZUF_INCLUDE_UTILS_INTERPROCESS_SHARED_OBJECT_HPP
-#include "fuzzuf/utils/shared_range.hpp"
+#include <sys/mman.h>
+
 #include <boost/range/iterator_range.hpp>
 #include <cstdint>
 #include <memory>
 #include <new>
-#include <sys/mman.h>
 #include <type_traits>
+
+#include "fuzzuf/utils/shared_range.hpp"
 
 namespace fuzzuf::utils::interprocess {
 
@@ -36,14 +38,17 @@ namespace fuzzuf::utils::interprocess {
  * T must satisfy trivially copyable concept
  * The instance is initialized by argument values
  *
- * The sharing is achieved by creating mmaped memory with MAP_SHARED|MAP_ANNONYMOUS
- * Due to this implementation, even if the type T is smaller than page size, at least one page is allocated
- * Furthermore, calling this function definitely cause system call
- * For those reason, many small type values should be tied into one structure and call create_shared_object just once
+ * The sharing is achieved by creating mmaped memory with
+ * MAP_SHARED|MAP_ANNONYMOUS Due to this implementation, even if the type T is
+ * smaller than page size, at least one page is allocated Furthermore, calling
+ * this function definitely cause system call For those reason, many small type
+ * values should be tied into one structure and call create_shared_object just
+ * once
  *
  * The return value type is shared_ptr< T > with munmapping deleter
  *
- * If mmap failed for some reason ( for example, out of memory ), std::bad_alloc is thrown
+ * If mmap failed for some reason ( for example, out of memory ), std::bad_alloc
+ * is thrown
  */
 template <typename T>
 auto create_shared_object(const T &v)
@@ -56,5 +61,5 @@ auto create_shared_object(const T &v)
                             [addr](auto) { munmap(addr, sizeof(T)); });
 }
 
-} // namespace fuzzuf::utils::interprocess
+}  // namespace fuzzuf::utils::interprocess
 #endif

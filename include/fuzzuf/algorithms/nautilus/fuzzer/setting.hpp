@@ -1,7 +1,7 @@
 /*
  * fuzzuf
- * Copyright (C) 2022 Ricerca Security
- * 
+ * Copyright (C) 2021-2023 Ricerca Security
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -26,44 +26,35 @@
 #include <optional>
 #include <string>
 #include <vector>
+
 #include "fuzzuf/utils/common.hpp"
 #include "fuzzuf/utils/filesystem.hpp"
-
 
 namespace fuzzuf::algorithm::nautilus::fuzzer {
 
 struct NautilusSetting {
-  NautilusSetting(
-    std::vector<std::string>& args,
-    std::string& path_to_grammar,
-    std::string& path_to_workdir,
-    u32 exec_timeout_ms,
-    u64 exec_memlimit,
-    bool forksrv,
-    int cpuid_to_bind,
+  NautilusSetting(std::vector<std::string>& args, std::string& path_to_grammar,
+                  std::string& path_to_workdir, u32 exec_timeout_ms,
+                  u64 exec_memlimit, bool forksrv, int cpuid_to_bind,
 
-    u8  number_of_threads,
-    u64 thread_size,
-    u16 number_of_generate_inputs,
-    u64 number_of_deterministic_mutations,
-    u64 max_tree_size,
-    u64 bitmap_size
-  ) :
-    args (args),
-    path_to_grammar (path_to_grammar),
-    path_to_workdir (path_to_workdir),
-    exec_timeout_ms (exec_timeout_ms),
-    exec_memlimit (exec_memlimit),
-    forksrv (forksrv),
-    cpuid_to_bind (cpuid_to_bind),
+                  u8 number_of_threads, u64 thread_size,
+                  u16 number_of_generate_inputs,
+                  u64 number_of_deterministic_mutations, u64 max_tree_size,
+                  u64 bitmap_size)
+      : args(args),
+        path_to_grammar(path_to_grammar),
+        path_to_workdir(path_to_workdir),
+        exec_timeout_ms(exec_timeout_ms),
+        exec_memlimit(exec_memlimit),
+        forksrv(forksrv),
+        cpuid_to_bind(cpuid_to_bind),
 
-    number_of_threads (number_of_threads),
-    thread_size (thread_size),
-    number_of_generate_inputs (number_of_generate_inputs),
-    number_of_deterministic_mutations (number_of_deterministic_mutations),
-    max_tree_size (max_tree_size),
-    bitmap_size (bitmap_size)
-  {
+        number_of_threads(number_of_threads),
+        thread_size(thread_size),
+        number_of_generate_inputs(number_of_generate_inputs),
+        number_of_deterministic_mutations(number_of_deterministic_mutations),
+        max_tree_size(max_tree_size),
+        bitmap_size(bitmap_size) {
     fs::path target(args.at(0));
     banner_filename = target.filename().string();
 
@@ -77,21 +68,20 @@ struct NautilusSetting {
   const std::vector<std::string>& args;
   const fs::path path_to_grammar;
   const fs::path path_to_workdir;
-  u32  exec_timeout_ms;
-  u64  exec_memlimit;
+  u32 exec_timeout_ms;
+  u64 exec_memlimit;
 
   bool forksrv;
-  int  cpuid_to_bind;
+  int cpuid_to_bind;
 
-  u8   number_of_threads;
-  u64  thread_size;
-  u16  number_of_generate_inputs;
-  u64  number_of_deterministic_mutations;
-  u64  max_tree_size;
-  u64  bitmap_size;
+  u8 number_of_threads;
+  u64 thread_size;
+  u16 number_of_generate_inputs;
+  u64 number_of_deterministic_mutations;
+  u64 max_tree_size;
+  u64 bitmap_size;
 };
 
-} // namespace fuzzuf::algorithm::nautilus::fuzzer
+}  // namespace fuzzuf::algorithm::nautilus::fuzzer
 
 #endif
-

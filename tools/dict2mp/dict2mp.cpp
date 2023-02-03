@@ -1,7 +1,7 @@
 /*
  * fuzzuf
- * Copyright (C) 2021 Ricerca Security
- * 
+ * Copyright (C) 2021-2023 Ricerca Security
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -15,17 +15,17 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see http://www.gnu.org/licenses/.
  */
-#include "fuzzuf/algorithms/libfuzzer/dictionary.hpp"
 #include <boost/program_options.hpp>
 #include <cstdlib>
 #include <fstream>
 #include <iostream>
 #include <string>
 
+#include "fuzzuf/algorithms/libfuzzer/dictionary.hpp"
+
 // Convert from an AFL dictionary format to an array of msgpack
 
 int main(int argc, char *argv[]) {
-
   namespace po = boost::program_options;
 
   po::options_description desc("Options");
@@ -34,8 +34,8 @@ int main(int argc, char *argv[]) {
   bool strict = false;
   desc.add_options()("help,h", "show this message")(
       "input,i", po::value<std::string>(&in_file), "input filename")(
-      "output,o", po::value<std::string>(&out_file),
-      "output filename")("strict,s", po::bool_switch(&strict), "strict mode");
+      "output,o", po::value<std::string>(&out_file), "output filename")(
+      "strict,s", po::bool_switch(&strict), "strict mode");
   po::variables_map vm;
   po::store(po::parse_command_line(argc, argv, desc), vm);
   po::notify(vm);

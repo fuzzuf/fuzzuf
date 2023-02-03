@@ -1,7 +1,7 @@
 /*
  * fuzzuf
- * Copyright (C) 2022 Ricerca Security
- * 
+ * Copyright (C) 2021-2023 Ricerca Security
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -18,13 +18,14 @@
 #define BOOST_TEST_MODULE nautilus.mutator
 #define BOOST_TEST_DYN_LINK
 
-#include <boost/test/unit_test.hpp>
 #include "fuzzuf/algorithms/nautilus/grammartec/chunkstore.hpp"
+
+#include <boost/test/unit_test.hpp>
+
 #include "fuzzuf/algorithms/nautilus/grammartec/context.hpp"
 #include "fuzzuf/algorithms/nautilus/grammartec/newtypes.hpp"
 #include "fuzzuf/algorithms/nautilus/grammartec/tree.hpp"
 #include "fuzzuf/utils/filesystem.hpp"
-
 
 using namespace fuzzuf::algorithm::nautilus::grammartec;
 
@@ -57,8 +58,6 @@ BOOST_AUTO_TEST_CASE(NautilusGrammartecChunkstore) {
   BOOST_CHECK_EQUAL(cks.seen_outputs().size(), 3);
   BOOST_CHECK_EQUAL(cks.nts_to_chunks().at(ctx.NTID("B")).size(), 1);
   auto& [tree_id, node_id] = cks.nts_to_chunks().at(ctx.NTID("B")).at(0);
-  BOOST_CHECK_EQUAL(
-    cks.trees().at(tree_id).UnparseNodeToVec(node_id, ctx),
-    "b c"
-  );
+  BOOST_CHECK_EQUAL(cks.trees().at(tree_id).UnparseNodeToVec(node_id, ctx),
+                    "b c");
 }

@@ -1,7 +1,7 @@
 /*
  * fuzzuf
- * Copyright (C) 2021 Ricerca Security
- * 
+ * Copyright (C) 2021-2023 Ricerca Security
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -35,7 +35,8 @@ namespace fuzzuf::algorithm::libfuzzer::feature {
  * @param counter Counter
  * @return lower 3bits of feature ID
  */
-template <typename T> unsigned int CounterToFeature(T counter) {
+template <typename T>
+unsigned int CounterToFeature(T counter) {
   // Returns a feature number by placing Counters into buckets as illustrated
   // below.
   //
@@ -66,6 +67,6 @@ template <typename T> unsigned int CounterToFeature(T counter) {
     return 0;
 }
 
-} // namespace fuzzuf::algorithm::libfuzzer::feature
+}  // namespace fuzzuf::algorithm::libfuzzer::feature
 
 #endif

@@ -1,7 +1,7 @@
 /*
  * fuzzuf
- * Copyright (C) 2021 Ricerca Security
- * 
+ * Copyright (C) 2021-2023 Ricerca Security
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -31,9 +31,12 @@ namespace fuzzuf::utils {
  *
  * example:
  * TypeSequenceT< int, float >
- * The type itself doesn't have any effects. Instead, it is used to pass sequence of type to other meta functions with declaring that the type has no more  meanings than just a sequence of type.
+ * The type itself doesn't have any effects. Instead, it is used to pass
+ * sequence of type to other meta functions with declaring that the type has no
+ * more  meanings than just a sequence of type.
  */
-template <typename... T> struct TypeSequenceT {};
-} // namespace fuzzuf::utils
+template <typename... T>
+struct TypeSequenceT {};
+}  // namespace fuzzuf::utils
 
 #endif

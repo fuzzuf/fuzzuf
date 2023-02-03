@@ -1,7 +1,7 @@
 /*
  * fuzzuf
- * Copyright (C) 2021 Ricerca Security
- * 
+ * Copyright (C) 2021-2023 Ricerca Security
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -67,22 +67,23 @@ struct InsertNth<i, std::integer_sequence<T, values...>,
   using type = std::integer_sequence<T, prev..., values..., next...>;
 };
 
-} // namespace detail
+}  // namespace detail
 
 /**
  * @class InsertNth
  * @brief
- * Meta function to Insert T before i-th element of template parameters or function argument types
- * example:
- * InsertNthT< 1, std::string, bool( int, float, double, char ) >
- * This is equivalent to bool( int, std::string, float, double, char )
- * InsertNthT< 2, std::string, std::tuple< int, float, double, char > >
- * This is equivalent to std::tuple< int, float, std::string, double, char >
+ * Meta function to Insert T before i-th element of template parameters or
+ * function argument types example: InsertNthT< 1, std::string, bool( int,
+ * float, double, char ) > This is equivalent to bool( int, std::string, float,
+ * double, char ) InsertNthT< 2, std::string, std::tuple< int, float, double,
+ * char > > This is equivalent to std::tuple< int, float, std::string, double,
+ * char >
  * @tparam i Insert before i-th element
  * @tparam T Insert this type
  * @tparam U A type with template parameters or function type
  */
-template <unsigned int i, typename T, typename U> struct InsertNth {};
+template <unsigned int i, typename T, typename U>
+struct InsertNth {};
 template <unsigned int i, typename T, template <typename...> typename L,
           typename... U>
 struct InsertNth<i, T, L<U...>> : public detail::InsertNth<i, T, L<>, L<U...>> {
@@ -101,5 +102,5 @@ struct InsertNth<i, std::integer_sequence<T, values...>,
 
 template <unsigned int i, typename T, typename U>
 using InsertNthT = typename InsertNth<i, T, U>::type;
-} // namespace fuzzuf::utils::type_traits
+}  // namespace fuzzuf::utils::type_traits
 #endif

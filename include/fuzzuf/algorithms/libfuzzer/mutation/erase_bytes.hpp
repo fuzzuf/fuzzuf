@@ -1,7 +1,7 @@
 /*
  * fuzzuf
- * Copyright (C) 2021 Ricerca Security
- * 
+ * Copyright (C) 2021-2023 Ricerca Security
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -21,12 +21,13 @@
  */
 #ifndef FUZZUF_INCLUDE_ALGORITHM_LIBFUZZER_MUTATION_ERASE_BYTES_HPP
 #define FUZZUF_INCLUDE_ALGORITHM_LIBFUZZER_MUTATION_ERASE_BYTES_HPP
-#include "fuzzuf/algorithms/libfuzzer/mutation_history.hpp"
-#include "fuzzuf/algorithms/libfuzzer/random.hpp"
-#include "fuzzuf/utils/range_traits.hpp"
 #include <cassert>
 #include <iterator>
 #include <type_traits>
+
+#include "fuzzuf/algorithms/libfuzzer/mutation_history.hpp"
+#include "fuzzuf/algorithms/libfuzzer/random.hpp"
+#include "fuzzuf/utils/range_traits.hpp"
 namespace fuzzuf::algorithm::libfuzzer::mutator {
 
 /**
@@ -48,8 +49,7 @@ auto EraseBytes(RNG &rng, Range &data, std::size_t, MutationHistory &history)
         // Rangeはメンバ関数eraseを持っている
         utils::range::has_erase_v<Range>, std::size_t> {
   const std::size_t size = utils::range::rangeSize(data);
-  if (size <= 1u)
-    return 0u;
+  if (size <= 1u) return 0u;
   const std::size_t n = random_value(rng, size / 2u) + 1u;
   assert(n < size);
   const std::size_t index = random_value(rng, size - n + 1u);
@@ -62,5 +62,5 @@ auto EraseBytes(RNG &rng, Range &data, std::size_t, MutationHistory &history)
   return utils::range::rangeSize(data);
 }
 
-} // namespace fuzzuf::algorithm::libfuzzer::mutator
+}  // namespace fuzzuf::algorithm::libfuzzer::mutator
 #endif

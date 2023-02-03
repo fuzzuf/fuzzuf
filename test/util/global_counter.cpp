@@ -1,7 +1,7 @@
 /*
  * fuzzuf
- * Copyright (C) 2021 Ricerca Security
- * 
+ * Copyright (C) 2021-2023 Ricerca Security
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -19,10 +19,11 @@
 #define BOOST_TEST_MODULE util.global_counter
 #define BOOST_TEST_DYN_LINK
 #include <boost/test/unit_test.hpp>
+
 #include "fuzzuf/utils/common.hpp"
 
 BOOST_AUTO_TEST_CASE(UtilGlobalCounter) {
   auto x = fuzzuf::utils::GlobalCounter();
   auto y = fuzzuf::utils::GlobalCounter();
-  BOOST_CHECK( x != y );
+  BOOST_CHECK(x != y);
 }

@@ -1,7 +1,7 @@
 /*
  * fuzzuf
- * Copyright (C) 2021 Ricerca Security
- * 
+ * Copyright (C) 2021-2023 Ricerca Security
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -21,19 +21,21 @@
  */
 #ifndef FUZZUF_INCLUDE_ALGORITHM_LIBFUZZER_FEATURE_ADD_RARE_FEATURE_HPP
 #define FUZZUF_INCLUDE_ALGORITHM_LIBFUZZER_FEATURE_ADD_RARE_FEATURE_HPP
+#include <array>
+#include <cstdint>
+#include <type_traits>
+
 #include "fuzzuf/algorithms/libfuzzer/state/corpus.hpp"
 #include "fuzzuf/algorithms/libfuzzer/state/state.hpp"
 #include "fuzzuf/algorithms/libfuzzer/utils.hpp"
 #include "fuzzuf/utils/for_each_multi_index_values.hpp"
 #include "fuzzuf/utils/type_traits/remove_cvr.hpp"
-#include <array>
-#include <cstdint>
-#include <type_traits>
 namespace fuzzuf::algorithm::libfuzzer::feature {
 
 /**
  * Append new feature to notable features.
- * If notable features exceeded max size, most common feature in notable features is dropped.
+ * If notable features exceeded max size, most common feature in notable
+ * features is dropped.
  *
  * Corresponding code of original libFuzzer implementation
  * https://github.com/llvm/llvm-project/blob/llvmorg-12.0.1/compiler-rt/lib/fuzzer/FuzzerCorpus.h#L357
@@ -41,7 +43,8 @@ namespace fuzzuf::algorithm::libfuzzer::feature {
  * @tparam State LibFuzzer state object type
  * @tparam Corpus FullCorpus type to add new execution result
  * @param state LibFuzzer state object
- * @param corpus FullCorpus. If a feature was dropped from notable features, it is also removed from the partial corpus in the corpus.
+ * @param corpus FullCorpus. If a feature was dropped from notable features, it
+ * is also removed from the partial corpus in the corpus.
  * @param index New feature
  */
 template <typename State, typename Corpus>
@@ -102,6 +105,6 @@ auto AddRareFeature(State &state, Corpus &corpus, std::uint32_t index)
   state.distribution_needs_update = true;
 }
 
-} // namespace fuzzuf::algorithm::libfuzzer::feature
+}  // namespace fuzzuf::algorithm::libfuzzer::feature
 
 #endif

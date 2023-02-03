@@ -1,7 +1,7 @@
 /*
  * fuzzuf
- * Copyright (C) 2021 Ricerca Security
- * 
+ * Copyright (C) 2021-2023 Ricerca Security
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -22,8 +22,9 @@
 #ifndef FUZZUF_INCLUDE_UTILS_EQUALITY_COMPARABLE_HPP
 #define FUZZUF_INCLUDE_UTILS_EQUALITY_COMPARABLE_HPP
 
-#include "fuzzuf/utils/void_t.hpp"
 #include <type_traits>
+
+#include "fuzzuf/utils/void_t.hpp"
 
 namespace fuzzuf::utils::type_traits {
 namespace detail {
@@ -33,18 +34,22 @@ template <typename T, typename U>
 struct is_weakly_equality_comparable_with<
     T, U,
     utils::void_t<
-        decltype(
-            std::declval<const typename std::remove_reference<T>::type &>() ==
-            std::declval<const typename std::remove_reference<U>::type &>()),
-        decltype(
-            std::declval<const typename std::remove_reference<T>::type &>() !=
-            std::declval<const typename std::remove_reference<U>::type &>()),
-        decltype(
-            std::declval<const typename std::remove_reference<U>::type &>() ==
-            std::declval<const typename std::remove_reference<T>::type &>()),
-        decltype(
-            std::declval<const typename std::remove_reference<U>::type &>() !=
-            std::declval<const typename std::remove_reference<T>::type &>())>>
+        decltype(std::declval<
+                     const typename std::remove_reference<T>::type &>() ==
+                 std::declval<
+                     const typename std::remove_reference<U>::type &>()),
+        decltype(std::declval<
+                     const typename std::remove_reference<T>::type &>() !=
+                 std::declval<
+                     const typename std::remove_reference<U>::type &>()),
+        decltype(std::declval<
+                     const typename std::remove_reference<U>::type &>() ==
+                 std::declval<
+                     const typename std::remove_reference<T>::type &>()),
+        decltype(std::declval<
+                     const typename std::remove_reference<U>::type &>() !=
+                 std::declval<
+                     const typename std::remove_reference<T>::type &>())>>
     : public std::integral_constant<
           bool,
           std::is_same<
@@ -70,7 +75,7 @@ struct is_weakly_equality_comparable_with<
                                U>::type &>() !=
                            std::declval<const typename std::remove_reference<
                                T>::type &>())>::value> {};
-} // namespace detail
+}  // namespace detail
 
 // Return true if given type T is equality comparable
 // This is compatible to C++20 standard equality_comparable concept
@@ -98,5 +103,5 @@ template <typename T, typename U>
 constexpr bool is_equality_comparable_with_v =
     is_equality_comparable_with<T, U>::value;
 
-} // namespace fuzzuf::utils::type_traits
+}  // namespace fuzzuf::utils::type_traits
 #endif
