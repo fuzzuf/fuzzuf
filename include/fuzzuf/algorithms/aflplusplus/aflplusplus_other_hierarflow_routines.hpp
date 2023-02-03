@@ -45,14 +45,5 @@ template <>
 utils::NullableRef<hierarflow::HierarFlowCallee<void(void)>>
 SelectSeedTemplate<AFLplusplusState>::operator()(void);
 
-void CreateAliasTable(AFLplusplusState& state);
-
-void ComputeWeightVector(AFLplusplusState& state, std::vector<double>& vw);
-
-double ComputeWeight(const AFLplusplusState& state,
-                     const AFLplusplusTestcase& testcase,
-                     const double& avg_exec_us, const double& avg_bitmap_size,
-                     const double& avg_top_size);
-
 }  // namespace fuzzuf::algorithm::afl::routine::other
 #endif
