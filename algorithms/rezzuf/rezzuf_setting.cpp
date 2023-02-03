@@ -26,7 +26,7 @@ RezzufSetting::RezzufSetting(const std::vector<std::string> &argv,
                              u64 exec_memlimit, bool forksrv, bool dumb_mode,
                              int cpuid_to_bind,
                              const aflfast::option::Schedule schedule,
-                             std::string &schedule_string)
+                             const std::string &schedule_string)
     : AFLSetting(argv, in_dir, out_dir, exec_timelimit_ms, exec_memlimit,
                  forksrv, dumb_mode, cpuid_to_bind),
       schedule(schedule),
