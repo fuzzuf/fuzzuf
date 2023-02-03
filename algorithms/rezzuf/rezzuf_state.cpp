@@ -601,57 +601,6 @@ void RezzufState::ShowStats(void) {
       " fuzzing strategy yields " bSTG bH10 bH bHT bH10 bH5 bHB bH bSTOP cCYA
       " path geometry " bSTG bH5 bH2 bH bVL "\n");
 
-  // In original AFL, the following part is unrolled, which is too long.
-  // So put them into a loop as many as possible and wish compiler's
-  // optimization.
-
-  // First, define the type describing the information output in one line:
-  using OnelineInfo = std::tuple<
-      const char *,  // mut_name.      e.g. "bit flips", "arithmetics"
-      const char *,  // neighbor_name. e.g. "levels", "pending", "pend fav"
-      std::string,   // neighbor_val.  e.g. DI(max_depth),
-                     // DI(pending_not_fuzzed), DI(pending_favored)
-      u8,            // stage1.        e.g. STAGE_FLIP8, STAGE_ARITH8
-      u8,            // stage2.        e.g. STAGE_FLIP16, STAGE_ARITH16
-      u8             // stage3.        e.g. STAGE_FLIP32, STAGE_ARITH32
-      >;
-
-  // Next, define each lines
-  OnelineInfo line_infos[] = {
-      {"   bit flips", "    levels", DescribeInteger(max_depth), STAGE_FLIP1,
-       STAGE_FLIP2, STAGE_FLIP4},
-      {"  byte flips", "   pending", DescribeInteger(pending_not_fuzzed),
-       STAGE_FLIP8, STAGE_FLIP16, STAGE_FLIP32},
-      {" arithmetics", "  pend fav", DescribeInteger(pending_favored),
-       STAGE_ARITH8, STAGE_ARITH16, STAGE_ARITH32},
-      {"  known ints", " own finds", DescribeInteger(queued_discovered),
-       STAGE_INTEREST8, STAGE_INTEREST16, STAGE_INTEREST32},
-      {"  dictionary", "  imported",
-       sync_id.empty() ? "n/a" : DescribeInteger(queued_imported),
-       STAGE_EXTRAS_UO, STAGE_EXTRAS_UI,
-       STAGE_EXTRAS_AO}};  // Havoc is difficult to put together
-
-  tmp = "n/a, n/a, n/a";
-  for (int i = 0; i < 5; i++) {
-    auto [mut_name, neighbor_name, neighbor_val, stage1, stage2, stage3] =
-        line_infos[i];
-
-    if (!skip_deterministic) {
-      tmp = DescribeInteger(stage_finds[stage1]) + '/' +
-            DescribeInteger(stage_cycles[stage1]) +
-
-            ", " + DescribeInteger(stage_finds[stage2]) + '/' +
-            DescribeInteger(stage_cycles[stage2]) +
-
-            ", " + DescribeInteger(stage_finds[stage3]) + '/' +
-            DescribeInteger(stage_cycles[stage3]);
-    }
-
-    MSG(bV bSTOP "%s : " cRST "%-37s " bSTG bV bSTOP "%s : " cRST
-                 "%-10s " bSTG bV "\n",
-        mut_name, tmp.c_str(), neighbor_name, neighbor_val.c_str());
-  }
-
   tmp = DescribeInteger(stage_finds[STAGE_HAVOC]) + '/' +
         DescribeInteger(stage_cycles[STAGE_HAVOC]) +
 
