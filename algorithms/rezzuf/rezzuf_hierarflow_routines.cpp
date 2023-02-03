@@ -49,8 +49,6 @@ RezzufSelectSeed::operator()(void) {
   if (state.queue_cycle == 0 ||
       runs_in_current_cycle > state.case_queue.size()) {
     state.queue_cycle++;
-    state.current_entry = state.seek_to;
-    state.seek_to = 0;
     state.cur_skipped_paths = 0;
 
     state.ShowStats();
@@ -71,8 +69,6 @@ RezzufSelectSeed::operator()(void) {
       state.cycles_wo_finds = 0;
 
     prev_queued = state.queued_paths;
-
-    DEBUG_ASSERT(state.current_entry < state.case_queue.size());
 
     runs_in_current_cycle = 0;
   } else {
