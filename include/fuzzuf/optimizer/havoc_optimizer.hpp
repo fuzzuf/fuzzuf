@@ -28,11 +28,15 @@ namespace fuzzuf::optimizer {
  * @class HavocOptimizer
  * @brief Optimizer for two parameters used in `Mutator::Havoc`
  * @details This class will work as a base class in `Mutator::Havoc`.
- * It has two virtual methods:
+ * It has three virtual methods:
  *  - `CalcBatchSize` should return the number of times mutation operators
  *    are applied to a single input.
  *  - `CalcMutop` should return an index of mutation operator that
  *     will be used for the `batch_idx`-th time out of `CalcBatchSize()` times.
+ *  - `UpdateInternalState` should update its internal state.
+ *     As `UpdateAndCalcBatch` suggests, this member function is called always
+ *     before `CalcBatchSize` is called. Be careful that this function is called
+ *     even before the first call of `CalcBatchSize()`.
  * If you want to implement a new algorithm that controls the two parameter,
  * you should define a new class that derives from this class.
  **/
@@ -41,12 +45,20 @@ class HavocOptimizer {
   HavocOptimizer() {}
   virtual ~HavocOptimizer() {}
 
-  virtual u32 CalcBatchSize() = 0;
+  u32 UpdateAndCalcBatch() {
+      UpdateInternalState();
+      return CalcBatchSize();
+  }
+
   virtual u32 CalcMutop(u32 batch_idx) = 0;
+
+ private:
+  virtual u32 CalcBatchSize() = 0;
+  virtual void UpdateInternalState() = 0;
 };
 
 /**
- * @class HavocOptimizer
+ * @class ConstantBatchHavocOptimizer
  * @brief Wrapper for mutop optimizer
  * @note The lifetime of this class should be shorter than the given
  * `mutop_optimizer`. It is recommended to temporarily create an instance of
@@ -58,12 +70,14 @@ class ConstantBatchHavocOptimizer : public HavocOptimizer {
       : batch_size(batch_size), mutop_optimizer(mutop_optimizer) {}
   virtual ~ConstantBatchHavocOptimizer() {}
 
-  u32 CalcBatchSize() override { return batch_size; }
   u32 CalcMutop([[maybe_unused]] u32 batch_idx) override {
     return mutop_optimizer.CalcValue();
   }
 
  private:
+  u32 CalcBatchSize() override { return batch_size; }
+  void UpdateInternalState() override {}
+
   u32 batch_size;
   Optimizer<u32>& mutop_optimizer;
 };
