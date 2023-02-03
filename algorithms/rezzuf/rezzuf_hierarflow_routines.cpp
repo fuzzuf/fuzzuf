@@ -133,10 +133,11 @@ AFLMutCalleeRef<RezzufState> RezzufHavoc::operator()(RezzufMutator &mutator) {
 
   s32 stage_max_multiplier = afl::option::GetHavocCycles(state);
 
-  if (this->DoHavoc(mutator, *state.havoc_optimizer,
-                    aflplusplus::havoc::AFLplusplusCustomCases(state),
-                    "more_havoc", "more_havoc", state.orig_perf,
-                    stage_max_multiplier, afl::option::STAGE_HAVOC)) {
+  if (this->DoHavoc(
+          mutator, *state.havoc_optimizer,
+          aflplusplus::havoc::AFLplusplusCustomCases<RezzufState>(state),
+          "more_havoc", "more_havoc", state.orig_perf, stage_max_multiplier,
+          afl::option::STAGE_HAVOC)) {
     this->SetResponseValue(true);
     return this->GoToParent();
   }
@@ -192,12 +193,12 @@ AFLMutCalleeRef<RezzufState> RezzufSplicing::operator()(
       continue;
     }
 
-    if (this->DoHavoc(mutator, *state.havoc_optimizer,
-                      aflplusplus::havoc::AFLplusplusCustomCases(state),
-                      utils::StrPrintf("more_splice %u", splice_cycle),
-                      "more_splice", state.orig_perf,
-                      afl::option::GetSpliceHavoc(state),
-                      afl::option::STAGE_SPLICE)) {
+    if (this->DoHavoc(
+            mutator, *state.havoc_optimizer,
+            aflplusplus::havoc::AFLplusplusCustomCases<RezzufState>(state),
+            utils::StrPrintf("more_splice %u", splice_cycle), "more_splice",
+            state.orig_perf, afl::option::GetSpliceHavoc(state),
+            afl::option::STAGE_SPLICE)) {
       this->SetResponseValue(true);
       return this->GoToParent();
     }
