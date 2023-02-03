@@ -46,8 +46,8 @@ class HavocOptimizer {
   virtual ~HavocOptimizer() {}
 
   u32 UpdateAndCalcBatch() {
-      UpdateInternalState();
-      return CalcBatchSize();
+    UpdateInternalState();
+    return CalcBatchSize();
   }
 
   virtual u32 CalcMutop(u32 batch_idx) = 0;

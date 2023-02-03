@@ -371,14 +371,14 @@ void Mutator<Tag>::Havoc(const std::vector<AFLDictData> &extras,
     selected_case_histogram.fill(0);
   }
 
-  // We update is_mutop_banned before calling `CalcBatchSize()`
+  // We update is_mutop_banned before calling `UpdateAndCalcBatch()`
   // because batch size and mutation operator can be determined
   // simultaneously in the function
   if (useIsMutopBanned) {
     check_banned_mutops(len);
   }
 
-  u32 stacking = havoc_optimizer.CalcBatchSize();
+  u32 stacking = havoc_optimizer.UpdateAndCalcBatch();
   optimizer::Store::GetInstance().Set(optimizer::keys::LastHavocStacking,
                                       stacking);
 

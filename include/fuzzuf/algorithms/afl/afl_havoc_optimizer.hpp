@@ -32,10 +32,12 @@ class AFLHavocOptimizer : public optimizer::HavocOptimizer {
   AFLHavocOptimizer(std::shared_ptr<optimizer::Optimizer<u32>> mutop_optimizer);
   virtual ~AFLHavocOptimizer();
 
-  u32 CalcBatchSize() override;
   u32 CalcMutop(u32 batch_idx) override;
 
  private:
+  u32 CalcBatchSize() override;
+  void UpdateInternalState() override;
+
   std::shared_ptr<optimizer::Optimizer<u32>> mutop_optimizer;
 };
 

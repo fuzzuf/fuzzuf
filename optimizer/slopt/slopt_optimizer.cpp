@@ -62,17 +62,21 @@ u32 SloptOptimizer::CalcBatchSize() {
   return prev_pulled_batch;
 }
 
-u32 SloptOptimizer::CalcMutop(u32 batch_idx) {
-  if (batch_idx == 0 && !is_first_call) {
-    const bool is_mut_succeeded =
-        Store::GetInstance().Get(optimizer::keys::LastHavocFinds, true) > 0;
-    mut_bandits[prev_bucket_idx].AddResult(prev_pulled_mutop, is_mut_succeeded);
-    bat_bandits[prev_bucket_idx][prev_pulled_mutop].AddResult(prev_pulled_batch,
-                                                              is_mut_succeeded);
-  }
-  is_first_call = false;
-
+u32 SloptOptimizer::CalcMutop([[maybe_unused]] u32 batch_idx) {
   return prev_pulled_mutop;
+}
+
+void SloptOptimizer::UpdateInternalState() {
+  if (is_first_call) {
+    is_first_call = false;
+    return;
+  }
+
+  const bool is_mut_succeeded =
+      Store::GetInstance().Get(optimizer::keys::LastHavocFinds, true) > 0;
+  mut_bandits[prev_bucket_idx].AddResult(prev_pulled_mutop, is_mut_succeeded);
+  bat_bandits[prev_bucket_idx][prev_pulled_mutop].AddResult(prev_pulled_batch,
+                                                            is_mut_succeeded);
 }
 
 }  // namespace fuzzuf::optimizer::slopt

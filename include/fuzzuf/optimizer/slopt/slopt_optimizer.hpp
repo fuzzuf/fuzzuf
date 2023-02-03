@@ -34,10 +34,12 @@ class SloptOptimizer : public HavocOptimizer {
                  size_t max_batch_exponent);
   virtual ~SloptOptimizer();
 
-  u32 CalcBatchSize() override;
   u32 CalcMutop(u32 batch_idx) override;
 
  private:
+  u32 CalcBatchSize() override;
+  void UpdateInternalState() override;
+
   u32 GetBucketIdxForSeedSize(u32 len);
 
   bool is_first_call = true;

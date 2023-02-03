@@ -41,4 +41,6 @@ u32 AFLHavocOptimizer::CalcBatchSize() {
   return 1 << (1 + util::UR(option::GetHavocStackPow2<option::AFLTag>(), -1));
 }
 
+void AFLHavocOptimizer::UpdateInternalState() {}
+
 }  // namespace fuzzuf::algorithm::afl
