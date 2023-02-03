@@ -94,9 +94,6 @@ std::unique_ptr<TFuzzer> BuildRezzufFuzzerFromArgs(
           po::value<bool>(&rezzuf_options.frida_mode)
               ->default_value(rezzuf_options.frida_mode),
           "Enable/disable frida mode. Default to false.")(
-          "det,D",
-          "Do not skip deterministic stages if specified (AFLplusplus skips "
-          "them by default)")(
           "schedule,p",
           po::value<std::string>(&rezzuf_options.schedule)
               ->default_value(rezzuf_options.schedule),
@@ -268,7 +265,7 @@ std::unique_ptr<TFuzzer> BuildRezzufFuzzerFromArgs(
                                            GetMaxFile<RezzufTag>(),
                                            GetHavocStackPow2<RezzufTag>()));
 
-  // Create AFLplusplusState
+  // Create RezzufState
   using fuzzuf::algorithm::rezzuf::RezzufState;
   auto state = std::make_unique<RezzufState>(setting, executor,
                                              std::move(havoc_optimizer));

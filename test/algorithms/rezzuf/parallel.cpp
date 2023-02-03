@@ -27,7 +27,7 @@
 #include "fuzzuf/utils/count_regular_files.hpp"
 #include "fuzzuf/utils/filesystem.hpp"
 
-BOOST_AUTO_TEST_CASE(ExecuteAFLplusplusWithParallel) {
+BOOST_AUTO_TEST_CASE(ExecuteRezzufWithParallel) {
   // Setup root directory
   // NOLINTBEGIN(cppcoreguidelines-pro-type-cstyle-cast,cppcoreguidelines-pro-type-member-init,cppcoreguidelines-special-member-functions,hicpp-explicit-conversions)
   FUZZUF_STANDARD_TEST_DIRS
@@ -72,7 +72,7 @@ BOOST_AUTO_TEST_CASE(ExecuteAFLplusplusWithParallel) {
   BOOST_TEST_CHECKPOINT("done");
 }
 
-BOOST_AUTO_TEST_CASE(ExecuteAFLplusplusWithoutParallel) {
+BOOST_AUTO_TEST_CASE(ExecuteRezzufWithoutParallel) {
   // Setup root directory
   // NOLINTBEGIN(cppcoreguidelines-pro-type-cstyle-cast,cppcoreguidelines-pro-type-member-init,cppcoreguidelines-special-member-functions,hicpp-explicit-conversions)
   FUZZUF_STANDARD_TEST_DIRS
