@@ -83,12 +83,12 @@ FuzzerArgs ParseGlobalOptionsForFuzzer(GlobalArgs& global_args,
                                       global_options.proxy_path->string())
                                 : po::value<std::string>()->default_value(""),
       "Specify executor proxy (e.g. `afl-qemu-trace`) path.")(
-      "exec_timelimit_ms",
+      "exec_timelimit_ms,t",
       global_options.exec_timelimit_ms
           ? po::value<u32>()->default_value(*global_options.exec_timelimit_ms)
           : po::value<u32>(),
       "Limit execution time of PUT. Unit is milli-seconds.")(
-      "exec_memlimit",
+      "exec_memlimit,m",
       global_options.exec_memlimit
           ? po::value<u32>()->default_value(*global_options.exec_memlimit)
           : po::value<u32>(),
