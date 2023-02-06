@@ -1086,9 +1086,10 @@ void AFLStateTemplate<Testcase>::ReadTestcases(void) {
     }
 
     if (st.st_size > option::GetMaxFile<Tag>()) {
-      EXIT("Test case '%s' is too big (%s, limit is %s)", fn.c_str(),
+      WARNF("Test case '%s' is too big (%s, limit is %s)", fn.c_str(),
            util::DescribeMemorySize(st.st_size).c_str(),
            util::DescribeMemorySize(option::GetMaxFile<Tag>()).c_str());
+      continue;
     }
 
     /* Check for metadata that indicates that deterministic fuzzing
