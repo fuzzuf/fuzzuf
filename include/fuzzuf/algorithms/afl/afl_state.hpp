@@ -103,7 +103,7 @@ struct AFLStateTemplate {
   void SaveAuto(void);
   void WriteBitmap(void);
   void ReadBitmap(fs::path fname);
-  void MaybeUpdatePlotFile(double bitmap_cvg, double eps);
+  void MaybeUpdatePlotFile(double bitmap_cvg, double eps, u64 edges_found);
   void SaveCmdline(const std::vector<std::string> &argv);
   void FixUpBanner(const std::string &name);
   void CheckIfTty(void);
