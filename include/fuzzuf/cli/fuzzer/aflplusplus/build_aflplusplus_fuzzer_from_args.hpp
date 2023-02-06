@@ -206,7 +206,7 @@ std::unique_ptr<TFuzzer> BuildAFLplusplusFuzzerFromArgs(
           GetExecTimeout<AFLplusplusTag>()),
       mem_limit, aflplusplus_options.forksrv,
       /* dumb_mode */ false,  // FIXME: add dumb_mode
-      fuzzuf::utils::CPUID_BIND_WHICHEVER, schedule,
+      global_options.cpuid_to_bind, schedule,
       aflplusplus_options.schedule);
 
   // NativeLinuxExecutor needs the directory specified by "out_dir" to be

@@ -369,6 +369,15 @@ int ScanDirAlpha(std::string dir, struct dirent ***namelist) {
   return scandir(dir.c_str(), namelist, NULL, alphasort);
 }
 
+/**
+ * @note
+ * This function does not check `cpuid` is actually less than the number of CPU cores
+ **/
+bool IsValidCpuId(int cpuid) {
+  if (cpuid >= 0) return true;
+  return cpuid == utils::CPUID_DO_NOT_BIND || cpuid == utils::CPUID_BIND_WHICHEVER;
+}
+
 #include "fuzzuf/algorithms/afl/afl_macro.hpp"
 int GetCpuCore() {
   int cpu_core_count = 0;

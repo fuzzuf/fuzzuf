@@ -190,7 +190,7 @@ std::unique_ptr<TFuzzer> BuildRezzufFuzzerFromArgs(
       global_options.exec_timelimit_ms.value_or(GetExecTimeout<RezzufTag>()),
       mem_limit, rezzuf_options.forksrv,
       /* dumb_mode */ false,  // FIXME: add dumb_mode
-      fuzzuf::utils::CPUID_BIND_WHICHEVER, schedule, rezzuf_options.schedule);
+      global_options.cpuid_to_bind, schedule, rezzuf_options.schedule);
 
   // NativeLinuxExecutor needs the directory specified by "out_dir" to be
   // already set up so we need to create the directory first, and then

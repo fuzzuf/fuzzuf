@@ -189,6 +189,7 @@ int ScanDirAlpha(std::string dir, struct dirent ***namelist);
 constexpr int CPUID_DO_NOT_BIND = -2;
 constexpr int CPUID_BIND_WHICHEVER = -1;
 
+bool IsValidCpuId(int cpuid);
 int GetCpuCore();
 std::set<int> GetFreeCpu(int);
 int BindCpu(int, int);
