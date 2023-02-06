@@ -156,7 +156,7 @@ FuzzerArgs ParseGlobalOptionsForFuzzer(GlobalArgs& global_args,
 
   if (!utils::IsValidCpuId(global_options.cpuid_to_bind)) {
     throw exceptions::cli_error(
-        "Invalid value is fed to `-b,--bind_cpuid`. Value values: -2=\"never bind\", -1=\"use any free core\", 0 ~ num_of_cpus-1=(the id of a specific core)",
+        "Invalid value is fed to `-b,--bind_cpuid`. Valid values: -2=\"never bind\", -1=\"use any free core\", 0 ~ num_of_cpus-1=(the id of a specific core)",
         __FILE__, __LINE__);
   }
 
