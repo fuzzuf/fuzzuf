@@ -41,6 +41,7 @@ BOOST_AUTO_TEST_CASE(ParseGlobalFuzzerOptions_AllOptions) {
                         "--in_dir=test-in",
                         "--out_dir=test-out",
                         "--executor=qemu",
+                        "--bind_cpuid=1000",
                         "--proxy_path=test-proxy",
                         "--exec_timelimit_ms=123",
                         "--exec_memlimit=456"};
@@ -58,6 +59,7 @@ BOOST_AUTO_TEST_CASE(ParseGlobalFuzzerOptions_AllOptions) {
   BOOST_CHECK_EQUAL(options.in_dir, "test-in");
   BOOST_CHECK_EQUAL(options.out_dir, "test-out");
   BOOST_CHECK_EQUAL(options.executor, fuzzuf::cli::ExecutorKind::QEMU);
+  BOOST_CHECK_EQUAL(options.cpuid_to_bind, 1000);
   BOOST_CHECK_EQUAL(options.proxy_path.value(), "test-proxy");
   BOOST_CHECK_EQUAL(options.exec_timelimit_ms.value(), 123);
   BOOST_CHECK_EQUAL(options.exec_memlimit.value(), 456);
@@ -78,8 +80,9 @@ BOOST_AUTO_TEST_CASE(ParseGlobalFuzzerOptions_DefaultValues) {
   BOOST_CHECK_EQUAL(options.in_dir, default_options.in_dir);
   BOOST_CHECK_EQUAL(options.out_dir, default_options.out_dir);
 
-  // Check `executor` and `proxy_path` default value.
+  // Check `executor`, `bind_cpuid` and `proxy_path` default value.
   BOOST_CHECK_EQUAL(options.executor, fuzzuf::cli::ExecutorKind::NATIVE);
+  BOOST_CHECK_EQUAL(options.cpuid_to_bind, fuzzuf::utils::CPUID_BIND_WHICHEVER);
   BOOST_CHECK_EQUAL(options.proxy_path.value(), "");
 
   BOOST_CHECK_EQUAL(options.logger, fuzzuf::utils::Logger::Stdout);
@@ -199,6 +202,21 @@ BOOST_AUTO_TEST_CASE(ParseGlobalFuzzerOptions_ExecutorKindsFailure) {
                       fuzzuf::exceptions::cli_error);
   }
 }
+
+BOOST_AUTO_TEST_CASE(ParseGlobalFuzzerOptions_BindCpuIdFailure) {
+  fuzzuf::cli::GlobalFuzzerOptions options;
+
+  const char *argv[] = {"fuzzuf", "fuzzer", "--bind_cpuid=-3", "--"};
+  fuzzuf::cli::GlobalArgs args = {
+      .argc = Argc(argv),
+      .argv = argv,
+  };
+
+  // Check if the parser throws expected exception.
+  BOOST_CHECK_THROW(fuzzuf::cli::ParseGlobalOptionsForFuzzer(args, options),
+                    fuzzuf::exceptions::cli_error);
+}
+
 
 BOOST_AUTO_TEST_CASE(ParseGlobalFuzzerOptions_LogFileSpecified) {
   fuzzuf::cli::GlobalFuzzerOptions options;

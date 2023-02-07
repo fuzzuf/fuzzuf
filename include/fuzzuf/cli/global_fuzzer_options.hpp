@@ -75,6 +75,7 @@ struct GlobalFuzzerOptions {
   std::string in_dir;   // Required; TODO: fs::path might be better
   std::string out_dir;  // Required
   fuzzuf::cli::ExecutorKind executor;    // Optional
+  int cpuid_to_bind;                     // Optional
   std::optional<fs::path> proxy_path;    // Optional
   std::optional<u32> exec_timelimit_ms;  // Optional
   std::optional<u32> exec_memlimit;      // Optional
@@ -88,6 +89,7 @@ struct GlobalFuzzerOptions {
         in_dir("./seeds"),               // FIXME: Assuming Linux
         out_dir("/tmp/fuzzuf-out_dir"),  // FIXME: Assuming Linux
         executor(fuzzuf::cli::ExecutorKind::NATIVE),
+        cpuid_to_bind(utils::CPUID_BIND_WHICHEVER),
         proxy_path(std::nullopt),
         exec_timelimit_ms(std::nullopt),  // Specify no limits
         exec_memlimit(std::nullopt),

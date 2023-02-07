@@ -111,7 +111,7 @@ void MOptState::ShowStats(void) {
   /* Every now and then, write plot data. */
   if (cur_ms - last_plot_ms > GetPlotUpdateSec(*this) * 1000) {
     last_plot_ms = cur_ms;
-    MaybeUpdatePlotFile(t_byte_ratio, avg_exec);
+    MaybeUpdatePlotFile(t_byte_ratio, avg_exec, t_bytes);
   }
 
   /* Honor AFL_EXIT_WHEN_DONE and AFL_BENCH_UNTIL_CRASH. */

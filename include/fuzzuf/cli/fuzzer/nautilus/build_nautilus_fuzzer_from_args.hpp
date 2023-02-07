@@ -173,7 +173,7 @@ std::unique_ptr<TFuzzer> BuildNautilusFuzzerFromArgs(
       global_options.out_dir,
       global_options.exec_timelimit_ms.value_or(GetExecTimeout<NautilusTag>()),
       global_options.exec_memlimit.value_or(GetMemLimit<NautilusTag>()),
-      forksrv, fuzzuf::utils::CPUID_BIND_WHICHEVER,
+      forksrv, global_options.cpuid_to_bind,
 
       // TODO: Change here if threading is supported
       GetDefaultNumOfThreads(), GetDefaultThreadSize(),

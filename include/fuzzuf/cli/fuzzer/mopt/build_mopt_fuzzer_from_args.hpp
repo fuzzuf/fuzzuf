@@ -181,7 +181,7 @@ std::unique_ptr<TFuzzer> BuildMOptFuzzerFromArgs(
       global_options.exec_timelimit_ms.value_or(GetExecTimeout<MOptTag>()),
       mem_limit, mopt_options.forksrv,
       /* dumb_mode */ false,  // FIXME: add dumb_mode
-      fuzzuf::utils::CPUID_BIND_WHICHEVER, mopt_options.mopt_limit_time,
+      global_options.cpuid_to_bind, mopt_options.mopt_limit_time,
       mopt_options.mopt_most_time);
 
   // NativeLinuxExecutor needs the directory specified by "out_dir" to be

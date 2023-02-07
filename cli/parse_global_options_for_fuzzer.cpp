@@ -74,17 +74,21 @@ FuzzerArgs ParseGlobalOptionsForFuzzer(GlobalArgs& global_args,
       po::value<fuzzuf::cli::ExecutorKind>(&global_options.executor)
           ->default_value(global_options.executor),
       "Specify fuzzing executor. Default is `native`.")(
+      "bind_cpuid,b",
+      po::value<int>(&global_options.cpuid_to_bind)
+          ->default_value(global_options.cpuid_to_bind),
+      "Choose a CPU core to bind the PUT process to. Valid values: -2=\"never bind\", -1=\"use any free core\", 0 ~ num_of_cpus-1=(the id of a specific core).")(
       "proxy_path",
       global_options.proxy_path ? po::value<std::string>()->default_value(
                                       global_options.proxy_path->string())
                                 : po::value<std::string>()->default_value(""),
       "Specify executor proxy (e.g. `afl-qemu-trace`) path.")(
-      "exec_timelimit_ms",
+      "exec_timelimit_ms,t",
       global_options.exec_timelimit_ms
           ? po::value<u32>()->default_value(*global_options.exec_timelimit_ms)
           : po::value<u32>(),
       "Limit execution time of PUT. Unit is milli-seconds.")(
-      "exec_memlimit",
+      "exec_memlimit,m",
       global_options.exec_memlimit
           ? po::value<u32>()->default_value(*global_options.exec_memlimit)
           : po::value<u32>(),
@@ -149,6 +153,13 @@ FuzzerArgs ParseGlobalOptionsForFuzzer(GlobalArgs& global_args,
   } else {
     global_options.proxy_path = fs::path(std::move(proxy_path));
   }
+
+  if (!utils::IsValidCpuId(global_options.cpuid_to_bind)) {
+    throw exceptions::cli_error(
+        "Invalid value is fed to `-b,--bind_cpuid`. Valid values: -2=\"never bind\", -1=\"use any free core\", 0 ~ num_of_cpus-1=(the id of a specific core)",
+        __FILE__, __LINE__);
+  }
+
   // since type T = { std::optional, fs::path, Logger (enum) }, is not cpmatible
   // with po::value<T>()
   if (vm.count("exec_timelimit_ms")) {
