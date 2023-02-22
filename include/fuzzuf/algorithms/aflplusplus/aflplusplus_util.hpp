@@ -28,6 +28,10 @@
 
 namespace fuzzuf::algorithm::aflplusplus::util {
 
+// A small constant used instead of 0
+// to avoid buggy situations like "1.0/0.0"
+const double epsilon = 1e-8;
+
 /*
  * These utility functions are supposed to be
  * used with *AFLplusplusState-like* State instances.
@@ -45,9 +49,9 @@ double ComputeWeight(const State &state,
     weight *= std::log10(hits) + 1;
   }
 
-  weight *= (avg_exec_us / testcase.exec_us);
-  weight *= (std::log(testcase.bitmap_size) / avg_bitmap_size);
-  weight *= (1 + (testcase.tc_ref / avg_top_size));
+  weight *= ((avg_exec_us + epsilon) / (testcase.exec_us + epsilon));
+  weight *= (std::log(testcase.bitmap_size + 1) / avg_bitmap_size);
+  weight *= (1 + ((testcase.tc_ref + epsilon) / (avg_top_size + epsilon)));
   if (unlikely(testcase.favored)) {
     weight *= 5;
   }
@@ -65,7 +69,7 @@ void ComputeWeightVector(State &state, std::vector<double> &vw) {
   double avg_exec_us = 0.0, avg_bitmap_size = 0.0, avg_top_size = 0.0;
   for (auto &tc : state.case_queue) {
     avg_exec_us += tc->exec_us;
-    avg_bitmap_size += std::log(tc->bitmap_size);
+    avg_bitmap_size += std::log(tc->bitmap_size + 1);
     avg_top_size += tc->tc_ref;
   }
   avg_exec_us /= queued_items;
@@ -84,6 +88,9 @@ template <class State>
 void CreateAliasTable(State &state) {
   std::vector<double> vw;
   ComputeWeightVector(state, vw);
+  for (double &w : vw) {
+    if (-epsilon <= w && w < 0) w = 0;
+  }
   using utils::random::WalkerDiscreteDistribution;
   state.alias_probability.reset(new WalkerDiscreteDistribution<u32>(vw));
 }
