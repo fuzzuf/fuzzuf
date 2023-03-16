@@ -1,0 +1,11 @@
+--- qemu-2.10.0-branch/Makefile.target.orig	2020-10-12 02:23:49.173865649 -0700
++++ qemu-2.10.0-branch/Makefile.target	2020-10-12 02:23:49.109866308 -0700
+@@ -94,7 +94,7 @@
+ obj-y += exec.o
+ obj-y += accel/
+ obj-$(CONFIG_TCG) += tcg/tcg.o tcg/tcg-op.o tcg/optimize.o
+-obj-$(CONFIG_TCG) += tcg/tcg-common.o tcg/tcg-runtime.o
++obj-$(CONFIG_TCG) += tcg/tcg-common.o tcg/tcg-runtime.o tcg/eclipser.o
+ obj-$(CONFIG_TCG_INTERPRETER) += tcg/tci.o
+ obj-$(CONFIG_TCG_INTERPRETER) += disas/tci.o
+ obj-y += fpu/softfloat.o

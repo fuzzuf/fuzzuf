@@ -37,6 +37,7 @@ include(CheckCXXSourceCompiles)
 include(GNUInstallDirs)
 include(GetSubdirs)
 include(AlgorithmEnabled)
+include(ExternalProject)
 find_package(PkgConfig)
 enable_testing()
 try_compile(

@@ -17,6 +17,7 @@
  */
 #ifndef __EXCEPTIONS_HPP__
 #define __EXCEPTIONS_HPP__
+#include <string>
 #include <stdexcept>
 namespace fuzzuf::exceptions {
 
@@ -24,9 +25,9 @@ namespace fuzzuf::exceptions {
   struct name : public base {                                     \
     name() : base(#name), file("unknown"), line(0) {}             \
     name(const std::string &what_arg, const char *file, int line) \
-        : base(what_arg), file(file), line(line) {}               \
+        : base(what_arg + " @ " + file + " : " + std::to_string( line ) ), file(file), line(line) {}               \
     name(const char *what_arg, const char *file, int line)        \
-        : base(what_arg), file(file), line(line) {}               \
+        : base( std::string( what_arg ) + " @ " + file + " : " + std::to_string( line ) ), file(file), line(line) {}               \
     const char *file;                                             \
     int line;                                                     \
   };
@@ -38,6 +39,7 @@ namespace fuzzuf::exceptions {
 FUZZUF_BASE_EXCEPTION(std::logic_error, fuzzuf_logic_error)
 FUZZUF_BASE_EXCEPTION(std::runtime_error, fuzzuf_runtime_error)
 FUZZUF_BASE_EXCEPTION(std::invalid_argument, fuzzuf_invalid_argument)
+FUZZUF_BASE_EXCEPTION(std::out_of_range, fuzzuf_out_of_range)
 FUZZUF_INHERIT_EXCEPTION(fuzzuf_logic_error, used_after_free)
 FUZZUF_INHERIT_EXCEPTION(fuzzuf_logic_error, wrong_hierarflow_usage)
 FUZZUF_INHERIT_EXCEPTION(fuzzuf_logic_error, not_implemented)
@@ -49,5 +51,6 @@ FUZZUF_INHERIT_EXCEPTION(fuzzuf_runtime_error, cli_error)
 FUZZUF_INHERIT_EXCEPTION(fuzzuf_runtime_error, logger_error)
 FUZZUF_INHERIT_EXCEPTION(fuzzuf_logic_error, unexpected_leave_event)
 FUZZUF_INHERIT_EXCEPTION(fuzzuf_invalid_argument, invalid_argument)
+FUZZUF_INHERIT_EXCEPTION(fuzzuf_out_of_range, out_of_range)
 }  // namespace fuzzuf::exceptions
 #endif

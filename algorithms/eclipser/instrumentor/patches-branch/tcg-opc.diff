@@ -1,0 +1,38 @@
+--- qemu-2.10.0-branch/tcg/tcg-opc.h.orig	2020-10-12 02:23:49.177865607 -0700
++++ qemu-2.10.0-branch/tcg/tcg-opc.h	2020-10-12 02:23:49.089866514 -0700
+@@ -59,7 +59,7 @@
+ DEF(st_i32, 0, 2, 1, 0)
+ /* arith */
+ DEF(add_i32, 1, 2, 0, 0)
+-DEF(sub_i32, 1, 2, 0, 0)
++DEF(sub_i32, 1, 2, 2, 0)
+ DEF(mul_i32, 1, 2, 0, 0)
+ DEF(div_i32, 1, 2, 0, IMPL(TCG_TARGET_HAS_div_i32))
+ DEF(divu_i32, 1, 2, 0, IMPL(TCG_TARGET_HAS_div_i32))
+@@ -67,7 +67,7 @@
+ DEF(remu_i32, 1, 2, 0, IMPL(TCG_TARGET_HAS_rem_i32))
+ DEF(div2_i32, 2, 3, 0, IMPL(TCG_TARGET_HAS_div2_i32))
+ DEF(divu2_i32, 2, 3, 0, IMPL(TCG_TARGET_HAS_div2_i32))
+-DEF(and_i32, 1, 2, 0, 0)
++DEF(and_i32, 1, 2, 2, 0)
+ DEF(or_i32, 1, 2, 0, 0)
+ DEF(xor_i32, 1, 2, 0, 0)
+ /* shifts/rotates */
+@@ -126,7 +126,7 @@
+ DEF(st_i64, 0, 2, 1, IMPL64)
+ /* arith */
+ DEF(add_i64, 1, 2, 0, IMPL64)
+-DEF(sub_i64, 1, 2, 0, IMPL64)
++DEF(sub_i64, 1, 2, 2, IMPL64)
+ DEF(mul_i64, 1, 2, 0, IMPL64)
+ DEF(div_i64, 1, 2, 0, IMPL64 | IMPL(TCG_TARGET_HAS_div_i64))
+ DEF(divu_i64, 1, 2, 0, IMPL64 | IMPL(TCG_TARGET_HAS_div_i64))
+@@ -134,7 +134,7 @@
+ DEF(remu_i64, 1, 2, 0, IMPL64 | IMPL(TCG_TARGET_HAS_rem_i64))
+ DEF(div2_i64, 2, 3, 0, IMPL64 | IMPL(TCG_TARGET_HAS_div2_i64))
+ DEF(divu2_i64, 2, 3, 0, IMPL64 | IMPL(TCG_TARGET_HAS_div2_i64))
+-DEF(and_i64, 1, 2, 0, IMPL64)
++DEF(and_i64, 1, 2, 2, IMPL64)
+ DEF(or_i64, 1, 2, 0, IMPL64)
+ DEF(xor_i64, 1, 2, 0, IMPL64)
+ /* shifts/rotates */

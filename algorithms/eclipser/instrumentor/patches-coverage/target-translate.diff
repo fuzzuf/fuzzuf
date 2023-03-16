@@ -1,0 +1,16 @@
+--- qemu-2.10.0-coverage/target/i386/translate.c.orig	2020-10-12 02:23:45.429904211 -0700
++++ qemu-2.10.0-coverage/target/i386/translate.c	2020-10-12 02:23:41.477944915 -0700
+@@ -8390,6 +8390,13 @@
+     int num_insns;
+     int max_insns;
+ 
++#ifdef TARGET_X86_64
++    TCGv_i64 pc_var = tcg_const_i64((uint64_t)tb->pc);
++#else
++    TCGv_i32 pc_var = tcg_const_i32((uint64_t)tb->pc);
++#endif
++    gen_helper_eclipser_log_bb(pc_var);
++
+     /* generate intermediate code */
+     pc_start = tb->pc;
+     cs_base = tb->cs_base;

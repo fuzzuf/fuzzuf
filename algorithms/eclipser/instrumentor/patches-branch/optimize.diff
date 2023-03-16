@@ -1,0 +1,45 @@
+--- qemu-2.10.0-branch/tcg/optimize.c.orig	2020-10-12 02:23:49.177865607 -0700
++++ qemu-2.10.0-branch/tcg/optimize.c	2020-10-12 02:23:49.089866514 -0700
+@@ -678,13 +678,15 @@
+                 continue;
+             }
+             break;
++        // This case may remove comparison against 0.
++        /*
+         CASE_OP_32_64(sub):
+             {
+                 TCGOpcode neg_op;
+                 bool have_neg;
+ 
+                 if (temp_is_const(args[2])) {
+-                    /* Proceed with possible constant folding. */
++                    / * Proceed with possible constant folding. * /
+                     break;
+                 }
+                 if (opc == INDEX_op_sub_i32) {
+@@ -705,6 +707,7 @@
+                 }
+             }
+             break;
++        */
+         CASE_OP_32_64(xor):
+         CASE_OP_32_64(nand):
+             if (!temp_is_const(args[1])
+@@ -762,7 +765,7 @@
+         /* Simplify expression for "op r, a, const => mov r, a" cases */
+         switch (opc) {
+         CASE_OP_32_64(add):
+-        CASE_OP_32_64(sub):
++        //CASE_OP_32_64(sub): // This case may remove comparison against 0.
+         CASE_OP_32_64(shl):
+         CASE_OP_32_64(shr):
+         CASE_OP_32_64(sar):
+@@ -1003,7 +1006,7 @@
+         /* Simplify expression for "op r, a, a => mov r, a" cases */
+         switch (opc) {
+         CASE_OP_32_64(or):
+-        CASE_OP_32_64(and):
++        //CASE_OP_32_64(and): // This case may remove 'test r0, r0' comparison.
+             if (temps_are_copies(args[1], args[2])) {
+                 tcg_opt_gen_mov(s, op, args, args[0], args[1]);
+                 continue;

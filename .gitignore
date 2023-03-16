@@ -3,6 +3,8 @@
 *.log
 *.core
 core
+!include/fuzzuf/algorithms/eclipser/core
+!algorithms/eclipser/core
 
 ### VUzzer-related
 bb.out

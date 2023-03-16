@@ -1,4 +1,11 @@
-add_library( test-common SHARED random_data.cpp create_file.cpp move_to_program_location.cpp)
+add_library(
+  test-common
+  SHARED
+  random_data.cpp
+  create_file.cpp
+  move_to_program_location.cpp
+  byte.cpp
+)
 
 target_link_libraries(
   test-common

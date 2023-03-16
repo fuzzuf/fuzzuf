@@ -1,0 +1,26 @@
+--- qemu-2.10.0/linux-user/signal.c.orig	2020-10-01 07:50:32.384129945 -0700
++++ qemu-2.10.0/linux-user/signal.c	2020-10-02 05:04:07.337597365 -0700
+@@ -26,6 +26,8 @@
+ #include "target_signal.h"
+ #include "trace.h"
+ 
++extern void eclipser_exit(void);
++
+ static struct target_sigaltstack target_sigaltstack_used = {
+     .ss_sp = 0,
+     .ss_size = 0,
+@@ -6563,6 +6565,14 @@
+     struct target_sigaction *sa;
+     TaskState *ts = cpu->opaque;
+ 
++    /* If the signal indicates a crash or timeout, call eclipser_exit() to flush
++     * out the information traced until now.
++     */
++    if (sig == SIGSEGV || sig == SIGFPE || sig == SIGILL || sig == SIGABRT ||
++        sig == SIGTERM) {
++      eclipser_exit();
++    }
++
+     trace_user_handle_signal(cpu_env, sig);
+     /* dequeue signal */
+     k->pending = 0;
