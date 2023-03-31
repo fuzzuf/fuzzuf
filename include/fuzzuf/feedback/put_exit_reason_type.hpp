@@ -28,7 +28,7 @@ enum class PUTExitReasonType {
   FAULT_TMOUT,   // 実行時間の制限超過
   FAULT_CRASH,   // SEGVなどによるcrash
   FAULT_ERROR,   // 実行がそもそもできなかったなど
-  FAULT_NOINST,  // おそらくinstrumentが見つからな>かった場合のエラーだが今使われていない
+  FAULT_NOINST,  // おそらくinstrumentが見つからなかった場合のエラーだが今使われていない
   FAULT_NOBITS   // 用途不明
 };
 

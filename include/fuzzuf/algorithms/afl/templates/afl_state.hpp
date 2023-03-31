@@ -173,11 +173,6 @@ AFLStateTemplate<Testcase>::CalibrateCaseWithFeedDestroyed(
     if (stop_soon || exit_status.exit_reason != crash_mode)
       goto abort_calibration;  // FIXME: goto
 
-    if (!setting->dumb_mode && !stage_cur && !inp_feed.CountNonZeroBytes()) {
-      exit_status.exit_reason = feedback::PUTExitReasonType::FAULT_NOINST;
-      goto abort_calibration;  // FIXME: goto
-    }
-
     u32 cksum = inp_feed.CalcCksum32();
 
     if (testcase.exec_cksum != cksum) {
