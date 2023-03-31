@@ -50,8 +50,8 @@ double ComputeWeight(const State &state,
   }
 
   weight *= ((avg_exec_us + epsilon) / (testcase.exec_us + epsilon));
-  weight *= (std::log(testcase.bitmap_size + 1) / avg_bitmap_size);
-  weight *= (1 + ((testcase.tc_ref + epsilon) / (avg_top_size + epsilon)));
+  weight *= (std::log(testcase.bitmap_size + 1) / (avg_bitmap_size + epsilon));
+  weight *= (1 + (testcase.tc_ref / (avg_top_size + epsilon)));
   if (unlikely(testcase.favored)) {
     weight *= 5;
   }
