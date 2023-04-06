@@ -59,7 +59,7 @@ u32 SloptOptimizer::CalcBatchSize() {
   prev_pulled_batch =
       bat_bandits[prev_bucket_idx][prev_pulled_mutop].PullArm({});
 
-  return prev_pulled_batch;
+  return 1u << prev_pulled_batch;
 }
 
 u32 SloptOptimizer::CalcMutop([[maybe_unused]] u32 batch_idx) {

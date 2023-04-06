@@ -18,6 +18,7 @@
 #ifndef FUZZUF_INCLUDE_ALGORITHM_AFLPLUSPLUS_AFLPLUSPLUS_OPTION_HPP
 #define FUZZUF_INCLUDE_ALGORITHM_AFLPLUSPLUS_AFLPLUSPLUS_OPTION_HPP
 
+#include "fuzzuf/algorithms/afl/afl_option.hpp"
 #include "fuzzuf/algorithms/aflfast/aflfast_option.hpp"
 
 namespace fuzzuf::algorithm::aflplusplus::option {
@@ -30,4 +31,14 @@ constexpr u32 GetNFuzzSize(void) {
 }
 
 }  // namespace fuzzuf::algorithm::aflplusplus::option
+
+namespace fuzzuf::algorithm::afl::option {
+
+template <>
+constexpr u32 GetHavocStackPow2<aflplusplus::option::AFLplusplusTag>(void) {
+  return 6;
+}
+
+}  // namespace fuzzuf::algorithm::afl::option
+
 #endif

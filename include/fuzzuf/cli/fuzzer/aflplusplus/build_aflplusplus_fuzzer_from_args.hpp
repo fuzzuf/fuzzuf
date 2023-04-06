@@ -206,8 +206,7 @@ std::unique_ptr<TFuzzer> BuildAFLplusplusFuzzerFromArgs(
           GetExecTimeout<AFLplusplusTag>()),
       mem_limit, aflplusplus_options.forksrv,
       /* dumb_mode */ false,  // FIXME: add dumb_mode
-      global_options.cpuid_to_bind, schedule,
-      aflplusplus_options.schedule);
+      global_options.cpuid_to_bind, schedule, aflplusplus_options.schedule);
 
   // NativeLinuxExecutor needs the directory specified by "out_dir" to be
   // already set up so we need to create the directory first, and then
@@ -283,7 +282,7 @@ std::unique_ptr<TFuzzer> BuildAFLplusplusFuzzerFromArgs(
 
     havoc_optimizer.reset(new optimizer::slopt::SloptOptimizer(
         AFLPLUSPLUS_NUM_CASE, GetMaxFile<AFLplusplusTag>(),
-        GetHavocStackPow2<AFLplusplusTag>()));
+        GetHavocStackPow2<AFLplusplusTag>() + 1));
   } else {
     std::unique_ptr<optimizer::Optimizer<u32>> mutop_optimizer(
         new algorithm::aflplusplus::havoc::AFLplusplusHavocCaseDistrib());
