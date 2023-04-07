@@ -130,7 +130,7 @@ utils::NullableRef<hierarflow::HierarFlowCallee<void(u32)>> PyHavoc::operator()(
 
   using algorithm::afl::dictionary::AFLDictData;
 
-  ConstantBatchHavocOptimizer havoc_optimizer(1 << stacking, mutop_optimizer);
+  optimizer::ConstantBatchHavocOptimizer havoc_optimizer(1 << stacking, mutop_optimizer);
   mutator.Havoc({}, {}, havoc_optimizer,
                 [](u32, u8*&, u32&, const std::vector<AFLDictData>&,
                    const std::vector<AFLDictData>&) {});

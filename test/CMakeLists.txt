@@ -10,7 +10,7 @@ subdirs(
   util
   put
 )
-algorithm_enabled( python_wrapper_enabled ${ALGORITHMS} "python" )
+algorithm_enabled( python_wrapper_enabled "${ALGORITHMS}" "python" )
 if( python_wrapper_enabled )
 subdirs(
   fuzzer
@@ -19,7 +19,7 @@ subdirs(
   python
 )
 endif()
-afl_common_is_required( enable_afl_common ${ALGORITHMS} )
+afl_common_is_required( enable_afl_common "${ALGORITHMS}" )
 if( enable_afl_common )
 subdirs(
   mutator
