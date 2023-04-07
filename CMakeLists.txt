@@ -466,7 +466,7 @@ link_directories(
 )
 
 add_subdirectory(algorithms)
-algorithm_enabled( python_wrapper_enabled ${ALGORITHMS} "python" )
+algorithm_enabled( python_wrapper_enabled "${ALGORITHMS}" "python" )
 if( python_wrapper_enabled )
   add_subdirectory(python)
 endif()

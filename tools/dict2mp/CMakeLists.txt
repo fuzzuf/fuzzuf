@@ -1,4 +1,4 @@
-algorithm_enabled(ENABLE_LIBFUZZER ${ALGORITHMS} libfuzzer)
+algorithm_enabled(ENABLE_LIBFUZZER "${ALGORITHMS}" libfuzzer)
 if( ENABLE_LIBFUZZER )
 add_executable( dict2mp dict2mp.cpp )
 target_link_libraries(

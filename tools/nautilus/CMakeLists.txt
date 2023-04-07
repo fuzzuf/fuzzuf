@@ -1,4 +1,4 @@
-algorithm_enabled(ENABLE_NAUTILUS ${ALGORITHMS} nautilus)
+algorithm_enabled(ENABLE_NAUTILUS "${ALGORITHMS}" nautilus)
 if( ENABLE_NAUTILUS )
 add_executable( generator generator.cpp )
 target_link_libraries(
