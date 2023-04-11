@@ -263,7 +263,7 @@ std::unique_ptr<TFuzzer> BuildRezzufFuzzerFromArgs(
   std::unique_ptr<optimizer::HavocOptimizer> havoc_optimizer(
       new optimizer::slopt::SloptOptimizer(AFLPLUSPLUS_NUM_CASE,
                                            GetMaxFile<RezzufTag>(),
-                                           GetHavocStackPow2<RezzufTag>() + 1));
+                                           GetHavocStackPow2<RezzufTag>()));
 
   // Create RezzufState
   using fuzzuf::algorithm::rezzuf::RezzufState;
