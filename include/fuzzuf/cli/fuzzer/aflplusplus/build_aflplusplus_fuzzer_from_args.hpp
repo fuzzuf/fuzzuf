@@ -282,7 +282,7 @@ std::unique_ptr<TFuzzer> BuildAFLplusplusFuzzerFromArgs(
 
     havoc_optimizer.reset(new optimizer::slopt::SloptOptimizer(
         AFLPLUSPLUS_NUM_CASE, GetMaxFile<AFLplusplusTag>(),
-        GetHavocStackPow2<AFLplusplusTag>() + 1));
+        GetHavocStackPow2<AFLplusplusTag>()));
   } else {
     std::unique_ptr<optimizer::Optimizer<u32>> mutop_optimizer(
         new algorithm::aflplusplus::havoc::AFLplusplusHavocCaseDistrib());
