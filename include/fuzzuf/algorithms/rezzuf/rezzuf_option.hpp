@@ -19,10 +19,21 @@
 #ifndef FUZZUF_INCLUDE_ALGORITHM_REZZUF_REZZUF_OPTION_HPP
 #define FUZZUF_INCLUDE_ALGORITHM_REZZUF_REZZUF_OPTION_HPP
 
+#include "fuzzuf/algorithms/afl/afl_option.hpp"
+
 namespace fuzzuf::algorithm::rezzuf::option {
 
 struct RezzufTag {};
 
 }  // namespace fuzzuf::algorithm::rezzuf::option
+
+namespace fuzzuf::algorithm::afl::option {
+
+template <>
+constexpr u32 GetHavocStackPow2<rezzuf::option::RezzufTag>(void) {
+  return 6;
+}
+
+}  // namespace fuzzuf::algorithm::afl::option
 
 #endif
