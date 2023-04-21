@@ -26,9 +26,9 @@
 namespace fuzzuf::algorithm::afl {
 
 AFLHavocOptimizer::AFLHavocOptimizer(
-    std::shared_ptr<optimizer::Optimizer<u32>> _mutop_optimizer, int _havoc_stack_pow)
-    : mutop_optimizer(_mutop_optimizer),
-      havoc_stack_pow(_havoc_stack_pow) {}
+    std::shared_ptr<optimizer::Optimizer<u32>> _mutop_optimizer,
+    int _havoc_stack_pow)
+    : mutop_optimizer(_mutop_optimizer), havoc_stack_pow(_havoc_stack_pow) {}
 
 AFLHavocOptimizer::~AFLHavocOptimizer() {}
 

@@ -242,8 +242,10 @@ std::unique_ptr<TFuzzer> BuildFuzzer(
   using algorithm::afl::AFLHavocOptimizer;
   using algorithm::afl::option::GetHavocStackPow2;
 
-  auto mutop_optimizer = std::shared_ptr<optimizer::Optimizer<u32>>(new AFLHavocCaseDistrib());
-  std::unique_ptr<optimizer::HavocOptimizer> havoc_optimizer(new AFLHavocOptimizer(mutop_optimizer, GetHavocStackPow2<AFLTag>()));
+  auto mutop_optimizer =
+      std::shared_ptr<optimizer::Optimizer<u32>>(new AFLHavocCaseDistrib());
+  std::unique_ptr<optimizer::HavocOptimizer> havoc_optimizer(
+      new AFLHavocOptimizer(mutop_optimizer, GetHavocStackPow2<AFLTag>()));
 
   // Create AFLState
   using fuzzuf::algorithm::afl::AFLState;

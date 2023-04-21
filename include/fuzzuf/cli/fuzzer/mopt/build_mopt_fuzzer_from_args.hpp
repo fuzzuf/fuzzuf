@@ -238,7 +238,8 @@ std::unique_ptr<TFuzzer> BuildMOptFuzzerFromArgs(
   using algorithm::afl::option::GetHavocStackPow2;
 
   auto mutop_optimizer = std::make_shared<optimizer::MOptOptimizer>();
-  std::unique_ptr<optimizer::HavocOptimizer> havoc_optimizer(new AFLHavocOptimizer(mutop_optimizer, GetHavocStackPow2<MOptTag>()));
+  std::unique_ptr<optimizer::HavocOptimizer> havoc_optimizer(
+      new AFLHavocOptimizer(mutop_optimizer, GetHavocStackPow2<MOptTag>()));
 
   // Create MOptState
   using fuzzuf::algorithm::mopt::MOptState;

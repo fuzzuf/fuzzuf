@@ -284,12 +284,14 @@ std::unique_ptr<TFuzzer> BuildAFLplusplusFuzzerFromArgs(
         AFLPLUSPLUS_NUM_CASE, GetMaxFile<AFLplusplusTag>(),
         GetHavocStackPow2<AFLplusplusTag>()));
   } else {
-    using algorithm::aflplusplus::havoc::AFLplusplusHavocCaseDistrib;
     using algorithm::afl::AFLHavocOptimizer;
     using algorithm::afl::option::GetHavocStackPow2;
+    using algorithm::aflplusplus::havoc::AFLplusplusHavocCaseDistrib;
 
-    std::unique_ptr<optimizer::Optimizer<u32>> mutop_optimizer(new AFLplusplusHavocCaseDistrib());
-    havoc_optimizer.reset(new AFLHavocOptimizer(std::move(mutop_optimizer), GetHavocStackPow2<AFLplusplusTag>()));
+    std::unique_ptr<optimizer::Optimizer<u32>> mutop_optimizer(
+        new AFLplusplusHavocCaseDistrib());
+    havoc_optimizer.reset(new AFLHavocOptimizer(
+        std::move(mutop_optimizer), GetHavocStackPow2<AFLplusplusTag>()));
   }
 
   // Create AFLplusplusState
