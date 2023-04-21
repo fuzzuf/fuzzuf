@@ -29,7 +29,7 @@ namespace fuzzuf::algorithm::afl {
 
 class AFLHavocOptimizer : public optimizer::HavocOptimizer {
  public:
-  AFLHavocOptimizer(std::shared_ptr<optimizer::Optimizer<u32>> mutop_optimizer);
+  AFLHavocOptimizer(std::shared_ptr<optimizer::Optimizer<u32>> mutop_optimizer, int havoc_stack_pow);
   virtual ~AFLHavocOptimizer();
 
   u32 CalcMutop(u32 batch_idx) override;
@@ -39,6 +39,7 @@ class AFLHavocOptimizer : public optimizer::HavocOptimizer {
   void UpdateInternalState() override;
 
   std::shared_ptr<optimizer::Optimizer<u32>> mutop_optimizer;
+  int havoc_stack_pow;
 };
 
 }  // namespace fuzzuf::algorithm::afl

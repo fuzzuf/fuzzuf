@@ -26,8 +26,9 @@
 namespace fuzzuf::algorithm::afl {
 
 AFLHavocOptimizer::AFLHavocOptimizer(
-    std::shared_ptr<optimizer::Optimizer<u32>> _mutop_optimizer)
-    : mutop_optimizer(_mutop_optimizer) {}
+    std::shared_ptr<optimizer::Optimizer<u32>> _mutop_optimizer, int _havoc_stack_pow)
+    : mutop_optimizer(_mutop_optimizer),
+      havoc_stack_pow(_havoc_stack_pow) {}
 
 AFLHavocOptimizer::~AFLHavocOptimizer() {}
 
@@ -38,7 +39,7 @@ u32 AFLHavocOptimizer::CalcMutop([[maybe_unused]] u32 batch_idx) {
 u32 AFLHavocOptimizer::CalcBatchSize() {
   // FIXME: UR should be replaced with a new random number generator when it's
   // ready
-  return 1 << (1 + util::UR(option::GetHavocStackPow2<option::AFLTag>(), -1));
+  return 1 << (1 + util::UR(havoc_stack_pow, -1));
 }
 
 void AFLHavocOptimizer::UpdateInternalState() {}
