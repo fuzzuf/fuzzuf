@@ -218,10 +218,16 @@ std::unique_ptr<TFuzzer> BuildAFLFastFuzzerFromArgs(
       EXIT("Unsupported executor: '%s'", global_options.executor.c_str());
   }
 
-  auto mutop_optimizer = std::unique_ptr<optimizer::Optimizer<u32>>(
-      new algorithm::afl::AFLHavocCaseDistrib());
+  using algorithm::afl::AFLHavocCaseDistrib;
+  using algorithm::afl::AFLHavocOptimizer;
+  using algorithm::afl::option::GetHavocStackPow2;
+  ;
+
+  auto mutop_optimizer =
+      std::unique_ptr<optimizer::Optimizer<u32>>(new AFLHavocCaseDistrib());
   std::unique_ptr<optimizer::HavocOptimizer> havoc_optimizer(
-      new algorithm::afl::AFLHavocOptimizer(std::move(mutop_optimizer)));
+      new AFLHavocOptimizer(std::move(mutop_optimizer),
+                            GetHavocStackPow2<AFLFastTag>()));
 
   // Create AFLFastState
   using fuzzuf::algorithm::aflfast::AFLFastState;
