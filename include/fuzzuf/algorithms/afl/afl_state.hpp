@@ -164,6 +164,7 @@ struct AFLStateTemplate {
   FILE *plot_file;
 
   // StatsD
+  u64 statsd_last_send_ms;
   int statsd_sock = 0;
   struct sockaddr_in statsd_server;
 

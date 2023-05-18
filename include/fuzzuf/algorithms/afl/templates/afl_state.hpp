@@ -18,6 +18,7 @@
 #pragma once
 
 #include <arpa/inet.h>
+#include <netdb.h>
 #include <sys/ioctl.h>
 #include <sys/socket.h>
 
@@ -980,8 +981,9 @@ template <class Testcase>
 void AFLStateTemplate<Testcase>::StatsdSocketInit(void) {
   const u16 STATSD_DEFAULT_PORT = 8125;
   const char* STATSD_DEFAULT_HOST = "127.0.0.1";
+
   u16 port = STATSD_DEFAULT_PORT;
-  char* host = STATSD_DEFAULT_HOST;
+  char* host = (char*)STATSD_DEFAULT_HOST;
 
   if ((statsd_sock = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP)) == -1) {
     ERROR("Failed to create socket");
@@ -1010,25 +1012,22 @@ void AFLStateTemplate<Testcase>::StatsdSocketInit(void) {
 
 template <class Testcase>
 void AFLStateTemplate<Testcase>::StatsdSendMetric(void) {
-#define METRIC_PREFIX "fuzzing"
   // DogStatsD
+  const std::string METRIC_PREFIX = "fuzzing";
   const char* TAG_FORMAT = "|#banner:%s,afl_version:%s";
-  const char* TAGS_SUFFIX_METRICS = METRIC_PREFIX
-      ".cycle_done:%llu|g%s\n" METRIC_PREFIX
-      ".cycles_wo_finds:%llu|g%s\n" METRIC_PREFIX
-      ".execs_done:%llu|g%s\n" METRIC_PREFIX
-      ".execs_per_sec:%0.02f|g%s\n" METRIC_PREFIX
-      ".corpus_count:%u|g%s\n" METRIC_PREFIX
-      ".corpus_favored:%u|g%s\n" METRIC_PREFIX
-      ".corpus_found:%u|g%s\n" METRIC_PREFIX
-      ".corpus_imported:%u|g%s\n" METRIC_PREFIX
-      ".max_depth:%u|g%s\n" METRIC_PREFIX ".cur_item:%u|g%s\n" METRIC_PREFIX
-      ".pending_favs:%u|g%s\n" METRIC_PREFIX
-      ".pending_total:%u|g%s\n" METRIC_PREFIX
-      ".corpus_variable:%u|g%s\n" METRIC_PREFIX
-      ".total_crashes:%llu|g%s\n" METRIC_PREFIX
-      ".slowest_exec_ms:%u|g%s\n" METRIC_PREFIX
-      ".edges_found:%u|g%s\n" METRIC_PREFIX ".var_byte_count:%u|g%s\n";
+  const std::string TAGS_SUFFIX_METRICS =
+      METRIC_PREFIX + ".cycle_done:%llu|g%s\n" + METRIC_PREFIX +
+      ".cycles_wo_finds:%llu|g%s\n" + METRIC_PREFIX + ".execs_done:%llu|g%s\n" +
+      METRIC_PREFIX + ".execs_per_sec:%0.02f|g%s\n" + METRIC_PREFIX +
+      ".corpus_count:%u|g%s\n" + METRIC_PREFIX + ".corpus_favored:%u|g%s\n" +
+      METRIC_PREFIX + ".corpus_found:%u|g%s\n" + METRIC_PREFIX +
+      ".corpus_imported:%u|g%s\n" + METRIC_PREFIX + ".max_depth:%u|g%s\n" +
+      METRIC_PREFIX + ".cur_item:%u|g%s\n" + METRIC_PREFIX +
+      ".pending_favs:%u|g%s\n" + METRIC_PREFIX + ".pending_total:%u|g%s\n" +
+      METRIC_PREFIX + ".corpus_variable:%u|g%s\n" + METRIC_PREFIX +
+      ".total_crashes:%llu|g%s\n" + METRIC_PREFIX +
+      ".slowest_exec_ms:%u|g%s\n" + METRIC_PREFIX + ".edges_found:%u|g%s\n" +
+      METRIC_PREFIX + ".var_byte_count:%u|g%s\n";
   const size_t PACKET_SIZE = 4096;
   char buff[PACKET_SIZE] = {0};
 
@@ -1041,12 +1040,12 @@ void AFLStateTemplate<Testcase>::StatsdSendMetric(void) {
   }
   assert(statsd_sock);
 
-  const char* VERSION = "++4.07a"; // TODO
+  const char* VERSION = "++4.07a";  // TODO
   const size_t MAX_TAG_LEN = 200;
   char tags[MAX_TAG_LEN * 2] = {0};
   snprintf(tags, MAX_TAG_LEN * 2, TAG_FORMAT, use_banner.c_str(), VERSION);
 
-  snprintf(buff, PACKET_SIZE, TAGS_SUFFIX_METRICS,
+  snprintf(buff, PACKET_SIZE, TAGS_SUFFIX_METRICS.c_str(),
            queue_cycle ? (queue_cycle - 1) : 0, tags, cycles_wo_finds, tags,
            total_execs, tags, avg_exec, tags, queued_paths, tags,
            queued_favored, tags, queued_discovered, tags, queued_imported, tags,
@@ -1580,6 +1579,14 @@ void AFLStateTemplate<Testcase>::ShowStats(void) {
     WriteStatsFile(t_byte_ratio, stab_ratio, avg_exec);
     SaveAuto();
     WriteBitmap();
+  }
+
+  // TODO: Check if statsd is requested
+  if (true) {
+    if (cur_ms - statsd_last_send_ms > 1000) {
+      StatsdSendMetric();
+      statsd_last_send_ms = cur_ms;
+    }
   }
 
   /* Every now and then, write plot data. */
