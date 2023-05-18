@@ -17,7 +17,9 @@
  */
 #pragma once
 
+#include <arpa/inet.h>
 #include <sys/ioctl.h>
+#include <sys/socket.h>
 
 #include <memory>
 #include <string>
@@ -940,7 +942,8 @@ void AFLStateTemplate<Testcase>::ReadBitmap(fs::path fname) {
 
 template <class Testcase>
 void AFLStateTemplate<Testcase>::MaybeUpdatePlotFile(double bitmap_cvg,
-                                                     double eps, u64 edges_found) {
+                                                     double eps,
+                                                     u64 edges_found) {
   if (prev_qp == queued_paths && prev_pf == pending_favored &&
       prev_pnf == pending_not_fuzzed && prev_ce == current_entry &&
       prev_qc == queue_cycle && prev_uc == unique_crashes &&
@@ -963,12 +966,103 @@ void AFLStateTemplate<Testcase>::MaybeUpdatePlotFile(double bitmap_cvg,
      execs_per_sec, total_execs, edges_found */
 
   fprintf(plot_file,
-          "%llu, %llu, %u, %u, %u, %u, %0.02f%%, %llu, %llu, %u, %0.02f, %llu, %llu\n",
-          (utils::GetCurTimeMs() - start_time) / 1000, queue_cycle - 1, current_entry,
-          queued_paths, pending_not_fuzzed, pending_favored, bitmap_cvg,
-          unique_crashes, unique_hangs, max_depth, eps, total_execs, edges_found); /* ignore errors */
+          "%llu, %llu, %u, %u, %u, %u, %0.02f%%, %llu, %llu, %u, %0.02f, %llu, "
+          "%llu\n",
+          (utils::GetCurTimeMs() - start_time) / 1000, queue_cycle - 1,
+          current_entry, queued_paths, pending_not_fuzzed, pending_favored,
+          bitmap_cvg, unique_crashes, unique_hangs, max_depth, eps, total_execs,
+          edges_found); /* ignore errors */
 
   fflush(plot_file);
+}
+
+template <class Testcase>
+void AFLStateTemplate<Testcase>::StatsdSocketInit(void) {
+  const u16 STATSD_DEFAULT_PORT = 8125;
+  const char* STATSD_DEFAULT_HOST = "127.0.0.1";
+  u16 port = STATSD_DEFAULT_PORT;
+  char* host = STATSD_DEFAULT_HOST;
+
+  if ((statsd_sock = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP)) == -1) {
+    ERROR("Failed to create socket");
+  }
+
+  memset(&statsd_server, 0, sizeof(statsd_server));
+  statsd_server.sin_family = AF_INET;
+  statsd_server.sin_port = htons(port);
+
+  struct addrinfo* result;
+  struct addrinfo hints;
+
+  memset(&hints, 0, sizeof(struct addrinfo));
+  hints.ai_family = AF_INET;
+  hints.ai_socktype = SOCK_DGRAM;
+
+  if (getaddrinfo(host, NULL, &hints, &result)) {
+    ERROR("Failed to getaddrinfo");
+  }
+
+  memcpy(&statsd_server.sin_addr,
+         &((struct sockaddr_in*)result->ai_addr)->sin_addr,
+         sizeof(struct in_addr));
+  freeaddrinfo(result);
+}
+
+template <class Testcase>
+void AFLStateTemplate<Testcase>::StatsdSendMetric(void) {
+#define METRIC_PREFIX "fuzzing"
+  // DogStatsD
+  const char* TAG_FORMAT = "|#banner:%s,afl_version:%s";
+  const char* TAGS_SUFFIX_METRICS = METRIC_PREFIX
+      ".cycle_done:%llu|g%s\n" METRIC_PREFIX
+      ".cycles_wo_finds:%llu|g%s\n" METRIC_PREFIX
+      ".execs_done:%llu|g%s\n" METRIC_PREFIX
+      ".execs_per_sec:%0.02f|g%s\n" METRIC_PREFIX
+      ".corpus_count:%u|g%s\n" METRIC_PREFIX
+      ".corpus_favored:%u|g%s\n" METRIC_PREFIX
+      ".corpus_found:%u|g%s\n" METRIC_PREFIX
+      ".corpus_imported:%u|g%s\n" METRIC_PREFIX
+      ".max_depth:%u|g%s\n" METRIC_PREFIX ".cur_item:%u|g%s\n" METRIC_PREFIX
+      ".pending_favs:%u|g%s\n" METRIC_PREFIX
+      ".pending_total:%u|g%s\n" METRIC_PREFIX
+      ".corpus_variable:%u|g%s\n" METRIC_PREFIX
+      ".total_crashes:%llu|g%s\n" METRIC_PREFIX
+      ".slowest_exec_ms:%u|g%s\n" METRIC_PREFIX
+      ".edges_found:%u|g%s\n" METRIC_PREFIX ".var_byte_count:%u|g%s\n";
+  const size_t PACKET_SIZE = 4096;
+  char buff[PACKET_SIZE] = {0};
+
+  if (!statsd_sock) {
+    StatsdSocketInit();
+    if (!statsd_sock) {
+      WARNF("Cannot create socket");
+      return;
+    }
+  }
+  assert(statsd_sock);
+
+  const char* VERSION = "++4.07a"; // TODO
+  const size_t MAX_TAG_LEN = 200;
+  char tags[MAX_TAG_LEN * 2] = {0};
+  snprintf(tags, MAX_TAG_LEN * 2, TAG_FORMAT, use_banner.c_str(), VERSION);
+
+  snprintf(buff, PACKET_SIZE, TAGS_SUFFIX_METRICS,
+           queue_cycle ? (queue_cycle - 1) : 0, tags, cycles_wo_finds, tags,
+           total_execs, tags, avg_exec, tags, queued_paths, tags,
+           queued_favored, tags, queued_discovered, tags, queued_imported, tags,
+           max_depth, tags, current_entry, tags, pending_favored, tags,
+           pending_not_fuzzed, tags, queued_variable, tags, total_crashes, tags,
+           slowest_exec_ms, tags,
+           utils::CountNon255Bytes(&virgin_bits[0], virgin_bits.size()), tags,
+           var_byte_count, tags);
+  if (sendto(statsd_sock, buff, strlen(buff), 0,
+             (struct sockaddr*)&statsd_server, sizeof(statsd_server)) == -1) {
+    if (!close(statsd_sock)) {
+      ERROR("Cannot close socket");
+    }
+    statsd_sock = 0;
+    WARNF("Cannot sendto");
+  }
 }
 
 template <class Testcase>
@@ -1082,8 +1176,8 @@ void AFLStateTemplate<Testcase>::ReadTestcases(void) {
 
     if (st.st_size > option::GetMaxFile<Tag>()) {
       WARNF("Test case '%s' is too big (%s, limit is %s)", fn.c_str(),
-           util::DescribeMemorySize(st.st_size).c_str(),
-           util::DescribeMemorySize(option::GetMaxFile<Tag>()).c_str());
+            util::DescribeMemorySize(st.st_size).c_str(),
+            util::DescribeMemorySize(option::GetMaxFile<Tag>()).c_str());
       continue;
     }
 

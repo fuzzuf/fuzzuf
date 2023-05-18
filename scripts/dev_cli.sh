@@ -268,7 +268,7 @@ cmd_shell() {
 	  shift
   done
   ensure_build_dir
-  ensure_latest_ctr
+  # ensure_latest_ctr
   process_volumes_args
 
   say_warn "Starting a privileged shell prompt as root ..."

@@ -19,6 +19,8 @@
 #ifndef FUZZUF_INCLUDE_ALGORITHMS_AFL_AFL_STATE_HPP
 #define FUZZUF_INCLUDE_ALGORITHMS_AFL_AFL_STATE_HPP
 
+#include <netinet/in.h>
+
 #include <memory>
 #include <string>
 #include <vector>
@@ -104,6 +106,8 @@ struct AFLStateTemplate {
   void WriteBitmap(void);
   void ReadBitmap(fs::path fname);
   void MaybeUpdatePlotFile(double bitmap_cvg, double eps, u64 edges_found);
+  void StatsdSocketInit(void);
+  void StatsdSendMetric(void);
   void SaveCmdline(const std::vector<std::string> &argv);
   void FixUpBanner(const std::string &name);
   void CheckIfTty(void);
@@ -159,6 +163,10 @@ struct AFLStateTemplate {
   // FILE used in MaybeUpdatePlotFile
   FILE *plot_file;
 
+  // StatsD
+  int statsd_sock = 0;
+  struct sockaddr_in statsd_server;
+
   // AFLStateTemplate has to own eff_map and prev_cksum in fuzz_one
   u32 eff_cnt;
   std::vector<u8> eff_map;
@@ -179,7 +187,7 @@ struct AFLStateTemplate {
   /* Timeout used for hang det (ms)   */
   u32 hang_tmout = option::GetExecTimeout<Tag>();
 
-  u32 stats_update_freq = 1; /* Stats update frequency (execs)   */
+  u32 stats_update_freq = 1;        /* Stats update frequency (execs)   */
 
   bool skip_deterministic = false;  /* Skip deterministic stages?       */
   bool force_deterministic = false; /* Force deterministic stages?      */
@@ -222,8 +230,8 @@ struct AFLStateTemplate {
   /* Bytes that appear to be variable */
   std::vector<u8> var_bytes = std::vector<u8>(option::GetMapSize<Tag>(), 0);
 
-  u8 stop_soon = 0;         /* Ctrl-C pressed?                  */
-  bool clear_screen = true; /* Window resized?                  */
+  u8 stop_soon = 0;           /* Ctrl-C pressed?                  */
+  bool clear_screen = true;   /* Window resized?                  */
 
   u32 queued_paths = 0;       /* Total number of queued testcases */
   u32 queued_variable = 0;    /* Testcases with variable behavior */
@@ -242,44 +250,44 @@ struct AFLStateTemplate {
   u32 current_entry = 0;      /* Current queue entry ID           */
   u32 havoc_div = 1;          /* Cycle count divisor for havoc    */
 
-  u64 total_crashes = 0;     /* Total number of crashes          */
-  u64 unique_crashes = 0;    /* Crashes with unique signatures   */
-  u64 total_tmouts = 0;      /* Total number of timeouts         */
-  u64 unique_tmouts = 0;     /* Timeouts with unique signatures  */
-  u64 unique_hangs = 0;      /* Hangs with unique signatures     */
-  u64 total_execs = 0;       /* Total execve() calls             */
-  u64 slowest_exec_ms = 0;   /* Slowest testcase non hang in ms  */
-  u64 start_time = 0;        /* Unix start time (ms)             */
-  u64 last_path_time = 0;    /* Time for most recent path (ms)   */
-  u64 last_crash_time = 0;   /* Time for most recent crash (ms)  */
-  u64 last_hang_time = 0;    /* Time for most recent hang (ms)   */
-  u64 last_crash_execs = 0;  /* Exec counter at last crash       */
-  u64 queue_cycle = 0;       /* Queue round counter              */
-  u64 cycles_wo_finds = 0;   /* Cycles without any new paths     */
-  u64 trim_execs = 0;        /* Execs done to trim input files   */
-  u64 bytes_trim_in = 0;     /* Bytes coming into the trimmer    */
-  u64 bytes_trim_out = 0;    /* Bytes coming outa the trimmer    */
-  u64 blocks_eff_total = 0;  /* Blocks subject to effector maps  */
-  u64 blocks_eff_select = 0; /* Blocks selected as fuzzable      */
+  u64 total_crashes = 0;      /* Total number of crashes          */
+  u64 unique_crashes = 0;     /* Crashes with unique signatures   */
+  u64 total_tmouts = 0;       /* Total number of timeouts         */
+  u64 unique_tmouts = 0;      /* Timeouts with unique signatures  */
+  u64 unique_hangs = 0;       /* Hangs with unique signatures     */
+  u64 total_execs = 0;        /* Total execve() calls             */
+  u64 slowest_exec_ms = 0;    /* Slowest testcase non hang in ms  */
+  u64 start_time = 0;         /* Unix start time (ms)             */
+  u64 last_path_time = 0;     /* Time for most recent path (ms)   */
+  u64 last_crash_time = 0;    /* Time for most recent crash (ms)  */
+  u64 last_hang_time = 0;     /* Time for most recent hang (ms)   */
+  u64 last_crash_execs = 0;   /* Exec counter at last crash       */
+  u64 queue_cycle = 0;        /* Queue round counter              */
+  u64 cycles_wo_finds = 0;    /* Cycles without any new paths     */
+  u64 trim_execs = 0;         /* Execs done to trim input files   */
+  u64 bytes_trim_in = 0;      /* Bytes coming into the trimmer    */
+  u64 bytes_trim_out = 0;     /* Bytes coming outa the trimmer    */
+  u64 blocks_eff_total = 0;   /* Blocks subject to effector maps  */
+  u64 blocks_eff_select = 0;  /* Blocks selected as fuzzable      */
 
-  u32 subseq_tmouts = 0; /* Number of timeouts in a row      */
+  u32 subseq_tmouts = 0;      /* Number of timeouts in a row      */
 
-  std::string stage_name;    /* Name of the current fuzz stage   */
-  std::string stage_short;   /* Short stage name                 */
-  std::string syncing_party; /* Currently syncing with...        */
+  std::string stage_name;     /* Name of the current fuzz stage   */
+  std::string stage_short;    /* Short stage name                 */
+  std::string syncing_party;  /* Currently syncing with...        */
 
-  s32 stage_cur = 0; /* Stage progression                */
-  s32 stage_max = 0; /* Stage progression                */
+  s32 stage_cur = 0;          /* Stage progression                */
+  s32 stage_max = 0;          /* Stage progression                */
 
-  s32 splicing_with = -1; /* Splicing with which test case?   */
+  s32 splicing_with = -1;     /* Splicing with which test case?   */
 
-  u32 master_id = 0;  /* Master instance job splitting    */
-  u32 master_max = 0; /* Master instance job splitting    */
+  u32 master_id = 0;          /* Master instance job splitting    */
+  u32 master_max = 0;         /* Master instance job splitting    */
 
-  u32 syncing_case = 0; /* Syncing with case #...           */
+  u32 syncing_case = 0;       /* Syncing with case #...           */
 
-  s32 stage_cur_byte = 0; /* Byte offset of current stage op  */
-  s32 stage_cur_val = 0;  /* Value used for stage op          */
+  s32 stage_cur_byte = 0;     /* Byte offset of current stage op  */
+  s32 stage_cur_val = 0;      /* Value used for stage op          */
 
   /* Value type (STAGE_VAL_*)         */
   option::StageVal stage_val_type = option::STAGE_VAL_NONE;
@@ -289,8 +297,8 @@ struct AFLStateTemplate {
   /* Execs per fuzz stage             */
   std::vector<u64> stage_cycles = std::vector<u64>(32, 0);
 
-  u64 total_cal_us = 0;     /* Total calibration time (us)      */
-  u64 total_cal_cycles = 0; /* Total calibration cycles         */
+  u64 total_cal_us = 0;         /* Total calibration time (us)      */
+  u64 total_cal_cycles = 0;     /* Total calibration cycles         */
 
   u64 total_bitmap_size = 0;    /* Total bit count for all bitmaps  */
   u64 total_bitmap_entries = 0; /* Number of bitmaps counted        */
