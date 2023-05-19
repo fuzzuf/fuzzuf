@@ -51,17 +51,14 @@ namespace fuzzuf::cli::fuzzer::aflplusplus {
 namespace po = boost::program_options;
 
 struct AFLplusplusFuzzerOptions {
-  bool forksrv;                        // Optional
-  std::vector<std::string> dict_file;  // Optional
-  bool frida_mode;                     // Optional
-  bool use_slopt;                      // Optional
-  std::string schedule;                // Optional
-  std::string instance_id;             // Optional
+  bool forksrv = true;                      
+  std::vector<std::string> dict_file;
+  bool frida_mode = false;                   
+  bool use_slopt = false;                    
+  std::string schedule = "fast";              
+  std::string instance_id;           
   utils::ParallelModeT parallel_mode =
-      utils::ParallelModeT::SINGLE;  // Optional
-  // Default values
-  AFLplusplusFuzzerOptions()
-      : forksrv(true), frida_mode(false), schedule("fast"){};
+      utils::ParallelModeT::SINGLE;
 };
 
 // Fuzzer specific help
