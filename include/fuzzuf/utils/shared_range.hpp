@@ -188,7 +188,7 @@ template <typename T, typename U>
 auto operator+(typename shared_iterator<T, U>::difference_type l,
                const shared_iterator<T, U> &r)
     -> std::enable_if_t<
-        std::is_same_v<std::iterator_traits<T>::iterator_category,
+        std::is_same_v<typename std::iterator_traits<T>::iterator_category,
                        std::random_access_iterator_tag>,
         shared_iterator<T, U>> {
   return r + l;
