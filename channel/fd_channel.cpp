@@ -29,7 +29,7 @@ ssize_t FdChannel::Send(void *buf, size_t size, const char *comment) {
   if (nbytes < (ssize_t)size) {
     throw fuzzuf::utils::errno_to_system_error(
         errno, fuzzuf::utils::StrPrintf("[FdChannel] Failed to send: %s "
-                                        "(Requested %d bytes, Sent %d bytes)",
+                                        "(Requested %ld bytes, Sent %ld bytes)",
                                         comment, size, nbytes));
   }
   return nbytes;
