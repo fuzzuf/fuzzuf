@@ -1,0 +1,74 @@
+# For most projects, this workflow file will not need changing; you simply need
+# to commit it to your repository.
+#
+# You may wish to alter this file to override the set of languages analyzed,
+# or to provide custom queries or build logic.
+#
+# ******** NOTE ********
+# We have attempted to detect the languages in your repository. Please check
+# the `language` matrix defined below to confirm you have the correct set of
+# supported CodeQL languages.
+#
+name: "CodeQL"
+
+on:
+  schedule:
+    - cron: '00 0 * * 1'
+
+jobs:
+  analyze:
+    name: Analyze
+    runs-on: 'ubuntu-latest'
+    container:
+      image: ghcr.io/fuzzuf/fuzzuf/dev:latest
+    permissions:
+      actions: read
+      contents: read
+      security-events: write
+
+    strategy:
+      fail-fast: false
+      matrix:
+        language: [ 'cpp', 'python' ]
+        # CodeQL supports [ 'cpp', 'csharp', 'go', 'java', 'javascript', 'python', 'ruby' ]
+        # Use only 'java' to analyze code written in Java, Kotlin or both
+        # Use only 'javascript' to analyze code written in JavaScript, TypeScript or both
+        # Learn more about CodeQL language support at https://aka.ms/codeql-docs/language-support
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v3
+
+    # Initializes the CodeQL tools for scanning.
+    - name: Initialize CodeQL
+      uses: github/codeql-action/init@v2
+      with:
+        languages: ${{ matrix.language }}
+        # If you wish to specify custom queries, you can do so here or in a config file.
+        # By default, queries listed here will override any specified in a config file.
+        # Prefix the list here with "+" to use these queries and those in the config file.
+
+        # For more details on CodeQL's query packs, refer to: https://docs.github.com/en/code-security/code-scanning/automatically-scanning-your-code-for-vulnerabilities-and-errors/configuring-code-scanning#using-queries-in-ql-packs
+        # queries: security-extended,security-and-quality
+
+    - name: Build
+      env:
+        CTR_SRC_ROOT_DIR: /src
+        PIN_BASE: pin-3.7-97619-g0d0c92f4f-gcc-linux
+        PIN_ROOT: $CTR_SRC_ROOT_DIR/$PIN_BASE
+        CTR_FUZZUF_BUILD_DIR: ${{ github.workspace }}/build
+        build_type: Debug
+        runlevel: Debug
+        doxygen: 0
+      run: |
+        cmake -B $CTR_FUZZUF_BUILD_DIR \
+          -DCMAKE_BUILD_TYPE=$build_type \
+          -DDEFAULT_RUNLEVEL=$runlevel \
+          -DPIN_ROOT=$PIN_ROOT \
+          -DENABLE_DOXYGEN=$doxygen
+        cmake --build $CTR_FUZZUF_BUILD_DIR -j$(nproc)
+
+    - name: Perform CodeQL Analysis
+      uses: github/codeql-action/analyze@v2
+      with:
+        category: "/language:${{matrix.language}}"
