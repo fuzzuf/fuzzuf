@@ -37,7 +37,7 @@ PIN_URL="https://software.intel.com/sites/landingpage/pintool/downloads/$PIN_NAM
 PIN_PATH="$CTR_SRC_ROOT_DIR/$PIN_NAME"
 PIN_ROOT="$CTR_SRC_ROOT_DIR/$PIN_BASE"
 
-NODE_VERSION="17"
+NODE_VERSION="18"
 
 # Send a decorated message to stdout, followed by a new line
 #

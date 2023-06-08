@@ -5,7 +5,7 @@ ARG SRC_DIR="/src"
 ARG PIN_NAME="pin-3.7-97619-g0d0c92f4f-gcc-linux"
 ARG PIN_URL="https://software.intel.com/sites/landingpage/pintool/downloads/${PIN_NAME}.tar.gz"
 ARG PIN_PATH="${SRC_DIR}/${PIN_NAME}.tar.gz"
-ARG NODE_VERSION="17"
+ARG NODE_VERSION="18"
 
 # Install dependencies
 RUN apt-get update \
