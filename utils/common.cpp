@@ -183,7 +183,7 @@ ssize_t ReadFile(int fd, void *buf, u32 len, bool original_behaviour) {
   ssize_t nbytes = read_n(fd, buf, len, original_behaviour);
   if (nbytes != len) {
     throw FileError(
-        StrPrintf("Failed to read exact len bytes: fd=%d, len=%d, nbytes=%d",
+        StrPrintf("Failed to read exact len bytes: fd=%d, len=%d, nbytes=%ld",
                   fd, len, nbytes));
   }
   return nbytes;
@@ -194,7 +194,7 @@ ssize_t WriteFile(int fd, const void *buf, u32 len) {
   ssize_t nbytes = write_n(fd, buf, len);
   if (nbytes != len) {
     throw FileError(
-        StrPrintf("Failed to write exact len bytes: fd=%d, len=%d, nbytes=%d",
+        StrPrintf("Failed to write exact len bytes: fd=%d, len=%d, nbytes=%ld",
                   fd, len, nbytes));
   }
   return nbytes;
@@ -332,7 +332,7 @@ off_t SeekFile(int fd, off_t offset, int whence) {
   off_t result = 0;
   if ((result = lseek(fd, offset, whence)) < 0)
     throw FileError(
-        StrPrintf("Failed to lseek(fd=%d, offset=%d, whence=%d) = %d", fd,
+        StrPrintf("Failed to lseek(fd=%d, offset=%ld, whence=%d) = %ld", fd,
                   offset, whence, result));
   return result;
 }
