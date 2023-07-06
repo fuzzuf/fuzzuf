@@ -75,11 +75,11 @@ void to_json( nlohmann::json &dest, const BranchInfo &src ) {
 void from_json( const nlohmann::json &src, BranchInfo &dest ) {
   dest.inst_addr = src[ "inst_addr" ];
   dest.branch_type = src[ "branch_type" ];
-  dest.try_value = BigInt( std::string( src[ "try_value" ] ) );
+  dest.try_value = BigInt( src[ "try_value" ]. template get< std::string >() );
   dest.operand_size = src[ "operand_size" ];
   dest.operand1 = src[ "operand1" ];
   dest.operand2 = src[ "operand2" ];
-  dest.distance = BigInt( std::string( src[ "distance" ] ) );
+  dest.distance = BigInt( src[ "distance" ]. template get< std::string >() );
 }
 
 namespace branch_info {

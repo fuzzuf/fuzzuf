@@ -24,7 +24,12 @@
 #include <utility>
 #include <vector>
 #include <optional>
+#include <config.h>
+#ifdef HAS_NLOHMANN_JSON_FWD
 #include <nlohmann/json_fwd.hpp>
+#else
+#include <nlohmann/json.hpp>
+#endif
 #include <boost/rational.hpp>
 #include <boost/container/static_vector.hpp>
 #include <fuzzuf/algorithms/eclipser/core/typedef.hpp>

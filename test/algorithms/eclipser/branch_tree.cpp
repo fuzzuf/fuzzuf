@@ -43,11 +43,16 @@ BOOST_AUTO_TEST_CASE(Linear) {
   options.verbosity = 1;
   options.out_dir = output_dir.string();
   options.target_prog = TEST_BINARY_DIR "/put/raw/raw-threshold";
+  options.fork_server = false;
   options.n_spawn = 10;
   fuzzuf::algorithm::eclipser::executor::Initialize( options );
   fuzzuf::algorithm::eclipser::seed::Seed seed;
   seed.FixCurBytesInplace( fuzzuf::algorithm::eclipser::Direction::Right, { std::byte( 1 ) } );
   seed.UpdateCurByteInplace( fuzzuf::algorithm::eclipser::byteval::Undecided{ std::byte( 0x30 ) } );
+#if __GNUC__ < 8
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wunused-variable"
+#endif
   const auto [branch_traces,candidates] = fuzzuf::algorithm::eclipser::gray_concolic::branch_trace::Collect(
     []( std::string &&m ) { std::cout << m << std::flush; },
     seed,
@@ -55,6 +60,9 @@ BOOST_AUTO_TEST_CASE(Linear) {
     fuzzuf::algorithm::eclipser::BigInt( 0 ),
     fuzzuf::algorithm::eclipser::BigInt( 127 )
   );
+#if __GNUC__ < 8
+#pragma GCC diagnostic pop
+#endif
   const auto byte_dir = seed.GetByteCursorDir();
   const auto bytes = seed.QueryNeighborBytes( byte_dir );
   fuzzuf::algorithm::eclipser::Context ctx{ bytes, byte_dir };

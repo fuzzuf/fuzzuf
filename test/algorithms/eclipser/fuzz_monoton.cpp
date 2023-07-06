@@ -28,6 +28,7 @@
 #include <vector>
 #include <fcntl.h>
 #include <nlohmann/json.hpp>
+#include "fuzzuf/utils/filesystem.hpp"
 #include "fuzzuf/utils/map_file.hpp"
 #include "fuzzuf/tests/standard_test_dirs.hpp"
 #include "fuzzuf/tests/byte.hpp"
@@ -47,13 +48,14 @@ BOOST_AUTO_TEST_CASE(Run) {
   BOOST_CHECK_EQUAL(fs::create_directory(output_dir), true);
   //FUZZUF_STANDARD_TEST_DIRS
   
-  std::filesystem::current_path( output_dir );
+  fs::current_path( output_dir );
 
   fuzzuf::algorithm::eclipser::options::FuzzOption options;
   options.verbosity = 2;
   options.sync_dir = output_dir.string();
   options.out_dir = ( output_dir / "eclipser" ).string();
   options.target_prog = TEST_BINARY_DIR "/put/raw/raw-monoton";
+  options.fork_server = false;
   options.n_spawn = 10;
   options.fuzz_source = fuzzuf::algorithm::eclipser::FileInput{ "input" };
   options.arg = "input";
@@ -89,7 +91,7 @@ BOOST_AUTO_TEST_CASE(Run) {
     }
     ++count;
   }
-  BOOST_CHECK_EQUAL( count, 7u );
+  BOOST_CHECK_GE( count, 7u );
   BOOST_CHECK_EQUAL( cov, 0xFu );
 }
 

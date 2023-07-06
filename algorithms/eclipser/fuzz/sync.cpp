@@ -1,4 +1,6 @@
+#if __GNUC__ >= 8
 #include <charconv>
+#endif
 #include <fcntl.h>
 #include <fuzzuf/utils/map_file.hpp>
 #include <fuzzuf/algorithms/eclipser/core/executor.hpp>
@@ -19,8 +21,12 @@ TryParseTCNum(
   if( tc_name.find( "id:" ) != 0u ) {
     return std::nullopt;
   }
+  else if( tc_name.size() < 9u ) {
+    return std::nullopt;
+  }
   else {
     int value = 0;
+#if __GNUC__ >= 8
     const auto result = std::from_chars(
       std::next( tc_name.data(), 3 ),
       std::next( tc_name.data(), 9 ),
@@ -29,6 +35,22 @@ TryParseTCNum(
     if( result.ec != std::errc{} ) {
       return std::nullopt;
     }
+#else
+    bool is_number = true;
+    for( unsigned int i = 3u; i != 9u; ++i ) {
+      value *= 10;
+      if( tc_name[ i ] >= '0' && tc_name[ i ] <= '9' ) {
+        value |= tc_name[ i ] - '0';
+      }
+      else {
+        is_number = false;
+	break;
+      }
+    }
+    if( !is_number ) {
+      return std::nullopt;
+    }
+#endif
     return value;
   }
 }
@@ -48,7 +70,14 @@ seed_queue::SeedQueue &ImportSeed(
     []( const auto &v ) { return std::byte( v ); }
   );
   auto seed = seed::Seed( opt.fuzz_source, tc_bytes );
+#if __GNUC__ < 8
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wunused-variable"
+#endif
   const auto [signal,cov_gain] = executor::GetCoverage( sink, opt, seed );
+#if __GNUC__ < 8
+#pragma GCC diagnostic pop
+#endif
   const auto priority_maybe = priority::OfCoverageGain( cov_gain );
   if( priority_maybe ) {
     seed_queue.EnqueueInplace( *priority_maybe, seed );
@@ -69,12 +98,12 @@ void SyncTestCase(
     if( *num_maybe > max_import ) { // Unhandled test case ID.
       if( opt.verbosity >= 2 ) {
         std::string message = "Synchronizing seed queue with ";
-        message += tc_path;
+        message += tc_path.string();
         message += "\n";
         sink( std::move( message ) );
       }
       acc_max_import = ( *num_maybe > acc_max_import ) ? *num_maybe : acc_max_import;
-      ImportSeed( sink, opt, tc_path, acc_seed_queue );
+      ImportSeed( sink, opt, tc_path.string(), acc_seed_queue );
     }
   }
 }
@@ -116,7 +145,7 @@ seed_queue::SeedQueue &Run(
   executor::DisableRoundStatistics();
   test_case::DisableRoundStatistics();
   for( const auto &d: sub_dirs ) {
-    SyncFromDir( sink, opt, seed_queue, d );
+    SyncFromDir( sink, opt, seed_queue, d.string() );
   }
   executor::EnableRoundStatistics();
   test_case::EnableRoundStatistics();

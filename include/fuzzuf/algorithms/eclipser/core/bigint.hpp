@@ -22,7 +22,6 @@
 #ifndef FUZZUF_INCLUDE_ALGORITHMS_ECLIPSER_CORE_BIGINT_HPP
 #define FUZZUF_INCLUDE_ALGORITHMS_ECLIPSER_CORE_BIGINT_HPP
 #include <boost/multiprecision/cpp_int.hpp>
-#include <nlohmann/json_fwd.hpp>
 
 namespace fuzzuf::algorithm::eclipser {
 

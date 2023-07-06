@@ -23,7 +23,12 @@
 #define FUZZUF_INCLUDE_ALGORITHMS_ECLIPSER_FUZZ_SEED_QUEUE_HPP
 
 #include <deque>
+#include <config.h>
+#ifdef HAS_NLOHMANN_JSON_FWD
 #include <nlohmann/json_fwd.hpp>
+#else
+#include <nlohmann/json.hpp>
+#endif
 #include <fuzzuf/algorithms/eclipser/core/typedef.hpp>
 #include <fuzzuf/algorithms/eclipser/core/seed.hpp>
 

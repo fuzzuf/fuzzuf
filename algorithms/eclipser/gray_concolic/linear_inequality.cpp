@@ -39,7 +39,7 @@ void from_json( const nlohmann::json &src, SimpleLinearInequality &dest ) {
   }
   for( const auto &v: src[ "split_points" ] ) {
     if( v.size() == 2u ) {
-      dest.split_points.emplace_back( BigInt( std::string( v[ 0 ] ) ), BigInt( std::string( v[ 1 ] ) ) );
+      dest.split_points.emplace_back( BigInt( v[ 0 ]. template get< std::string > () ), BigInt( v[ 1 ]. template get< std::string > () ) );
     }
   }
 }

@@ -44,6 +44,7 @@ BOOST_AUTO_TEST_CASE(Run) {
   options.sync_dir = output_dir.string();
   options.out_dir = ( output_dir / "eclipser" ).string();
   options.target_prog = TEST_BINARY_DIR "/put/raw/raw-stdin";
+  options.fork_server = false;
   options.n_spawn = 10;
   options.fuzz_source = fuzzuf::algorithm::eclipser::StdInput{};
   fuzzuf::algorithm::eclipser::executor::Initialize( options );

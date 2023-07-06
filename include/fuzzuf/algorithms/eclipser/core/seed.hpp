@@ -25,7 +25,12 @@
 #include <random>
 #include <vector>
 #include <optional>
+#include <config.h>
+#ifdef HAS_NLOHMANN_JSON_FWD
 #include <nlohmann/json_fwd.hpp>
+#else
+#include <nlohmann/json.hpp>
+#endif
 #include <fuzzuf/algorithms/eclipser/core/byte_val.hpp>
 #include <fuzzuf/algorithms/eclipser/core/typedef.hpp>
 

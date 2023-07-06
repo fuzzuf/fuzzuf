@@ -94,7 +94,7 @@ void from_json( const nlohmann::json &src, InputSource &dest ) {
   if( !src.is_object() ) dest = StdInput();
   else if( src.find( "type" ) == src.end() ) dest = StdInput();
   else if( ( src[ "type" ] == "FileInput" ) && ( src.find( "filepath" ) != src.end() ) ) {
-    dest = FileInput{ std::string( src[ "filepath" ] ) };
+    dest = FileInput{  src[ "filepath" ]. template get< std::string >() };
   }
   else dest = StdInput();
 }

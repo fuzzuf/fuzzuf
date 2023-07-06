@@ -4,18 +4,19 @@
 #include <iostream>
 #include <nlohmann/json.hpp>
 #include <boost/spirit/include/qi.hpp>
-#include <fuzzuf/algorithms/eclipser/core/executor.hpp>
-#include <fuzzuf/algorithms/eclipser/core/seed.hpp>
-#include <fuzzuf/algorithms/eclipser/core/utils.hpp>
-#include <fuzzuf/algorithms/eclipser/core/options.hpp>
-#include <fuzzuf/algorithms/eclipser/core/bytes_utils.hpp>
-#include <fuzzuf/algorithms/eclipser/core/failwith.hpp>
-#include <fuzzuf/algorithms/eclipser/gray_concolic/solve.hpp>
-#include <fuzzuf/algorithms/eclipser/gray_concolic/branch_tree.hpp>
-#include <fuzzuf/algorithms/eclipser/gray_concolic/linear_equation.hpp>
-#include <fuzzuf/algorithms/eclipser/gray_concolic/monotonicity.hpp>
-#include <fuzzuf/algorithms/eclipser/gray_concolic/path_constraint.hpp>
-#include <fuzzuf/utils/map_file.hpp>
+#include <boost/functional/hash.hpp>
+#include "fuzzuf/algorithms/eclipser/core/executor.hpp"
+#include "fuzzuf/algorithms/eclipser/core/seed.hpp"
+#include "fuzzuf/algorithms/eclipser/core/utils.hpp"
+#include "fuzzuf/algorithms/eclipser/core/options.hpp"
+#include "fuzzuf/algorithms/eclipser/core/bytes_utils.hpp"
+#include "fuzzuf/algorithms/eclipser/core/failwith.hpp"
+#include "fuzzuf/algorithms/eclipser/gray_concolic/solve.hpp"
+#include "fuzzuf/algorithms/eclipser/gray_concolic/branch_tree.hpp"
+#include "fuzzuf/algorithms/eclipser/gray_concolic/linear_equation.hpp"
+#include "fuzzuf/algorithms/eclipser/gray_concolic/monotonicity.hpp"
+#include "fuzzuf/algorithms/eclipser/gray_concolic/path_constraint.hpp"
+#include "fuzzuf/utils/map_file.hpp"
 
 namespace fuzzuf::algorithm::eclipser::gray_concolic {
 
@@ -693,12 +694,19 @@ ExtractCond(
 ) {
   auto [size,endian,split_points] = ExtractSplitPoint( sink, seed, opt, dir, ineq, targ_pt );
   const auto sign = ineq.sign;
+#if __GNUC__ < 8
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wunused-variable"
+#endif
   const auto &[pos_msb_ranges,neg_msb_ranges] = GenerateMSBRanges(
     split_points.begin(),
     split_points.end(),
     size,
     sign
   );
+#if __GNUC__ < 8
+#pragma GCC diagnostic pop
+#endif
   auto pos_condition = constraint::Make( pos_msb_ranges, endian, size );
   auto neg_condition = constraint::Make( pos_msb_ranges, endian, size );
   return std::make_pair( pos_condition, neg_condition );
@@ -931,7 +939,14 @@ SolveBranchTree(
               std::vector< std::tuple< seed::Seed, Signal, CoverageGain > > child_seeds;
               for( const auto &c: childs ) {
                 const auto &[dist_sign,child_tree] = c;
+#if __GNUC__ < 8
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wunused-variable"
+#endif
                 const auto [new_new_pc,unused] = UpdateConditions( new_pc, dist_sign, cond_p, cond_n );
+#if __GNUC__ < 8
+#pragma GCC diagnostic pop
+#endif
                 auto s = SolveBranchTree( sink, seed_, opt, dir, new_new_pc, child_tree );
                 child_seeds.insert( child_seeds.end(), s.begin(), s.end() );
               }
@@ -941,7 +956,14 @@ SolveBranchTree(
             else {
               std::vector< std::tuple< seed::Seed, Signal, CoverageGain > > child_seeds;
               for( const auto &c: childs ) {
+#if __GNUC__ < 8
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wunused-variable"
+#endif
                 const auto &[dist_sign,child_tree] = c;
+#if __GNUC__ < 8
+#pragma GCC diagnostic pop
+#endif
                 auto s = SolveBranchTree( sink, seed_, opt, dir, new_pc, child_tree );
                 child_seeds.insert( child_seeds.end(), s.begin(), s.end() );
               }

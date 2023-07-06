@@ -22,7 +22,12 @@
 #ifndef FUZZUF_INCLUDE_ALGORITHMS_ECLIPSER_GRAY_CONCOLIC_LINEARITY_HPP
 #define FUZZUF_INCLUDE_ALGORITHMS_ECLIPSER_GRAY_CONCOLIC_LINEARITY_HPP
 #include <boost/rational.hpp>
+#include <config.h>
+#ifdef HAS_NLOHMANN_JSON_FWD
 #include <nlohmann/json_fwd.hpp>
+#else
+#include <nlohmann/json.hpp>
+#endif
 #include <fuzzuf/algorithms/eclipser/core/bigint.hpp>
 #include <fuzzuf/algorithms/eclipser/core/typedef.hpp>
 

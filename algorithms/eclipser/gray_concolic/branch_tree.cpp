@@ -1168,7 +1168,14 @@ FilterAndReverse(
   const SelectSet &select_set,
   const BranchTree &branch_tree
 ) {
+#if __GNUC__ < 8
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wunused-variable"
+#endif
   const auto [_,filtered_branch_tree] = FilterAndReverseAux( select_set, 0, branch_tree );
+#if __GNUC__ < 8
+#pragma GCC diagnostic pop
+#endif
   return filtered_branch_tree;
 }
 

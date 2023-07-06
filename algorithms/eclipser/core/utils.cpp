@@ -1,7 +1,9 @@
 #include <fstream>
 #include <limits>
 #include <chrono>
+#if __GNUC__ >= 8
 #include <charconv>
+#endif
 #include <fuzzuf/exceptions.hpp>
 #include <fuzzuf/algorithms/eclipser/core/utils.hpp>
 
@@ -20,11 +22,16 @@ namespace fuzzuf::algorithm::eclipser {
     }};
     std::string temp( "[00:00:00:00] " );
     for( std::size_t i = 0u; i != c.size(); ++i ) {
+#if __GNUC__ >= 8
       std::to_chars(
         std::next( temp.data(), i * 3u + ( c[ i ] < 10 ) ? 2u : 1u ),
         std::next( temp.data(), i * 3u + 3u ),
         c[ i ]
       );
+#else
+      temp[ i * 3u + 1u ] = ( ( c[ i ] >> 4 ) & 0xF ) + '0';
+      temp[ i * 3u + 2u ] = ( c[ i ] & 0xF ) + '0';
+#endif
     }
     sink( temp + fmt );
   }

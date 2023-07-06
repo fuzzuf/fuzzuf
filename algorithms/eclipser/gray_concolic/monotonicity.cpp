@@ -49,19 +49,19 @@ void to_json( nlohmann::json &dest, const Monotonicity &src ) {
 void from_json( const nlohmann::json &src, Monotonicity &dest ) {
   dest = Monotonicity();
   if( src.find( "lower_x" ) != src.end() ) {
-    dest.lower_x = BigInt( std::string( src[ "lower_x" ] ) );
+    dest.lower_x = BigInt( src[ "lower_x" ]. template get< std::string >() );
   }
   if( src.find( "lower_y" ) != src.end() ) {
-    dest.lower_y = BigInt( std::string( src[ "lower_y" ] ) );
+    dest.lower_y = BigInt( src[ "lower_y" ]. template get< std::string >() );
   }
   if( src.find( "upper_x" ) != src.end() ) {
-    dest.upper_x = BigInt( std::string( src[ "upper_x" ] ) );
+    dest.upper_x = BigInt( src[ "upper_x" ]. template get< std::string >() );
   }
   if( src.find( "upper_y" ) != src.end() ) {
-    dest.upper_y = BigInt( std::string( src[ "upper_y" ] ) );
+    dest.upper_y = BigInt( src[ "upper_y" ]. template get< std::string >() );
   }
   if( src.find( "target_y" ) != src.end() ) {
-    dest.target_y = BigInt( std::string( src[ "target_y" ] ) );
+    dest.target_y = BigInt( src[ "target_y" ]. template get< std::string >() );
   }
   if( src.find( "tendency" ) != src.end() ) {
     dest.tendency = src[ "tendency" ];

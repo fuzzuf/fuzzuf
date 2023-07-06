@@ -26,10 +26,10 @@ void to_json( nlohmann::json &dest, const Between &src ) {
 void from_json( const nlohmann::json &src, Between &dest ) {
   dest = Between{};
   if( src.find( "low" ) != src.end() ) {
-    dest.low = BigInt( std::string( src[ "low" ] ) );
+    dest.low = BigInt( src[ "low" ]. template get< std::string >() );
   }
   if( src.find( "high" ) != src.end() ) {
-    dest.high = BigInt( std::string( src[ "high" ] ) );
+    dest.high = BigInt( src[ "high" ]. template get< std::string >() );
   }
 }
 void to_json( nlohmann::json &dest, const Interval &src ) {

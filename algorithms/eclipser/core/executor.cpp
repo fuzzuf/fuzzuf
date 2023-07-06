@@ -313,7 +313,7 @@ Signal RunTracer(
   const auto timeout = opt.exec_timeout;
   const auto tracer = SelectTracer( tracerType, opt.architecture );
   const auto cmd_line = SplitCmdLineArg( opt.arg );
-  std::vector< std::string > args{ tracer, target_prog };
+  std::vector< std::string > args{ tracer.string(), target_prog };
   args.insert( args.end(), cmd_line.begin(), cmd_line.end() );
   const int argc = args.size();
   std::vector< char* > raw_args;

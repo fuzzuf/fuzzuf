@@ -39,6 +39,7 @@ BOOST_AUTO_TEST_CASE(Run) {
   options.verbosity = 1;
   options.out_dir = output_dir.string();
   options.target_prog = TEST_BINARY_DIR "/put/raw/raw-threshold";
+  options.fork_server = false;
   options.n_spawn = 10;
   fuzzuf::algorithm::eclipser::executor::Initialize( options );
   fuzzuf::algorithm::eclipser::seed::Seed seed;

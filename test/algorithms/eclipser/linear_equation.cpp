@@ -42,6 +42,7 @@ BOOST_AUTO_TEST_CASE(Linear) {
   options.verbosity = 1;
   options.out_dir = output_dir.string();
   options.target_prog = TEST_BINARY_DIR "/put/raw/raw-threshold",
+  options.fork_server = false;
   fuzzuf::algorithm::eclipser::executor::Initialize( options );
   fuzzuf::algorithm::eclipser::seed::Seed seed;
   seed.FixCurBytesInplace( fuzzuf::algorithm::eclipser::Direction::Right, { std::byte( 1 ), std::byte( 2 ) } );
@@ -53,6 +54,10 @@ BOOST_AUTO_TEST_CASE(Linear) {
   {
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wunused-but-set-variable"
+#if __GNUC__ < 8
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wunused-variable"
+#endif
     const auto [signal,coverage_gain,branch_trace] =
       fuzzuf::algorithm::eclipser::executor::GetBranchTrace(
         []( std::string &&m ) { std::cout << m << std::flush; },
@@ -60,6 +65,9 @@ BOOST_AUTO_TEST_CASE(Linear) {
         seed,
         fuzzuf::algorithm::eclipser::BigInt( 0 )
       );
+#if __GNUC__ < 8
+#pragma GCC diagnostic pop
+#endif
 #pragma GCC diagnostic pop
     trace = branch_trace;
   }
@@ -71,6 +79,10 @@ BOOST_AUTO_TEST_CASE(Linear) {
   {
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wunused-but-set-variable"
+#if __GNUC__ < 8
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wunused-variable"
+#endif
     const auto [signal,coverage_gain,branch_info_maybe] =
       fuzzuf::algorithm::eclipser::executor::GetBranchInfo(
         []( std::string &&m ) { std::cout << m << std::flush; },
@@ -79,6 +91,9 @@ BOOST_AUTO_TEST_CASE(Linear) {
         fuzzuf::algorithm::eclipser::BigInt( 0x30 ),
         fuzzuf::algorithm::eclipser::BranchPoint{ branch->inst_addr, 1u }
       );
+#if __GNUC__ < 8
+#pragma GCC diagnostic pop
+#endif
 #pragma GCC diagnostic pop
       BOOST_CHECK( bool( branch_info_maybe ) );
       triple.push_back( *branch_info_maybe );
@@ -87,6 +102,10 @@ BOOST_AUTO_TEST_CASE(Linear) {
   {
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wunused-but-set-variable"
+#if __GNUC__ < 8
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wunused-variable"
+#endif
     const auto [signal,coverage_gain,branch_info_maybe] =
       fuzzuf::algorithm::eclipser::executor::GetBranchInfo(
         []( std::string &&m ) { std::cout << m << std::flush; },
@@ -95,6 +114,9 @@ BOOST_AUTO_TEST_CASE(Linear) {
         fuzzuf::algorithm::eclipser::BigInt( 0x35 ),
         fuzzuf::algorithm::eclipser::BranchPoint{ branch->inst_addr, 1u }
       );
+#if __GNUC__ < 8
+#pragma GCC diagnostic pop
+#endif
 #pragma GCC diagnostic pop
     BOOST_CHECK( bool( branch_info_maybe ) );
     triple.push_back( *branch_info_maybe );
@@ -103,6 +125,10 @@ BOOST_AUTO_TEST_CASE(Linear) {
   {
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wunused-but-set-variable"
+#if __GNUC__ < 8
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wunused-variable"
+#endif
     const auto [signal,coverage_gain,branch_info_maybe] =
       fuzzuf::algorithm::eclipser::executor::GetBranchInfo(
         []( std::string &&m ) { std::cout << m << std::flush; },
@@ -111,6 +137,9 @@ BOOST_AUTO_TEST_CASE(Linear) {
         fuzzuf::algorithm::eclipser::BigInt( 0x40 ),
         fuzzuf::algorithm::eclipser::BranchPoint{ branch->inst_addr, 1u }
       );
+#if __GNUC__ < 8
+#pragma GCC diagnostic pop
+#endif
 #pragma GCC diagnostic pop
     BOOST_CHECK( bool( branch_info_maybe ) );
     triple.push_back( *branch_info_maybe );
@@ -147,6 +176,7 @@ BOOST_AUTO_TEST_CASE(NonLinear) {
   options.verbosity = 1;
   options.out_dir = output_dir.string();
   options.target_prog = TEST_BINARY_DIR "/put/raw/raw-monotonic",
+  options.fork_server = false;
   fuzzuf::algorithm::eclipser::executor::Initialize( options );
   fuzzuf::algorithm::eclipser::seed::Seed seed;
   seed.FixCurBytesInplace( fuzzuf::algorithm::eclipser::Direction::Right, { std::byte( 1 ), std::byte( 2 ) } );
@@ -158,6 +188,10 @@ BOOST_AUTO_TEST_CASE(NonLinear) {
   {
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wunused-but-set-variable"
+#if __GNUC__ < 8
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wunused-variable"
+#endif
     const auto [signal,coverage_gain,branch_trace] =
       fuzzuf::algorithm::eclipser::executor::GetBranchTrace(
         []( std::string &&m ) { std::cout << m << std::flush; },
@@ -165,6 +199,9 @@ BOOST_AUTO_TEST_CASE(NonLinear) {
         seed,
         fuzzuf::algorithm::eclipser::BigInt( 0 )
       );
+#if __GNUC__ < 8
+#pragma GCC diagnostic pop
+#endif
 #pragma GCC diagnostic pop
     trace = branch_trace;
   }
@@ -176,6 +213,10 @@ BOOST_AUTO_TEST_CASE(NonLinear) {
   {
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wunused-but-set-variable"
+#if __GNUC__ < 8
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wunused-variable"
+#endif
     const auto [signal,coverage_gain,branch_info_maybe] =
       fuzzuf::algorithm::eclipser::executor::GetBranchInfo(
         []( std::string &&m ) { std::cout << m << std::flush; },
@@ -184,6 +225,9 @@ BOOST_AUTO_TEST_CASE(NonLinear) {
         fuzzuf::algorithm::eclipser::BigInt( 0x10 ),
         fuzzuf::algorithm::eclipser::BranchPoint{ branch->inst_addr, 1u }
       );
+#if __GNUC__ < 8
+#pragma GCC diagnostic pop
+#endif
 #pragma GCC diagnostic pop
       BOOST_CHECK( bool( branch_info_maybe ) );
       triple.push_back( *branch_info_maybe );
@@ -192,6 +236,10 @@ BOOST_AUTO_TEST_CASE(NonLinear) {
   {
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wunused-but-set-variable"
+#if __GNUC__ < 8
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wunused-variable"
+#endif
     const auto [signal,coverage_gain,branch_info_maybe] =
       fuzzuf::algorithm::eclipser::executor::GetBranchInfo(
         []( std::string &&m ) { std::cout << m << std::flush; },
@@ -200,6 +248,9 @@ BOOST_AUTO_TEST_CASE(NonLinear) {
         fuzzuf::algorithm::eclipser::BigInt( 0x15 ),
         fuzzuf::algorithm::eclipser::BranchPoint{ branch->inst_addr, 1u }
       );
+#if __GNUC__ < 8
+#pragma GCC diagnostic pop
+#endif
 #pragma GCC diagnostic pop
     BOOST_CHECK( bool( branch_info_maybe ) );
     triple.push_back( *branch_info_maybe );
@@ -208,6 +259,10 @@ BOOST_AUTO_TEST_CASE(NonLinear) {
   {
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wunused-but-set-variable"
+#if __GNUC__ < 8
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wunused-variable"
+#endif
     const auto [signal,coverage_gain,branch_info_maybe] =
       fuzzuf::algorithm::eclipser::executor::GetBranchInfo(
         []( std::string &&m ) { std::cout << m << std::flush; },
@@ -216,6 +271,9 @@ BOOST_AUTO_TEST_CASE(NonLinear) {
         fuzzuf::algorithm::eclipser::BigInt( 0x20 ),
         fuzzuf::algorithm::eclipser::BranchPoint{ branch->inst_addr, 1u }
       );
+#if __GNUC__ < 8
+#pragma GCC diagnostic pop
+#endif
 #pragma GCC diagnostic pop
     BOOST_CHECK( bool( branch_info_maybe ) );
     triple.push_back( *branch_info_maybe );

@@ -1,4 +1,6 @@
+#if __GNUC__ >= 8
 #include <charconv>
+#endif
 #include <cstddef>
 #include <string>
 #include <type_traits>
@@ -64,6 +66,7 @@ bool IsNullByte( ByteVal b ) {
 }
 
 bool ToHex( char *at, std::uint8_t value ) {
+#if __GNUC__ >= 8
   if( value < 0x10 ) {
     const auto result = std::to_chars( std::next( at, 1 ), std::next( at, 2 ), value, 16 );
     if( result.ec == std::errc{} ) {
@@ -78,6 +81,12 @@ bool ToHex( char *at, std::uint8_t value ) {
     }
   }
   return false;
+#else
+  constexpr static std::array< char, 16u > chars{ '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f' };
+  at[ 0 ] = chars[ ( value >> 4 ) & 0xF ];
+  at[ 1 ] = chars[ value & 0xF ];
+  return true;
+#endif
 }
 
 std::string ToString( ByteVal b ) {
@@ -158,24 +167,24 @@ void to_json( nlohmann::json &dest, const ByteVal &src ) {
       auto root = nlohmann::json::object();
       if constexpr ( std::is_same_v< utils::type_traits::RemoveCvrT< decltype( v ) >, Fixed > ) {
         root[ "type" ] = "Fixed";
-	root[ "value" ] = v.value;
+	root[ "value" ] = int( v.value );
       }
       else if constexpr ( std::is_same_v< utils::type_traits::RemoveCvrT< decltype( v ) >, Interval > ) {
         root[ "type" ] = "Interval";
-	root[ "low" ] = v.low;
-	root[ "high" ] = v.high;
+	root[ "low" ] = int( v.low );
+	root[ "high" ] = int( v.high );
       }
       else if constexpr ( std::is_same_v< utils::type_traits::RemoveCvrT< decltype( v ) >, Undecided > ) {
         root[ "type" ] = "Undecided";
-	root[ "value" ] = v.value;
+	root[ "value" ] = int( v.value );
       }
       else if constexpr ( std::is_same_v< utils::type_traits::RemoveCvrT< decltype( v ) >, Untouched > ) {
         root[ "type" ] = "Untouched";
-	root[ "value" ] = v.value;
+	root[ "value" ] = int( v.value );
       }
       else if constexpr ( std::is_same_v< utils::type_traits::RemoveCvrT< decltype( v ) >, Sampled > ) {
         root[ "type" ] = "Sampled";
-	root[ "value" ] = v.value;
+	root[ "value" ] = int( v.value );
       }
       return root;
     },
@@ -187,19 +196,19 @@ void from_json( const nlohmann::json &src, ByteVal &dest ) {
   if( !src.is_object() ) dest = Fixed();
   else if( src.find( "type" ) == src.end() ) dest = Fixed();
   else if( ( src[ "type" ] == "Fixed" ) && ( src.find( "value" ) != src.end() ) ) {
-    dest = Fixed{ src[ "value" ] };
+    dest = Fixed{ std::byte( src[ "value" ]. template get< int >() ) };
   }
   else if( ( src[ "type" ] == "Interval" ) && ( src.find( "low" ) != src.end() ) && ( src.find( "high" ) != src.end() ) ) {
-    dest = Interval{ src[ "low" ], src[ "high" ] };
+    dest = Interval{ std::byte( src[ "low" ]. template get< int >() ), std::byte( src[ "high" ]. template get< int >() ) };
   }
   else if( ( src[ "type" ] == "Undecided" ) && ( src.find( "value" ) != src.end() ) ) {
-    dest = Undecided{ src[ "value" ] };
+    dest = Undecided{ std::byte( src[ "value" ]. template get< int >() ) };
   }
   else if( ( src[ "type" ] == "Untouched" ) && ( src.find( "value" ) != src.end() ) ) {
-    dest = Untouched{ src[ "value" ] };
+    dest = Untouched{ std::byte( src[ "value" ]. template get< int >() ) };
   }
   else if( ( src[ "type" ] == "Sampled" ) && ( src.find( "value" ) != src.end() ) ) {
-    dest = Sampled{ src[ "value" ] };
+    dest = Sampled{ std::byte( src[ "value" ]. template get< int >() ) };
   }
   else dest = Fixed();
 }

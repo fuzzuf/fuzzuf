@@ -1,5 +1,4 @@
 #include <string>
-#include <charconv>
 #include <utility>
 #include <chrono>
 #include <thread>
@@ -25,15 +24,7 @@ float DecideSleepFactor(
   const auto grey_conc_efficiency = float( round_tcs ) / float( round_execs );
   if( opt.verbosity >= 1 ) {
     std::string message = "[*] Efficiency = ";
-    /*
-    char temp[ 9 ] = { 0 };
-    const auto result = std::to_chars( temp, std::next( temp, 8 ), grey_conc_efficiency, std::chars_format::fixed, 4 );
-    if( result.ec == std::errc{} ) {
-      message += temp;
-    }
-    else {*/
-      message += std::to_string( grey_conc_efficiency );
-    /*}*/
+    message += std::to_string( grey_conc_efficiency );
     sink( std::move( message ) );
   }
   // GREY_CONC_EFF : RAND_FUZZ_EFF = 1 : 2 * factor + 1

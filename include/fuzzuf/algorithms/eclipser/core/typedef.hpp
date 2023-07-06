@@ -25,7 +25,12 @@
 #include <variant>
 #include <iostream>
 #include <optional>
+#include <config.h>
+#ifdef HAS_NLOHMANN_JSON_FWD
 #include <nlohmann/json_fwd.hpp>
+#else
+#include <nlohmann/json.hpp>
+#endif
 #include <boost/multiprecision/cpp_int.hpp>
 #include "fuzzuf/algorithms/eclipser/core/config.hpp"
 

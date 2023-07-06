@@ -21,17 +21,17 @@ void from_json( const nlohmann::json &src, Linearity &dest ) {
       src[ "slope" ].find( "numerator" ) != src.end() &&
       src[ "slope" ].find( "denominator" ) != src.end()
     ) {
-      dest.slope = Fraction( BigInt( std::string( src[ "slope" ][ "numerator" ] ) ), BigInt( std::string( src[ "slope" ][ "denominator" ] ) ) );
+      dest.slope = Fraction( BigInt( src[ "slope" ][ "numerator" ]. template get< std::string >() ), BigInt( src[ "slope" ][ "denominator" ]. template get< std::string >() ) );
     }
   }
   if( src.find( "x0" ) != src.end() ) {
-    dest.x0 = BigInt( std::string( src[ "x0" ] ) );
+    dest.x0 = BigInt( src[ "x0" ]. template get< std::string >() );
   }
   if( src.find( "y0" ) != src.end() ) {
-    dest.y0 = BigInt( std::string( src[ "y0" ] ) );
+    dest.y0 = BigInt( src[ "y0" ]. template get< std::string >() );
   }
   if( src.find( "target" ) != src.end() ) {
-    dest.target = BigInt( std::string( src[ "target" ] ) );
+    dest.target = BigInt( src[ "target" ]. template get< std::string >() );
   }
 }
 

@@ -1,3 +1,27 @@
+add_custom_target(
+  test-algorithms-eclipser-copy-qemu-trace-branch-x86
+  COMMAND ${CMAKE_COMMAND} -E
+  copy ${CMAKE_BINARY_DIR}/algorithms/eclipser/instrumentor/branch-x86/qemu-trace-branch-x86-prefix/bin/qemu-i386 ${CMAKE_BINARY_DIR}/test/algorithms/eclipser/qemu-trace-branch-x86
+  DEPENDS qemu-trace-branch-x86
+)
+add_custom_target(
+  test-algorithms-eclipser-copy-qemu-trace-branch-x86_64
+  COMMAND ${CMAKE_COMMAND} -E
+  copy ${CMAKE_BINARY_DIR}/algorithms/eclipser/instrumentor/branch-x86_64/qemu-trace-branch-x86_64-prefix/bin/qemu-x86_64 ${CMAKE_BINARY_DIR}/test/algorithms/eclipser/qemu-trace-branch-x64
+  DEPENDS qemu-trace-branch-x86_64
+)
+add_custom_target(
+  test-algorithms-eclipser-copy-qemu-trace-coverage-x86
+  COMMAND ${CMAKE_COMMAND} -E
+  copy ${CMAKE_BINARY_DIR}/algorithms/eclipser/instrumentor/coverage-x86/qemu-trace-coverage-x86-prefix/bin/qemu-i386 ${CMAKE_BINARY_DIR}/test/algorithms/eclipser/qemu-trace-coverage-x86
+  DEPENDS qemu-trace-coverage-x86
+)
+add_custom_target(
+  test-algorithms-eclipser-copy-qemu-trace-coverage-x86_64
+  COMMAND ${CMAKE_COMMAND} -E
+  copy ${CMAKE_BINARY_DIR}/algorithms/eclipser/instrumentor/coverage-x86_64/qemu-trace-coverage-x86_64-prefix/bin/qemu-x86_64 ${CMAKE_BINARY_DIR}/test/algorithms/eclipser/qemu-trace-coverage-x64
+  DEPENDS qemu-trace-coverage-x86_64
+)
 add_executable( test-algorithms-eclipser-executor executor.cpp )
 target_link_libraries(
   test-algorithms-eclipser-executor
@@ -19,6 +43,13 @@ set_target_properties(
 set_target_properties(
   test-algorithms-eclipser-executor
   PROPERTIES LINK_FLAGS "${ADDITIONAL_LINK_FLAGS_STR}"
+)
+add_dependencies(
+  test-algorithms-eclipser-executor
+  test-algorithms-eclipser-copy-qemu-trace-branch-x86
+  test-algorithms-eclipser-copy-qemu-trace-branch-x86_64
+  test-algorithms-eclipser-copy-qemu-trace-coverage-x86
+  test-algorithms-eclipser-copy-qemu-trace-coverage-x86_64
 )
 if( ENABLE_CLANG_TIDY )
   set_target_properties(
@@ -51,6 +82,13 @@ set_target_properties(
   test-algorithms-eclipser-seed
   PROPERTIES LINK_FLAGS "${ADDITIONAL_LINK_FLAGS_STR}"
 )
+add_dependencies(
+  test-algorithms-eclipser-seed
+  test-algorithms-eclipser-copy-qemu-trace-branch-x86
+  test-algorithms-eclipser-copy-qemu-trace-branch-x86_64
+  test-algorithms-eclipser-copy-qemu-trace-coverage-x86
+  test-algorithms-eclipser-copy-qemu-trace-coverage-x86_64
+)
 if( ENABLE_CLANG_TIDY )
   set_target_properties(
     test-algorithms-eclipser-seed
@@ -81,6 +119,13 @@ set_target_properties(
 set_target_properties(
   test-algorithms-eclipser-linear_equation
   PROPERTIES LINK_FLAGS "${ADDITIONAL_LINK_FLAGS_STR}"
+)
+add_dependencies(
+  test-algorithms-eclipser-linear_equation
+  test-algorithms-eclipser-copy-qemu-trace-branch-x86
+  test-algorithms-eclipser-copy-qemu-trace-branch-x86_64
+  test-algorithms-eclipser-copy-qemu-trace-coverage-x86
+  test-algorithms-eclipser-copy-qemu-trace-coverage-x86_64
 )
 if( ENABLE_CLANG_TIDY )
   set_target_properties(
@@ -113,6 +158,13 @@ set_target_properties(
   test-algorithms-eclipser-linear_inequality
   PROPERTIES LINK_FLAGS "${ADDITIONAL_LINK_FLAGS_STR}"
 )
+add_dependencies(
+  test-algorithms-eclipser-linear_inequality
+  test-algorithms-eclipser-copy-qemu-trace-branch-x86
+  test-algorithms-eclipser-copy-qemu-trace-branch-x86_64
+  test-algorithms-eclipser-copy-qemu-trace-coverage-x86
+  test-algorithms-eclipser-copy-qemu-trace-coverage-x86_64
+)
 if( ENABLE_CLANG_TIDY )
   set_target_properties(
     test-algorithms-eclipser-linear_inequality
@@ -143,6 +195,13 @@ set_target_properties(
 set_target_properties(
   test-algorithms-eclipser-monotonicity
   PROPERTIES LINK_FLAGS "${ADDITIONAL_LINK_FLAGS_STR}"
+)
+add_dependencies(
+  test-algorithms-eclipser-monotonicity
+  test-algorithms-eclipser-copy-qemu-trace-branch-x86
+  test-algorithms-eclipser-copy-qemu-trace-branch-x86_64
+  test-algorithms-eclipser-copy-qemu-trace-coverage-x86
+  test-algorithms-eclipser-copy-qemu-trace-coverage-x86_64
 )
 if( ENABLE_CLANG_TIDY )
   set_target_properties(
@@ -175,6 +234,13 @@ set_target_properties(
   test-algorithms-eclipser-branch_tree
   PROPERTIES LINK_FLAGS "${ADDITIONAL_LINK_FLAGS_STR}"
 )
+add_dependencies(
+  test-algorithms-eclipser-branch_tree
+  test-algorithms-eclipser-copy-qemu-trace-branch-x86
+  test-algorithms-eclipser-copy-qemu-trace-branch-x86_64
+  test-algorithms-eclipser-copy-qemu-trace-coverage-x86
+  test-algorithms-eclipser-copy-qemu-trace-coverage-x86_64
+)
 if( ENABLE_CLANG_TIDY )
   set_target_properties(
     test-algorithms-eclipser-branch_tree
@@ -205,6 +271,13 @@ set_target_properties(
 set_target_properties(
   test-algorithms-eclipser-gray_concolic
   PROPERTIES LINK_FLAGS "${ADDITIONAL_LINK_FLAGS_STR}"
+)
+add_dependencies(
+  test-algorithms-eclipser-gray_concolic
+  test-algorithms-eclipser-copy-qemu-trace-branch-x86
+  test-algorithms-eclipser-copy-qemu-trace-branch-x86_64
+  test-algorithms-eclipser-copy-qemu-trace-coverage-x86
+  test-algorithms-eclipser-copy-qemu-trace-coverage-x86_64
 )
 if( ENABLE_CLANG_TIDY )
   set_target_properties(
@@ -237,6 +310,13 @@ set_target_properties(
   test-algorithms-eclipser-fuzz_stdin
   PROPERTIES LINK_FLAGS "${ADDITIONAL_LINK_FLAGS_STR}"
 )
+add_dependencies(
+  test-algorithms-eclipser-fuzz_stdin
+  test-algorithms-eclipser-copy-qemu-trace-branch-x86
+  test-algorithms-eclipser-copy-qemu-trace-branch-x86_64
+  test-algorithms-eclipser-copy-qemu-trace-coverage-x86
+  test-algorithms-eclipser-copy-qemu-trace-coverage-x86_64
+)
 if( ENABLE_CLANG_TIDY )
   set_target_properties(
     test-algorithms-eclipser-fuzz_stdin
@@ -267,6 +347,13 @@ set_target_properties(
 set_target_properties(
   test-algorithms-eclipser-fuzz_linear
   PROPERTIES LINK_FLAGS "${ADDITIONAL_LINK_FLAGS_STR}"
+)
+add_dependencies(
+  test-algorithms-eclipser-fuzz_linear
+  test-algorithms-eclipser-copy-qemu-trace-branch-x86
+  test-algorithms-eclipser-copy-qemu-trace-branch-x86_64
+  test-algorithms-eclipser-copy-qemu-trace-coverage-x86
+  test-algorithms-eclipser-copy-qemu-trace-coverage-x86_64
 )
 if( ENABLE_CLANG_TIDY )
   set_target_properties(
@@ -299,6 +386,13 @@ set_target_properties(
   test-algorithms-eclipser-fuzz_monoton
   PROPERTIES LINK_FLAGS "${ADDITIONAL_LINK_FLAGS_STR}"
 )
+add_dependencies(
+  test-algorithms-eclipser-fuzz_monoton
+  test-algorithms-eclipser-copy-qemu-trace-branch-x86
+  test-algorithms-eclipser-copy-qemu-trace-branch-x86_64
+  test-algorithms-eclipser-copy-qemu-trace-coverage-x86
+  test-algorithms-eclipser-copy-qemu-trace-coverage-x86_64
+)
 if( ENABLE_CLANG_TIDY )
   set_target_properties(
     test-algorithms-eclipser-fuzz_monoton
@@ -307,4 +401,3 @@ if( ENABLE_CLANG_TIDY )
   )
 endif()
 add_test( NAME "algorithms.eclipser.fuzz_monoton" COMMAND test-algorithms-eclipser-fuzz_monoton )
-

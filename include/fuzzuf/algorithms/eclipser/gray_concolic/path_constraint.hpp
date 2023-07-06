@@ -27,7 +27,12 @@
 #include <type_traits>
 #include <algorithm>
 #include <iterator>
+#include <config.h>
+#ifdef HAS_NLOHMANN_JSON_FWD
 #include <nlohmann/json_fwd.hpp>
+#else
+#include <nlohmann/json.hpp>
+#endif
 #include "fuzzuf/algorithms/eclipser/core/bigint.hpp"
 #include "fuzzuf/algorithms/eclipser/core/bytes_utils.hpp"
 #include "fuzzuf/utils/type_traits/remove_cvr.hpp"

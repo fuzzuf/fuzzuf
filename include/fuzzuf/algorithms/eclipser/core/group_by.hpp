@@ -23,7 +23,6 @@
 #define FUZZUF_INCLUDE_ALGORITHMS_ECLIPSER_CORE_GROUP_BY_HPP
 #include <cstddef>
 #include <variant>
-#include <nlohmann/json_fwd.hpp>
 #include <boost/multiprecision/cpp_int.hpp>
 
 namespace fuzzuf::algorithm::eclipser {

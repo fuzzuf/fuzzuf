@@ -36,6 +36,7 @@ BOOST_AUTO_TEST_CASE(Coverage) {
   fuzzuf::algorithm::eclipser::options::FuzzOption options;
   options.verbosity = 1;
   options.out_dir = output_dir.string();
+  options.fork_server = false;
   options.target_prog = TEST_BINARY_DIR "/put/raw/raw-easy_to_branch",
   fuzzuf::algorithm::eclipser::executor::Initialize( options );
   fuzzuf::algorithm::eclipser::seed::Seed seed;

@@ -25,7 +25,12 @@
 #include <cstdint>
 #include <variant>
 #include <vector>
+#include <config.h>
+#ifdef HAS_NLOHMANN_JSON_FWD
 #include <nlohmann/json_fwd.hpp>
+#else
+#include <nlohmann/json.hpp>
+#endif
 #include <fuzzuf/algorithms/eclipser/core/typedef.hpp>
 #include <fuzzuf/utils/type_traits/remove_cvr.hpp>
 

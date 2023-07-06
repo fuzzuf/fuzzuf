@@ -35,7 +35,7 @@ void from_json( const nlohmann::json &src, LinearEquation &dest ) {
   }
   if( src.find( "solutions" ) != src.end() ) {
     for( const auto &s: src[ "solutions" ] ) {
-      dest.solutions.push_back( BigInt( std::string( s ) ) );
+      dest.solutions.push_back( BigInt( s. template get< std::string >() ) );
     }
   }
 }

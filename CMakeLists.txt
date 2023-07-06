@@ -231,6 +231,9 @@ endif()
 if( ${CMAKE_BUILD_TYPE} MATCHES Debug )
   set( DEFINE_DEBUG_ASSERT "Yes" )
 endif()
+if( NLOHMANN_JSON_FWD_INCLUDE_DIRS )
+  set( HAS_NLOHMANN_JSON_FWD "Yes" )
+endif()
 
 configure_file(
   "${CMAKE_SOURCE_DIR}/check/config.h.in"
