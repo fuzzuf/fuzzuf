@@ -43,6 +43,8 @@ static unsigned char * edge_bitmap = NULL;
 void eclipser_setup_before_forkserver(void) {
   char * bitmap_path = getenv("ECL_BITMAP_LOG");
   int bitmap_fd = open(bitmap_path, O_RDWR | O_CREAT, 0644);
+  int fallocate_result = fallocate( bitmap_fd, 0, 0, BITMAP_SIZE );
+  assert( fallocate_result == 0 );
   edge_bitmap = (unsigned char*) mmap(NULL, BITMAP_SIZE, PROT_READ | PROT_WRITE, MAP_SHARED, bitmap_fd, 0);
   assert(edge_bitmap != (void *) -1);
 

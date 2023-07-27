@@ -4,6 +4,7 @@
 #include <boost/range/iterator_range.hpp>
 #include <nlohmann/json.hpp>
 #include <fuzzuf/exceptions.hpp>
+#include <fuzzuf/algorithms/eclipser/core/typedef.hpp>
 #include <fuzzuf/algorithms/eclipser/core/seed.hpp>
 #include <fuzzuf/utils/type_traits/remove_cvr.hpp>
 
@@ -479,7 +480,7 @@ void from_json( const nlohmann::json &src, Seed &dest ) {
       dest.cursor_pos = src[ "cursor_dir" ];
     }
     if( src.find( "source" ) != src.end() ) {
-      dest.source = src[ "source" ];
+      dest.source = src[ "source" ].get< InputSource >();
     }
   }
 }

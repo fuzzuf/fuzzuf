@@ -68,6 +68,8 @@ void flush_trace_buffer(void) {
 void eclipser_setup_before_forkserver(void) {
   char * bitmap_path = getenv("ECL_BITMAP_LOG");
   int bitmap_fd = open(bitmap_path, O_RDWR | O_CREAT, 0644);
+  int fallocate_result = fallocate( bitmap_fd, 0, 0, BITMAP_SIZE );
+  assert( fallocate_result == 0 );
   edge_bitmap = (unsigned char*) mmap(NULL, BITMAP_SIZE, PROT_READ | PROT_WRITE, MAP_SHARED, bitmap_fd, 0);
   assert(edge_bitmap != (void *) -1);
 
@@ -220,6 +222,7 @@ void eclipser_log_branch(abi_ulong oprnd1, abi_ulong oprnd2, unsigned char type)
       fwrite(&type, sizeof(unsigned char), 1, branch_fp);
       fwrite(&oprnd1_truncated, operand_size, 1, branch_fp);
       fwrite(&oprnd2_truncated, operand_size, 1, branch_fp);
+#if 0
       if (oprnd1_truncated != oprnd2_truncated || !coverage_fp) {
         /* If the two operands are not equal, exit signal or coverage gain is
          * not used in F# code. Simiarly, when coverage_fp is NULL, this means
@@ -229,6 +232,7 @@ void eclipser_log_branch(abi_ulong oprnd1, abi_ulong oprnd2, unsigned char type)
         eclipser_exit();
         exit(0);
       }
+#endif
     }
   } else if (trace_count++ < MAX_TRACE_LEN) {
     /* We're in the mode that traces all the cmp/test instructions */

@@ -148,6 +148,7 @@ int waitchild(pid_t pid, uint64_t timeout)
     }
 }
 
+extern char **environ;
 
 int exec(int argc, char **args, int stdin_size, char *stdin_data, uint64_t timeout) {
     int i, devnull, ret;

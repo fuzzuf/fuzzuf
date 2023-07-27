@@ -18,10 +18,12 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <signal.h>
 
 int main() {
   const int c = getchar();
   if (c & 0x1) {
+    puts( "a\n" );
     exit(0);
   }
   abort();

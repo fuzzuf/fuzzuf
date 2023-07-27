@@ -62,7 +62,7 @@ BOOST_AUTO_TEST_CASE(Run) {
   BOOST_TEST_CHECKPOINT( "end fuzz" );
   std::uint32_t cov = 0u;
   std::size_t count = 0u;
-  for( const auto p: fs::directory_iterator( fs::path( options.out_dir ) / "queue" ) ) {
+  for( const auto &p: fs::directory_iterator( fs::path( options.out_dir ) / "queue" ) ) {
     const auto range = fuzzuf::utils::map_file( p.path().string(), O_RDONLY, false );
     if( range[ 0 ] == 'A' ) {
       cov |= ( 1u << 0 );
