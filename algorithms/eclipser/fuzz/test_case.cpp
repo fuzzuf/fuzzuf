@@ -74,7 +74,11 @@ void IncrCrashCount(
   else if( exit_sig == Signal::SIGABRT ) {
     total_aborts += 1;
   }
-  else {
+  else
+#if __GNUC__ >= 9 && __cplusplus > 201703L
+  [[unlikely]]
+#endif  
+  {
     failwith( "updateCrashCount() called with a non-crashing exit signal" );
     return; // unreachable
   }
@@ -119,15 +123,18 @@ void DumpCrash(
     message += seed.ToString();
     sink( std::move( message ) );
   }
-  std::string crash_name = "id:";
+  std::array< char, 12u > crash_name = { 0 };
+  crash_name[ 0 ] = 'i';
+  crash_name[ 1 ] = 'd';
+  crash_name[ 2 ] = ':';
   namespace karma = boost::spirit::karma;
   karma::generate(
-    std::back_inserter( crash_name ),
+    std::next( crash_name.data(), 3u ),
     karma::right_align( 6, '0' )[ karma::hex ],
     total_crashes
   );
-  const auto crash_path = fs::path( crash_dir ) / crash_name;
-  std::fstream fd( crash_path.string(), std::ios::out );
+  const auto crash_path = fs::path( crash_dir ) / crash_name.data();
+  std::fstream fd( crash_path.c_str(), std::ios::out );
   const auto concretized = seed.Concretize();
   fd.write( reinterpret_cast< const char* >( concretized.data() ), concretized.size() );
   IncrCrashCount( exit_sig );
@@ -136,15 +143,18 @@ void DumpCrash(
 void DumpTestCase(
   const seed::Seed &seed
 ) {
-  std::string tc_name = "id:";
+  std::array< char, 12u > tc_name = { 0 };
+  tc_name[ 0 ] = 'i';
+  tc_name[ 1 ] = 'd';
+  tc_name[ 2 ] = ':';
   namespace karma = boost::spirit::karma;
   karma::generate(
-    std::back_inserter( tc_name ),
+    std::next( tc_name.data(), 3u ),
     karma::right_align( 6, '0' )[ karma::hex ],
     total_test_cases
   );
-  const auto tc_path = fs::path( testcase_dir ) / tc_name;
-  std::fstream fd( tc_path.string(), std::ios::out );
+  const auto tc_path = fs::path( testcase_dir ) / tc_name.data();
+  std::fstream fd( tc_path.c_str(), std::ios::out );
   const auto concretized = seed.Concretize();
   fd.write( reinterpret_cast< const char* >( concretized.data() ), concretized.size() );
   IncrTestCaseCount();

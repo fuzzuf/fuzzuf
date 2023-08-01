@@ -119,7 +119,11 @@ CheckMonotonicAux(
     return tendency;
   }
   const auto &[x,y] = *coordinates_begin;
-  if( x <= prev_x ) {
+  if( x <= prev_x )
+#if __GNUC__ >= 9 && __cplusplus > 201703L
+  [[unlikely]]
+#endif  
+  {
     failwith( "Invalid coordinates" );
     return Tendency::Undetermined; // unreachable
   }
@@ -156,7 +160,11 @@ CheckMonotonic(
   Signedness sign,
   const std::vector< std::pair< BigInt, BigInt > > &coordinates
 ) {
-  if( coordinates.empty() ) {
+  if( coordinates.empty() )
+#if __GNUC__ >= 9 && __cplusplus > 201703L
+  [[unlikely]]
+#endif  
+  {
     failwith( "Empty coordinate list provided as input" );
     return std::nullopt; // unreachable
   }
@@ -198,7 +206,11 @@ Generate(
   const BigInt &targ_y,
   const std::vector< std::pair< BigInt, BigInt > > &coordinates
 ) {
-  if( tendency == Tendency::Undetermined ) {
+  if( tendency == Tendency::Undetermined )
+#if __GNUC__ >= 9 && __cplusplus > 201703L
+  [[unlikely]]
+#endif  
+  {
     failwith( "Invalid tendency input" );
     return std::nullopt; // unreachable
   }
@@ -212,7 +224,11 @@ Find(
   const std::vector< BranchInfo >::const_iterator &br_infos_begin,
   const std::vector< BranchInfo >::const_iterator &br_infos_end
 ) {
-  if( br_infos_begin == br_infos_end ) {
+  if( br_infos_begin == br_infos_end )
+#if __GNUC__ >= 9 && __cplusplus > 201703L
+  [[unlikely]]
+#endif  
+  {
     failwith( "Empty branchInfo list provided as input" );
     return std::nullopt; // unreachable
   }

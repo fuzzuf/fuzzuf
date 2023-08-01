@@ -80,36 +80,38 @@ void ResetRoundExecs() {
   round_execs = 0;
 }
 
+namespace {
+
 void SetEnvForBranch(
   std::uint64_t addr,
   std::uint32_t idx,
   CoverageMeasure cov_measure
 ) {
-  std::array< char, 22 > buf;
-  std::fill( buf.begin(), buf.end(), 0 );
   namespace karma = boost::spirit::karma;
   karma::uint_generator< std::uint64_t, 16 > hex64;
-  std::string addr_str;
+  std::array< char, 17u > addr_str;
+  addr_str[ 16 ] = 0;
   karma::generate(
-    std::back_inserter( addr_str ),
+    addr_str.data(),
     karma::right_align( 16, '0' )[ hex64 ],
     addr
   );
-  std::string idx_str;
+  std::array< char, 17u > idx_str;
+  idx_str[ 16 ] = 0;
   karma::generate(
-    std::back_inserter( idx_str ),
+    idx_str.data(),
     karma::right_align( 16, '0' )[ hex64 ],
     idx
   );
-  std::string measure_str;
+  std::array< char, 11u > measure_str{ 0 };
   karma::generate(
-    std::back_inserter( measure_str ),
+    measure_str.data(),
     karma::int_,
     int( cov_measure )
   );
-  setenv("ECL_BRANCH_ADDR", addr_str.c_str(), 1 );
-  setenv("ECL_BRANCH_IDX", idx_str.c_str(), 1 );
-  setenv("ECL_MEASURE_COV", measure_str.c_str(), 1 );
+  setenv("ECL_BRANCH_ADDR", addr_str.data(), 1 );
+  setenv("ECL_BRANCH_IDX", idx_str.data(), 1 );
+  setenv("ECL_MEASURE_COV", measure_str.data(), 1 );
 }
 
 void SetupFile( const std::function<void(std::string &&)> &sink, const seed::Seed &seed ) {
@@ -122,133 +124,42 @@ void SetupFile( const std::function<void(std::string &&)> &sink, const seed::See
     seed.source
   );
 }
-namespace {
-  std::vector< std::byte > PrepareStdIn( const seed::Seed &seed ) {
-    return std::visit(
-      [&]( const auto &v ) {
-        if constexpr ( std::is_same_v< fuzzuf::utils::type_traits::RemoveCvrT< decltype( v ) >, StdInput > ) {
-          return seed.Concretize();
-        }
-        else {
-          return std::vector< std::byte >();
-        }
-      },
-      seed.source
-    );
-  }
+
+std::vector< std::byte > PrepareStdIn( const seed::Seed &seed ) {
+  return std::visit(
+    [&]( const auto &v ) {
+      if constexpr ( std::is_same_v< fuzzuf::utils::type_traits::RemoveCvrT< decltype( v ) >, StdInput > ) {
+        return seed.Concretize();
+      }
+      else {
+        return std::vector< std::byte >();
+      }
+    },
+    seed.source
+  );
 }
 
-CoverageGain ParseCoverage( const fs::path &p ) {
-  auto range = fuzzuf::utils::map_file( p.string(), O_RDONLY, false );
+CoverageGain ParseCoverage( const std::string &p ) {
+  auto range = fuzzuf::utils::map_file( p, O_RDONLY, false );
   BranchTrace branch_trace;
   auto iter = range.begin().get();
   const auto end = range.end().get();
   namespace qi = boost::spirit::qi;
   std::uint64_t head = 0u;
-  if( !( qi::parse( iter, end, qi::ulong_long, head ) ) ) {
+  if( !( qi::parse( iter, end, qi::ulong_long, head ) ) )
+#if __GNUC__ >= 9 && __cplusplus > 201703L
+  [[unlikely]]
+#endif  
+  {
     throw exceptions::invalid_file( "Unable to parse coverage", __FILE__, __LINE__ );
   }
   return ( head == 1ull ) ? CoverageGain::NewEdge : CoverageGain::NoGain;
 }
 
+}
 
 bool Is64Bit( Arch arch ) {
   return arch == Arch::X64;
-}
-
-BranchTrace ParseBranchTrace( const fs::path &p, std::uint64_t try_value, bool is_64bit ) {
-  auto range = fuzzuf::utils::map_file( p.string(), O_RDONLY, true );
-  BranchTrace branch_trace;
-  auto iter = range.begin().get();
-  const auto end = range.end().get();
-  while( iter != end ) {
-    BranchInfo new_info;
-    new_info.try_value = try_value;
-    if( is_64bit ) {
-      if( std::size_t( std::distance( iter, end ) ) < sizeof( std::uint64_t ) ) {
-        throw exceptions::invalid_file( "Unable to parse branch trace", __FILE__, __LINE__ );
-      }
-      new_info.inst_addr = *reinterpret_cast< std::uint64_t* >( iter );
-      if( new_info.inst_addr == 0u ) {
-        break;
-      }
-      iter = std::next( iter, sizeof( std::uint64_t ) );
-    }
-    else {
-      if( std::size_t( std::distance( iter, end ) ) < sizeof( std::uint32_t ) ) {
-        throw exceptions::invalid_file( "Unable to parse branch trace", __FILE__, __LINE__ );
-      }
-      new_info.inst_addr = *reinterpret_cast< std::uint32_t* >( iter );
-      if( new_info.inst_addr == 0u ) {
-        break;
-      }
-      iter = std::next( iter, sizeof( std::uint32_t ) );
-    }
-    if( std::distance( iter, end ) < 3 ) {
-      throw exceptions::invalid_file( "Unable to parse branch trace", __FILE__, __LINE__ );
-    }
-    const auto type = ( *iter >> 6 );
-    if( type == 0 ) {
-      new_info.branch_type = CompareType::Equality;
-    }
-    else if( type == 1 ) {
-      new_info.branch_type = CompareType::SignedSize;
-    }
-    else if( type == 2 ) {
-      new_info.branch_type = CompareType::UnsignedSize;
-    }
-    else {
-      throw exceptions::invalid_file( "Invalid compare type", __FILE__, __LINE__ );
-    }
-    const auto operand_size = *iter & 0x3Fu;
-    if( operand_size == 1 ) {
-      new_info.operand_size = 1;
-      iter = std::next( iter );
-      new_info.operand1 = *iter;
-      iter = std::next( iter );
-      new_info.operand2 = *iter;
-      iter = std::next( iter );
-    }
-    else if( operand_size == 2 ) {
-      new_info.operand_size = 2;
-      iter = std::next( iter );
-      if( std::size_t( std::distance( iter, end ) ) < sizeof( std::uint16_t ) * 2u ) {
-        throw exceptions::invalid_file( "Unable to parse branch trace", __FILE__, __LINE__ );
-      }
-      new_info.operand1 = *reinterpret_cast< std::uint16_t* >( iter );
-      iter = std::next( iter, sizeof( std::uint16_t ) );
-      new_info.operand2 = *reinterpret_cast< std::uint16_t* >( iter );
-      iter = std::next( iter, sizeof( std::uint16_t ) );
-    }
-    else if( operand_size == 4 ) {
-      new_info.operand_size = 4;
-      iter = std::next( iter );
-      if( std::size_t( std::distance( iter, end ) ) < sizeof( std::uint32_t ) * 2u ) {
-        throw exceptions::invalid_file( "Unable to parse branch trace", __FILE__, __LINE__ );
-      }
-      new_info.operand1 = *reinterpret_cast< std::uint32_t* >( iter );
-      iter = std::next( iter, sizeof( std::uint32_t ) );
-      new_info.operand2 = *reinterpret_cast< std::uint32_t* >( iter );
-      iter = std::next( iter, sizeof( std::uint32_t ) );
-    }
-    else if( operand_size == 8 ) {
-      new_info.operand_size = 8;
-      iter = std::next( iter );
-      if( std::size_t( std::distance( iter, end ) ) < sizeof( std::uint64_t ) * 2u ) {
-        throw exceptions::invalid_file( "Unable to parse branch trace", __FILE__, __LINE__ );
-      }
-      new_info.operand1 = *reinterpret_cast< std::uint64_t* >( iter );
-      iter = std::next( iter, sizeof( std::uint64_t ) );
-      new_info.operand2 = *reinterpret_cast< std::uint64_t* >( iter );
-      iter = std::next( iter, sizeof( std::uint64_t ) );
-    }
-    else {
-      throw exceptions::invalid_file( "Invalid operand size", __FILE__, __LINE__ );
-    }
-    new_info.distance = boost::multiprecision::int128_t( new_info.operand1 ) - boost::multiprecision::int128_t( new_info.operand2 );
-    branch_trace.push_back( std::move( new_info ) );
-  }
-  return branch_trace;
 }
 
 void IncrRoundExec() {
@@ -309,24 +220,11 @@ Signal RunTracer(
   const std::vector< std::byte > &stdin
 ) {
   IncrRoundExec();
-  const auto &target_prog = opt.target_prog;
   const auto timeout = opt.exec_timeout;
-  const auto tracer = SelectTracer( tracerType, opt.architecture );
-  const auto cmd_line = SplitCmdLineArg( opt.arg );
-  std::vector< std::string > args{ tracer.string(), target_prog };
-  args.insert( args.end(), cmd_line.begin(), cmd_line.end() );
-  const int argc = args.size();
-  std::vector< char* > raw_args;
-  raw_args.reserve( args.size() );
-  std::transform(
-    args.begin(),
-    args.end(),
-    std::back_inserter( raw_args ),
-    []( const auto &v ) {
-      return const_cast< char* >( v.c_str() );
-    }
-  );
-  auto r = Signal( exec( argc, raw_args.data(), stdin.size(), reinterpret_cast< char* >( const_cast< std::byte* >( stdin.data() ) ), timeout ) );
+  auto raw_args = opt.raw_args.find( tracerType );
+  assert( raw_args != opt.raw_args.end() );
+  const int argc = raw_args->second.size();
+  auto r = Signal( exec( argc, const_cast< char** >( raw_args->second.data() ), stdin.size(), reinterpret_cast< char* >( const_cast< std::byte* >( stdin.data() ) ), timeout ) );
   return r;
 }
 
@@ -336,36 +234,23 @@ void InitializeForkServer(
   const options::FuzzOption &opt
 ) {
   fork_server_on = true;
-  const auto cmd_line = SplitCmdLineArg( opt.arg );
   {
-    const auto coverage_tracer = SelectTracer( Tracer::Coverage, opt.architecture );
-    std::vector< char* > args;
-    args.push_back( const_cast< char* >( coverage_tracer.c_str() ) );
-    args.push_back( const_cast< char* >( opt.target_prog.c_str() ) );
-    std::transform(
-      cmd_line.begin(),
-      cmd_line.end(),
-      std::back_inserter( args ),
-      []( const auto &v ) { return const_cast< char* >( v.c_str() ); }
-    );
-    const auto pid_coverage = init_forkserver_coverage( args.size(), args.data(), opt.exec_timeout );
-    if( pid_coverage == -1 ) {
+    auto raw_args = opt.raw_args.find( Tracer::Coverage );
+    assert( raw_args != opt.raw_args.end() );
+    const auto pid_coverage = init_forkserver_coverage( raw_args->second.size(), const_cast< char** >( raw_args->second.data() ), opt.exec_timeout );
+    if( pid_coverage == -1 )
+#if __GNUC__ >= 9 && __cplusplus > 201703L
+  [[unlikely]]
+#endif  
+    {
       failwith( "Failed to initialize fork server for coverage tracer" );
       return; // unreachable
     }
   }
   {
-    const auto branch_tracer = SelectTracer( Tracer::Branch, opt.architecture );
-    std::vector< char* > args;
-    args.push_back( const_cast< char* >( branch_tracer.c_str() ) );
-    args.push_back( const_cast< char* >( opt.target_prog.c_str() ) );
-    std::transform(
-      cmd_line.begin(),
-      cmd_line.end(),
-      std::back_inserter( args ),
-      []( const auto &v ) { return const_cast< char* >( v.c_str() ); }
-    );
-    const auto pid_coverage = init_forkserver_branch( args.size(), args.data(), opt.exec_timeout );
+    auto raw_args = opt.raw_args.find( Tracer::Branch );
+    assert( raw_args != opt.raw_args.end() );
+    const auto pid_coverage = init_forkserver_branch( raw_args->second.size(), const_cast< char** >( raw_args->second.data() ), opt.exec_timeout );
     if( pid_coverage == -1 ) {
       failwith( "Failed to initialize fork server for branch tracer" );
       return; // unreachable
@@ -461,12 +346,20 @@ template< typename T >
 std::optional< std::pair< T, T > > ReadPair( std::fstream &f ) {
   T oprnd1;
   f.read( reinterpret_cast< char* >( &oprnd1 ), sizeof( oprnd1 ) );
-  if( f.fail() ) {
+  if( f.fail() )
+#if __GNUC__ >= 9 && __cplusplus > 201703L
+  [[unlikely]]
+#endif  
+  {
     return std::nullopt;
   }
   T oprnd2;
   f.read( reinterpret_cast< char* >( &oprnd2 ), sizeof( oprnd2 ) );
-  if( f.fail() ) {
+  if( f.fail() )
+#if __GNUC__ >= 9 && __cplusplus > 201703L
+  [[unlikely]]
+#endif  
+  {
     return std::nullopt;
   }
   return std::make_pair( oprnd1, oprnd2 );
@@ -496,12 +389,20 @@ std::optional< BranchInfo > ParseBranchTraceLog(
 #endif
     addr = f.fail() ? 0ul : temp;
   }
-  if( addr == 0ul ) {
+  if( addr == 0ul )
+#if __GNUC__ >= 9 && __cplusplus > 201703L
+  [[unlikely]]
+#endif  
+  {
     return std::nullopt;
   }
   std::uint8_t type_info;
   f.read( reinterpret_cast< char* >( &type_info ), sizeof( type_info ) );
-  if( f.fail() ) {
+  if( f.fail() )
+#if __GNUC__ >= 9 && __cplusplus > 201703L
+  [[unlikely]]
+#endif  
+  {
     return std::nullopt;
   }
   const auto op_size = type_info & 0x3Fu;
@@ -516,7 +417,11 @@ std::optional< BranchInfo > ParseBranchTraceLog(
   else if( raw_br_type == 2u ) {
     br_type = CompareType::UnsignedSize;
   }
-  else {
+  else
+#if __GNUC__ >= 9 && __cplusplus > 201703L
+  [[unlikely]]
+#endif  
+  {
     Log( sink, "[Warning] Unexpected branch type" );
     failwith( "Unmatched" );
     return std::nullopt; // unreachable
@@ -570,7 +475,11 @@ std::optional< BranchInfo > ParseBranchTraceLog(
     oprnd2 = oprnd_maybe->second;
 #endif
   }
-  else {
+  else
+#if __GNUC__ >= 9 && __cplusplus > 201703L
+  [[unlikely]]
+#endif  
+  {
     Log( sink, "[Warning] Unexpected operand size" );
     failwith( "Unmatched" );
     return BranchInfo{}; // unreachable
@@ -617,7 +526,11 @@ std::optional< BranchInfo > TryReadBranchInfo(
   const BigInt &try_val
 ) {
   auto temp = ReadBranchTrace( sink, opt, filename, try_val );
-  if( temp.size() == 1u ) {
+  if( temp.size() == 1u )
+#if __GNUC__ >= 9 && __cplusplus > 201703L
+  [[likely]]
+#endif  
+  {
     return std::move( temp[ 0 ] );
   }
   else {
@@ -701,25 +614,10 @@ Signal NativeExecute(
   const options::FuzzOption &opt,
   const seed::Seed &seed
 ) {
-  const auto &target_prog = opt.target_prog;
   SetupFile( sink, seed );
   const auto stdin = PrepareStdIn( seed );
   const auto timeout = opt.exec_timeout;
-  const auto cmd_line = SplitCmdLineArg( opt.arg );
-  std::vector< std::string > args{ target_prog };
-  args.insert( args.end(), cmd_line.begin(), cmd_line.end() );
-  const int argc = args.size();
-  std::vector< char* > raw_args;
-  raw_args.reserve( args.size() );
-  std::transform(
-    args.begin(),
-    args.end(),
-    std::back_inserter( raw_args ),
-    []( const auto &v ) {
-      return const_cast< char* >( v.c_str() );
-    }
-  );
-  auto r = Signal( exec( argc, raw_args.data(), stdin.size(), reinterpret_cast< char* >( const_cast< std::byte* >( stdin.data() ) ), timeout ) );
+  auto r = Signal( exec( opt.native_raw_args.size(), const_cast< char** >( opt.native_raw_args.data() ), stdin.size(), reinterpret_cast< char* >( const_cast< std::byte* >( stdin.data() ) ), timeout ) );
   return r;
 }
 

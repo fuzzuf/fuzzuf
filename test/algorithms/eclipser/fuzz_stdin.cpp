@@ -47,6 +47,7 @@ BOOST_AUTO_TEST_CASE(Run) {
   options.fork_server = false;
   options.n_spawn = 10;
   options.fuzz_source = fuzzuf::algorithm::eclipser::StdInput{};
+  fuzzuf::algorithm::eclipser::options::SplitArgs( options );
   fuzzuf::algorithm::eclipser::executor::Initialize( options );
   fuzzuf::algorithm::eclipser::test_case::Initialize( options.out_dir );
   fuzzuf::algorithm::eclipser::scheduler::Initialize();

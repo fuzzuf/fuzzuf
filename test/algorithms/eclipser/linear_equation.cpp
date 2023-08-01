@@ -43,6 +43,7 @@ BOOST_AUTO_TEST_CASE(Linear) {
   options.out_dir = output_dir.string();
   options.target_prog = TEST_BINARY_DIR "/put/raw/raw-threshold",
   options.fork_server = false;
+  fuzzuf::algorithm::eclipser::options::SplitArgs( options );
   fuzzuf::algorithm::eclipser::executor::Initialize( options );
   fuzzuf::algorithm::eclipser::seed::Seed seed;
   seed.FixCurBytesInplace( fuzzuf::algorithm::eclipser::Direction::Right, { std::byte( 1 ), std::byte( 2 ) } );
@@ -177,6 +178,7 @@ BOOST_AUTO_TEST_CASE(NonLinear) {
   options.out_dir = output_dir.string();
   options.target_prog = TEST_BINARY_DIR "/put/raw/raw-monotonic",
   options.fork_server = false;
+  fuzzuf::algorithm::eclipser::options::SplitArgs( options );
   fuzzuf::algorithm::eclipser::executor::Initialize( options );
   fuzzuf::algorithm::eclipser::seed::Seed seed;
   seed.FixCurBytesInplace( fuzzuf::algorithm::eclipser::Direction::Right, { std::byte( 1 ), std::byte( 2 ) } );

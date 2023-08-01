@@ -41,6 +41,7 @@ BOOST_AUTO_TEST_CASE(Run) {
   options.target_prog = TEST_BINARY_DIR "/put/raw/raw-threshold";
   options.fork_server = false;
   options.n_spawn = 10;
+  fuzzuf::algorithm::eclipser::options::SplitArgs( options );
   fuzzuf::algorithm::eclipser::executor::Initialize( options );
   fuzzuf::algorithm::eclipser::seed::Seed seed;
   seed.FixCurBytesInplace( fuzzuf::algorithm::eclipser::Direction::Right, { std::byte( 1 ) } );

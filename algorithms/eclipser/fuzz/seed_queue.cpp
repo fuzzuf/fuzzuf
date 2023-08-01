@@ -10,6 +10,14 @@ void SeedQueue::EnqueueInplace( Priority priority, const seed::Seed &seed ) {
     normals.push_back( seed );
   }
 }
+void SeedQueue::EnqueueInplace( Priority priority, seed::Seed &&seed ) {
+  if( priority == Priority::Favored ) {
+    favoreds.push_back( std::move( seed ) );
+  }
+  else if( priority == Priority::Normal ) {
+    normals.push_back( std::move( seed ) );
+  }
+}
 std::pair< Priority, seed::Seed > SeedQueue::DequeueInplace() {
   if( favoreds.empty() ) {
     auto seed = normals.front();

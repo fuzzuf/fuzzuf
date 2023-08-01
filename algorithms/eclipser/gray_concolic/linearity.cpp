@@ -60,7 +60,11 @@ Fraction FindCommonSlope(
   const BigInt &y2,
   const BigInt &y3
 ) {
-  if( x1 >= x2 || x2 >= x3 ) {
+  if( x1 >= x2 || x2 >= x3 )
+#if __GNUC__ >= 9 && __cplusplus > 201703L
+  [[unlikely]]
+#endif  
+  {
     failwith( "BranchInfo out of order" );
     return Fraction(); // unreachable
   }

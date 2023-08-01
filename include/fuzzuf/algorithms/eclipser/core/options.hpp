@@ -24,8 +24,14 @@
 #include <random>
 #include <functional>
 #include <string>
+#include <vector>
 #include <cstdint>
-#include <fuzzuf/algorithms/eclipser/core/typedef.hpp>
+#ifdef HAS_NLOHMANN_JSON_FWD
+#include <nlohmann/json_fwd.hpp>
+#else
+#include <nlohmann/json.hpp>
+#endif
+#include "fuzzuf/algorithms/eclipser/core/typedef.hpp"
 
 namespace fuzzuf::algorithm::eclipser::options {
 struct FuzzOption {
@@ -44,7 +50,14 @@ struct FuzzOption {
   int n_spawn = 10;
   std::function<void(std::string &&)> sink;
   std::mt19937 rng;
+  std::unordered_map< Tracer, std::vector< std::string > > splited_args;
+  std::unordered_map< Tracer, std::vector< char* > > raw_args;
+  std::vector< std::string > native_splited_args;
+  std::vector< char* > native_raw_args;
 };
+
+void to_json( nlohmann::json&, const FuzzOption& );
+void SplitArgs( FuzzOption &opts );
 
 }
 

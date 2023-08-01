@@ -21,6 +21,7 @@
 namespace fuzzuf::algorithm::eclipser::gray_concolic {
 
 namespace gray_solver {
+namespace {
 std::optional< BigInt >
 FindNextCharAux(
   const std::function<void(std::string &&)> &sink,
@@ -28,7 +29,7 @@ FindNextCharAux(
   const options::FuzzOption &opt,
   const BranchPoint &targ_pt,
   const std::vector< std::byte > &acc_str,
-  const std::vector< BranchInfo > &acc_br_infos,
+  std::vector< BranchInfo > &acc_br_infos,
   const std::vector< BigInt >::const_iterator &try_vals_begin,
   const std::vector< BigInt >::const_iterator &try_vals_end
 ) {
@@ -53,12 +54,11 @@ FindNextCharAux(
     );
   }
   else {
-    auto new_acc_br_infos = acc_br_infos;
-    new_acc_br_infos.push_back( *br_info );
+    acc_br_infos.push_back( *br_info );
     const auto lin_eq = branch_tree::InferLinEq(
       Context{},
-      new_acc_br_infos.begin(),
-      new_acc_br_infos.end()
+      acc_br_infos.begin(),
+      acc_br_infos.end()
     );
     if( !lin_eq ) { // No linear equation found yet, proceed with more brInfo.
       return FindNextCharAux(
@@ -67,20 +67,22 @@ FindNextCharAux(
         opt,
         targ_pt,
         acc_str,
-        new_acc_br_infos,
+        acc_br_infos,
         std::next( try_vals_begin ),
         try_vals_end
       );
     }
     // The solution of this equation is next character.
-    if( lin_eq->solutions.empty() ) {
+    if( lin_eq->solutions.empty() )
+#if __GNUC__ >= 9 && __cplusplus > 201703L
+  [[unlikely]]
+#endif  
+    {
       failwith( "Linear equation w/ empty solution" );
     }
     return *lin_eq->solutions.begin();
   }
 }
-
-namespace {
 
 std::optional< BigInt >
 FindNextChar(
@@ -91,43 +93,35 @@ FindNextChar(
   const std::vector< std::byte > &acc_str
 ) {
   const auto sample_vals = SampleInt( 0, 255, opt.n_spawn );
+  std::vector< BranchInfo > acc_br_infos;
   return FindNextCharAux(
     sink,
     seed,
     opt,
     targ_pt,
     acc_str,
-    {},
+    acc_br_infos,
     sample_vals.begin(),
     sample_vals.end()
   );
 }
 
-}
-
-std::vector< std::tuple< seed::Seed, Signal, CoverageGain > >
+std::vector< std::tuple< seed::Seed, Signal, CoverageGain > > &
 TryStrSol(
   const std::function<void(std::string &&)> &sink,
   const seed::Seed &seed,
   const options::FuzzOption &opt,
   std::size_t max_len,
   const BranchPoint &targ_pt,
-  const std::vector< std::tuple< seed::Seed, Signal, CoverageGain > > &acc_res,
+  std::vector< std::tuple< seed::Seed, Signal, CoverageGain > > &acc_res,
   const std::vector< std::byte > &try_str
 ) {
   const auto try_seed = seed.FixCurBytes( Direction::Right, try_str );
     // Use dummy value as 'tryVal', since our interest is in branch distance.
   const auto [exit_sig,cov_gain,br_info] = executor::GetBranchInfo( sink, opt, try_seed, 0, targ_pt );
   if( br_info && br_info->distance == 0 ) {
-    std::vector< std::tuple< seed::Seed, Signal, CoverageGain > > new_acc_res;
-    new_acc_res.reserve( acc_res.size() + 1u );
-    new_acc_res.push_back( std::make_tuple( try_seed, exit_sig, cov_gain ) );
-    new_acc_res.insert(
-      new_acc_res.end(),
-      acc_res.begin(),
-      acc_res.end()
-    );
-    return new_acc_res;
+    acc_res.push_back( std::make_tuple( try_seed, exit_sig, cov_gain ) );
+    return acc_res;
   }
   else if( br_info ) { // Non-zero branch distance, try next character.
     if( try_str.size() >= max_len ) {
@@ -149,14 +143,15 @@ TryStrSol(
     return acc_res; // Target point disappeared, halt.
   }
 }
-std::vector< std::tuple< seed::Seed, Signal, CoverageGain > >
+
+std::vector< std::tuple< seed::Seed, Signal, CoverageGain > >&
 SolveAsString(
   const std::function<void(std::string &&)> &sink,
   const seed::Seed &seed,
   const options::FuzzOption &opt,
   const BranchPoint &targ_pt,
   const LinearEquation &lin_eq,
-  const std::vector< std::tuple< seed::Seed, Signal, CoverageGain > > &acc_res
+  std::vector< std::tuple< seed::Seed, Signal, CoverageGain > > &acc_res
 ) {
   std::vector< std::vector< std::byte > > init_strs;
   init_strs.reserve( lin_eq.solutions.size() );
@@ -169,20 +164,15 @@ SolveAsString(
     }
   );
   const auto max_len = seed.QueryUpdateBound( Direction::Right );
-  auto new_acc_res = acc_res;
   for( const auto &v: init_strs ) {
-    new_acc_res = TryStrSol( sink, seed, opt, max_len, targ_pt, new_acc_res, v );
+    TryStrSol( sink, seed, opt, max_len, targ_pt, acc_res, v );
   }
-  return new_acc_res;
+  return acc_res;
 }
 
 std::unordered_set< BigInt > solution_cache;
 
-void ClearSolutionCache() {
-  solution_cache.clear();
-}
-
-std::vector< std::tuple< seed::Seed, Signal, CoverageGain > >
+std::vector< std::tuple< seed::Seed, Signal, CoverageGain > >&
 TryChunkSol(
   const std::function<void(std::string &&)> &sink,
   const seed::Seed &seed,
@@ -191,7 +181,7 @@ TryChunkSol(
   const BranchPoint &targ_pt,
   Endian endian,
   std::size_t size,
-  const std::vector< std::tuple< seed::Seed, Signal, CoverageGain > > &acc_res,
+  std::vector< std::tuple< seed::Seed, Signal, CoverageGain > > &acc_res,
   BigInt sol
 ) {
   if( solution_cache.find( sol ) != solution_cache.end() ) {
@@ -204,15 +194,8 @@ TryChunkSol(
     const auto [exit_sig,cov_gain,br_info] = executor::GetBranchInfo( sink, opt, try_seed, 0, targ_pt );
     if( br_info && br_info->distance == 0 ) {
       solution_cache.insert( sol );
-      std::vector< std::tuple< seed::Seed, Signal, CoverageGain > > new_acc_res;
-      new_acc_res.reserve( acc_res.size() + 1u );
-      new_acc_res.push_back( std::make_tuple( try_seed, exit_sig, cov_gain ) );
-      new_acc_res.insert(
-        new_acc_res.end(),
-        acc_res.begin(),
-        acc_res.end()
-      );
-      return new_acc_res;
+      acc_res.push_back( std::make_tuple( try_seed, exit_sig, cov_gain ) );
+      return acc_res;
     }
     else {
       return acc_res; // Non-zero branch distance, failed.
@@ -221,7 +204,7 @@ TryChunkSol(
   }
 }
 
-std::vector< std::tuple< seed::Seed, Signal, CoverageGain > >
+std::vector< std::tuple< seed::Seed, Signal, CoverageGain > >&
 SolveAsChunk(
   const std::function<void(std::string &&)> &sink,
   const seed::Seed &seed,
@@ -229,25 +212,24 @@ SolveAsChunk(
   Direction dir,
   const BranchPoint &targ_pt,
   const LinearEquation &lin_eq,
-  const std::vector< std::tuple< seed::Seed, Signal, CoverageGain > > &acc_res
+  std::vector< std::tuple< seed::Seed, Signal, CoverageGain > > &acc_res
 ) {
   const auto &sols = lin_eq.solutions;
   const auto &size = lin_eq.chunk_size;
   const auto endian = lin_eq.endian;
-  auto new_acc_res = acc_res;
   for( const auto &v: sols ) {
-    new_acc_res = TryChunkSol( sink, seed, opt, dir, targ_pt, endian, size, new_acc_res, v );
+    TryChunkSol( sink, seed, opt, dir, targ_pt, endian, size, acc_res, v );
   }  
-  return new_acc_res;
+  return acc_res;
 }
 
-std::vector< std::tuple< seed::Seed, Signal, CoverageGain > >
+std::vector< std::tuple< seed::Seed, Signal, CoverageGain > >&
 SolveEquation(
   const std::function<void(std::string &&)> &sink,
   const seed::Seed &seed,
   const options::FuzzOption &opt,
   Direction dir,
-  const std::vector< std::tuple< seed::Seed, Signal, CoverageGain > > &acc_res,
+  std::vector< std::tuple< seed::Seed, Signal, CoverageGain > > &acc_res,
   const BranchPoint &targ_pt,
   const LinearEquation &lin_eq
 ) {
@@ -275,7 +257,7 @@ BigInt GetFunctionValue(
   }
 }
 
-std::vector< std::tuple< seed::Seed, Signal, CoverageGain > >
+std::vector< std::tuple< seed::Seed, Signal, CoverageGain > >&
 BinarySearch(
   const std::function<void(std::string &&)> &sink,
   const seed::Seed &seed,
@@ -283,7 +265,7 @@ BinarySearch(
   Direction dir,
   std::size_t max_len,
   const BranchPoint &targ_pt,
-  const std::vector< std::tuple< seed::Seed, Signal, CoverageGain > > &acc_res,
+  std::vector< std::tuple< seed::Seed, Signal, CoverageGain > > &acc_res,
   const Monotonicity &mono
 ) {
   const auto try_val = ( mono.lower_x + mono.upper_x ) / 2;
@@ -292,15 +274,8 @@ BinarySearch(
   const auto try_seed = seed.FixCurBytes( dir, try_bytes );
   const auto [exit_sig,cov_gain,br_info] = executor::GetBranchInfo( sink, opt, try_seed, try_val, targ_pt );
   if( br_info && br_info->distance == 0 ) {
-    std::vector< std::tuple< seed::Seed, Signal, CoverageGain > > new_acc_res;
-    new_acc_res.reserve( acc_res.size() + 1u );
-    new_acc_res.push_back( std::make_tuple( try_seed, exit_sig, cov_gain ) );
-    new_acc_res.insert(
-      new_acc_res.end(),
-      acc_res.begin(),
-      acc_res.end()
-    );
-    return new_acc_res;
+    acc_res.push_back( std::make_tuple( try_seed, exit_sig, cov_gain ) );
+    return acc_res;
   }
   else if( br_info ) {
     const auto new_y = GetFunctionValue( mono, *br_info );
@@ -318,36 +293,32 @@ BinarySearch(
   }
 }
 
-std::vector< std::tuple< seed::Seed, Signal, CoverageGain > >
+std::vector< std::tuple< seed::Seed, Signal, CoverageGain > >&
 SolveMonotonic(
   const std::function<void(std::string &&)> &sink,
   const seed::Seed &seed,
   const options::FuzzOption &opt,
-  const std::vector< std::tuple< seed::Seed, Signal, CoverageGain > > &acc_res,
+  std::vector< std::tuple< seed::Seed, Signal, CoverageGain > > &acc_res,
   const BranchPoint &targ_pt,
   const Monotonicity &mono
 ) {
   const auto max_len_r = seed.QueryUpdateBound( Direction::Right );
   const auto max_len_l = seed.QueryUpdateBound( Direction::Left );
   // Try big endian first, and stop if any result is found.
-  auto res = BinarySearch( sink, seed, opt, Direction::Right, max_len_r, targ_pt, {}, mono );
+  auto res = BinarySearch( sink, seed, opt, Direction::Right, max_len_r, targ_pt, acc_res, mono );
   if( !res.empty() ) {
-    res.insert(
-      res.end(),
-      acc_res.begin(),
-      acc_res.end()
-    );
-    return res;
+    return acc_res;
   }
   else {
     return BinarySearch( sink, seed, opt, Direction::Left, max_len_l, targ_pt, acc_res, mono );
   }
 }
 
+/*
 bool DifferentSign( const BigInt &i1, const BigInt &i2 ) {
   return ( i1 < 0 && i2 > 0 ) || ( i1 > 0 && i2 < 0 );
 }
-
+*/
 bool SameSign( const BigInt &i1, const BigInt &i2 ) {
   return ( i1 < 0 && i2 < 0 ) || ( i1 > 0 && i2 > 0 );
 }
@@ -418,44 +389,6 @@ std::tuple<
   );
 }
 
-std::pair<
-  std::vector< std::pair< BigInt, BigInt > >,
-  std::vector< std::pair< BigInt, BigInt > >
->
-GenerateRanges(
-  const std::vector< std::tuple< BigInt, BigInt, Sign > >::iterator &split_points_begin,
-  const std::vector< std::tuple< BigInt, BigInt, Sign > >::iterator &split_points_end,
-  unsigned int size
-) {
-  if( split_points_begin == split_points_end ) {
-    return std::pair<
-      std::vector< std::pair< BigInt, BigInt > >,
-      std::vector< std::pair< BigInt, BigInt > >
-    >();
-  }
-  std::sort(
-    split_points_begin,
-    split_points_end,
-    []( const auto &l, const auto &r ) {
-      return std::get< 0 >( l ) < std::get< 0 >( r );
-    }
-  );
-  const auto max = GetUnsignedMax( size );
-  std::vector< std::pair< BigInt, BigInt > > acc_res1;
-  std::vector< std::pair< BigInt, BigInt > > acc_res2;
-  // 'Positive' is used as a dummy argument.
-  GenerateRangesAux(
-    BigInt( 0 ),
-    Sign::Positive,
-    max,
-    split_points_begin,
-    split_points_end,
-    acc_res1,
-    acc_res2
-  );
-  return std::make_pair( std::move( acc_res1 ), std::move( acc_res2 ) );
-}
-
   // Currently we consider constraints just for MSB.
 std::pair<
   std::vector< std::pair< BigInt, BigInt > >,
@@ -524,7 +457,7 @@ CheckSolutionAux(
     const auto new_br_info = executor::GetBranchInfoOnly( sink, opt, new_try_seed, 0, targ_pt );
     if( new_br_info ) {
       const auto sign = ( new_br_info->distance > 0 ) ? Sign::Positive : Sign::Negative;
-      acc_res.insert( acc_res.begin(), std::make_pair( sol, sign ) );
+      acc_res.insert( acc_res.end(), std::make_pair( sol, sign ) );
       return acc_res;
     }
     else {
@@ -550,9 +483,11 @@ CheckSolution(
   const auto size = equation.chunk_size;
   const auto sign = equation.linearity.slope.numerator();
   std::vector< std::pair< BigInt, Sign > > acc_res;
+  acc_res.reserve( solutions.size() );
   for( const auto &s: solutions ) {
     CheckSolutionAux( sink, seed, opt, dir, endian, size, targ_pt, acc_res, s );
   }
+  std::reverse( acc_res.begin(), acc_res.end() );
   return acc_res;
 }
 
@@ -582,7 +517,7 @@ CheckSplitAux(
     }
     else {
       const auto sign = ( br_info_opt1->distance > 0 ) ? Sign::Positive : Sign::Negative;
-      acc_res.insert( acc_res.begin(), std::make_tuple( sol1, sol2, sign ) );
+      acc_res.insert( acc_res.end(), std::make_tuple( sol1, sol2, sign ) );
       return acc_res;
     }
   }
@@ -602,9 +537,11 @@ CheckSplitPoint(
   const auto endian = ineq.endian;
   const auto size = ineq.chunk_size;
   std::vector< std::tuple< BigInt, BigInt, Sign > > acc_res;
+  acc_res.reserve( split_points.size() );
   for( const auto &s: split_points ) {
     CheckSplitAux( sink, seed, opt, dir, endian, size, targ_pt, acc_res, s.first, s.second );
   }
+  std::reverse( acc_res.begin(), acc_res.end() );
   return acc_res;
 }
 
@@ -625,6 +562,7 @@ ExtractSplitPoint(
     const auto tight_sols = CheckSolution( sink, seed, opt, dir, *inequality.tight_inequality, targ_pt );
     if( !tight_sols.empty() ) {
       std::vector< std::tuple< BigInt, BigInt, Sign > > splits;
+      splits.reserve( tight_sols.size() );
       std::transform(
         tight_sols.begin(),
         tight_sols.end(),
@@ -651,6 +589,7 @@ ExtractSplitPoint(
   else if( inequality.tight_inequality ) {
     const auto tight_sols = CheckSolution( sink, seed, opt, dir, *inequality.tight_inequality, targ_pt );
     std::vector< std::tuple< BigInt, BigInt, Sign > > splits;
+    splits.reserve( tight_sols.size() );
     std::transform(
       tight_sols.begin(),
       tight_sols.end(),
@@ -673,7 +612,11 @@ ExtractSplitPoint(
       std::move( splits )
     );
   }
-  else {
+  else
+#if __GNUC__ >= 9 && __cplusplus > 201703L
+  [[unlikely]]
+#endif  
+  {
     failwith( "Unreachable" );
     return std::make_tuple(
       0u,
@@ -779,6 +722,7 @@ EncodeCondition(
                 return s.ConstrainByteAt( dir, offset, low, high );
               };
               std::vector< seed::Seed > transformed;
+	      transformed.reserve( acc_seeds.size() );
               std::transform(
                 acc_seeds.begin(),
                 acc_seeds.end(),
@@ -844,21 +788,23 @@ SolveBranchCond(
       > {
       if constexpr ( std::is_same_v< utils::type_traits::RemoveCvrT< decltype( v ) >, LinEq > ) {
         std::vector< std::tuple< seed::Seed, Signal, CoverageGain > > acc_res;
-        auto items = SolveEquation( sink, seed, opt, dir, acc_res, branch_point, v );
-        return std::make_pair( pc, std::move( items ) );
+        SolveEquation( sink, seed, opt, dir, acc_res, branch_point, v );
+	//std::reverse( acc_res.begin(), acc_res.end() );
+        return std::make_pair( pc, std::move( acc_res ) );
       }
       else if constexpr ( std::is_same_v< utils::type_traits::RemoveCvrT< decltype( v ) >, Mono > ) {
         std::vector< std::tuple< seed::Seed, Signal, CoverageGain > > acc_res;
-        auto items = SolveMonotonic( sink, seed, opt, acc_res, branch_point, v );
-        return std::make_pair( pc, std::move( items ) );
+        SolveMonotonic( sink, seed, opt, acc_res, branch_point, v );
+	//std::reverse( acc_res.begin(), acc_res.end() );
+        return std::make_pair( pc, std::move( acc_res ) );
       }
       else if constexpr ( std::is_same_v< utils::type_traits::RemoveCvrT< decltype( v ) >, LinIneq > ) {
         const auto [new_pc,seeds] = SolveInequality( sink, seed, opt, dir, pc, dist_sign, branch_point, v );
         std::vector< std::tuple< seed::Seed, Signal, CoverageGain > > items;
         items.reserve( seeds.size() );
         std::transform(
-          seeds.begin(),
-          seeds.end(),
+          seeds.rbegin(),
+          seeds.rend(),
           std::back_inserter( items ),
           [&]( const auto &s ) {
             const auto [sig,cov] = executor::GetCoverage( sink, opt, s );
@@ -924,7 +870,7 @@ SolveBranchTree(
             );
           }
         );
-        terminal_items.insert( terminal_items.begin(), new_seeds.begin(), new_seeds.end() );
+        terminal_items.insert( terminal_items.end(), new_seeds.begin(), new_seeds.end() );
         return terminal_items;
       }
       else if constexpr ( std::is_same_v< utils::type_traits::RemoveCvrT< decltype( v ) >, ForkedTree > ) {
@@ -950,7 +896,7 @@ SolveBranchTree(
                 auto s = SolveBranchTree( sink, seed_, opt, dir, new_new_pc, child_tree );
                 child_seeds.insert( child_seeds.end(), s.begin(), s.end() );
               }
-              child_seeds.insert( child_seeds.begin(), new_seeds.begin(), new_seeds.end() );
+              child_seeds.insert( child_seeds.end(), new_seeds.begin(), new_seeds.end() );
               return child_seeds;
             }
             else {
@@ -967,7 +913,7 @@ SolveBranchTree(
                 auto s = SolveBranchTree( sink, seed_, opt, dir, new_pc, child_tree );
                 child_seeds.insert( child_seeds.end(), s.begin(), s.end() );
               }
-              child_seeds.insert( child_seeds.begin(), new_seeds.begin(), new_seeds.end() );
+              child_seeds.insert( child_seeds.end(), new_seeds.begin(), new_seeds.end() );
               return child_seeds;
             }
           },
@@ -982,7 +928,7 @@ SolveBranchTree(
           auto s = SolveBranchTree( sink, seed_, opt, dir, new_pc, c );
           sub_tree_seeds.insert( sub_tree_seeds.end(), s.begin(), s.end() );
         }
-        sub_tree_seeds.insert( sub_tree_seeds.begin(), new_seeds.begin(), new_seeds.end() );
+        sub_tree_seeds.insert( sub_tree_seeds.end(), new_seeds.begin(), new_seeds.end() );
         return sub_tree_seeds;
       }
     },
@@ -990,224 +936,11 @@ SolveBranchTree(
   );
 }
 
+}
 
-/*
-  let rec generateRangesAux prevHigh prevSign max splitPoints accRes1 accRes2 =
-    match splitPoints with
-    | [] ->
-      let accRes1, accRes2 =
-        if prevSign = Positive
-        then accRes1, (prevHigh, max) :: accRes2
-        else (prevHigh, max) :: accRes1, accRes2
-      accRes1, accRes2
-    | (low, high, sign) :: tailSplitPoints ->
-      let accRes1, accRes2 =
-        if sign = Positive
-        then (prevHigh, low) :: accRes1, accRes2
-        else accRes1, (prevHigh, low) :: accRes2
-      if high > max then (accRes1, accRes2) else
-        generateRangesAux high sign max tailSplitPoints accRes1 accRes2
-
-  let extractMSB size (i1:bigint, i2:bigint, sign) =
-    (i1 >>> ((size - 1) * 8), i2 >>> ((size - 1) * 8), sign)
-
-  // Currently we consider constraints just for MSB.
-  let rec generateMSBRanges splitPoints size sign =
-    if List.isEmpty splitPoints then [], [] else
-      let splitPoints = List.sortBy (fun (x, _, _) -> x) splitPoints
-      let splitPoints = List.map (extractMSB size) splitPoints
-      let max = if sign = Signed then 127I else 255I
-      // 'Positive' is used as a dummy argument.
-      generateRangesAux 0I Positive max splitPoints [] []
-
-  let rec generateRanges splitPoints size =
-    if List.isEmpty splitPoints then [], [] else
-      let splitPoints = List.sortBy (fun (x, _, _) -> x) splitPoints
-      let max = getUnsignedMax size
-      // 'Positive' is used as a dummy argument.
-      generateRangesAux 0I Positive max splitPoints [] []
-
-  let extractMSB size (i1:bigint, i2:bigint, sign) =
-    (i1 >>> ((size - 1) * 8), i2 >>> ((size - 1) * 8), sign)
-
-  // Currently we consider constraints just for MSB.
-  let rec generateMSBRanges splitPoints size sign =
-    if List.isEmpty splitPoints then [], [] else
-      let splitPoints = List.sortBy (fun (x, _, _) -> x) splitPoints
-      let splitPoints = List.map (extractMSB size) splitPoints
-      let max = if sign = Signed then 127I else 255I
-      // 'Positive' is used as a dummy argument.
-      generateRangesAux 0I Positive max splitPoints [] []
-
-  let rec generateRanges splitPoints size =
-    if List.isEmpty splitPoints then [], [] else
-      let splitPoints = List.sortBy (fun (x, _, _) -> x) splitPoints
-      let max = getUnsignedMax size
-      // 'Positive' is used as a dummy argument.
-      generateRangesAux 0I Positive max splitPoints [] []
-
-  let checkSolutionAux seed opt dir endian size targPt accRes sol =
-    let tryBytes = bigIntToBytes endian size sol
-    let trySeed = Seed.fixCurBytes seed dir tryBytes
-    // Use dummy value as 'tryVal', since our interest is in branch distance.
-    match Executor.getBranchInfoOnly opt trySeed 0I targPt with
-    | Some brInfo when brInfo.Distance = 0I ->
-      let tryBytes' = bigIntToBytes endian size (sol - 1I)
-      let trySeed' = Seed.fixCurBytes seed dir tryBytes'
-      match Executor.getBranchInfoOnly opt trySeed' 0I targPt with
-      | Some brInfo' ->
-        let sign = if brInfo'.Distance > 0I then Positive else Negative
-        (sol, sign) :: accRes
-      | None -> accRes
-    | _ -> accRes
-
-  let checkSolution seed opt dir equation targPt =
-    let solutions = equation.Solutions
-    let endian = equation.Endian
-    let size = equation.ChunkSize
-    let sign = equation.Linearity.Slope.Numerator
-    List.fold (checkSolutionAux seed opt dir endian size targPt) [] solutions
-
-  let checkSplitAux seed opt dir endian size targPt accRes (sol1, sol2) =
-    let tryBytes1 = bigIntToBytes endian size sol1
-    let trySeed1 = Seed.fixCurBytes seed dir tryBytes1
-    let tryBytes2 = bigIntToBytes endian size sol2
-    let trySeed2 = Seed.fixCurBytes seed dir tryBytes2
-    // Use dummy value as 'tryVal', since our interest is in branch distance.
-    let brInfoOpt1 = Executor.getBranchInfoOnly opt trySeed1 0I targPt
-    let brInfoOpt2 = Executor.getBranchInfoOnly opt trySeed2 0I targPt
-    match brInfoOpt1, brInfoOpt2 with
-    | Some brInfo1, Some brInfo2 ->
-      if sameSign brInfo1.Distance brInfo2.Distance
-      then accRes
-      else let sign = if brInfo1.Distance > 0I then Positive else Negative
-           (sol1, sol2, sign) :: accRes
-    | _ -> accRes
-
-  let checkSplitPoint seed opt dir ineq targPt =
-    let splitPoints = ineq.SplitPoints
-    let endian = ineq.Endian
-    let size = ineq.ChunkSize
-    List.fold (checkSplitAux seed opt dir endian size targPt) [] splitPoints
-
-  let extractSplitPoint seed opt dir inequality targPt =
-    match inequality.TightInequality, inequality.LooseInequality with
-    | Some eq, Some ineq ->
-      let tightSols = checkSolution seed opt dir eq targPt
-      if not (List.isEmpty tightSols) then
-        let splits = List.map splitWithSolution tightSols
-        (eq.ChunkSize, eq.Endian, splits)
-      else
-        let splits = checkSplitPoint seed opt dir ineq targPt
-        (ineq.ChunkSize, ineq.Endian, splits)
-    | Some eq, None ->
-      let tightSols = checkSolution seed opt dir eq targPt
-      let splits = List.map splitWithSolution tightSols
-      (eq.ChunkSize, eq.Endian, splits)
-    | None, Some ineq ->
-      let splits = checkSplitPoint seed opt dir ineq targPt
-      (ineq.ChunkSize, ineq.Endian, splits)
-    | None, None -> failwith "Unreachable"
-
-  let extractCond seed opt dir ineq targPt =
-    let size, endian, splitPoints = extractSplitPoint seed opt dir ineq targPt
-    let sign = ineq.Sign
-    let posMSBRanges, negMSBRanges = generateMSBRanges splitPoints size sign
-    let posCondition = Constraint.make posMSBRanges endian size
-    let negCondition = Constraint.make negMSBRanges endian size
-    (posCondition, negCondition)
-
-  let updateConditions pc distSign (condP:Constraint) (condN:Constraint) =
-    if distSign = Positive
-    then (Constraint.conjunction pc condP, Constraint.conjunction pc condN)
-    else (Constraint.conjunction pc condN, Constraint.conjunction pc condP)
-
-
-  let encodeCondition seed opt dir condition =
-    if Constraint.isTop condition then []
-    elif Seed.queryLenToward seed dir < List.length condition then []
-    else
-      let byteConds =
-        if dir = Right
-        then List.mapi (fun i byteCond -> (i, byteCond)) condition
-        else let len = List.length condition
-             List.mapi (fun i byteCond -> (len - i - 1, byteCond)) condition
-      let newSeeds =
-        List.fold (fun accSeeds (offset, byteCond) ->
-          if ByteConstraint.isTop byteCond then accSeeds else
-            List.collect (fun range ->
-              match range with
-              | Between (low, high) ->
-                let low = if low < 0I then 0uy
-                          elif low > 255I then 255uy
-                          else byte low
-                let high = if high < 0I then 0uy
-                           elif high > 255I then 255uy
-                           else byte high
-                let mapper s = Seed.constrainByteAt s dir offset low high
-                List.map mapper accSeeds
-              | Bottom -> []
-              | Top -> failwith "Unreachable"
-            ) byteCond
-          ) [seed] byteConds
-      newSeeds
-
-  let solveInequality seed opt dir pc distSign branchPoint ineq =
-    let condP, condN = extractCond seed opt dir ineq branchPoint
-    let accPc, flipCond = updateConditions pc distSign condP condN
-    let seeds = encodeCondition seed opt dir flipCond
-    (accPc, seeds)
-
-  let solveBranchCond seed opt dir (pc: Constraint) branch =
-    let branchCond, distSign = branch
-    let cond, branchPoint = branchCond
-    match cond with
-    | LinEq linEq ->
-      let items = solveEquation seed opt dir [] (branchPoint, linEq)
-      (pc, items)
-    | Mono mono ->
-      let items = solveMonotonic seed opt [] (branchPoint, mono)
-      (pc, items)
-    | LinIneq ineq ->
-      let pc, seeds = solveInequality seed opt dir pc distSign branchPoint ineq
-      let sigs, covs = List.map (Executor.getCoverage opt) seeds |> List.unzip
-      let items = List.zip3 seeds sigs covs
-      (pc, items)
-
-  let solveBranchSeq seed opt dir pc branchSeq =
-    List.fold (fun (accPc, accSeeds) branch ->
-      let accPc, newSeeds = solveBranchCond seed opt dir accPc branch
-      accPc, newSeeds @ accSeeds
-    ) (pc, []) branchSeq.Branches
-
-
-  let rec solveBranchTree seed opt dir pc branchTree =
-    match branchTree with
-    | Straight branchSeq ->
-      let pc, newSeeds = solveBranchSeq seed opt dir pc branchSeq
-      let terminalSeeds = encodeCondition seed opt dir pc
-      let results = List.map (Executor.getCoverage opt) terminalSeeds
-      let sigs, covs = List.unzip results
-      let terminalItems = List.zip3 terminalSeeds sigs covs
-      newSeeds @ terminalItems
-    | ForkedTree (branchSeq, (LinIneq ineq, branchPt), childs) ->
-      let pc, newSeeds = solveBranchSeq seed opt dir pc branchSeq
-      let condP, condN = extractCond seed opt dir ineq branchPt
-      let childSeeds =
-        List.map (fun (distSign, childTree) ->
-          let pc, _ = updateConditions pc distSign condP condN
-          solveBranchTree seed opt dir pc childTree
-        ) childs
-      List.concat (newSeeds :: childSeeds)
-    | ForkedTree (branchSeq, _, childs) ->
-      let pc, newSeeds = solveBranchSeq seed opt dir pc branchSeq
-      let childSeeds = List.map (snd >> solveBranchTree seed opt dir pc) childs
-      List.concat (newSeeds :: childSeeds)
-    | DivergeTree (branchSeq, subTrees) ->
-      let pc, newSeeds = solveBranchSeq seed opt dir pc branchSeq
-      let subTreeSeeds = List.map (solveBranchTree seed opt dir pc) subTrees
-      List.concat (newSeeds :: subTreeSeeds)
-*/
+void ClearSolutionCache() {
+  solution_cache.clear();
+}
 
 std::vector< std::tuple< seed::Seed, Signal, CoverageGain > >
 Solve(
@@ -1218,7 +951,9 @@ Solve(
   const BranchTree &branch_tree
 ){
   const auto init_pc = constraint::top;
-  return SolveBranchTree( sink, seed, opt, byte_dir, init_pc, branch_tree );
+  auto seeds = SolveBranchTree( sink, seed, opt, byte_dir, init_pc, branch_tree );
+  std::reverse( seeds.begin(), seeds.end() );
+  return seeds;
 }
   
 }

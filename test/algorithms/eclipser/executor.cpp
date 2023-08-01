@@ -38,6 +38,7 @@ BOOST_AUTO_TEST_CASE(Coverage) {
   options.out_dir = output_dir.string();
   options.fork_server = false;
   options.target_prog = TEST_BINARY_DIR "/put/raw/raw-easy_to_branch",
+  fuzzuf::algorithm::eclipser::options::SplitArgs( options );
   fuzzuf::algorithm::eclipser::executor::Initialize( options );
   fuzzuf::algorithm::eclipser::seed::Seed seed;
   seed.FixCurBytesInplace( fuzzuf::algorithm::eclipser::Direction::Right, { std::byte( 1 ) } );
@@ -74,6 +75,7 @@ BOOST_AUTO_TEST_CASE(BranchTrace) {
   options.verbosity = 1;
   options.out_dir = output_dir.string();
   options.target_prog = TEST_BINARY_DIR "/put/raw/raw-easy_to_branch",
+  fuzzuf::algorithm::eclipser::options::SplitArgs( options );
   fuzzuf::algorithm::eclipser::executor::Initialize( options );
   fuzzuf::algorithm::eclipser::seed::Seed seed;
   seed.FixCurBytesInplace( fuzzuf::algorithm::eclipser::Direction::Right, { std::byte( 1 ) } );

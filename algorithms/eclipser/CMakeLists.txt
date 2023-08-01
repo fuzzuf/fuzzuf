@@ -1,6 +1,6 @@
 add_library(
   fuzzuf_core_eclipser
-  STATIC
+  SHARED
   core/typedef.cpp
   core/branch_info.cpp
   core/byte_val.cpp
@@ -9,6 +9,7 @@ add_library(
   core/executor.cpp
   core/utils.cpp
   core/failwith.cpp
+  core/options.cpp
   core/libexec.c
   gray_concolic/linearity.cpp
   gray_concolic/linear_equation.cpp
@@ -26,6 +27,20 @@ add_library(
   fuzz/fuzz.cpp
   cli_compat/options.cpp
   cli_compat/fuzzer.cpp
+)
+
+target_link_libraries(
+  fuzzuf_core_eclipser
+  fuzzuf_core
+  ${FUZZUF_LIBRARIES}
+)
+
+set_target_properties(
+  fuzzuf_core_eclipser
+  PROPERTIES
+  VERSION ${PROJECT_VERSION_MINOR}
+  SOVERSION ${PROJECT_VERSION_PATCH}
+  SUFFIX "${PROJECT_VERSION_MAJOR}${CMAKE_SHARED_LIBRARY_SUFFIX}"
 )
 
 target_include_directories(
@@ -54,6 +69,12 @@ set_target_properties(
 target_link_libraries(
   fuzzuf_core_eclipser
   ${FUZZUF_LIBRARIES}
+)
+
+install(
+  TARGETS fuzzuf_core_eclipser
+  LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+  RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
 )
 
 subdirs(

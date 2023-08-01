@@ -1,4 +1,5 @@
 #if __GNUC__ >= 8
+#include <cstring>
 #include <charconv>
 #endif
 #include <fcntl.h>
@@ -17,11 +18,35 @@ std::optional< int >
 TryParseTCNum(
   const fs::path &tc_path
 ) {
-  const auto tc_name = tc_path.filename().string();
-  if( tc_name.find( "id:" ) != 0u ) {
+  std::array< char, 10u > tc_name;
+  std::strncpy( tc_name.data(), tc_path.filename().c_str(), 9u );
+  tc_name[ 9 ] = 0; 
+  if( tc_name[ 0 ] != 'i' )
+#if __GNUC__ >= 9 && __cplusplus > 201703L
+  [[unlikely]]
+#endif  
+  {
     return std::nullopt;
   }
-  else if( tc_name.size() < 9u ) {
+  if( tc_name[ 1 ] != 'd' )
+#if __GNUC__ >= 9 && __cplusplus > 201703L
+  [[unlikely]]
+#endif  
+  {
+    return std::nullopt;
+  }
+  if( tc_name[ 2 ] != ':' )
+#if __GNUC__ >= 9 && __cplusplus > 201703L
+  [[unlikely]]
+#endif  
+  {
+    return std::nullopt;
+  }
+  if( std::strlen( tc_name.data() ) < 9u )
+#if __GNUC__ >= 9 && __cplusplus > 201703L
+  [[unlikely]]
+#endif  
+  {
     return std::nullopt;
   }
   else {
@@ -32,7 +57,11 @@ TryParseTCNum(
       std::next( tc_name.data(), 9 ),
       value
     );
-    if( result.ec != std::errc{} ) {
+    if( result.ec != std::errc{} )
+#if __GNUC__ >= 9 && __cplusplus > 201703L
+  [[unlikely]]
+#endif  
+    {
       return std::nullopt;
     }
 #else
@@ -47,7 +76,11 @@ TryParseTCNum(
 	break;
       }
     }
-    if( !is_number ) {
+    if( !is_number )
+#if __GNUC__ >= 9 && __cplusplus > 201703L
+  [[unlikely]]
+#endif  
+    {
       return std::nullopt;
     }
 #endif
@@ -58,11 +91,12 @@ TryParseTCNum(
 seed_queue::SeedQueue &ImportSeed(
   const std::function<void(std::string &&)> &sink,
   const options::FuzzOption &opt,
-  const std::string tc_path,
+  const std::string &tc_path,
   seed_queue::SeedQueue &seed_queue
 ) {
   const auto mapped = utils::map_file(tc_path, O_RDONLY, true);
   std::vector< std::byte > tc_bytes;
+  tc_bytes.reserve( mapped.size() );
   std::transform(
     mapped.begin(),
     mapped.end(),
@@ -80,7 +114,7 @@ seed_queue::SeedQueue &ImportSeed(
 #endif
   const auto priority_maybe = priority::OfCoverageGain( cov_gain );
   if( priority_maybe ) {
-    seed_queue.EnqueueInplace( *priority_maybe, seed );
+    seed_queue.EnqueueInplace( *priority_maybe, std::move( seed ) );
   }
   return seed_queue;
 }

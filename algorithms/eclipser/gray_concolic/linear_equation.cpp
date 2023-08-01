@@ -44,7 +44,11 @@ namespace linear_equation {
 
 std::vector< std::byte > ConcatBytes( std::size_t chunk_size, const BranchInfo &br_info, const Context &ctx ) {
   const auto try_byte = br_info.try_value;
-  if( ctx.byte_dir == Direction::Stay ) {
+  if( ctx.byte_dir == Direction::Stay )
+#if __GNUC__ >= 9 && __cplusplus > 201703L
+  [[unlikely]]
+#endif  
+  {
     failwith( "Byte cursor cannot be staying" );
     return std::vector< std::byte >(); // unreachable
   }
@@ -59,6 +63,7 @@ std::vector< std::byte > ConcatBytes( std::size_t chunk_size, const BranchInfo &
   }
   else if( ctx.byte_dir == Direction::Right ) {
     std::vector< std::byte > bytes;
+    bytes.reserve( ctx.bytes.size() + 1u );
     bytes.push_back( std::byte( std::uint8_t( try_byte ) ) );
     bytes.insert(
       bytes.end(),
@@ -67,7 +72,11 @@ std::vector< std::byte > ConcatBytes( std::size_t chunk_size, const BranchInfo &
     );
     return bytes;
   }
-  else {
+  else
+#if __GNUC__ >= 9 && __cplusplus > 201703L
+  [[unlikely]]
+#endif  
+  {
     std::abort();
   }
 }
@@ -156,7 +165,11 @@ Result FindAsNByteChunk(
   const BranchInfo &br_info3
 ) {
   const std::size_t cmp_size = br_info1.operand_size;
-  if( ctx.bytes.size() < chunk_size - 1 ) {
+  if( ctx.bytes.size() < chunk_size - 1 )
+#if __GNUC__ >= 9 && __cplusplus > 201703L
+  [[unlikely]]
+#endif  
+  {
     failwith( "Invalid size" );
   }
   const auto x1 = BytesToBigInt( endian, ConcatBytes( chunk_size, br_info1, ctx ) );

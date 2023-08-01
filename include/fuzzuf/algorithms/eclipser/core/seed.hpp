@@ -40,6 +40,10 @@ struct Seed {
   Seed();
   explicit Seed( const InputSource &source_ );
   Seed( const InputSource &source_, const std::vector< std::byte > &bytes );
+  Seed( const Seed& ) = default;
+  Seed( Seed&& ) = default;
+  Seed &operator=( const Seed& ) = default;
+  Seed &operator=( Seed&& ) = default;
   std::vector< std::byte > Concretize() const;
   const byteval::ByteVal &GetCurByteVal() const;
   std::size_t GetCurLength() const;

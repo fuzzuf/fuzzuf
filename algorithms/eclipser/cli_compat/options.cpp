@@ -181,6 +181,9 @@ auto PostProcess(
     dest.fuzz_source = StdInput{};
   }
   dest.rng.seed(std::random_device()());
+
+  options::SplitArgs( dest );
+
   return true;
 }
 

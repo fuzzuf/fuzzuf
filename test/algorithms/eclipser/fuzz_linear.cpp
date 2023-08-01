@@ -59,6 +59,7 @@ BOOST_AUTO_TEST_CASE(Run) {
   options.n_spawn = 10;
   options.fuzz_source = fuzzuf::algorithm::eclipser::FileInput{ "input" };
   options.arg = "input";
+  fuzzuf::algorithm::eclipser::options::SplitArgs( options );
   fuzzuf::algorithm::eclipser::executor::Initialize( options );
   fuzzuf::algorithm::eclipser::test_case::Initialize( options.out_dir );
   fuzzuf::algorithm::eclipser::scheduler::Initialize();

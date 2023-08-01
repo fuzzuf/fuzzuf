@@ -72,6 +72,7 @@ enum class Tracer {
   BBCount
 };
 
+std::string to_string( Tracer );
 void to_json( nlohmann::json &dest, const Tracer &src );
 void from_json( const nlohmann::json &src, Tracer &dest );
 

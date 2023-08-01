@@ -42,7 +42,11 @@ Run(
 ) {
   const auto cur_byte_val = seed.GetCurByteVal();
   const auto [min_byte,max_byte] = byteval::GetMinMax( cur_byte_val, seed.source );
-  if( min_byte == max_byte ) {
+  if( min_byte == max_byte )
+#if __GNUC__ >= 9 && __cplusplus > 201703L
+  [[unlikely]]
+#endif  
+  {
     std::string message( "Cursor pointing to Fixed ByteVal " );
     message += nlohmann::json( seed ).dump();
     failwith( message.c_str() );
@@ -72,25 +76,6 @@ Run(
   );
   return solutions;
 }
-/*
-let run seed opt =
-  let curByteVal = Seed.getCurByteVal seed
-  let minByte, maxByte = ByteVal.getMinMax curByteVal seed.Source
-  if minByte = maxByte then
-    let seedStr = Seed.toString seed
-    failwithf "Cursor pointing to Fixed ByteVal %s" seedStr
-  let minVal, maxVal = bigint (int minByte), bigint (int maxByte)
-  let branchTraces, candidates = BranchTrace.collect seed opt minVal maxVal
-  let byteDir = Seed.getByteCursorDir seed
-  let bytes = Seed.queryNeighborBytes seed byteDir
-  let ctx = { Bytes = bytes; ByteDir = byteDir }
-  let branchTree = BranchTree.make opt ctx branchTraces
-  let branchTree = BranchTree.selectAndRepair opt branchTree
-  GreySolver.clearSolutionCache ()
-  let solutions = GreySolver.solve seed opt byteDir branchTree
-  let byProducts = reconsiderCandidates opt candidates
-  solutions @ byProducts
-*/
 
 }
 

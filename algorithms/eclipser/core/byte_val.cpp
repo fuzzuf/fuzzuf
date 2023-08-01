@@ -69,14 +69,22 @@ bool ToHex( char *at, std::uint8_t value ) {
 #if __GNUC__ >= 8
   if( value < 0x10 ) {
     const auto result = std::to_chars( std::next( at, 1 ), std::next( at, 2 ), value, 16 );
-    if( result.ec == std::errc{} ) {
+    if( result.ec == std::errc{} )
+#if __GNUC__ >= 9 && __cplusplus > 201703L
+  [[likely]]
+#endif  
+    {
       *at = '0';
       return true;
     }
   }
   else {
     const auto result = std::to_chars( at, std::next( at, 2 ), value, 16 );
-    if( result.ec == std::errc{} ) {
+    if( result.ec == std::errc{} )
+#if __GNUC__ >= 9 && __cplusplus > 201703L
+  [[likely]]
+#endif  
+    {
       return true;
     }
   }
@@ -95,39 +103,67 @@ std::string ToString( ByteVal b ) {
     []( const auto &v ) {
       std::array< char, 11u > temp = { 0 };
       if constexpr ( std::is_same_v< utils::type_traits::RemoveCvrT< decltype( v ) >, Fixed > ) {
-        if( !ToHex( temp.data(), std::uint8_t( v.value ) ) ) {
+        if( !ToHex( temp.data(), std::uint8_t( v.value ) ) )
+#if __GNUC__ >= 9 && __cplusplus > 201703L
+  [[unlikely]]
+#endif  
+	{
           throw exceptions::unreachable( "serialization unexpectedly failed", __FILE__, __LINE__ );
         }
         temp[ 2 ] = '!';
       }
       else if constexpr ( std::is_same_v< utils::type_traits::RemoveCvrT< decltype( v ) >, Interval > ) {
-        if( !ToHex( temp.data(), std::uint8_t( std::uint32_t( v.low ) + std::uint32_t( v.high ) )/2u ) ) {
+        if( !ToHex( temp.data(), std::uint8_t( std::uint32_t( v.low ) + std::uint32_t( v.high ) )/2u ) )
+#if __GNUC__ >= 9 && __cplusplus > 201703L
+  [[unlikely]]
+#endif  
+	{
           throw exceptions::unreachable( "serialization unexpectedly failed", __FILE__, __LINE__ );
         }
         temp[ 2 ] = '@';
         temp[ 3 ] = '(';
-        if( !ToHex( std::next( temp.data(), 4 ), std::uint8_t( v.low ) ) ) {
+        if( !ToHex( std::next( temp.data(), 4 ), std::uint8_t( v.low ) ) )
+#if __GNUC__ >= 9 && __cplusplus > 201703L
+  [[unlikely]]
+#endif  
+	{
           throw exceptions::unreachable( "serialization unexpectedly failed", __FILE__, __LINE__ );
         }
         temp[ 6 ] = ',';
-        if( !ToHex( std::next( temp.data(), 7 ), std::uint8_t( v.high ) ) ) {
+        if( !ToHex( std::next( temp.data(), 7 ), std::uint8_t( v.high ) ) )
+#if __GNUC__ >= 9 && __cplusplus > 201703L
+  [[unlikely]]
+#endif  
+	{
           throw exceptions::unreachable( "serialization unexpectedly failed", __FILE__, __LINE__ );
         }
         temp[ 9 ] = ')';
       }
       else if constexpr ( std::is_same_v< utils::type_traits::RemoveCvrT< decltype( v ) >, Undecided > ) {
-        if( !ToHex( temp.data(), std::uint8_t( v.value ) ) ) {
+        if( !ToHex( temp.data(), std::uint8_t( v.value ) ) )
+#if __GNUC__ >= 9 && __cplusplus > 201703L
+  [[unlikely]]
+#endif  
+	{
           throw exceptions::unreachable( "serialization unexpectedly failed", __FILE__, __LINE__ );
         }
         temp[ 2 ] = '?';
       }
       else if constexpr ( std::is_same_v< utils::type_traits::RemoveCvrT< decltype( v ) >, Untouched > ) {
-        if( !ToHex( temp.data(), std::uint8_t( v.value ) ) ) {
+        if( !ToHex( temp.data(), std::uint8_t( v.value ) ) )
+#if __GNUC__ >= 9 && __cplusplus > 201703L
+  [[unlikely]]
+#endif  
+	{
           throw exceptions::unreachable( "serialization unexpectedly failed", __FILE__, __LINE__ );
         }
       }
       else if constexpr ( std::is_same_v< utils::type_traits::RemoveCvrT< decltype( v ) >, Sampled > ) {
-        if( !ToHex( temp.data(), std::uint8_t( v.value ) ) ) {
+        if( !ToHex( temp.data(), std::uint8_t( v.value ) ) )
+#if __GNUC__ >= 9 && __cplusplus > 201703L
+  [[unlikely]]
+#endif  
+	{
           throw exceptions::unreachable( "serialization unexpectedly failed", __FILE__, __LINE__ );
         }
         temp[ 2 ] = '*';

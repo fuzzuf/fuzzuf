@@ -27,7 +27,6 @@
 #include "fuzzuf/algorithms/eclipser/fuzz/test_case.hpp"
 #include "fuzzuf/algorithms/eclipser/fuzz/scheduler.hpp"
 
-
 namespace fuzzuf::algorithm::eclipser {
 EclipserFuzzer::EclipserFuzzer(
   cli::FuzzerArgs &fuzzer_args,
@@ -46,7 +45,6 @@ EclipserFuzzer::EclipserFuzzer(
   executor::Initialize( opts );
   test_case::Initialize( opts.out_dir );
   scheduler::Initialize();
-
 }
 void EclipserFuzzer::OneLoop() {
   if( end_ ) return;
@@ -55,8 +53,8 @@ void EclipserFuzzer::OneLoop() {
       Log(
         []( std::string &&m ) {
           std::cout << m << std::flush;
-       },
-       std::move( m )
+        },
+        std::move( m )
       );
     },
     opts.rng,

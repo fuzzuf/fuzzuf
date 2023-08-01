@@ -137,6 +137,21 @@ void from_json( const nlohmann::json &src, CoverageGain &dest ) {
   }
 }
 
+std::string to_string( Tracer src ) {
+  if( src == Tracer::Coverage ) {
+    return "Coverage";
+  }
+  else if( src == Tracer::Branch ) {
+    return "Branch";
+  }
+  else if( src == Tracer::BBCount ) {
+    return "BBCount";
+  }
+  else {
+    return "Unknown";
+  }
+}
+
 void to_json( nlohmann::json &dest, const Tracer &src ) {
   if( src == Tracer::Coverage ) {
     dest = "Coverage";

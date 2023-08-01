@@ -142,47 +142,46 @@ ByteConstraint Make( const std::vector< std::pair< BigInt, BigInt > > &pairs ) {
   );
   return temp;
 }
-ByteConstraint NormalizeAux(
+namespace {
+ByteConstraint &NormalizeAux(
   const ByteConstraint::const_iterator &ranges_begin,
   const ByteConstraint::const_iterator &ranges_end,
-  const ByteConstraint &acc_cond
+  ByteConstraint &acc_cond
 ) {
   if( ranges_begin == ranges_end ) {
     return acc_cond;
   }
   return std::visit(
-    [&]( const auto &v ) {
+    [&]( const auto &v ) -> ByteConstraint& {
       if constexpr ( std::is_same_v< utils::type_traits::RemoveCvrT< decltype( v ) >, Bottom > ) {
-        return  NormalizeAux(
+        return NormalizeAux(
           std::next( ranges_begin ),
           ranges_end,
           acc_cond
         );
       }
       else if constexpr ( std::is_same_v< utils::type_traits::RemoveCvrT< decltype( v ) >, Top > ) {
-        return top;
+        acc_cond = top;
+        return acc_cond;
       }
       else {
-        ByteConstraint new_acc_cond;
-        new_acc_cond.reserve( acc_cond.size() + 1u );
-        new_acc_cond.push_back( v );
-        new_acc_cond.insert(
-          new_acc_cond.end(),
-          acc_cond.begin(),
-          acc_cond.end()
-        );
+        acc_cond.push_back( v );
         return NormalizeAux( 
           std::next( ranges_begin ),
           ranges_end,
-          new_acc_cond
+          acc_cond
         );
       }
     },
     *ranges_begin
   );
 }
+}
 ByteConstraint Normalize( const ByteConstraint &ranges ) {
-  return NormalizeAux( ranges.begin(), ranges.end(), {} );
+  ByteConstraint acc_cond;
+  NormalizeAux( ranges.begin(), ranges.end(), acc_cond );
+  std::reverse( acc_cond.begin(), acc_cond.end() );
+  return acc_cond;
 }
 ByteConstraint Conjunction(
   const ByteConstraint &cond1,

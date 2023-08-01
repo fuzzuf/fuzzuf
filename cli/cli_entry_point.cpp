@@ -61,6 +61,20 @@ int main(int argc, const char *argv[]) {
 
     return -1;  // Use exit code to indicate that the process has failed with an
                 // error
+  } catch (const fuzzuf::exceptions::fuzzuf_invalid_argument &e) {
+    // CLI does error handling as the topmost module
+    std::cerr << "[!] " << e.what() << std::endl;
+    std::cerr << "\tat " << e.file << ":" << e.line << std::endl;
+
+    return -1;  // Use exit code to indicate that the process has failed with an
+                // error
+  } catch (const fuzzuf::exceptions::fuzzuf_out_of_range &e) {
+    // CLI does error handling as the topmost module
+    std::cerr << "[!] " << e.what() << std::endl;
+    std::cerr << "\tat " << e.file << ":" << e.line << std::endl;
+
+    return -1;  // Use exit code to indicate that the process has failed with an
+                // error
   } catch (const std::exception &e) {
     // CLI does error handling as the topmost module
     std::cerr << "[!] " << e.what() << std::endl;

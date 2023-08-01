@@ -29,7 +29,11 @@ Seed::Seed( const InputSource &source_ ) : source( source_ ) {
 Seed::Seed( const InputSource &source_, const std::vector< std::byte > &bytes ) :
   source( source_ ) {
   // Do not allow empty content.
-  if( bytes.empty() ) {
+  if( bytes.empty() )
+#if __GNUC__ >= 9 && __cplusplus > 201703L
+  [[unlikely]]
+#endif  
+  {
     throw exceptions::invalid_argument( "Seed.makeWith() with empty bytes", __FILE__, __LINE__ );
   }
   std::transform(
@@ -39,6 +43,7 @@ Seed::Seed( const InputSource &source_, const std::vector< std::byte > &bytes ) 
 }
 std::vector< std::byte > Seed::Concretize() const {
   std::vector< std::byte > temp;
+  temp.reserve( byte_vals.size() );
   std::transform(
     byte_vals.begin(), byte_vals.end(), std::back_inserter( temp ),
     byteval::GetConcreteByte
@@ -53,7 +58,11 @@ std::size_t Seed::GetCurLength() const {
 }
 std::size_t Seed::GetUnfixedByteIndex() const {
   const std::size_t index = std::distance( byte_vals.begin(), std::find_if( byte_vals.begin(), byte_vals.end(), byteval::IsUnfixed ) );
-  if( index == byte_vals.size() ) {
+  if( index == byte_vals.size() )
+#if __GNUC__ >= 9 && __cplusplus > 201703L
+  [[unlikely]]
+#endif  
+  {
     throw exceptions::out_of_range( "index == byte_vals.size()", __FILE__, __LINE__ );
   }
   return index;
@@ -62,7 +71,11 @@ Direction Seed::GetByteCursorDir() const {
   return cursor_dir;
 }
 std::byte Seed::GetConcreteByteAt( std::size_t pos ) const {
-  if( pos >= byte_vals.size() ) {
+  if( pos >= byte_vals.size() )
+#if __GNUC__ >= 9 && __cplusplus > 201703L
+  [[unlikely]]
+#endif  
+  {
     throw exceptions::out_of_range( "pos >= byte_vals.size()", __FILE__, __LINE__ );
   }
   return byteval::GetConcreteByte( byte_vals[ pos ] );
@@ -71,7 +84,11 @@ std::byte Seed::GetConcreteByteAt() const {
   return GetConcreteByteAt( cursor_pos );
 }
 std::vector< std::byte > Seed::GetConcreteBytesFrom( std::size_t pos, std::size_t len ) const {
-  if( pos + len >= byte_vals.size() ) {
+  if( pos + len >= byte_vals.size() )
+#if __GNUC__ >= 9 && __cplusplus > 201703L
+  [[unlikely]]
+#endif  
+  {
     throw exceptions::out_of_range( "pos + len >= byte_vals.size()", __FILE__, __LINE__ );
   }
   std::vector< std::byte > temp;
@@ -91,7 +108,11 @@ bool Seed::IsUnfixedByteAt() const {
   return IsUnfixedByteAt( cursor_pos );
 }
 std::size_t Seed::QueryLenToward( Direction direction_ ) const {
-  if( direction_ == Direction::Stay ) {
+  if( direction_ == Direction::Stay )
+#if __GNUC__ >= 9 && __cplusplus > 201703L
+  [[unlikely]]
+#endif  
+  {
     throw exceptions::invalid_argument( "queryLenToward() cannot be called with 'Stay'", __FILE__, __LINE__ );
   }
   else if( direction_ == Direction::Right ) {
@@ -100,7 +121,11 @@ std::size_t Seed::QueryLenToward( Direction direction_ ) const {
   else if( direction_ == Direction::Left ) {
     return cursor_pos + 1;
   }
-  else {
+  else
+#if __GNUC__ >= 9 && __cplusplus > 201703L
+  [[unlikely]]
+#endif  
+  {
     throw exceptions::invalid_argument( "Unknown direction", __FILE__, __LINE__ );
   }
 }
@@ -121,12 +146,20 @@ std::size_t Seed::QueryUpdateBoundRight( const byteval::ByteVals &byte_vals_, st
   return std::min( int( std::distance( begin, std::find_if( begin, end, byteval::IsFixed ) ) ), MAX_CHUNK_LEN );
 }
 std::size_t Seed::QueryUpdateBound( Direction direction_ ) const {
-  if( direction_ == Direction::Stay ) {
+  if( direction_ == Direction::Stay )
+#if __GNUC__ >= 9 && __cplusplus > 201703L
+  [[unlikely]]
+#endif  
+  {
     throw exceptions::invalid_argument( "queryUpdateBound() cannot be called with 'Stay'", __FILE__, __LINE__ );
   }
   else if( direction_ == Direction::Left ) return QueryUpdateBoundLeft( byte_vals, cursor_pos );
   else if( direction_ == Direction::Right ) return QueryUpdateBoundRight( byte_vals, cursor_pos );
-  else {
+  else
+#if __GNUC__ >= 9 && __cplusplus > 201703L
+  [[unlikely]]
+#endif  
+  {
     throw exceptions::invalid_argument( "Unknown direction", __FILE__, __LINE__ );
   }
 }
@@ -135,7 +168,11 @@ std::size_t Seed::QueryUpdateBound() const {
 }
 std::vector< std::byte > Seed::QueryNeighborBytes( Direction direction_ ) const {
   constexpr auto len = MAX_CHUNK_LEN + 1u;
-  if( direction_ == Direction::Stay ) {
+  if( direction_ == Direction::Stay )
+#if __GNUC__ >= 9 && __cplusplus > 201703L
+  [[unlikely]]
+#endif  
+  {
     throw exceptions::invalid_argument( "queryNeighborBytes() cannot be called with 'Stay'", __FILE__, __LINE__ );
   }
   else if( direction_ == Direction::Right ) {
@@ -166,7 +203,11 @@ std::vector< std::byte > Seed::QueryNeighborBytes( Direction direction_ ) const 
     }
     return temp;
   }
-  else {
+  else
+#if __GNUC__ >= 9 && __cplusplus > 201703L
+  [[unlikely]]
+#endif  
+  {
     throw exceptions::invalid_argument( "Unknown direction", __FILE__, __LINE__ );
   }
 }
@@ -175,12 +216,20 @@ std::vector< std::byte > Seed::QueryNeighborBytes() const {
 }
 Seed &Seed::ConstrainByteAtInplace( Direction direction_, std::size_t offset, std::byte low, std::byte upper ) {
   auto byte_cursor = cursor_pos;
-  if( direction_ == Direction::Stay ) {
+  if( direction_ == Direction::Stay )
+#if __GNUC__ >= 9 && __cplusplus > 201703L
+  [[unlikely]]
+#endif  
+  {
     throw exceptions::invalid_argument( "constrainByteAt() cannot be called with 'Stay'", __FILE__, __LINE__ );
   }
   else if( direction_ == Direction::Right ) byte_cursor += offset;
   else if( direction_ == Direction::Left ) byte_cursor -= offset;
-  else {
+  else
+#if __GNUC__ >= 9 && __cplusplus > 201703L
+  [[unlikely]]
+#endif  
+  {
     throw exceptions::invalid_argument( "Unknown direction", __FILE__, __LINE__ );
   }
   const auto new_byte_val = ( low != upper ) ? byteval::ByteVal( byteval::Interval{ low, upper } ) : byteval::ByteVal( byteval::Fixed{ low } );
@@ -200,7 +249,11 @@ Seed Seed::ConstrainByteAt( std::size_t offset, std::byte low, std::byte upper )
 }
 Seed &Seed::FixCurBytesInplace( Direction direction_, const std::vector< std::byte > &bytes ) {
   const auto n_bytes = bytes.size();
-  if( direction_ == Direction::Left && ( int( cursor_pos ) - int( n_bytes ) + 1 ) < 0 ) {
+  if( direction_ == Direction::Left && ( int( cursor_pos ) - int( n_bytes ) + 1 ) < 0 )
+#if __GNUC__ >= 9 && __cplusplus > 201703L
+  [[unlikely]]
+#endif  
+  {
     throw exceptions::invalid_argument( "direction_ == Direction::Left && ( int( cursor_pos ) - int( n_bytes ) + 1 ) < 0", __FILE__, __LINE__ );
   }
   const auto start_pos = ( direction_ == Direction::Right ) ? int( cursor_pos ) : int( cursor_pos ) - int( n_bytes ) + 1;
@@ -336,21 +389,6 @@ Seed Seed::SetByteCursorDir( Direction dir ) const {
   new_seed.SetByteCursorDirInplace( dir );
   return new_seed;
 }
-/*
-  let relocateCursor seed =
-    let curByteVal = getCurByteVal seed
-    let leftwardSeed = setByteCursorDir seed Left
-    let leftwardSeeds = // Avoid sampling at the same offset.
-      if ByteVal.isSampledByte curByteVal then
-        match stepCursor leftwardSeed with
-        | None -> [] | Some s -> [ s ]
-      else [ leftwardSeed ]
-    let rightwardSeed = setByteCursorDir seed Right
-    let rightwardSeeds =
-      match stepCursor rightwardSeed with
-      | None -> [] | Some s -> [ s ]
-    List.choose moveToUnfixedByte (leftwardSeeds @ rightwardSeeds)
-*/
 std::vector< Seed > Seed::RelocateCursor() const {
   const auto cur_byte_val = GetCurByteVal();
   const auto leftward_seed = SetByteCursorDir( Direction::Left );
@@ -358,19 +396,20 @@ std::vector< Seed > Seed::RelocateCursor() const {
   if( byteval::IsSampledByte( cur_byte_val ) ) {
     auto stepped = leftward_seed.StepCursor();
     if( stepped ) {
-      leftward_seeds = stepped;
+      leftward_seeds = std::move( stepped );
     }
   }
   else {
-    leftward_seeds = leftward_seed;
+    leftward_seeds = std::move( leftward_seed );
   }
   const auto rightward_seed = SetByteCursorDir( Direction::Right );
   auto rightward_seeds = std::optional< Seed >();
   auto stepped = rightward_seed.StepCursor();
   if( stepped ) {
-    rightward_seeds = stepped;
+    rightward_seeds = std::move( stepped );
   }
   std::vector< Seed > results;
+  results.reserve( 2u );
   if( leftward_seeds ) {
     auto unfixed = leftward_seeds->MoveToUnfixedByteInplace();
     if( unfixed ) results.push_back( *leftward_seeds );
@@ -467,11 +506,6 @@ void from_json( const nlohmann::json &src, Seed &dest ) {
   dest = Seed();
   if( src.is_object() ) {
     if( src.find( "byte_vals" ) != src.end() ) {
-      /*std::transform(
-        src[ "byte_vals" ].begin(), src[ "byte_vals" ].end(),        
-	std::back_inserter( dest.byte_vals ),
-	[]( auto v ) { return std::byte( v ); }
-      );*/
       if( src.find( "cursor_pos" ) != src.end() ) {
         dest.cursor_pos = src[ "current_pos" ];
       }

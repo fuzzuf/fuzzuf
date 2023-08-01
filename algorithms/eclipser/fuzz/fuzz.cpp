@@ -52,7 +52,7 @@ MakeRelocatedItems(
 ) {
   std::vector< std::pair< Priority, seed::Seed > > temp;
   for( const auto &v: seeds ) {
-    const auto &[seed,exit_sig,cov_gain] = v;
+    auto &[seed,exit_sig,cov_gain] = v;
     const auto priority_maybe = EvalSeed( sink, opt, seed, exit_sig, cov_gain );
     if( priority_maybe ) {
       const auto relocated = seed.RelocateCursor();
@@ -69,23 +69,22 @@ MakeRelocatedItems(
   return temp;
 }
 
-std::vector< std::pair< Priority, seed::Seed > >
+namespace {
+
+std::optional< Priority >
 MakeSteppedItems(
   Priority pr,
-  const seed::Seed &seed
+  seed::Seed &seed
 ) {
-  const auto proceed_maybe = seed.ProceedCursor();
+  const bool proceed_maybe = seed.ProceedCursorInplace();
   if( !proceed_maybe ) {
-    return std::vector< std::pair< Priority, seed::Seed > >{};
+    return std::nullopt;
   }
   else {
-    return std::vector< std::pair< Priority, seed::Seed > >{
-      std::pair< Priority, seed::Seed >{
-        pr,
-        *proceed_maybe
-      }
-    };
+    return pr;
   }
+}
+
 }
 
 // Decides how to share the resource with AFL instances.
@@ -140,12 +139,12 @@ void FuzzOnce(
     }
     auto new_items = gray_concolic::Run( sink, rng, opt, seed );
     auto relocated_items = MakeRelocatedItems( sink, opt, new_items );
-    auto stepped_items = MakeSteppedItems( priority, seed );
+    auto stepped_items_priority = MakeSteppedItems( priority, seed );
     for( auto &v: relocated_items ) {
-      seed_queue.EnqueueInplace( v.first, v.second );
+      seed_queue.EnqueueInplace( v.first, std::move( v.second ) );
     }
-    for( auto &v: stepped_items ) {
-      seed_queue.EnqueueInplace( v.first, v.second );
+    if( stepped_items_priority ) {
+      seed_queue.EnqueueInplace( *stepped_items_priority, std::move( seed ) );
     }
   }
   ++n;

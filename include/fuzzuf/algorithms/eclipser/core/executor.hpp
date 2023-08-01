@@ -36,8 +36,6 @@ void DisableRoundStatistics();
 int GetRoundExecs();
 void IncrRoundExecs();
 void ResetRoundExecs();
-CoverageGain ParseCoverage( const fs::path &p );
-BranchTrace ParseBranchTrace( const fs::path &p, std::uint64_t try_value, bool is_64bit );
 fs::path SelectTracer( Tracer tracer, Arch arch );
 fs::path BuildDir();
 void Initialize(

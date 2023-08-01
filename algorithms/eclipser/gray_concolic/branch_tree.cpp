@@ -177,6 +177,8 @@ BranchSeq empty() {
   return BranchSeq { 0, {} };
 }
 
+namespace {
+
 BranchSeq &Append(
   BranchSeq &branch_seq,
   const std::optional< BranchCondition > &branch_cond_opt,
@@ -187,7 +189,7 @@ BranchSeq &Append(
   }
   ++branch_seq.length;
   branch_seq.branches.insert(
-    branch_seq.branches.begin(),
+    branch_seq.branches.end(),
     std::pair< BranchCondition, DistanceSign >(
       *branch_cond_opt,
       dist_sign
@@ -198,10 +200,13 @@ BranchSeq &Append(
 
 }
 
+}
+
 namespace branch_tree {
 
-BrTraceList GenCombAux(
-  const BrTraceList &acc_combs,
+namespace {
+BrTraceList &GenCombAux(
+  BrTraceList &acc_combs,
   const std::vector< BranchInfo > &window_elems,
   const std::vector< BranchInfo >::const_iterator &left_elems_begin,
   const std::vector< BranchInfo >::const_iterator &left_elems_end,
@@ -226,19 +231,19 @@ BrTraceList GenCombAux(
     window_elems.end()
   );
   new_window_elems.push_back( head_elem );
-  auto temp = acc_combs;
-  temp.insert(
-    temp.end(),
+  acc_combs.insert(
+    acc_combs.end(),
     new_combs.begin(),
     new_combs.end()
   );
   return GenCombAux(
-    temp,
+    acc_combs,
     new_window_elems,
     std::next( left_elems_begin ),
     left_elems_end,
     n
   );
+}
 }
 
 BrTraceList
@@ -253,7 +258,7 @@ GenComb(
   }
   else {
     const auto [head_elems,tail_elems] = SplitList( window_size, elems_begin, elems_end );
-    const auto initial_combs = Combination( n, head_elems );
+    auto initial_combs = Combination( n, head_elems );
     const auto initial_window = std::vector< BranchInfo >(
       head_elems.empty() ?
       head_elems.begin() :
@@ -478,9 +483,11 @@ bool HaveSameBranchDistanceSign(
   ) == br_infos_end;
 }
 
+namespace {
+
   // Precondition : The first branchInfo of each branch trace should have the
   // same instuction address. Empty branch trace is not allowed.
-std::tuple< VisitCntMap, BrTraceViewList, BranchSeq >
+std::tuple< VisitCntMap, BrTraceViewList >
 ExtractStraightSeq(
   const options::FuzzOption &opt,
   const Context &ctx,
@@ -489,12 +496,17 @@ ExtractStraightSeq(
   BranchSeq &acc_branch_seq
 ) {
   while( true ) {
-    if( br_trace_view_list.size() < 3u ) {
+    if( br_trace_view_list.size() < 3u )
+#if __GNUC__ >= 9 && __cplusplus > 201703L
+  [[unlikely]]
+#endif  
+    {
       failwith( "Unreachable" );
-      return std::tuple< VisitCntMap, BrTraceViewList, BranchSeq >(); // unreachable
+      return std::tuple< VisitCntMap, BrTraceViewList >(); // unreachable
     }
     // Split each BranchTrace into a tuple of its head and tail.
     std::vector< BranchInfo > head_br_infos;
+    head_br_infos.reserve( br_trace_view_list.size() );
     std::transform(
       br_trace_view_list.begin(),
       br_trace_view_list.end(),
@@ -503,9 +515,13 @@ ExtractStraightSeq(
         return *v.begin();
       }
     );
-    if( !HaveSameAddr( head_br_infos ) ) {
+    if( !HaveSameAddr( head_br_infos ) )
+#if __GNUC__ >= 9 && __cplusplus > 201703L
+  [[unlikely]]
+#endif  
+    {
       failwith( "Unreachable" );
-      return std::tuple< VisitCntMap, BrTraceViewList, BranchSeq >(); // unreachable
+      return std::tuple< VisitCntMap, BrTraceViewList >(); // unreachable
     }
     auto old_br_trace_view_list = br_trace_view_list;
     for( auto &b: br_trace_view_list ) {
@@ -527,6 +543,7 @@ ExtractStraightSeq(
     );
     {
       std::vector< BranchInfo > next_br_infos;
+      next_br_infos.reserve( br_trace_view_list.size() );
       std::transform(
         br_trace_view_list.begin(),
         br_trace_view_list.end(),
@@ -545,12 +562,15 @@ ExtractStraightSeq(
         br_trace_view_list = old_br_trace_view_list;
         return std::make_tuple(
           visit_cnt_map,
-          br_trace_view_list,
-          acc_branch_seq
+          br_trace_view_list
         );
       }
     }
-    if( head_br_infos.size() == 0u ) {
+    if( head_br_infos.size() == 0u )
+#if __GNUC__ >= 9 && __cplusplus > 201703L
+  [[unlikely]]
+#endif  
+    {
       throw exceptions::invalid_argument( "head_br_infos.size() == 0u", __FILE__, __LINE__ );
     }
     old_br_trace_view_list.clear();
@@ -580,21 +600,18 @@ ExtractStraightSeq(
     if( br_trace_view_list.size() < 3u ) {
       return std::make_tuple(
         visit_cnt_map,
-        BrTraceViewList{},
-        acc_branch_seq
+        BrTraceViewList{}
       );
     }
   }
 }
-
-namespace {
 
 BranchTree
 BuildDivergeTree(
   const options::FuzzOption &opt,
   const Context &ctx,
   const VisitCntMap &visit_cnt_map,
-  const BranchSeq &branch_seq,
+  BranchSeq &&branch_seq,
   const BrTraceViewList &br_trace_list
 ) {
     // Now leave branch traces longer than 1, and group by its next InstAddr.
@@ -622,6 +639,7 @@ BuildDivergeTree(
     }
   }
   std::vector< BranchTree > sub_trees;
+  sub_trees.reserve( grouped_traces.size() );
   std::transform(
     grouped_traces.begin(),
     grouped_traces.end(),
@@ -631,108 +649,20 @@ BuildDivergeTree(
     }
   );
   if( sub_trees.empty() ) {
-    BranchTree v = branch_seq;
+    BranchTree v = std::move( branch_seq );
     return v;
   }
   else {
-    return BranchTree{ DivergeTree( branch_seq, sub_trees ) };
+    return BranchTree{ DivergeTree( std::move( branch_seq ), sub_trees ) };
   }
 }
-
-/*BranchTree
-BuildForkTree(
-  const options::FuzzOption &opt,
-  const Context &ctx,
-  const VisitCntMap &visit_cnt_map,
-  const BranchSeq &branch_seq,
-  const BranchCondition &branch_cond,
-  const BrTraceList &br_trace_list
-) {
-  auto new_br_trace_list = br_trace_list;
-  new_br_trace_list.erase(
-    std::remove_if(
-      new_br_trace_list.begin(),
-      new_br_trace_list.end(),
-      []( const auto &v ) {
-        return !IsLongerThanOne( v );
-      }
-    )
-  );
-  const auto grouped_traces = GroupBy(
-    &branch_trace::IsLongerThanOne,
-    new_br_trace_list
-  );
-  std::vector< std::pair< Sign, BranchTree > > child_trees;
-  std::transform(
-    grouped_traces.begin(),
-    grouped_traces.end(),
-    std::back_inserter( child_trees ),
-    [&]( const auto &v ) {
-      const auto &branch_trace = *v.second.begin();
-      const auto dist_sign = DecideSign( branch_trace.begin()->distance );
-      BrTraceList tail_br_trace_list(
-        std::next( v.second.begin() ),
-        v.second.end()
-      );
-      const auto sub_tree =
-        ( tail_br_trace_list.size() >= 3 ) ?
-        MakeAux( opt, ctx, visit_cnt_map, tail_br_trace_list ) :
-        Straight{ branch_seq::empty() };
-      return std::make_pair( dist_sign, std::move( sub_tree ) );
-    }
-  );
-  return ForkedTree{ branch_seq, branch_cond, std::move( child_trees ) };
-}*/
-
-}
-
-/*BranchTree
-BuiildDivergeTree(
-  const options::FuzzOption &opt,
-  const Context &ctx,
-  const VisitCntMap &visit_cnt_map,
-  const BranchSeq &branch_seq,
-  const BrTraceList &br_trace_list
-) {
-  BrTraceList new_br_trace_list;
-  new_br_trace_list.reserve( br_trace_list.size() );
-  std::copy_if(
-    br_trace_list.begin(),
-    br_trace_list.end(),
-    std::back_inserter( new_br_trace_list ),
-    []( const auto &v ) {
-      return branch_trace::IsLongerThanOne()( v );
-    }
-  );
-  BrInfoCombinations grouped_traces;
-  grouped_traces.reserve( new_br_trace_list.size() );
-  for( const auto &group: GroupBy(
-    branch_trace::GetNextAddr(),
-    new_br_trace_list
-  ) ) {
-    if( group.second.size() >= 3u ) {
-      grouped_traces.push_back( group.second );
-    }
-  }
-  std::vector< BranchTree > sub_trees;
-  sub_trees.reserve( grouped_traces.size() );
-  for( const auto &v : grouped_traces ) {
-    sub_trees.push_back( MakeAux( opt, ctx, visit_cnt_map, v ) );
-  }
-  if( sub_trees.empty() ) {
-    return Straight{ branch_seq };
-  }
-  else {
-    return DivergeTree{ branch_seq, sub_trees };
-  }
-}*/
 
 BranchTree
 BuildForkTree(
   const options::FuzzOption &opt,
   const Context &ctx,
   const VisitCntMap &visit_cnt_map,
-  const BranchSeq &branch_seq,
+  BranchSeq &&branch_seq_,
   const BranchCondition &branch_cond,
   const BrTraceViewList &br_trace_list
 ) {
@@ -783,7 +713,9 @@ BuildForkTree(
       return std::make_pair( dist_sign, sub_tree );
     }
   );
-  return ForkedTree{ branch_seq, branch_cond, child_trees };
+  return ForkedTree{ std::move( branch_seq_ ), branch_cond, child_trees };
+}
+
 }
 
   // Precondition : The first branchInfo of each branch trace should have the
@@ -795,24 +727,26 @@ MakeAux(
   const VisitCntMap &visit_cnt_map,
   BrTraceViewList &br_trace_view_list
 ) {
-  auto acc_branch_seq = branch_seq::empty();
+  auto branch_seq = branch_seq::empty();
   auto new_visit_cnt_map_ = visit_cnt_map;
-  auto [new_visit_cnt_map,new_br_trace_list,branch_seq] =
+  auto [new_visit_cnt_map,new_br_trace_list] =
     ExtractStraightSeq(
       opt,
       ctx,
       new_visit_cnt_map_,
       br_trace_view_list,
-      acc_branch_seq
+      branch_seq
     );
     // If there are no more branch trace to parse, construct 'Straight' tree.
   if( new_br_trace_list.empty() ) {
+    std::reverse( branch_seq.branches.begin(), branch_seq.branches.end() );
     return Straight{ branch_seq };
   }
   else {
       // At this point, the first branches info of branch traces have the same
       // instruction address, and diverge/forks at the next branch.
     std::vector< BranchInfo > head_br_infos;
+    head_br_infos.reserve( br_trace_view_list.size() );
     std::transform(
       br_trace_view_list.begin(),
       br_trace_view_list.end(),
@@ -821,7 +755,11 @@ MakeAux(
         return *v.begin();
       }
     );
-    if( !HaveSameAddr( head_br_infos ) ) {
+    if( !HaveSameAddr( head_br_infos ) )
+#if __GNUC__ >= 9 && __cplusplus > 201703L
+  [[unlikely]]
+#endif  
+    {
       failwith( "Unreachable" );
       return BranchTree(); // unreachable
     }
@@ -842,11 +780,12 @@ MakeAux(
       head_br_infos
     );
     if( !branch_cond_opt ) { // If failed to infer branch condition, handle as a 'diverge'
+      std::reverse( branch_seq.branches.begin(), branch_seq.branches.end() );
       return BuildDivergeTree(
         opt,
         ctx,
         new_visit_cnt_map,
-        branch_seq,
+        std::move( branch_seq ),
         new_br_trace_list
       );
     }
@@ -856,21 +795,23 @@ MakeAux(
           // append this branch to BranchSeq, and handle as a DivergeTree case.
         const auto &br_trace = *new_br_trace_list.begin();
         const auto dist_sign = DecideSign( br_trace.begin()->distance );
-        branch_seq = branch_seq::Append( branch_seq, branch_cond_opt, dist_sign );
+        branch_seq::Append( branch_seq, branch_cond_opt, dist_sign );
+        std::reverse( branch_seq.branches.begin(), branch_seq.branches.end() );
         return BuildDivergeTree(
           opt,
           ctx,
           new_visit_cnt_map,
-          branch_seq,
+          std::move( branch_seq ),
           new_br_trace_list
         );
       }
       else {
+        std::reverse( branch_seq.branches.begin(), branch_seq.branches.end() );
         return BuildForkTree(
           opt,
           ctx,
           new_visit_cnt_map,
-          branch_seq,
+          std::move( branch_seq ),
           *branch_cond_opt,
           new_br_trace_list
         );
@@ -1040,44 +981,33 @@ BranchTree Reverse( const BranchTree &branch_tree ) {
     branch_tree
   );
 }
-  
-std::pair< std::vector< std::pair< BranchCondition, DistanceSign > >, int >
-FilterBranchSeqAux(
+
+namespace {
+int FilterBranchSeqAux(
   const SelectSet &select_set,
   int counter,
   const std::vector< std::pair< BranchCondition, DistanceSign > >::const_iterator &branches_begin,
   const std::vector< std::pair< BranchCondition, DistanceSign > >::const_iterator &branches_end,
-  const std::pair< std::vector< std::pair< BranchCondition, DistanceSign > >, int > &acc_list
+  std::vector< std::pair< BranchCondition, DistanceSign > > &acc_brs,
+  int acc_len
 ) {
-  const auto &[acc_brs,acc_len] = acc_list;
   if( branches_begin == branches_end ) {
-    return acc_list;
+    return acc_len;
   }
   const auto &head_branch = *branches_begin;
-  std::pair< std::vector< std::pair< BranchCondition, DistanceSign > >, int > new_acc_list;
   if( select_set.find( counter ) != select_set.end() ) {
-    std::vector< std::pair< BranchCondition, DistanceSign > > new_acc_brs;
-    new_acc_brs.push_back( head_branch );
-    new_acc_brs.insert(
-      new_acc_brs.end(),
-      acc_brs.begin(),
-      acc_brs.end()
-    );
-    new_acc_list = std::make_pair(
-      std::move( new_acc_brs ),
-      acc_len + 1
-    );
-  }
-  else {
-    new_acc_list = acc_list;
+    acc_brs.push_back( head_branch );
+    acc_len += 1;
   }
   return FilterBranchSeqAux(
     select_set,
     counter + 1,
     std::next( branches_begin ),
     branches_end,
-    new_acc_list
+    acc_brs,
+    acc_len
   );
+}
 }
 
 std::pair< int, BranchSeq >
@@ -1087,13 +1017,16 @@ FilterBranchSeq(
   const BranchSeq &branch_seq
 ) {
   const auto &branches = branch_seq.branches;
-  auto [new_brs,new_len] = FilterBranchSeqAux(
+  std::vector< std::pair< BranchCondition, DistanceSign > > new_brs;
+  auto new_len = FilterBranchSeqAux(
     select_set,
     counter,
     branches.begin(),
     branches.end(),
-    std::make_pair( std::vector< std::pair< BranchCondition, DistanceSign > >{}, 0 )
+    new_brs,
+    0
   );
+  std::reverse( new_brs.begin(), new_brs.end() );
   const auto new_counter = counter + branch_seq.length;
   auto new_branch_seq = branch_seq;
   new_branch_seq.branches = std::move( new_brs );

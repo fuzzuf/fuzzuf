@@ -40,6 +40,7 @@ public:
     return favoreds.empty() && normals.empty();
   }
   void EnqueueInplace( Priority priority, const seed::Seed &seed );
+  void EnqueueInplace( Priority priority, seed::Seed &&seed );
   std::pair< Priority, seed::Seed > DequeueInplace();
   void to_json( nlohmann::json& ) const;
   void from_json( const nlohmann::json& );

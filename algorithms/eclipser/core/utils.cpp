@@ -15,23 +15,25 @@ namespace fuzzuf::algorithm::eclipser {
     const auto elapsed = std::chrono::system_clock::now() - startTime;
     const auto total_sec = std::chrono::duration_cast< std::chrono::seconds >( elapsed ).count();
     const std::array< decltype( total_sec ), 4u > c{{
-      total_sec % 60,
-      ( total_sec / 60 ) % 60,
+      ( total_sec / 60 / 60 / 24 ) % 100,
       ( total_sec / 60 / 60 ) % 24,
-      ( total_sec / 60 / 60 / 24 ) % 100
+      ( total_sec / 60 ) % 60,
+      total_sec % 60
     }};
     std::string temp( "[00:00:00:00] " );
     for( std::size_t i = 0u; i != c.size(); ++i ) {
+      if( c[ i ] ) {
 #if __GNUC__ >= 8
-      std::to_chars(
-        std::next( temp.data(), i * 3u + ( c[ i ] < 10 ) ? 2u : 1u ),
-        std::next( temp.data(), i * 3u + 3u ),
-        c[ i ]
-      );
+        std::to_chars(
+          std::next( temp.data(), i * 3u + ( ( c[ i ] < 10 ) ? 2u : 1u ) ),
+          std::next( temp.data(), i * 3u + 4u ),
+          int( c[ i ] )
+        );
 #else
-      temp[ i * 3u + 1u ] = ( ( c[ i ] >> 4 ) & 0xF ) + '0';
-      temp[ i * 3u + 2u ] = ( c[ i ] & 0xF ) + '0';
+        temp[ i * 3u + 1u ] = ( ( c[ i ] / 10 ) & 0xF ) + '0';
+        temp[ i * 3u + 2u ] = ( c[ i ] % 10 ) + '0';
 #endif
+      }
     }
     sink( temp + fmt );
   }
@@ -105,7 +107,11 @@ namespace fuzzuf::algorithm::eclipser {
     return temp;
   }
   std::vector< BigInt > SampleInt( BigInt min, BigInt max, std::int32_t n ) {
-    if( max < min ) {
+    if( max < min )
+#if __GNUC__ >= 9 && __cplusplus > 201703L
+  [[unlikely]]
+#endif  
+    {
       throw exceptions::invalid_argument( "max < min", __FILE__, __LINE__ );
     }
     if( max - min + 1 <= n ) {
