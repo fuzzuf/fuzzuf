@@ -1,4 +1,5 @@
 #include <nlohmann/json.hpp>
+#include <fuzzuf/algorithms/eclipser/core/utils.hpp>
 #include <fuzzuf/algorithms/eclipser/fuzz/seed_queue.hpp>
 #include <fuzzuf/algorithms/eclipser/fuzz/test_case.hpp>
 #include <fuzzuf/algorithms/eclipser/fuzz/sync.hpp>
@@ -158,7 +159,7 @@ void FuzzUntilEmpty(
   seed_queue::SeedQueue seed_queue;
   seed_queue.EnqueueInplace( Priority::Normal, seed::Seed( opt.fuzz_source ) );
   int n = 0;
-  while( !seed_queue.IsEmpty() ) {
+  while( !seed_queue.IsEmpty() && !Expired( opt.timelimit ) ) {
     FuzzOnce( sink, rng, opt, seed_queue, n );
   }
 }
@@ -172,7 +173,7 @@ void FuzzLoop(
   seed_queue::SeedQueue seed_queue;
   seed_queue.EnqueueInplace( Priority::Normal, seed::Seed( opt.fuzz_source ) );
   int n = 0;
-  while( 1 ) {
+  while( !Expired( opt.timelimit ) ) {
     FuzzOnce( sink, rng, opt, seed_queue, n );
   }
 }

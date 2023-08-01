@@ -33,6 +33,7 @@
 #include <fuzzuf/algorithms/eclipser/core/bigint.hpp>
 
 namespace fuzzuf::algorithm::eclipser {
+  bool Expired( int timelimit );
   void Log( const std::function<void(std::string &&)> &sink, const std::string &fmt );
   BigInt GetSignedMax( unsigned int i );
   BigInt GetUnsignedMax( unsigned int i );

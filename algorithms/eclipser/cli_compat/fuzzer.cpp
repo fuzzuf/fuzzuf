@@ -60,7 +60,7 @@ void EclipserFuzzer::OneLoop() {
     opts.rng,
     opts
   );
-  exit( 0 );
+  end_ = Expired( opts.timelimit );
 }
 
 }

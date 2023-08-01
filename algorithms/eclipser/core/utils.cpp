@@ -11,6 +11,14 @@ namespace fuzzuf::algorithm::eclipser {
   namespace {
     const auto startTime = std::chrono::system_clock::now();
   }
+  bool Expired(
+    int timelimit
+  ) {
+    if( timelimit < 0 ) return false;
+    const auto elapsed = std::chrono::system_clock::now() - startTime;
+    const int total_sec = std::chrono::duration_cast< std::chrono::seconds >( elapsed ).count();
+    return total_sec >= timelimit;
+  }
   void Log( const std::function<void(std::string &&)> &sink, const std::string &fmt ) {
     const auto elapsed = std::chrono::system_clock::now() - startTime;
     const auto total_sec = std::chrono::duration_cast< std::chrono::seconds >( elapsed ).count();
