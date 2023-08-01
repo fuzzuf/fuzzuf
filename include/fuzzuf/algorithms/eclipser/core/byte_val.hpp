@@ -62,16 +62,72 @@ using ByteVal = std::variant<
 
 using ByteVals = std::vector< ByteVal >;
 
+/**
+ * Create ByteVal from a byte value
+ * @param v value
+ * @return Untouched ByteVal with value v
+ */
 ByteVal NewByteVal( std::byte v );
+/**
+ * Unwrap ByteVal and retrive the value
+ * If the ByteVal is Interval, the center of the range is return.
+ * @param b ByteVal
+ * @return Unwrapped value
+ */
 std::byte GetConcreteByte( ByteVal b );
+/**
+ * Return true if the ByteVal is Fixed
+ * @param b ByteVal
+ * @return true if b is Fixed
+ */
 bool IsFixed( ByteVal b );
+/**
+ * Return true if the ByteVal is not Fixed
+ * @param b ByteVal
+ * @return true if b is not Fixed 
+ */
 bool IsUnfixed( ByteVal b );
+/**
+ * Return true if the ByteVal is Sampled
+ * @param b ByteVal
+ * @return true if b is Sampled
+ */
 bool IsSampledByte( ByteVal b );
+/**
+ * Return true if the ByteVal is Fixed or Interval
+ * @param b ByteVal
+ * @return true if b is Fixed or Interval
+ */
 bool IsConstrained( ByteVal b );
+/**
+ * Return true if concretized value of the ByteVal is 0
+ * @param b ByteVal
+ * @return true if concretized value of b is 0
+ */
 bool IsNullByte( ByteVal b );
+/**
+ * Serialize the ByteVal into string
+ * @param b ByteVal
+ * @return serialized string
+ */
 std::string ToString( ByteVal b );
+/**
+ * Return the value range that satisfies the ByteVal
+ * @param b ByteVal
+ * @return tuple of values which first value indicates minimum and second value indicates maximum
+ */
 std::tuple< std::byte, std::byte > GetMinMax( ByteVal b, InputSource input_src );
+/**
+ * Serialize ByteVal into JSON
+ * @param dest reference to the JSON
+ * @param src ByteVal
+ */
 void to_json( nlohmann::json &dest, const ByteVal &src );
+/**
+ * Deserialize ByteVal from JSON
+ * @param src reference to the JSON
+ * @param dest ByteVal
+ */
 void from_json( const nlohmann::json &src, ByteVal &dest );
 
 }

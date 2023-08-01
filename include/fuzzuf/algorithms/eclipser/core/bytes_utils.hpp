@@ -33,11 +33,34 @@ enum class Endian {
   BE
 };
 
+/**
+ * Serialize Endian into JSON
+ * @param dest reference to the JSON
+ * @param src Endian
+ */
 void to_json( nlohmann::json&, Endian );
+/**
+ * Deserialize Endian from JSON
+ * @param src reference to the JSON
+ * @param dest Endian
+ */
 void from_json( const nlohmann::json&, Endian& );
 
+/**
+ * Convert BigInt value to byte sequence
+ * @param endian endianess
+ * @param sequence length in bytes
+ * @param value BigInt value
+ * @return byte sequence
+ */
 std::vector< std::byte >
 BigIntToBytes( Endian endian, std::size_t size, BigInt value );
+/**
+ * Convert byte sequence to BigInt value
+ * @param endian endianess
+ * @param bytes byte sequence
+ * @return BigInt value
+ */
 BigInt BytesToBigInt( Endian endian, const std::vector< std::byte > &bytes );
 
 }

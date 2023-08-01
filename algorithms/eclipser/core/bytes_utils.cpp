@@ -39,6 +39,7 @@ void from_json( const nlohmann::json &src, Endian &dest ) {
 std::vector< std::byte >
 BigIntToBytes( Endian endian, std::size_t size, BigInt value ) {
   std::vector< std::byte > temp;
+  temp.reserve( size );
   for( std::size_t i = 0u; i != size; ++i ) {
     temp.push_back( std::byte( std::uint8_t( value ) ) );
     value >>= 8;
