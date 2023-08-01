@@ -156,7 +156,6 @@ auto PostProcess(
     return false;
   }
 
-  fs::create_directories( dest.input_dir );
   fs::create_directories( dest.out_dir );
   fs::create_directories( dest.sync_dir );
 

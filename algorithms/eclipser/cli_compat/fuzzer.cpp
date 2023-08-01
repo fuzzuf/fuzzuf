@@ -21,6 +21,12 @@
  */
 #include "fuzzuf/algorithms/eclipser/cli_compat/options.hpp"
 #include "fuzzuf/algorithms/eclipser/cli_compat/fuzzer.hpp"
+#include "fuzzuf/algorithms/eclipser/core/executor.hpp"
+#include "fuzzuf/algorithms/eclipser/core/utils.hpp"
+#include "fuzzuf/algorithms/eclipser/fuzz/fuzz.hpp"
+#include "fuzzuf/algorithms/eclipser/fuzz/test_case.hpp"
+#include "fuzzuf/algorithms/eclipser/fuzz/scheduler.hpp"
+
 
 namespace fuzzuf::algorithm::eclipser {
 EclipserFuzzer::EclipserFuzzer(
@@ -37,10 +43,26 @@ EclipserFuzzer::EclipserFuzzer(
     end_ = true;
     return;
   }
+  executor::Initialize( opts );
+  test_case::Initialize( opts.out_dir );
+  scheduler::Initialize();
+
 }
 void EclipserFuzzer::OneLoop() {
   if( end_ ) return;
-
+  FuzzUntilEmpty(
+    []( std::string &&m ) {
+      Log(
+        []( std::string &&m ) {
+          std::cout << m << std::flush;
+       },
+       std::move( m )
+      );
+    },
+    opts.rng,
+    opts
+  );
+  exit( 0 );
 }
 
 }
