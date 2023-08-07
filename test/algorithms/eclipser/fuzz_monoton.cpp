@@ -38,15 +38,7 @@
 #include "fuzzuf/algorithms/eclipser/fuzz/scheduler.hpp"
 
 BOOST_AUTO_TEST_CASE(Run) {
-  std::string root_dir_template("/tmp/fuzzuf_test.XXXXXX");
-  auto* const raw_dirname = mkdtemp(root_dir_template.data());
-  BOOST_CHECK(raw_dirname != nullptr);
-  auto root_dir = fs::path(raw_dirname);
-  auto input_dir = root_dir / "input";
-  auto output_dir = root_dir / "output";
-  BOOST_CHECK_EQUAL(fs::create_directory(input_dir), true);
-  BOOST_CHECK_EQUAL(fs::create_directory(output_dir), true);
-  //FUZZUF_STANDARD_TEST_DIRS
+  FUZZUF_STANDARD_TEST_DIRS
   
   fs::current_path( output_dir );
 
