@@ -50,9 +50,10 @@ class EclipserFuzzer : public fuzzer::Fuzzer {
   virtual void OneLoop();
   virtual void ReceiveStopSignal(void) {}
   bool ShouldEnd() override { return end_; }
+  const options::FuzzOption &GetOption() const { return opts; }
  private:
   bool end_ = false;
-  algorithm::eclipser::options::FuzzOption opts;
+  options::FuzzOption opts;
 };
 }  // namespace fuzzuf::algorithm::eclipser
 

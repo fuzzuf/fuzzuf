@@ -401,3 +401,81 @@ if( ENABLE_CLANG_TIDY )
   )
 endif()
 add_test( NAME "algorithms.eclipser.fuzz_monoton" COMMAND test-algorithms-eclipser-fuzz_monoton )
+
+add_executable( test-algorithms-eclipser-cli_parser cli_parser.cpp )
+target_link_libraries(
+  test-algorithms-eclipser-cli_parser
+  test-common
+  fuzzuf_core
+  fuzzuf-cli-lib
+  ${FUZZUF_LIBRARIES}
+  Boost::unit_test_framework
+)
+target_include_directories(
+  test-algorithms-eclipser-cli_parser
+  PRIVATE
+  ${FUZZUF_INCLUDE_DIRS}
+  ${CMAKE_SOURCE_DIR}/test/common
+)
+set_target_properties(
+  test-algorithms-eclipser-cli_parser
+  PROPERTIES COMPILE_FLAGS "${ADDITIONAL_COMPILE_FLAGS_STR}"
+)
+set_target_properties(
+  test-algorithms-eclipser-cli_parser
+  PROPERTIES LINK_FLAGS "${ADDITIONAL_LINK_FLAGS_STR}"
+)
+add_dependencies(
+  test-algorithms-eclipser-cli_parser
+  test-algorithms-eclipser-copy-qemu-trace-branch-x86
+  test-algorithms-eclipser-copy-qemu-trace-branch-x86_64
+  test-algorithms-eclipser-copy-qemu-trace-coverage-x86
+  test-algorithms-eclipser-copy-qemu-trace-coverage-x86_64
+)
+if( ENABLE_CLANG_TIDY )
+  set_target_properties(
+    test-algorithms-eclipser-cli_parser
+    PROPERTIES
+    CXX_CLANG_TIDY "${CLANG_TIDY};${CLANG_TIDY_CONFIG_FOR_TEST}"
+  )
+endif()
+add_test( NAME "algorithms.eclipser.cli_parser" COMMAND test-algorithms-eclipser-cli_parser )
+
+add_executable( test-algorithms-eclipser-cli cli.cpp )
+target_link_libraries(
+  test-algorithms-eclipser-cli
+  test-common
+  fuzzuf_core
+  fuzzuf-cli-lib
+  ${FUZZUF_LIBRARIES}
+  Boost::unit_test_framework
+)
+target_include_directories(
+  test-algorithms-eclipser-cli
+  PRIVATE
+  ${FUZZUF_INCLUDE_DIRS}
+  ${CMAKE_SOURCE_DIR}/test/common
+)
+set_target_properties(
+  test-algorithms-eclipser-cli
+  PROPERTIES COMPILE_FLAGS "${ADDITIONAL_COMPILE_FLAGS_STR}"
+)
+set_target_properties(
+  test-algorithms-eclipser-cli
+  PROPERTIES LINK_FLAGS "${ADDITIONAL_LINK_FLAGS_STR}"
+)
+add_dependencies(
+  test-algorithms-eclipser-cli
+  test-algorithms-eclipser-copy-qemu-trace-branch-x86
+  test-algorithms-eclipser-copy-qemu-trace-branch-x86_64
+  test-algorithms-eclipser-copy-qemu-trace-coverage-x86
+  test-algorithms-eclipser-copy-qemu-trace-coverage-x86_64
+)
+if( ENABLE_CLANG_TIDY )
+  set_target_properties(
+    test-algorithms-eclipser-cli
+    PROPERTIES
+    CXX_CLANG_TIDY "${CLANG_TIDY};${CLANG_TIDY_CONFIG_FOR_TEST}"
+  )
+endif()
+add_test( NAME "algorithms.eclipser.cli" COMMAND test-algorithms-eclipser-cli )
