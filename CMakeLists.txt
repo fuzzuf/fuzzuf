@@ -567,12 +567,14 @@ if( "${PATTR_PYENV}" STREQUAL "native" )
         WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
       )
     elseif( ${CMAKE_VERSION} VERSION_LESS 3.16.0 )
+      set( DOXYGEN_EXCLUDE_PATTERNS "${CMAKE_BINARY_DIR}/algorithms/eclipser/instrumentor/*" )
       doxygen_add_docs(
         fuzzuf_doc
         ALL
         WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
       )
     else()
+      set( DOXYGEN_EXCLUDE_PATTERNS "${CMAKE_BINARY_DIR}/algorithms/eclipser/instrumentor/*" )
       doxygen_add_docs(
         fuzzuf_doc
         ALL
