@@ -77,6 +77,3 @@ install(
   RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
 )
 
-subdirs(
-  instrumentor
-)

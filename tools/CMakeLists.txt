@@ -4,5 +4,6 @@ subdirs(
   die
   nautilus
   polyexecutor
+  algorithms
 )
 
