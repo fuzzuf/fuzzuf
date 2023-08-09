@@ -51,8 +51,9 @@ endif()
 
 add_custom_target(
   tool-algorithms-eclipser-copy-qemu-trace-coverage-x86
+  ALL
   COMMAND ${CMAKE_COMMAND} -E
-  copy ${CMAKE_BINARY_DIR}/algorithms/eclipser/instrumentor/coverage-x86/qemu-trace-coverage-x86-prefix/bin/qemu-i386 ${CMAKE_BINARY_DIR}/qemu-trace-coverage-x86
+  copy ${CMAKE_CURRENT_BINARY_DIR}/qemu-trace-coverage-x86-prefix/bin/qemu-i386 ${CMAKE_BINARY_DIR}/qemu-trace-coverage-x86
   DEPENDS qemu-trace-coverage-x86
 )
 

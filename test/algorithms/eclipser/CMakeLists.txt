@@ -1,25 +1,25 @@
 add_custom_target(
   test-algorithms-eclipser-copy-qemu-trace-branch-x86
   COMMAND ${CMAKE_COMMAND} -E
-  copy ${CMAKE_BINARY_DIR}/algorithms/eclipser/instrumentor/branch-x86/qemu-trace-branch-x86-prefix/bin/qemu-i386 ${CMAKE_BINARY_DIR}/test/algorithms/eclipser/qemu-trace-branch-x86
+  copy ${CMAKE_BINARY_DIR}/tools/algorithms/eclipser/instrumentor/branch-x86/qemu-trace-branch-x86-prefix/bin/qemu-i386 ${CMAKE_BINARY_DIR}/test/algorithms/eclipser/qemu-trace-branch-x86
   DEPENDS qemu-trace-branch-x86
 )
 add_custom_target(
   test-algorithms-eclipser-copy-qemu-trace-branch-x86_64
   COMMAND ${CMAKE_COMMAND} -E
-  copy ${CMAKE_BINARY_DIR}/algorithms/eclipser/instrumentor/branch-x86_64/qemu-trace-branch-x86_64-prefix/bin/qemu-x86_64 ${CMAKE_BINARY_DIR}/test/algorithms/eclipser/qemu-trace-branch-x64
+  copy ${CMAKE_BINARY_DIR}/tools/algorithms/eclipser/instrumentor/branch-x86_64/qemu-trace-branch-x86_64-prefix/bin/qemu-x86_64 ${CMAKE_BINARY_DIR}/test/algorithms/eclipser/qemu-trace-branch-x64
   DEPENDS qemu-trace-branch-x86_64
 )
 add_custom_target(
   test-algorithms-eclipser-copy-qemu-trace-coverage-x86
   COMMAND ${CMAKE_COMMAND} -E
-  copy ${CMAKE_BINARY_DIR}/algorithms/eclipser/instrumentor/coverage-x86/qemu-trace-coverage-x86-prefix/bin/qemu-i386 ${CMAKE_BINARY_DIR}/test/algorithms/eclipser/qemu-trace-coverage-x86
+  copy ${CMAKE_BINARY_DIR}/tools/algorithms/eclipser/instrumentor/coverage-x86/qemu-trace-coverage-x86-prefix/bin/qemu-i386 ${CMAKE_BINARY_DIR}/test/algorithms/eclipser/qemu-trace-coverage-x86
   DEPENDS qemu-trace-coverage-x86
 )
 add_custom_target(
   test-algorithms-eclipser-copy-qemu-trace-coverage-x86_64
   COMMAND ${CMAKE_COMMAND} -E
-  copy ${CMAKE_BINARY_DIR}/algorithms/eclipser/instrumentor/coverage-x86_64/qemu-trace-coverage-x86_64-prefix/bin/qemu-x86_64 ${CMAKE_BINARY_DIR}/test/algorithms/eclipser/qemu-trace-coverage-x64
+  copy ${CMAKE_BINARY_DIR}/tools/algorithms/eclipser/instrumentor/coverage-x86_64/qemu-trace-coverage-x86_64-prefix/bin/qemu-x86_64 ${CMAKE_BINARY_DIR}/test/algorithms/eclipser/qemu-trace-coverage-x64
   DEPENDS qemu-trace-coverage-x86_64
 )
 add_executable( test-algorithms-eclipser-executor executor.cpp )

@@ -57,8 +57,9 @@ endif()
 
 add_custom_target(
   tool-algorithms-eclipser-copy-qemu-trace-branch-x86_64
+  ALL
   COMMAND ${CMAKE_COMMAND} -E
-  copy ${CMAKE_BINARY_DIR}/algorithms/eclipser/instrumentor/branch-x86_64/qemu-trace-branch-x86_64-prefix/bin/qemu-x86_64 ${CMAKE_BINARY_DIR}/qemu-trace-branch-x64
+  copy ${CMAKE_CURRENT_BINARY_DIR}/qemu-trace-branch-x86_64-prefix/bin/qemu-x86_64 ${CMAKE_BINARY_DIR}/qemu-trace-branch-x64
   DEPENDS qemu-trace-branch-x86_64
 )
 
