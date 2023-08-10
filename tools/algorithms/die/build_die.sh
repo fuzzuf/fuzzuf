@@ -27,6 +27,10 @@ DIE_DIR=DIE
 # Commands
 GIT=git
 NPM=npm
+if [ -e "${TOOLS_DIE_DIR}/node_modules/.bin/npm" ]
+then
+  NPM="${TOOLS_DIE_DIR}/node_modules/.bin/npm"
+fi
 TSC=tsc
 
 ##
