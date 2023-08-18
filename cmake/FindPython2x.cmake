@@ -17,24 +17,24 @@
 #
 find_package( Threads REQUIRED )
 if( NOT Python2_FOUND )
-  find_program( Python2_CONFIG_EXECUTABLE NAMES python2-config )
+  find_program( Python2_CONFIG_EXECUTABLE NAMES python2.7-config )
   if( Python2_CONFIG_EXECUTABLE )
     execute_process(
-      COMMAND python2-config --prefix
+      COMMAND python2.7-config --prefix
       OUTPUT_VARIABLE Python2_PREFIX
       OUTPUT_STRIP_TRAILING_WHITESPACE
       ENCODING AUTO
     )
-    find_program( Python2_INTERPRETOR NAMES python2 NO_DEFAULT_PATH PATHS ${Python2_PREFIX}/bin )
+    find_program( Python2_INTERPRETOR NAMES python2.7 NO_DEFAULT_PATH PATHS ${Python2_PREFIX}/bin )
     if( Python2_INTERPRETOR )
     else()
       find_program( Python2_INTERPRETOR NAMES python NO_DEFAULT_PATH PATHS ${Python2_PREFIX}/bin )
     endif()
   else()
-    find_program( PYTHON_CONFIG_EXECUTABLE NAMES python-config )
-    if( PYTHON_CONFIG_EXECUTABLE )
+    find_program( Python2_CONFIG_EXECUTABLE NAMES python2-config )
+    if( Python2_CONFIG_EXECUTABLE )
       execute_process(
-        COMMAND python-config --prefix
+        COMMAND python2-config --prefix
         OUTPUT_VARIABLE Python2_PREFIX
         OUTPUT_STRIP_TRAILING_WHITESPACE
         ENCODING AUTO
@@ -43,6 +43,21 @@ if( NOT Python2_FOUND )
       if( Python2_INTERPRETOR )
       else()
         find_program( Python2_INTERPRETOR NAMES python NO_DEFAULT_PATH PATHS ${Python2_PREFIX}/bin )
+      endif()
+    else()
+      find_program( PYTHON_CONFIG_EXECUTABLE NAMES python-config )
+      if( PYTHON_CONFIG_EXECUTABLE )
+        execute_process(
+          COMMAND python-config --prefix
+          OUTPUT_VARIABLE Python2_PREFIX
+          OUTPUT_STRIP_TRAILING_WHITESPACE
+          ENCODING AUTO
+        )
+        find_program( Python2_INTERPRETOR NAMES python2 NO_DEFAULT_PATH PATHS ${Python2_PREFIX}/bin )
+        if( Python2_INTERPRETOR )
+        else()
+          find_program( Python2_INTERPRETOR NAMES python NO_DEFAULT_PATH PATHS ${Python2_PREFIX}/bin )
+        endif()
       endif()
     endif()
   endif()

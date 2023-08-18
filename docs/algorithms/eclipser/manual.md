@@ -100,6 +100,7 @@ This value is not used.
 Command-line argument of the target program to fuzz.
 The argument is splitted by space.
 There is no escape sequence to pass space itself as an argument.
+Note that the argument does NOT support the AFL-like `@@` fuzz input marker. To supply a fuzz input as a file, use the path specified with `--filepath` option. For example, if the PUT arguments are `-f @@` on AFL, the options on Eclipser will be `--filepath /tmp/input --arg "-f /tmp/input"`.
 Default value is empty.
 
 ### --filepath arg
