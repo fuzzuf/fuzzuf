@@ -207,6 +207,7 @@ cmd_build() {
       -DDEFAULT_RUNLEVEL=$runlevel \
       -DPIN_ROOT=$PIN_ROOT \
       -DENABLE_DOXYGEN=$doxygen \
+      -DENABLE_ALGORITHMS=all \
     && cmake --build $CTR_FUZZUF_BUILD_DIR -j$(nproc)"
 
   fix_dir_perms $?
