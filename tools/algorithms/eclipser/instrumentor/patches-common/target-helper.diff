@@ -1,0 +1,12 @@
+--- qemu-2.10.0/target/i386/helper.h.orig	2020-10-12 02:23:45.429904211 -0700
++++ qemu-2.10.0/target/i386/helper.h	2020-10-12 02:23:41.473944955 -0700
+@@ -226,3 +226,9 @@
+ DEF_HELPER_3(rclq, tl, env, tl, tl)
+ DEF_HELPER_3(rcrq, tl, env, tl, tl)
+ #endif
++
++#ifdef TARGET_X86_64
++DEF_HELPER_1(eclipser_log_bb, void, i64)
++#else
++DEF_HELPER_1(eclipser_log_bb, void, i32)
++#endif

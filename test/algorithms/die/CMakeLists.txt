@@ -20,6 +20,10 @@ set_target_properties(
   test-die-loop
   PROPERTIES LINK_FLAGS "${ADDITIONAL_LINK_FLAGS_STR}"
 )
+add_dependencies(
+  test-die-loop
+  die  
+)
 if( ENABLE_HEAVY_TEST )
 add_test( NAME "die.loop" COMMAND test-die-loop )
 endif()

@@ -44,7 +44,22 @@ add_executable(
 )
 
 add_executable(
+  symcc-threshold
+  ../afl_gcc/threshold.c 
+)
+
+add_executable(
   symcc-hard_to_branch
   ../afl_gcc/hard_to_branch.c 
+)
+
+add_executable(
+  symcc-no_branch
+  ../afl_gcc/no_branch.c 
+)
+
+add_executable(
+  symcc-monotonic
+  ../afl_gcc/monotonic.c 
 )
 

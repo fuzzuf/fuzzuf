@@ -20,3 +20,6 @@ add_subdirectory(
   symcc
 )
 endif()
+add_subdirectory(
+  raw
+)

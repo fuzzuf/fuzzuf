@@ -1,0 +1,64 @@
+--- qemu-2.10.0/accel/tcg/cpu-exec.c.orig	2020-10-12 02:23:45.417904334 -0700
++++ qemu-2.10.0/accel/tcg/cpu-exec.c	2020-10-12 02:23:41.501944668 -0700
+@@ -36,6 +36,11 @@
+ #include "sysemu/cpus.h"
+ #include "sysemu/replay.h"
+ 
++#include "afl-qemu-cpu-inl.h"
++extern abi_ulong eclipser_entry_point; /* ELF entry point (_start) */
++extern void eclipser_setup_before_forkserver(void);
++extern void eclipser_setup_after_forkserver(void);
++
+ /* -icount align implementation. */
+ 
+ typedef struct SyncClocks {
+@@ -143,6 +148,16 @@
+     TranslationBlock *last_tb;
+     int tb_exit;
+     uint8_t *tb_ptr = itb->tc_ptr;
++    abi_ulong entry_pc;
++
++    entry_pc = itb->pc;
++    if(entry_pc == eclipser_entry_point) {
++      eclipser_setup_before_forkserver();
++      // Resolves util/rcu.c assertion error issue (cf. AFL-2.53b).
++      rcu_disable_atfork();
++      afl_forkserver(cpu);
++      eclipser_setup_after_forkserver();
++    }
+ 
+     qemu_log_mask_and_addr(CPU_LOG_EXEC, itb->pc,
+                            "Trace %p [%d: " TARGET_FMT_lx "] %s\n",
+@@ -337,7 +352,7 @@
+     TranslationBlock *tb;
+     target_ulong cs_base, pc;
+     uint32_t flags;
+-    bool have_tb_lock = false;
++    bool have_tb_lock = false, translated = false, chained = false;
+ 
+     /* we record a subset of the CPU state. It will
+        always be the same before a given translated block
+@@ -365,6 +380,7 @@
+             if (!tb) {
+                 /* if no translated code available, then translate it now */
+                 tb = tb_gen_code(cpu, pc, cs_base, flags, 0);
++                translated = true;
+             }
+ 
+             mmap_unlock();
+@@ -390,11 +406,15 @@
+         }
+         if (!tb->invalid) {
+             tb_add_jump(last_tb, tb_exit, tb);
++            chained = true;
+         }
+     }
+     if (have_tb_lock) {
+         tb_unlock();
+     }
++    if (translated || chained) {
++        afl_request_tsl(pc, cs_base, flags, chained ? last_tb : NULL, tb_exit);
++    }
+     return tb;
+ }
+ 

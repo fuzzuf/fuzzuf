@@ -1,0 +1,94 @@
+--- qemu-2.10.0-branch/tcg/i386/tcg-target.inc.c.orig	2020-10-12 02:23:49.181865568 -0700
++++ qemu-2.10.0-branch/tcg/i386/tcg-target.inc.c	2020-10-12 02:23:49.089866514 -0700
+@@ -24,6 +24,10 @@
+ 
+ #include "tcg-be-ldst.h"
+ 
++extern void eclipser_trampoline(abi_ulong oprnd1,
++                               abi_ulong oprnd2,
++                               unsigned char type);
++
+ #ifdef CONFIG_DEBUG_TCG
+ static const char * const tcg_target_reg_names[TCG_TARGET_NB_REGS] = {
+ #if TCG_TARGET_REG_BITS == 64
+@@ -1853,6 +1857,7 @@
+ {
+     TCGArg a0, a1, a2;
+     int c, const_a2, vexop, rexw = 0;
++    TCGMemOp ot;
+ 
+ #if TCG_TARGET_REG_BITS == 64
+ # define OP_32_64(x) \
+@@ -1976,9 +1981,72 @@
+         c = ARITH_ADD;
+         goto gen_arith;
+     OP_32_64(sub):
++        if (args[3] != ECLIPSER_IGNORE) {
++          ot = args[4];
++#if TCG_TARGET_REG_BITS == 64
++          tcg_out_push(s, TCG_REG_RDI);
++          tcg_out_push(s, TCG_REG_RSI);
++          tcg_out_push(s, TCG_REG_RDX);
++          tcg_out_mov(s, TCG_TYPE_I64, TCG_REG_RDI, args[0]);
++          if (const_a2) {
++            tcg_out_movi(s, TCG_TYPE_I64, TCG_REG_RSI, args[2]);
++          } else {
++            tcg_out_mov(s, TCG_TYPE_I64, TCG_REG_RSI, args[2]);
++          }
++          tcg_out_movi(s, TCG_TYPE_I64, TCG_REG_RDX, (args[3] << 6) | ot);
++          tcg_out_call(s, (tcg_insn_unit*)eclipser_trampoline);
++          tcg_out_pop(s, TCG_REG_RDX);
++          tcg_out_pop(s, TCG_REG_RSI);
++          tcg_out_pop(s, TCG_REG_RDI);
++#else
++          tcg_out_push(s, TCG_REG_EDI);
++          tcg_out_push(s, TCG_REG_ESI);
++          tcg_out_push(s, TCG_REG_EDX);
++          tcg_out_mov(s, TCG_TYPE_I32, TCG_REG_EDI, args[0]);
++          if (const_a2) {
++            tcg_out_movi(s, TCG_TYPE_I32, TCG_REG_ESI, args[2]);
++          } else {
++            tcg_out_mov(s, TCG_TYPE_I32, TCG_REG_ESI, args[2]);
++          }
++          tcg_out_movi(s, TCG_TYPE_I32, TCG_REG_EDX, (args[3] << 6) | ot);
++          tcg_out_call(s, (tcg_insn_unit*)eclipser_trampoline);
++          tcg_out_pop(s, TCG_REG_EDX);
++          tcg_out_pop(s, TCG_REG_ESI);
++          tcg_out_pop(s, TCG_REG_EDI);
++#endif
++        }
+         c = ARITH_SUB;
+         goto gen_arith;
+     OP_32_64(and):
++        /* Recall that we only marked 'test r1, r1' case as our instrumentation
++         * target, so consider it as 'cmp r1, 0'.
++         */
++        if (args[3] != ECLIPSER_IGNORE) {
++          ot = args[4];
++#if TCG_TARGET_REG_BITS == 64
++          tcg_out_push(s, TCG_REG_RDI);
++          tcg_out_push(s, TCG_REG_RSI);
++          tcg_out_push(s, TCG_REG_RDX);
++          tcg_out_mov(s, TCG_TYPE_I64, TCG_REG_RDI, args[0]);
++          tcg_out_movi(s, TCG_TYPE_I64, TCG_REG_RSI, 0);
++          tcg_out_movi(s, TCG_TYPE_I64, TCG_REG_RDX, (args[3] << 6) | ot);
++          tcg_out_call(s, (tcg_insn_unit*)eclipser_trampoline);
++          tcg_out_pop(s, TCG_REG_RDX);
++          tcg_out_pop(s, TCG_REG_RSI);
++          tcg_out_pop(s, TCG_REG_RDI);
++#else
++          tcg_out_push(s, TCG_REG_EDI);
++          tcg_out_push(s, TCG_REG_ESI);
++          tcg_out_push(s, TCG_REG_EDX);
++          tcg_out_mov(s, TCG_TYPE_I32, TCG_REG_EDI, args[0]);
++          tcg_out_movi(s, TCG_TYPE_I32, TCG_REG_ESI, 0);
++          tcg_out_movi(s, TCG_TYPE_I32, TCG_REG_EDX, (args[3] << 6) | ot);
++          tcg_out_call(s, (tcg_insn_unit*)eclipser_trampoline);
++          tcg_out_pop(s, TCG_REG_EDX);
++          tcg_out_pop(s, TCG_REG_ESI);
++          tcg_out_pop(s, TCG_REG_EDI);
++#endif
++        }
+         c = ARITH_AND;
+         goto gen_arith;
+     OP_32_64(or):

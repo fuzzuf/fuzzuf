@@ -52,3 +52,17 @@ add_executable(
   hard_to_branch.c 
 )
 
+add_executable(
+  afl_gcc-threshold
+  threshold.c 
+)
+
+add_executable(
+  afl_gcc-no_branch
+  no_branch.c 
+)
+
+add_executable(
+  afl_gcc-monotonic
+  monotonic.c
+)

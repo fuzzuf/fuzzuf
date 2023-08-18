@@ -18,6 +18,7 @@ RUN apt-get update \
     cmake \
     git \
     libboost-all-dev \
+    python2.7-dev \
     python3 \
     python3-pip \
     nlohmann-json3-dev \
@@ -30,6 +31,9 @@ RUN apt-get update \
     wget \
     nodejs \
     afl++-clang \
+    libfdt-dev \
+    libglib2.0-dev \
+    libpixman-1-dev \
   && apt-get clean \
   && rm -rf /var/lib/apt/lists/*
 

@@ -1,0 +1,20 @@
+--- qemu-2.10.0/linux-user/elfload.c.orig	2020-10-01 07:50:32.384129945 -0700
++++ qemu-2.10.0/linux-user/elfload.c	2020-10-02 05:01:04.956387921 -0700
+@@ -20,6 +20,8 @@
+ 
+ #define ELF_OSABI   ELFOSABI_SYSV
+ 
++extern abi_ulong eclipser_entry_point;
++
+ /* from personality.h */
+ 
+ /*
+@@ -2085,6 +2087,8 @@
+     info->brk = 0;
+     info->elf_flags = ehdr->e_flags;
+ 
++    if (!eclipser_entry_point) eclipser_entry_point = info->entry;
++
+     for (i = 0; i < ehdr->e_phnum; i++) {
+         struct elf_phdr *eppnt = phdr + i;
+         if (eppnt->p_type == PT_LOAD) {

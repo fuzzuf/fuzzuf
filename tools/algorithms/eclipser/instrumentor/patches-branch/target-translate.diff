@@ -1,0 +1,324 @@
+--- qemu-2.10.0-branch/target/i386/translate.c.orig	2020-10-12 02:23:49.185865526 -0700
++++ qemu-2.10.0-branch/target/i386/translate.c	2020-10-12 02:23:49.057866843 -0700
+@@ -71,6 +71,10 @@
+ 
+ //#define MACRO_TEST   1
+ 
++extern int eclipser_EP_passed;
++extern abi_ulong eclipser_curr_addr;
++extern abi_ulong eclipser_targ_addr;
++
+ /* global register indexes */
+ static TCGv_env cpu_env;
+ static TCGv cpu_A0;
+@@ -138,6 +142,10 @@
+     int cpuid_ext3_features;
+     int cpuid_7_0_ebx_features;
+     int cpuid_xsave_features;
++    /* Additional field for eclipser, to record the parameter index of the
++     * latest cmp/test instruction.
++     */
++    int latest_tgt_parm_idx;
+ } DisasContext;
+ 
+ static void gen_eob(DisasContext *s);
+@@ -664,6 +672,11 @@
+     tcg_gen_mov_tl(cpu_cc_dst, cpu_T0);
+ }
+ 
++static inline void gen_op_testl_T0_T1_cc_eclipser(TCGMemOp ot)
++{
++    tcg_gen_and_tl_eclipser(cpu_cc_dst, cpu_T0, cpu_T1, ot);
++}
++
+ static inline void gen_op_testl_T0_T1_cc(void)
+ {
+     tcg_gen_and_tl(cpu_cc_dst, cpu_T0, cpu_T1);
+@@ -885,7 +898,8 @@
+ 
+ /* perform a conditional store into register 'reg' according to jump opcode
+    value 'b'. In the fast case, T0 is guaranted not to be used. */
+-static CCPrepare gen_prepare_cc(DisasContext *s, int b, TCGv reg)
++static CCPrepare gen_prepare_cc(DisasContext *s, int b, TCGv reg,
++                                int cc_optimize_flag)
+ {
+     int inv, jcc_op, cond;
+     TCGMemOp size;
+@@ -897,6 +911,8 @@
+ 
+     switch (s->cc_op) {
+     case CC_OP_SUBB ... CC_OP_SUBQ:
++        if (!cc_optimize_flag)
++          goto slow_jcc;
+         /* We optimize relational operators for the cmp/jcc case.  */
+         size = s->cc_op - CC_OP_SUBB;
+         switch (jcc_op) {
+@@ -981,9 +997,9 @@
+     return cc;
+ }
+ 
+-static void gen_setcc1(DisasContext *s, int b, TCGv reg)
++static void gen_setcc1(DisasContext *s, int b, TCGv reg, int cc_optimize_flag)
+ {
+-    CCPrepare cc = gen_prepare_cc(s, b, reg);
++    CCPrepare cc = gen_prepare_cc(s, b, reg, cc_optimize_flag);
+ 
+     if (cc.no_setcond) {
+         if (cc.cond == TCG_COND_EQ) {
+@@ -1013,14 +1029,14 @@
+ 
+ static inline void gen_compute_eflags_c(DisasContext *s, TCGv reg)
+ {
+-    gen_setcc1(s, JCC_B << 1, reg);
++    gen_setcc1(s, JCC_B << 1, reg, 1);
+ }
+ 
+ /* generate a conditional jump to label 'l1' according to jump opcode
+    value 'b'. In the fast case, T0 is guaranted not to be used. */
+ static inline void gen_jcc1_noeob(DisasContext *s, int b, TCGLabel *l1)
+ {
+-    CCPrepare cc = gen_prepare_cc(s, b, cpu_T0);
++    CCPrepare cc = gen_prepare_cc(s, b, cpu_T0, 1);
+ 
+     if (cc.mask != -1) {
+         tcg_gen_andi_tl(cpu_T0, cc.reg, cc.mask);
+@@ -1038,7 +1054,26 @@
+    A translation block must end soon.  */
+ static inline void gen_jcc1(DisasContext *s, int b, TCGLabel *l1)
+ {
+-    CCPrepare cc = gen_prepare_cc(s, b, cpu_T0);
++    CCPrepare cc;
++    int jcc_op = (b >> 1) & 7;
++    int cc_optimize_flag = 1;
++
++    /* If this is a JCC instruction followed by sub/cmp/test, replace the
++     * previous comparison type 'ECLIPSER_IGNORE' with a new one, to indicate
++     * that this is our instrumentation target.
++     */
++    if (jcc_op == JCC_Z && s->latest_tgt_parm_idx != -1) {
++      tcg_ctx.gen_opparam_buf[s->latest_tgt_parm_idx] = ECLIPSER_CMP_EQUALITY;
++      cc_optimize_flag = 0;
++    } else if ((jcc_op == JCC_B || jcc_op == JCC_BE) && s->latest_tgt_parm_idx != -1) {
++      tcg_ctx.gen_opparam_buf[s->latest_tgt_parm_idx] = ECLIPSER_CMP_SIZE_UNSIGNED;
++      cc_optimize_flag = 0;
++    } else if ((jcc_op == JCC_L || jcc_op == JCC_LE) && s->latest_tgt_parm_idx != -1) {
++      tcg_ctx.gen_opparam_buf[s->latest_tgt_parm_idx] = ECLIPSER_CMP_SIZE_SIGNED;
++      cc_optimize_flag = 0;
++    }
++
++    cc = gen_prepare_cc(s, b, cpu_T0, cc_optimize_flag);
+ 
+     gen_update_cc_op(s);
+     if (cc.mask != -1) {
+@@ -1281,6 +1316,8 @@
+         }
+         gen_op_update3_cc(cpu_tmp4);
+         set_cc_op(s1, CC_OP_ADCB + ot);
++        // Met an instruction that affects JCC, so disable instrumentation.
++        s1->latest_tgt_parm_idx = -1;
+         break;
+     case OP_SBBL:
+         gen_compute_eflags_c(s1, cpu_tmp4);
+@@ -1296,6 +1333,8 @@
+         }
+         gen_op_update3_cc(cpu_tmp4);
+         set_cc_op(s1, CC_OP_SBBB + ot);
++        // Met an instruction that affects JCC, so disable instrumentation.
++        s1->latest_tgt_parm_idx = -1;
+         break;
+     case OP_ADDL:
+         if (s1->prefix & PREFIX_LOCK) {
+@@ -1307,16 +1346,26 @@
+         }
+         gen_op_update2_cc();
+         set_cc_op(s1, CC_OP_ADDB + ot);
++        // Met an instruction that affects JCC, so disable instrumentation.
++        s1->latest_tgt_parm_idx = -1;
+         break;
+     case OP_SUBL:
+         if (s1->prefix & PREFIX_LOCK) {
+             tcg_gen_neg_tl(cpu_T0, cpu_T1);
+             tcg_gen_atomic_fetch_add_tl(cpu_cc_srcT, cpu_A0, cpu_T0,
+                                         s1->mem_index, ot | MO_LE);
++            // TODO: Try instrumenting this case, too.
+             tcg_gen_sub_tl(cpu_T0, cpu_cc_srcT, cpu_T1);
+         } else {
+             tcg_gen_mov_tl(cpu_cc_srcT, cpu_T0);
+-            tcg_gen_sub_tl(cpu_T0, cpu_T0, cpu_T1);
++            if (eclipser_EP_passed) {
++                tcg_gen_sub_tl_eclipser(cpu_T0, cpu_T0, cpu_T1, ot);
++                // Record the index of comparison type argument.
++                assert(tcg_ctx.gen_next_parm_idx >= 2);
++                s1->latest_tgt_parm_idx = tcg_ctx.gen_next_parm_idx - 2;
++            } else {
++              tcg_gen_sub_tl(cpu_T0, cpu_T0, cpu_T1);
++            }
+             gen_op_st_rm_T0_A0(s1, ot, d);
+         }
+         gen_op_update2_cc();
+@@ -1333,6 +1382,8 @@
+         }
+         gen_op_update1_cc();
+         set_cc_op(s1, CC_OP_LOGICB + ot);
++        // Met an instruction that affects JCC, so disable instrumentation.
++        s1->latest_tgt_parm_idx = -1;
+         break;
+     case OP_ORL:
+         if (s1->prefix & PREFIX_LOCK) {
+@@ -1344,6 +1395,8 @@
+         }
+         gen_op_update1_cc();
+         set_cc_op(s1, CC_OP_LOGICB + ot);
++        // Met an instruction that affects JCC, so disable instrumentation.
++        s1->latest_tgt_parm_idx = -1;
+         break;
+     case OP_XORL:
+         if (s1->prefix & PREFIX_LOCK) {
+@@ -1355,11 +1408,20 @@
+         }
+         gen_op_update1_cc();
+         set_cc_op(s1, CC_OP_LOGICB + ot);
++        // Met an instruction that affects JCC, so disable instrumentation.
++        s1->latest_tgt_parm_idx = -1;
+         break;
+     case OP_CMPL:
+         tcg_gen_mov_tl(cpu_cc_src, cpu_T1);
+         tcg_gen_mov_tl(cpu_cc_srcT, cpu_T0);
+-        tcg_gen_sub_tl(cpu_cc_dst, cpu_T0, cpu_T1);
++        if (eclipser_EP_passed) {
++            tcg_gen_sub_tl_eclipser(cpu_cc_dst, cpu_T0, cpu_T1, ot);
++            // Record the index of comparison type argument.
++            assert(tcg_ctx.gen_next_parm_idx >= 2);
++            s1->latest_tgt_parm_idx = tcg_ctx.gen_next_parm_idx - 2;
++        } else {
++            tcg_gen_sub_tl(cpu_cc_dst, cpu_T0, cpu_T1);
++        }
+         set_cc_op(s1, CC_OP_SUBB + ot);
+         break;
+     }
+@@ -2190,13 +2252,13 @@
+ }
+ 
+ static void gen_cmovcc1(CPUX86State *env, DisasContext *s, TCGMemOp ot, int b,
+-                        int modrm, int reg)
++                        int modrm, int reg, int cc_optimize_flag)
+ {
+     CCPrepare cc;
+ 
+     gen_ldst_modrm(env, s, modrm, ot, OR_TMP0, 0);
+ 
+-    cc = gen_prepare_cc(s, b, cpu_T1);
++    cc = gen_prepare_cc(s, b, cpu_T1, cc_optimize_flag);
+     if (cc.mask != -1) {
+         TCGv t0 = tcg_temp_new();
+         tcg_gen_andi_tl(t0, cc.reg, cc.mask);
+@@ -4427,6 +4489,7 @@
+     int modrm, reg, rm, mod, op, opreg, val;
+     target_ulong next_eip, tval;
+     int rex_w, rex_r;
++    int jcc_op, cc_optimize_flag;
+ 
+     s->pc_start = s->pc = pc_start;
+     prefixes = 0;
+@@ -5056,10 +5119,23 @@
+ 
+         modrm = cpu_ldub_code(env, s->pc++);
+         reg = ((modrm >> 3) & 7) | rex_r;
++        // Added to check equality with 'reg' below.
++        rm = (modrm & 7) | REX_B(s);
+ 
+         gen_ldst_modrm(env, s, modrm, ot, OR_TMP0, 0);
+         gen_op_mov_v_reg(ot, cpu_T1, reg);
+-        gen_op_testl_T0_T1_cc();
++        /* We only focus on test instruction with two same registers as operand,
++         * e.g. "test eax, eax".
++         */
++        if (reg == rm && eclipser_EP_passed) {
++            gen_op_testl_T0_T1_cc_eclipser(ot);
++            // Record the index of comparison type argument.
++            assert(tcg_ctx.gen_next_parm_idx >= 2);
++            s->latest_tgt_parm_idx = tcg_ctx.gen_next_parm_idx - 2;
++        }
++        else {
++          gen_op_testl_T0_T1_cc();
++        }
+         set_cc_op(s, CC_OP_LOGICB + ot);
+         break;
+ 
+@@ -6569,18 +6645,50 @@
+         break;
+ 
+     case 0x190 ... 0x19f: /* setcc Gv */
++        jcc_op = (b >> 1) & 7;
++        cc_optimize_flag = 1;
++        /* If this is a SETCC instruction followed by sub/cmp/test, replace the
++         * previous comparison type 'ECLIPSER_IGNORE' with a new one, to 
++         * indicate that this is our instrumentation target.
++         */
++        if (jcc_op == JCC_Z && s->latest_tgt_parm_idx != -1) {
++          tcg_ctx.gen_opparam_buf[s->latest_tgt_parm_idx] = ECLIPSER_CMP_EQUALITY;
++          cc_optimize_flag = 0;
++        } else if ((jcc_op == JCC_B || jcc_op == JCC_BE) && s->latest_tgt_parm_idx != -1) {
++          tcg_ctx.gen_opparam_buf[s->latest_tgt_parm_idx] = ECLIPSER_CMP_SIZE_UNSIGNED;
++          cc_optimize_flag = 0;
++        } else if ((jcc_op == JCC_L || jcc_op == JCC_LE) && s->latest_tgt_parm_idx != -1) {
++          tcg_ctx.gen_opparam_buf[s->latest_tgt_parm_idx] = ECLIPSER_CMP_SIZE_SIGNED;
++          cc_optimize_flag = 0;
++        }
+         modrm = cpu_ldub_code(env, s->pc++);
+-        gen_setcc1(s, b, cpu_T0);
++        gen_setcc1(s, b, cpu_T0, cc_optimize_flag);
+         gen_ldst_modrm(env, s, modrm, MO_8, OR_TMP0, 1);
+         break;
+     case 0x140 ... 0x14f: /* cmov Gv, Ev */
++        jcc_op = (b >> 1) & 7;
++        cc_optimize_flag = 1;
++        /* If this is a CMOV instruction followed by sub/cmp/test, replace the
++         * previous comparison type 'ECLIPSER_IGNORE' with a new one, to
++         * indicate that this is our instrumentation target.
++         */
++        if (jcc_op == JCC_Z && s->latest_tgt_parm_idx != -1) {
++          tcg_ctx.gen_opparam_buf[s->latest_tgt_parm_idx] = ECLIPSER_CMP_EQUALITY;
++          cc_optimize_flag = 0;
++        } else if ((jcc_op == JCC_B || jcc_op == JCC_BE) && s->latest_tgt_parm_idx != -1) {
++          tcg_ctx.gen_opparam_buf[s->latest_tgt_parm_idx] = ECLIPSER_CMP_SIZE_UNSIGNED;
++          cc_optimize_flag = 0;
++        } else if ((jcc_op == JCC_L || jcc_op == JCC_LE) && s->latest_tgt_parm_idx != -1) {
++          tcg_ctx.gen_opparam_buf[s->latest_tgt_parm_idx] = ECLIPSER_CMP_SIZE_SIGNED;
++          cc_optimize_flag = 0;
++        }
+         if (!(s->cpuid_features & CPUID_CMOV)) {
+             goto illegal_op;
+         }
+         ot = dflag;
+         modrm = cpu_ldub_code(env, s->pc++);
+         reg = ((modrm >> 3) & 7) | rex_r;
+-        gen_cmovcc1(env, s, ot, b, modrm, reg);
++        gen_cmovcc1(env, s, ot, b, modrm, reg, cc_optimize_flag);
+         break;
+ 
+         /************************/
+@@ -8390,6 +8498,13 @@
+     int num_insns;
+     int max_insns;
+ 
++#ifdef TARGET_X86_64
++    TCGv_i64 pc_var = tcg_const_i64((uint64_t)tb->pc);
++#else
++    TCGv_i32 pc_var = tcg_const_i32((uint64_t)tb->pc);
++#endif
++    gen_helper_eclipser_log_bb(pc_var);
++
+     /* generate intermediate code */
+     pc_start = tb->pc;
+     cs_base = tb->cs_base;
+@@ -8445,6 +8560,9 @@
+         printf("ERROR addseg\n");
+ #endif
+ 
++    // Initialize with -1, indicating no 'sub', 'cmp' or 'test' was met yet.
++    dc->latest_tgt_parm_idx = -1;
++
+     cpu_T0 = tcg_temp_new();
+     cpu_T1 = tcg_temp_new();
+     cpu_A0 = tcg_temp_new();
