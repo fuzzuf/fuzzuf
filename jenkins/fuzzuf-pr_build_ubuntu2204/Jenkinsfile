@@ -22,7 +22,7 @@ pipeline {
             }
           }
           stage( "all" ) {
-            cmakeBuild buildDir: 'all', cmakeArgs: '-DENABLE_ADDRSAN=ON -DENABLE_LEAKSAN=ON -DENABLE_UBSAN=ON -DENABLE_HEAVY_TEST=OFF -DPIN_ROOT=/opt/pin/3.7  -DENABLE_NODE_TRACER=OFF -ENABLE_ALGORITHMS=all', buildType: 'Release', installation: 'InSearchPath', steps: [[args: '-j4 all'],[args: 'test ARGS="-V"']]
+            cmakeBuild buildDir: 'all', cmakeArgs: '-DENABLE_ADDRSAN=ON -DENABLE_LEAKSAN=ON -DENABLE_UBSAN=ON -DENABLE_HEAVY_TEST=OFF -DPIN_ROOT=/opt/pin/3.7  -DENABLE_NODE_TRACER=OFF -DENABLE_ALGORITHMS=all', buildType: 'Release', installation: 'InSearchPath', steps: [[args: '-j4 all'],[args: 'test ARGS="-V"']]
           }
         }
       }
