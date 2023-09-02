@@ -602,6 +602,14 @@ void DIEState::ShowStats(void) {
     WriteBitmap();
   }
 
+  // TODO: Check if statsd is requested
+  if (true) {
+    if (cur_ms - statsd_last_send_ms > 1000) {
+      StatsdSendMetric();
+      statsd_last_send_ms = cur_ms;
+    }
+  }
+
   /* Every now and then, write plot data. */
   if (cur_ms - last_plot_ms > GetPlotUpdateSec(*this) * 1000) {
     last_plot_ms = cur_ms;
