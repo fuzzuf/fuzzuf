@@ -89,18 +89,6 @@ We can improve the fuzzuf CLI otherwise. For instance, we can make fuzzuf able t
 
 As a comment in `HierarFlowRoutine::CallSuccessors` says, `HierarFlowCallee<I>::operator()` doesn't need to return `NullableRef<HierarFlowCallee<I>>` now. Formerly, HierarFlowNode has been expressed by linked lists, which made us use NullableRef (equivalent of raw pointer) to efficiently describe which node should be executed next. Now that HierarFlowNode is implemented with std::vector, `HierarFlowCallee<I>::operator()` can return integers(indices) instead of pointers. Although there is no worry about applying this change, the change is just too big to be suddenly made without notice to the others. Also, we'll have to update some documents.
 
-### Implement more fuzzing algorithms
-
-The following algorithms are currently planned to be implemented:  
-
-- MOpt [^mopt]
-- Eclipser [^eclipser]
-- QSYM [^qsym]
-
-About some algorithms, it is difficult to determine what is considered a *complete* implementation. For example, Eclipser is designed differently in v1.0 and v2.0, and we have to discuss whether to implement one or the other (or both). Such algorithms require some discussions.
-
-Among these, the implementation of MOpt is in progress.
-
 ### Implement more types of Executor
 
 The following executors will be implemented in the future:
@@ -204,10 +192,6 @@ This should be changed to `std::vector<u8>` because `std::string` is originally 
 The implementation of the seed queue in the original Nautilus has a lot of room for optimization.
 The current implementation of fuzzuf is similar to the original one and should be improved.
 
-[^mopt]: Chenyang Lyu, Shouling Ji, Chao Zhang, Yuwei Li, Wei-Han Lee, Yu Song, and Raheem Beyah. 2019. MOpt: Optimized Mutation Scheduling for Fuzzers. In Proceedings of the 28th USENIX Security Symposium (Security'19).
-[^eclipser]: Jaeseung Choi, Joonun Jang, Choongwoo Han, and Sang K. Cha. 2019. Grey-box Concolic Testing on Binary Code. In Proceedings of the 41st ACM/IEEE International Conference on Software Engineering (ICSE'19).
-[^qsym]: Insu Yun, Sangho Lee, Meng Xu, Yeongjin Jang, and Taesoo Kim. 2018. QSYM : A Practical Concolic Execution Engine Tailored for Hybrid Fuzzing. In Proceedings of the 27th USENIX Security Symposium (Security'18).
-[^die]: Soyeon Park, Wen Xu, Insu Yun, Daehee Jang, and Taesoo Kim. 2020. Fuzzing JavaScript Engines with Aspect-preserving Mutation. In Proceedings of the 41st IEEE Symposium on Security and Privacy (S&P’20).
 [^winafl]: Google Project Zero. "WinAFL" https://github.com/googleprojectzero/winafl
 [^winnie]: Jinho Jung, Stephen Tong, Hong Hu, Jungwon Lim, Yonghwi Jin, and Taesoo Kim. 2021. WINNIE: Fuzzing Windows Applications with Harness Synthesis and Fast Cloning. In the Network and Distribution System Security (NDSS'21).
 

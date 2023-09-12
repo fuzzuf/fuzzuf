@@ -86,6 +86,9 @@ Note, when using fuzzuf from CLI, you have to separate global options (options a
 |Nezha|Greybox|A fuzzer originates from libFuzzer that tries to find defects in the program by executing programs having different implementations with the same input and compares its execution results (differential fuzzing).|[How to use Nezha on fuzzuf](/docs/algorithms/nezha/manual.md#how-to-use-nezha-on-fuzzuf)|TBD
 |DIE|Greybox|A fuzzer for JavaScript engines preserving the aspect of the test cases through the mutation process|[Usage on CLI](/docs/algorithms/die/algorithm_en.md#usage-on-cli)|[Overview of Algorithm](/docs/algorithms/die/algorithm_en.md#overview-of-algorithm)
 |Nautilus|Greybox|A coverage-guided grammar-based fuzzer that generates test cases according to the user-defined grammar|[Usage on CLI](/docs/algorithms/nautilus/algorithm_en.md#2-usage-on-cli)|[Overview of Algorithm](/docs/algorithms/nautilus/algorithm_en.md#3-algorithm)
+|MOpt|Greybox|Particle Swarm Optimization based algorithm on the top of AFL|[Usage on CLI](/docs/algorithms/mopt/algorithm_en.md#cli-usage)|[Overview of Algorithm](/docs/algorithms/mopt/algorithm_en.md#algorithm-overview)
+|SymCC|Concolic|Efficient Compiler-based Symblic Execution|TBA|TBA|
+|Eclipser|Greybox Concolic|Greybox Concolic Testing|[Usage on CLI](docs/algorithms/eclipser/manual.md#usage)|TBA|
 
 ## Why not Rust?
 
