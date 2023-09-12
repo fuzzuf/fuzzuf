@@ -112,13 +112,6 @@ ensure_build_dir() {
     done
 }
 
-# Make sure we're using the latest dev container, by just pulling it.
-ensure_latest_ctr() {
-    $DOCKER_RUNTIME pull "$CTR_IMAGE"
-
-    ok_or_warn "Error pulling container image. Continuing."
-}
-
 # Fix main directory permissions after a container ran as root.
 # Since the container ran as root, any files it creates will be owned by root.
 # This fixes that by recursively changing the ownership of /src/fuzzuf to the
@@ -159,7 +152,6 @@ process_volumes_args() {
 
 cmd_build-container() {
   ensure_build_dir
-  # ensure_latest_ctr
 
   $DOCKER_RUNTIME build \
     -t "$CTR_IMAGE" \
@@ -194,7 +186,6 @@ cmd_build() {
   done
 
   ensure_build_dir
-  # ensure_latest_ctr
 
   $DOCKER_RUNTIME run \
     --workdir "$CTR_FUZZUF_ROOT_DIR" \
@@ -215,7 +206,6 @@ cmd_build() {
 
 cmd_clean() {
   ensure_build_dir
-  # ensure_latest_ctr
 
   $DOCKER_RUNTIME run \
     --workdir "$CTR_FUZZUF_BUILD_DIR" \
@@ -229,7 +219,6 @@ cmd_clean() {
 
 cmd_tests() {
   ensure_build_dir
-  # ensure_latest_ctr
 
   $DOCKER_RUNTIME run \
     --workdir "$CTR_FUZZUF_BUILD_DIR" \
@@ -258,7 +247,6 @@ cmd_shell() {
 	  shift
   done
   ensure_build_dir
-  ensure_latest_ctr
   process_volumes_args
 
   say_warn "Starting a privileged shell prompt as root ..."
