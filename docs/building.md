@@ -40,8 +40,8 @@ See `help` for detailed usage:
 
 ### Recommended Environment
 
+* Ubuntu 22.04
 * Ubuntu 20.04
-* Ubuntu 18.04
 
 ### Dependencies
 
