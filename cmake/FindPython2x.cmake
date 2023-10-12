@@ -72,7 +72,7 @@ if( NOT Python2_FOUND )
     ENCODING AUTO
   )
   string( REGEX REPLACE "Python " "" Python2_VERSION "${Python2_VERSION_STR}" )
-  if( ${Python2_VERSION} VERSION_GREATER_EQUAL "3.0" )
+  if( "${Python2_VERSION}" VERSION_GREATER_EQUAL "3.0" )
     unset( ${Python2_INTERPRETOR} )
   endif()
 endif()
