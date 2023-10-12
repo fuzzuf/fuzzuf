@@ -51,3 +51,9 @@ RUN mkdir -p ${SRC_DIR} \
   && cd ${SRC_DIR} \
   && wget ${PIN_URL} -O ${PIN_PATH} \
   && tar -xf ${PIN_PATH}
+
+ENV BUILD_TYPE "Debug"
+ENV RUNLEVEL "Debug"
+ENV PIN_ROOT ${SRC_DIR}/${PIN_NAME}
+ENV DOXYGEN "0"
+ENV ALGORITHMS "all"
