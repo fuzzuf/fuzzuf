@@ -1,0 +1,42 @@
+{
+  "version": 2,
+  "cmakeMinimumRequired": {
+    "major": 3,
+    "minor": 19,
+    "patch": 0
+  },
+  "configurePresets": [
+    {
+      "name": "default",
+      "displayName": "Default Config",
+      "description": "Default debug build",
+      "generator": "Unix Makefiles",
+      "binaryDir": "${sourceDir}/build",
+      "cacheVariables": {
+        "CMAKE_C_COMPILER": "/usr/bin/gcc",
+        "CMAKE_CXX_COMPILER": "/usr/bin/g++",
+        "CMAKE_BUILD_TYPE": "$env{BUILD_TYPE}",
+        "DEFAULT_RUNLEVEL": "$env{RUNLEVEL}",
+        "ENABLE_ALGORITHMS": "$env{ALGORITHMS}",
+        "ENABLE_DOXYGEN": "$env{DOXYGEN}",
+        "PIN_ROOT": "$env{PIN_ROOT}"
+      }
+    }
+  ],
+  "buildPresets": [
+    {
+      "name": "default",
+      "configurePreset": "default",
+      "jobs": 8
+    }
+  ],
+  "testPresets": [
+    {
+      "name": "default",
+      "configurePreset": "default",
+      "execution": {
+        "jobs": 8
+      }
+    }
+  ]
+}
