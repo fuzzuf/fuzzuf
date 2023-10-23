@@ -59,7 +59,7 @@ hierarflow::HierarFlowNode<void(void), void(void)> BuildFuzzLoop(
       CreateNode<RetryCalibrateTemplate<RezzufState>>(state, *abandon_node);
   auto trim_case =
       CreateNode<TrimCaseTemplate<RezzufState>>(state, *abandon_node);
-  auto calc_score = CreateNode<CalcScoreTemplate<RezzufState>>(state);
+  auto calc_score = CreateNode<CalcScoreTemplate<RezzufState>>(state, *abandon_node);
   auto apply_rand_muts = CreateNode<RezzufApplyRandMuts>(state, *abandon_node);
 
   // actual mutations

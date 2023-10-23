@@ -17,11 +17,14 @@
  */
 #pragma once
 
+#include <cstdio>
 #include <sys/ioctl.h>
-
+#include <cmath>
 #include <memory>
 #include <string>
 #include <vector>
+#include <unistd.h>
+#include <sys/types.h>
 
 #include "fuzzuf/algorithms/afl/afl_dict_data.hpp"
 #include "fuzzuf/algorithms/afl/afl_macro.hpp"
@@ -37,6 +40,9 @@
 #include "fuzzuf/logger/logger.hpp"
 #include "fuzzuf/utils/common.hpp"
 #include "fuzzuf/utils/filesystem.hpp"
+#include "fuzzuf/utils/kscheduler/load_katz_centrality.hpp"
+#include "fuzzuf/utils/kscheduler/load_border_edges.hpp"
+#include "fuzzuf/utils/kscheduler/load_child_node.hpp"
 
 namespace fuzzuf::algorithm::afl {
 
@@ -57,6 +63,9 @@ AFLStateTemplate<Testcase>::AFLStateTemplate(
       cpu_aff(utils::BindCpu(cpu_core_count, setting->cpuid_to_bind)),
       havoc_optimizer(std::move(_havoc_optimizer)),
       should_construct_auto_dict(false) {
+
+  LoadCentralityFile();
+
   if (in_bitmap.empty())
     virgin_bits.assign(option::GetMapSize<Tag>(), 255);
   else {
@@ -73,6 +82,24 @@ AFLStateTemplate<Testcase>::AFLStateTemplate(
           "# relative_time, cycles_done, cur_path, paths_total, "
           "pending_total, pending_favs, map_size, unique_crashes, "
           "unique_hangs, max_depth, execs_per_sec, total_execs, edges_found\n");
+
+  if constexpr ( option::EnableKScheduler<Tag>() ) {
+    {
+      int fd = open( ( setting->out_dir / "edge_weight" ).c_str(), O_WRONLY | O_CREAT | O_EXCL, 0600);
+      if (fd < 0) ERROR("Unable to create '%s'", ( setting->out_dir / "edge_weight" ).c_str());
+      edge_weight_file = fdopen(fd, "w");
+    }
+    {
+      int fd = open( ( setting->out_dir / "scheudle_log" ).c_str(), O_WRONLY | O_CREAT | O_EXCL, 0600);
+      if (fd < 0) ERROR("Unable to create '%s'", ( setting->out_dir / "scheudle_log" ).c_str());
+      sched_log_file = fdopen(fd, "w");
+    }
+    {
+      int fd = open( ( setting->out_dir / "edge_log" ).c_str(), O_WRONLY | O_CREAT | O_EXCL, 0600);
+      if (fd < 0) ERROR("Unable to create '%s'", ( setting->out_dir / "edge_log" ).c_str());
+      edge_log_file = fdopen(fd, "w");
+    }
+  }
 }
 
 template <class Testcase>
@@ -83,6 +110,11 @@ AFLStateTemplate<Testcase>::~AFLStateTemplate() {
   }
 
   fclose(plot_file);
+  if constexpr ( option::EnableKScheduler<Tag>() ) {
+    fclose(edge_weight_file); 
+    fclose(sched_log_file); 
+    fclose(edge_log_file); 
+  }
 }
 
 template <class Testcase>
@@ -102,26 +134,57 @@ AFLStateTemplate<Testcase>::RunExecutorWithClassifyCounts(
   exit_status = executor->GetExitStatusFeedback();
 
   if constexpr (sizeof(size_t) == 8) {
-    inp_feed.ModifyMemoryWithFunc([](u8* trace_bits, u32 /* map_size */) {
-      afl::util::ClassifyCounts<u64>((u64*)trace_bits,
+    inp_feed.ModifyMemoryWithFunc([this](u8* trace_bits, u32 /* map_size */) {
+      if constexpr ( !option::EnableSequentialID<Tag>() ) {
+        if( enable_sequential_id ) {
+          afl::util::ClassifyCounts<u64>((u64*)trace_bits,
+                                     num_edge + 8u);
+	}
+	else {
+          afl::util::ClassifyCounts<u64>((u64*)trace_bits,
                                      option::GetMapSize<Tag>());
+	}
+      }
+      else {
+        afl::util::ClassifyCounts<u64>((u64*)trace_bits,
+                                   option::GetMapSize<Tag>());
+      }
     });
   } else {
-    inp_feed.ModifyMemoryWithFunc([](u8* trace_bits, u32 /* map_size */) {
-      afl::util::ClassifyCounts<u32>((u32*)trace_bits,
+    inp_feed.ModifyMemoryWithFunc([this](u8* trace_bits, u32 /* map_size */) {
+      if constexpr ( !option::EnableSequentialID<Tag>() ) {
+        if( enable_sequential_id ) {
+          afl::util::ClassifyCounts<u32>((u32*)trace_bits,
+                                     num_edge + 8u);
+	}
+	else {
+          afl::util::ClassifyCounts<u32>((u32*)trace_bits,
                                      option::GetMapSize<Tag>());
+	}
+      }
+      else {
+        afl::util::ClassifyCounts<u32>((u32*)trace_bits,
+                                   option::GetMapSize<Tag>());
+      }
     });
   }
 
   return feedback::InplaceMemoryFeedback(std::move(inp_feed));
 }
 
+#if __GNUC__ < 8
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wunused-but-set-parameter"
+#endif
 template <class Testcase>
 feedback::PUTExitReasonType
 AFLStateTemplate<Testcase>::CalibrateCaseWithFeedDestroyed(
     Testcase& testcase, const u8* buf, u32 len,
     feedback::InplaceMemoryFeedback& inp_feed,
-    feedback::ExitStatusFeedback& exit_status, u32 handicap, bool from_queue) {
+    feedback::ExitStatusFeedback& exit_status, u32 handicap, bool from_queue, bool increment_hit_bits) {
+#if __GNUC__ < 8
+#pragma GCC diagnostic pop
+#endif
   std::array<u8, option::GetMapSize<Tag>()> first_trace;
 
   bool first_run = testcase.exec_cksum == 0;
@@ -131,6 +194,12 @@ AFLStateTemplate<Testcase>::CalibrateCaseWithFeedDestroyed(
   std::string old_sn = std::move(stage_name);
 
   u32 use_tmout;
+  if constexpr ( option::EnableKScheduler<Tag>() ) {
+    /* Be a bit more generous about timeouts when resuming sessions, or when
+       trying to calibrate already-added finds. This helps avoid trouble due
+       to intermittent latency. */
+    use_tmout = setting->exec_timelimit_ms;
+  }
   if (!from_queue || resuming_fuzz) {
     use_tmout = std::max(
         setting->exec_timelimit_ms + option::GetCalTmoutAdd(*this),
@@ -144,13 +213,101 @@ AFLStateTemplate<Testcase>::CalibrateCaseWithFeedDestroyed(
   stage_name = "calibration";
   stage_max = fast_cal ? 3 : option::GetCalCycles(*this);
 
+  if constexpr ( option::EnableKScheduler<Tag>() ) {
+    /* Make sure the forkserver is up before we do anything, and let's not
+       count its spin-up time toward binary calibration. */
+    /*if (setting->dumb_mode != 1 && !no_forkserver && !forksrv_pid) {
+      init_forkserver(argv);
+    }*/
+    
+    feedback::InplaceMemoryFeedback::DiscardActive(std::move(inp_feed));
+    inp_feed = RunExecutorWithClassifyCounts(buf, len, exit_status, use_tmout);
+
+    std::array<u8, option::GetMapSize<Tag>()> cnt_free_trace = { 0 };
+    if (testcase.cnt_free_cksum == 0){
+      inp_feed.ShowMemoryToFunc([&](const u8* trace_bits,
+                                                           u32 map_size) {
+	if( trace_bits ) {
+          std::copy(
+            trace_bits,
+            std::next( trace_bits, std::min( option::GetMapSize<Tag>(), map_size ) ),
+            cnt_free_trace.data()
+          );
+	}
+	else {
+	  std::fill(
+            cnt_free_trace.begin(),
+	    cnt_free_trace.end(),
+	    0
+          );
+	}
+      });
+      if constexpr (sizeof(std::size_t) == 8) {
+        if constexpr ( !option::EnableSequentialID<Tag>() ) {
+          if( enable_sequential_id ) {
+            util::SimplifyTrace< u64 >( reinterpret_cast< u64* >( cnt_free_trace.data() ), num_edge + 8u );
+	  }
+	  else {
+            util::SimplifyTrace< u64 >( reinterpret_cast< u64* >( cnt_free_trace.data() ), option::GetMapSize<Tag>() );
+	  }
+	}
+	else {
+          util::SimplifyTrace< u64 >( reinterpret_cast< u64* >( cnt_free_trace.data() ), option::GetMapSize<Tag>() );
+	}
+      }
+      else {
+        if constexpr ( !option::EnableSequentialID<Tag>() ) {
+          if( enable_sequential_id ) {
+            util::SimplifyTrace< u32 >( reinterpret_cast< u32* >( cnt_free_trace.data() ), num_edge + 8u );
+	  }
+	  else {
+            util::SimplifyTrace< u32 >( reinterpret_cast< u32* >( cnt_free_trace.data() ), option::GetMapSize<Tag>() );
+	  }
+	}
+	else {
+          util::SimplifyTrace< u32 >( reinterpret_cast< u32* >( cnt_free_trace.data() ), option::GetMapSize<Tag>() );
+	}
+      }
+      testcase.cnt_free_cksum = inp_feed.CalcCksum32();
+      
+      /* check current seed's bitmap hash is dupliacted or not. */
+      u32 cur_cnt_free_cksum = testcase.cnt_free_cksum;
+      bool found_dup = false;
+      for (u32 cksum_idx = 0u; cksum_idx < cnt_free_cksum_cnt; cksum_idx++) {
+        if(cur_cnt_free_cksum == cnt_free_cksum_cache[cksum_idx]){
+          /* mark duplicated cksum, skip this seed later */
+          testcase.cnt_free_cksum_dup = 1;
+          found_dup = true;
+          break;
+        }
+      }
+      /* save unique cksum */
+      if (!found_dup){
+        cnt_free_cksum_cache[cnt_free_cksum_cnt] = cur_cnt_free_cksum;
+        cnt_free_cksum_cnt += 1;
+        testcase.cnt_free_cksum_dup = 0;
+      }
+    }
+  }
+  
+
   u8 hnb = 0;
   u8 new_bits = 0;
   if (testcase.exec_cksum) {
     inp_feed.ShowMemoryToFunc([this, &first_trace, &hnb](const u8* trace_bits,
                                                          u32 /* map_size */) {
       std::memcpy(first_trace.data(), trace_bits, option::GetMapSize<Tag>());
-      hnb = HasNewBits(trace_bits, &virgin_bits[0], option::GetMapSize<Tag>());
+      if constexpr ( !option::EnableSequentialID<Tag>() ) {
+        if( enable_sequential_id ) {
+          hnb = HasNewBits(trace_bits, &virgin_bits[0], num_edge + 8u );
+        }
+        else {
+          hnb = HasNewBits(trace_bits, &virgin_bits[0], option::GetMapSize<Tag>());
+        }
+      }
+      else {
+        hnb = HasNewBits(trace_bits, &virgin_bits[0], option::GetMapSize<Tag>());
+      }
     });
 
     if (hnb > new_bits) new_bits = hnb;
@@ -170,16 +327,42 @@ AFLStateTemplate<Testcase>::CalibrateCaseWithFeedDestroyed(
     /* stop_soon is set by the handler for Ctrl+C. When it's pressed,
        we want to bail out quickly. */
 
-    if (stop_soon || exit_status.exit_reason != crash_mode)
+    if (stop_soon || exit_status.exit_reason != crash_mode) {
       goto abort_calibration;  // FIXME: goto
+    }
+
+    if constexpr ( option::EnableKScheduler<Tag>() ) {
+      if (!setting->dumb_mode && !stage_cur && !inp_feed.CountNonZeroBytes()) {
+        exit_status.exit_reason = feedback::PUTExitReasonType::FAULT_NOINST;
+        goto abort_calibration;
+      }
+    }
 
     u32 cksum = inp_feed.CalcCksum32();
 
     if (testcase.exec_cksum != cksum) {
+      if constexpr ( option::EnableKScheduler<Tag>() ) {
+        /* increment hit bits*/
+        if( increment_hit_bits ) {
+          IncrementHitBits( inp_feed );
+	}
+      }
       inp_feed.ShowMemoryToFunc([this, &hnb](const u8* trace_bits,
                                              u32 /* map_size */) {
-        hnb =
-            HasNewBits(trace_bits, &virgin_bits[0], option::GetMapSize<Tag>());
+        if constexpr ( !option::EnableSequentialID<Tag>() ) {
+          if( enable_sequential_id ) {
+            hnb =
+                HasNewBits(trace_bits, &virgin_bits[0], num_edge + 8u);
+          }
+          else {
+            hnb =
+                HasNewBits(trace_bits, &virgin_bits[0], option::GetMapSize<Tag>());
+	  }
+        }
+        else {
+          hnb =
+              HasNewBits(trace_bits, &virgin_bits[0], option::GetMapSize<Tag>());
+        }
       });
 
       if (hnb > new_bits) new_bits = hnb;
@@ -213,6 +396,18 @@ AFLStateTemplate<Testcase>::CalibrateCaseWithFeedDestroyed(
   total_cal_cycles += stage_max;
 
   testcase.exec_us = (stop_us - start_us) / stage_max;
+  if(avg_us_fast == 0){
+    total_cal_us_fast += testcase.exec_us;
+    total_cal_cycles_fast += 1;
+    avg_us_fast = total_cal_us_fast / total_cal_cycles_fast;
+  }
+  else{
+    if (testcase.exec_us <= 4 * avg_us_fast){
+      total_cal_us_fast += testcase.exec_us;
+      total_cal_cycles_fast += 1;
+      avg_us_fast = total_cal_us_fast / total_cal_cycles_fast;
+    }
+  }
   testcase.bitmap_size = inp_feed.CountNonZeroBytes();
   testcase.handicap = handicap;
   testcase.cal_failed = 0;
@@ -242,7 +437,17 @@ abort_calibration:
   /* Mark variable paths. */
 
   if (var_detected) {
-    var_byte_count = fuzzuf::utils::CountBytes(&var_bytes[0], var_bytes.size());
+    if constexpr ( !option::EnableSequentialID<Tag>() ) {
+      if( enable_sequential_id ) {
+        var_byte_count = fuzzuf::utils::CountBytes(&var_bytes[0], num_edge + 8u );
+      }
+      else {
+        var_byte_count = fuzzuf::utils::CountBytes(&var_bytes[0], var_bytes.size() );
+      }
+    }
+    else {
+      var_byte_count = fuzzuf::utils::CountBytes(&var_bytes[0], var_bytes.size() );
+    }
     if (!testcase.var_behavior) {
       MarkAsVariable(testcase);
       queued_variable++;
@@ -274,9 +479,15 @@ std::shared_ptr<Testcase> AFLStateTemplate<Testcase>::AddToQueue(
 
   testcase->depth = cur_depth + 1;
   testcase->passed_det = passed_det;
+  testcase->qid = queued_paths;
 
   if (testcase->depth > max_depth) max_depth = testcase->depth;
 
+  if constexpr ( std::is_convertible_v< Testcase, AFLTestcase > ) {
+    if constexpr ( option::EnableVerboseDebugLog< Tag >() ) {
+      DEBUG( "%s", ( std::string( "Insert testcase " ) + nlohmann::json( testcase ).dump() ).c_str() )
+    }
+  }
   case_queue.emplace_back(testcase);
 
   queued_paths++;
@@ -288,40 +499,129 @@ std::shared_ptr<Testcase> AFLStateTemplate<Testcase>::AddToQueue(
 }
 
 template <class Testcase>
+int AFLStateTemplate<Testcase>::SearchBorderEdgeId( u32 parent, u32 child ) {
+  int l = 0;
+  int h = num_border_edge - 1 ;
+  int mid;
+  int first_idx = 0;
+  int last_idx = num_border_edge - 1;
+  // binary search to find the first matching idx of parent node
+  while (l <= h){
+    mid = (int)((l+h)/2);
+    if (border_edge_parent[mid] > parent){
+      h = mid - 1;
+      last_idx = mid;
+    }
+    else if (border_edge_parent[mid] < parent)
+      l = mid + 1;
+    else{
+      first_idx = mid;
+      h = mid - 1;
+    }
+  }
+
+  // binary search to find the last matching idx of parent node
+  l = first_idx;
+  h = last_idx;
+  while (l <= h){
+    mid = (int)((l+h)/2);
+    if (border_edge_parent[mid] > parent)
+      h = mid - 1;
+    else{
+      last_idx = mid;
+      l = mid + 1;
+    }
+  }
+
+  // bin search to find the matching idx for child node from range(first_idx, last_idx)
+  l = first_idx;
+  h = last_idx;
+  while (l <= h){
+    mid = (int)((l+h)/2);
+    if (border_edge_child[mid] > child)
+      h = mid - 1;
+    else if (border_edge_child[mid] < child)
+      l = mid + 1;
+    else
+      return mid;
+  }
+  return -1;
+}
+
+template <class Testcase>
 void AFLStateTemplate<Testcase>::UpdateBitmapScoreWithRawTrace(
     Testcase& testcase, const u8* trace_bits, u32 map_size) {
-  u64 fav_factor = testcase.exec_us * testcase.input->GetLen();
-
-  for (u32 i = 0; i < map_size; i++) {
-    if (trace_bits[i]) {
-      if (top_rated[i]) {
-        auto& top_testcase = top_rated[i].value().get();
-        u64 factor = top_testcase.exec_us * top_testcase.input->GetLen();
-        if (fav_factor > factor) continue;
-
-        /* Looks like we're going to win. Decrease ref count for the
-           previous winner, discard its trace_bits[] if necessary. */
-        --top_testcase.tc_ref;
-        if (top_testcase.tc_ref == 0) {
-          top_testcase.trace_mini.reset();
+  const u32 count = map_size;
+  if constexpr ( option::EnableKScheduler<Tag>() ) {
+    u32 i;
+    u32 local_border_edge_cnt = 0;
+ 
+    static int dbg_func_hit_cnt = 0;
+    dbg_func_hit_cnt += 1;
+ 
+    /* free child_list if not null */
+    testcase.border_edge.clear();
+  
+    std::fill( local_border_edge_id.begin(), local_border_edge_id.end(), 0 );
+    for (i = 0; i < count; i++) {
+      if (trace_bits[i] && !node_child_list[i].empty()) {
+        // skip non-branching node
+        if (node_child_list[i].size() < 2) continue;
+        // loop all children node of the triggerd parent node
+        for( std::size_t j = 0; j != node_child_list[ i ].size(); ++j ) {
+          // children node not triggered before, find an border edge (i, child_node), then search its corresponding borderedge ID
+          int child_node = node_child_list[i][j];
+          if(virgin_bits[child_node] == 0xff){
+            local_border_edge_id[local_border_edge_cnt] = SearchBorderEdgeId(i, child_node);
+            if( local_border_edge_id[ local_border_edge_cnt ] == static_cast< u32 >( -1 ) ) {
+              printf("search_border_edge_id error\n");
+              exit(0);
+            }
+            local_border_edge_cnt+=1;
+          }
         }
       }
-
-      /* Insert ourselves as the new winner. */
-
-      top_rated[i] = std::ref(testcase);
-      testcase.tc_ref++;
-
-      if (!testcase.trace_mini) {
-        testcase.trace_mini.reset(new std::bitset<option::GetMapSize<Tag>()>());
-
-        auto& trace_mini = *testcase.trace_mini;
-        for (u32 j = 0; j < option::GetMapSize<Tag>(); j++) {
-          trace_mini[j] = trace_bits[j] != 0;
+    }
+    testcase.border_edge_cnt = local_border_edge_cnt;
+    testcase.border_edge.reserve( local_border_edge_cnt );
+    for (i=0; i < local_border_edge_cnt; i++){
+      testcase.border_edge.push_back( local_border_edge_id[i] );
+    }
+  }
+  else {
+    u64 fav_factor = testcase.exec_us * testcase.input->GetLen();
+ 
+    for (u32 i = 0; i < map_size; i++) {
+      if (trace_bits[i]) {
+        if (top_rated[i]) {
+          auto& top_testcase = top_rated[i].value().get();
+          u64 factor = top_testcase.exec_us * top_testcase.input->GetLen();
+          if (fav_factor > factor) continue;
+ 
+          /* Looks like we're going to win. Decrease ref count for the
+             previous winner, discard its trace_bits[] if necessary. */
+          --top_testcase.tc_ref;
+          if (top_testcase.tc_ref == 0) {
+            top_testcase.trace_mini.reset();
+          }
         }
+ 
+        /* Insert ourselves as the new winner. */
+ 
+        top_rated[i] = std::ref(testcase);
+        testcase.tc_ref++;
+ 
+        if (!testcase.trace_mini) {
+          testcase.trace_mini.reset(new std::bitset<option::GetMapSize<Tag>()>());
+ 
+          auto& trace_mini = *testcase.trace_mini;
+          for (u32 j = 0; j < count; j++) {
+            trace_mini[j] = trace_bits[j] != 0;
+          }
+        }
+ 
+        score_changed = true;
       }
-
-      score_changed = true;
     }
   }
 }
@@ -331,9 +631,142 @@ void AFLStateTemplate<Testcase>::UpdateBitmapScore(
     Testcase& testcase, const feedback::InplaceMemoryFeedback& inp_feed) {
   inp_feed.ShowMemoryToFunc(
       [this, &testcase](const u8* trace_bits, u32 /* map_size */) {
+        u32 count = option::GetMapSize<Tag>();
+        if constexpr ( !option::EnableSequentialID<Tag>() ) {
+          if( enable_sequential_id ) {
+            count = num_edge + 2u;
+          }
+        }
         UpdateBitmapScoreWithRawTrace(testcase, trace_bits,
-                                      option::GetMapSize<Tag>());
+                                      count);
       });
+}
+
+// pre-compute weight for each border edge and cache the result into a table
+template <class Testcase>
+void AFLStateTemplate<Testcase>::ComputeMathCache(){
+  double sum = 0.0;
+  int cnt = 0;
+
+  nonzero_border_edge_weight.resize( option::GetMapSize<Tag>() >> 2 );
+  std::fill( nonzero_border_edge_weight.begin(), nonzero_border_edge_weight.end(), 0 );
+
+  //clean all old log
+  assert( ftruncate(fileno(edge_weight_file), 0) == 0 );
+
+  for( u32 i = 0u; i != num_border_edge; ++i ) {
+
+    int parent = border_edge_parent[i];
+    if (hit_bits[parent] == 0){
+      border_edge_weight[i] = 0.0;
+      continue;
+    }
+    // parent node not hit, skip
+    if (virgin_bits[parent] == 0xff){
+      border_edge_weight[i] = 0.0; 
+      continue;
+    }
+    //child node hit already hit, skip 
+    int child = border_edge_child[i];
+    if (virgin_bits[child] != 0xff){
+      border_edge_weight[i] = 0.0;
+      continue;
+    }
+
+    if(std::fpclassify(katz_weight[child]) == FP_ZERO){
+      border_edge_weight[i] = 0.0;
+      continue;
+    }
+
+    double tmp_edge_weight = katz_weight[child] / sqrt(hit_bits[parent]);
+    border_edge_weight[i] = tmp_edge_weight;
+    nonzero_border_edge_weight[cnt] = tmp_edge_weight;
+    cnt += 1;
+    sum += tmp_edge_weight;
+
+    std::string serialized = "border edge weight(1000X) ";
+    serialized += std::to_string( i );
+    serialized += ", ";
+    serialized += std::to_string( tmp_edge_weight * 1000 );
+    serialized += ", ";
+    serialized += std::to_string( katz_weight[child] );
+    serialized += ", ";
+    serialized += std::to_string( sqrt(hit_bits[parent] ) );
+    serialized += "\n";
+    fwrite( serialized.data(), sizeof( char ), serialized.size(), edge_weight_file );
+    fflush( edge_weight_file );
+  }
+
+  // This branch does not exist in original implementation, yet required to run K-Scheduler properly in first 2 min.
+  if( cnt != 0 ) {
+    scale_factor = 1/(sum/cnt)/adjust_rate;
+  }
+  else {
+    scale_factor = 1/adjust_rate;
+  }
+
+  //Only consider top 50% or at most top 512 border edges into weight computation.
+  std::sort(
+    nonzero_border_edge_weight.begin(),
+    nonzero_border_edge_weight.end()
+  );
+
+  int thres_idx = cnt * pass_rate/10;
+  if (cnt-thres_idx > 512) thres_idx = cnt-512;
+
+  border_edge_weight_threshold = nonzero_border_edge_weight[thres_idx];
+  return;
+}
+
+// reload katz centrality 
+template <class Testcase>
+void AFLStateTemplate<Testcase>::ReloadCentralityFile(){
+  // if file not exit, just return
+  if( !fs::exists( "dyn_katz_cent" ) ) {
+    return;
+  }
+  
+  try {
+    std::fill( katz_weight.begin(), katz_weight.end(), 0 );
+    for( const auto &[idx,ret]: utils::kscheduler::LoadKatzCentrality( "dyn_katz_cent" ) ) {
+      katz_weight[idx] = ret;
+    }
+  }
+  catch( ... ) {
+    perror("dyn_katz_cent open failed \n");
+    std::exit(0);
+  }
+}
+
+// identify border edge and compute energy
+template <class Testcase>
+double AFLStateTemplate<Testcase>::CheckBorderEdge(const Testcase &q) {
+  double total_energy = 0.0;
+  for( std::size_t i = 0; i != q.border_edge.size(); ++i ) {
+    int border_edge_idx = q.border_edge[i];
+    int child = border_edge_child[border_edge_idx];
+    // check border edge is still not triggered
+    if (virgin_bits[child] == 0xff){
+      double tmp_edge_weight =  border_edge_weight[border_edge_idx];
+      // add nonzero border edge weight
+      if (std::fpclassify(tmp_edge_weight) != FP_ZERO){
+        total_energy += tmp_edge_weight;
+      }
+      // check if zero borde edge weight is new, or just zero weight
+      else{
+        int parent = border_edge_parent[border_edge_idx];
+        // new border edge
+        if ((std::fpclassify(katz_weight[child]) != FP_ZERO) && (virgin_bits[child] == 0xff) && (hit_bits[parent] > 0)){
+
+          tmp_edge_weight = katz_weight[child] / sqrt(hit_bits[parent]);
+          border_edge_weight[border_edge_idx] = tmp_edge_weight;
+
+          total_energy += tmp_edge_weight;
+        }
+      }
+    }
+  }
+  return total_energy;
 }
 
 template <class Testcase>
@@ -344,6 +777,11 @@ bool AFLStateTemplate<Testcase>::SaveIfInteresting(
 
   std::string fn;
   if (exit_status.exit_reason == crash_mode) {
+    if constexpr ( option::EnableKScheduler<Tag>() ) {
+      /* increment hit bits*/
+      IncrementHitBits( inp_feed );
+    }
+
     /* Keep only if there are new bits in the map, add to queue for
        future fuzzing, etc. */
 
@@ -351,7 +789,17 @@ bool AFLStateTemplate<Testcase>::SaveIfInteresting(
 
     inp_feed.ShowMemoryToFunc([this, &hnb](const u8* trace_bits,
                                            u32 /* map_size */) {
-      hnb = HasNewBits(trace_bits, &virgin_bits[0], option::GetMapSize<Tag>());
+      if constexpr ( !option::EnableSequentialID<Tag>() ) {
+        if( enable_sequential_id ) {
+          hnb = HasNewBits(trace_bits, &virgin_bits[0], num_edge + 8u);
+        }
+	else {
+          hnb = HasNewBits(trace_bits, &virgin_bits[0], option::GetMapSize<Tag>());
+	}
+      }
+      else {
+        hnb = HasNewBits(trace_bits, &virgin_bits[0], option::GetMapSize<Tag>());
+      }
     });
 
     if (!hnb) {
@@ -381,7 +829,7 @@ bool AFLStateTemplate<Testcase>::SaveIfInteresting(
     // inp_feed will may be discard to start a new execution
     // in that case inp_feed will receive the new feedback
     feedback::PUTExitReasonType res = CalibrateCaseWithFeedDestroyed(
-        *testcase, buf, len, inp_feed, exit_status, queue_cycle - 1, false);
+        *testcase, buf, len, inp_feed, exit_status, queue_cycle - 1, false, true);
 
     if (res == feedback::PUTExitReasonType::FAULT_ERROR) {
       ERROR("Unable to execute target application");
@@ -406,23 +854,63 @@ bool AFLStateTemplate<Testcase>::SaveIfInteresting(
 
       if (!setting->dumb_mode) {
         if constexpr (sizeof(size_t) == 8) {
-          inp_feed.ModifyMemoryWithFunc([](u8* trace_bits, u32 /* map_size */) {
-            afl::util::SimplifyTrace<u64>((u64*)trace_bits,
+          inp_feed.ModifyMemoryWithFunc([this](u8* trace_bits, u32 /* map_size */) {
+            if constexpr ( !option::EnableSequentialID<Tag>() ) {
+              if( enable_sequential_id ) {
+	        util::SimplifyTrace<u64>((u64*)trace_bits,
+                                         num_edge + 8u);
+              }
+	      else {
+	        util::SimplifyTrace<u64>((u64*)trace_bits,
                                           option::GetMapSize<Tag>());
+	      }
+	    }
+	    else {
+	      util::SimplifyTrace<u64>((u64*)trace_bits,
+                                        option::GetMapSize<Tag>());
+	    }
           });
         } else {
-          inp_feed.ModifyMemoryWithFunc([](u8* trace_bits, u32 /* map_size */) {
-            afl::util::SimplifyTrace<u32>((u32*)trace_bits,
-                                          option::GetMapSize<Tag>());
+          inp_feed.ModifyMemoryWithFunc([this](u8* trace_bits, u32 /* map_size */) {
+            if constexpr ( !option::EnableSequentialID<Tag>() ) {
+              if( enable_sequential_id ) {
+	        util::SimplifyTrace<u32>((u32*)trace_bits,
+                                         num_edge + 8u);
+              }
+	      else {
+	        util::SimplifyTrace<u32>((u32*)trace_bits,
+                                         option::GetMapSize<Tag>());
+	      }
+	    }
+	    else {
+	      util::SimplifyTrace<u32>((u32*)trace_bits,
+                                       option::GetMapSize<Tag>());
+	    }
           });
         }
 
         u8 res;
         inp_feed.ShowMemoryToFunc(
             [this, &res](const u8* trace_bits, u32 /* map_size */) {
-              res = HasNewBits(trace_bits, &virgin_tmout[0],
-                               option::GetMapSize<Tag>());
+              if constexpr ( !option::EnableSequentialID<Tag>() ) {
+                if( enable_sequential_id ) {
+                  res = HasNewBits(trace_bits, &virgin_tmout[0],
+                                   num_edge + 8u);
+		}
+		else {
+                  res = HasNewBits(trace_bits, &virgin_tmout[0],
+                                   option::GetMapSize<Tag>());
+		}
+              }
+	      else {
+                res = HasNewBits(trace_bits, &virgin_tmout[0],
+                                 option::GetMapSize<Tag>());
+	      }
             });
+
+        if constexpr ( option::EnableKScheduler<Tag>() ) {
+          IncrementHitBits( inp_feed );
+	}
 
         if (!res) {
           // originally here "return keeping" is used, but this is clearer
@@ -488,23 +976,63 @@ bool AFLStateTemplate<Testcase>::SaveIfInteresting(
 
       if (!setting->dumb_mode) {
         if constexpr (sizeof(size_t) == 8) {
-          inp_feed.ModifyMemoryWithFunc([](u8* trace_bits, u32 /* map_size */) {
-            afl::util::SimplifyTrace<u64>((u64*)trace_bits,
+          inp_feed.ModifyMemoryWithFunc([this](u8* trace_bits, u32 /* map_size */) {
+            if constexpr ( !option::EnableSequentialID<Tag>() ) {
+              if( enable_sequential_id ) {
+                util::SimplifyTrace<u64>((u64*)trace_bits,
+                                          num_edge + 8u);
+              }
+              else {
+                util::SimplifyTrace<u64>((u64*)trace_bits,
                                           option::GetMapSize<Tag>());
+              }
+            }
+            else {
+              util::SimplifyTrace<u64>((u64*)trace_bits,
+                                        option::GetMapSize<Tag>());
+            }
           });
         } else {
-          inp_feed.ModifyMemoryWithFunc([](u8* trace_bits, u32 /* map_size */) {
-            afl::util::SimplifyTrace<u32>((u32*)trace_bits,
+          inp_feed.ModifyMemoryWithFunc([this](u8* trace_bits, u32 /* map_size */) {
+            if constexpr ( !option::EnableSequentialID<Tag>() ) {
+              if( enable_sequential_id ) {
+                util::SimplifyTrace<u32>((u32*)trace_bits,
+                                          num_edge + 8u);
+              }
+	      else {
+                util::SimplifyTrace<u32>((u32*)trace_bits,
                                           option::GetMapSize<Tag>());
+	      }
+	    }
+	    else {
+              util::SimplifyTrace<u32>((u32*)trace_bits,
+                                        option::GetMapSize<Tag>());
+	    }
           });
         }
 
         u8 res;
         inp_feed.ShowMemoryToFunc(
             [this, &res](const u8* trace_bits, u32 /* map_size */) {
-              res = HasNewBits(trace_bits, &virgin_crash[0],
-                               option::GetMapSize<Tag>());
+              if constexpr ( !option::EnableSequentialID<Tag>() ) {
+                if( enable_sequential_id ) {
+                  res = HasNewBits(trace_bits, &virgin_crash[0],
+                                   num_edge + 8u);
+		}
+		else {
+                  res = HasNewBits(trace_bits, &virgin_crash[0],
+                                   option::GetMapSize<Tag>());
+		}
+              }
+	      else {
+                res = HasNewBits(trace_bits, &virgin_crash[0],
+                                 option::GetMapSize<Tag>());
+	      }
             });
+        
+	if constexpr ( option::EnableKScheduler<Tag>() ) {
+          IncrementHitBits( inp_feed );
+	}
 
         if (!res) {
           // unlike FAULT_TMOUT case, keeping can be true when "crash mode" is
@@ -553,86 +1081,160 @@ bool AFLStateTemplate<Testcase>::SaveIfInteresting(
 }
 
 template <class Testcase>
-u32 AFLStateTemplate<Testcase>::DoCalcScore(Testcase& testcase) {
-  u32 avg_exec_us = total_cal_us / total_cal_cycles;
-  u32 avg_bitmap_size = total_bitmap_size / total_bitmap_entries;
-  u32 perf_score = 100;
+double AFLStateTemplate<Testcase>::CheckTopBorderEdge(Testcase& testcase) {
+  int nonzero_border_edge_cnt = 0;
+  int nonzero_border_edge_thres_cnt = 0;
+  testcase.thres_energy = 0.0;
 
-  /* Adjust score based on execution speed of this path, compared to the
-     global average. Multiplier ranges from 0.1x to 3x. Fast inputs are
-     less expensive to fuzz, so we're giving them more air time. */
+  int new_border_edge = 0;
+  for (u32 i = 0; i < testcase.border_edge_cnt; i++){
+    int border_edge_idx = testcase.border_edge[i];
+    int child = border_edge_child[border_edge_idx];
+    // check border edge is still not triggered
+    if (virgin_bits[child] == 0xff){
+      double tmp_edge_weight =  border_edge_weight[border_edge_idx];
+      // add nonzero border edge weight
+      if (std::fpclassify(tmp_edge_weight) != FP_ZERO){
+        nonzero_border_edge_cnt += 1;
+        if (std::isgreaterequal(tmp_edge_weight, border_edge_weight_threshold)){
+          nonzero_border_edge_thres_cnt += 1;
+          testcase.thres_energy += tmp_edge_weight;
+        }
+      }
+      // check if zero borde edge weight is new, or just zero weight
+      else{
+        int parent = border_edge_parent[border_edge_idx];
+        // new border edge
+        if ((std::fpclassify(katz_weight[child]) != FP_ZERO) && (virgin_bits[child] == 0xff) && (hit_bits[parent] > 0)){
 
-  if (testcase.exec_us * 0.1 > avg_exec_us)
-    perf_score = 10;
-  else if (testcase.exec_us * 0.25 > avg_exec_us)
-    perf_score = 25;
-  else if (testcase.exec_us * 0.5 > avg_exec_us)
-    perf_score = 50;
-  else if (testcase.exec_us * 0.75 > avg_exec_us)
-    perf_score = 75;
-  else if (testcase.exec_us * 4 < avg_exec_us)
-    perf_score = 300;
-  else if (testcase.exec_us * 3 < avg_exec_us)
-    perf_score = 200;
-  else if (testcase.exec_us * 2 < avg_exec_us)
-    perf_score = 150;
+          tmp_edge_weight = katz_weight[child] / sqrt(hit_bits[parent]); 
+          border_edge_weight[border_edge_idx] = tmp_edge_weight;
+          
+	  nonzero_border_edge_cnt += 1;
+          testcase.thres_energy += tmp_edge_weight;
+          new_border_edge += 1;        
+        }
+      }
+    }
+  }
+  nonzero_border_edge_thres_cnt += new_border_edge;
 
-  /* Adjust score based on bitmap size. The working theory is that better
-     coverage translates to better targets. Multiplier from 0.25x to 3x. */
 
-  if (testcase.bitmap_size * 0.3 > avg_bitmap_size)
-    perf_score *= 3;
-  else if (testcase.bitmap_size * 0.5 > avg_bitmap_size)
-    perf_score *= 2;
-  else if (testcase.bitmap_size * 0.75 > avg_bitmap_size)
-    perf_score *= 1.5;
-  else if (testcase.bitmap_size * 3 < avg_bitmap_size)
-    perf_score *= 0.25;
-  else if (testcase.bitmap_size * 2 < avg_bitmap_size)
-    perf_score *= 0.5;
-  else if (testcase.bitmap_size * 1.5 < avg_bitmap_size)
-    perf_score *= 0.75;
-
-  /* Adjust score based on handicap. Handicap is proportional to how late
-     in the game we learned about this path. Latecomers are allowed to run
-     for a bit longer until they catch up with the rest. */
-
-  if (testcase.handicap >= 4) {
-    perf_score *= 4;
-    testcase.handicap -= 4;
-  } else if (testcase.handicap) {
-    perf_score *= 2;
-    testcase.handicap--;
+  if((nonzero_border_edge_cnt == 0) || (nonzero_border_edge_thres_cnt == 0)){
+    testcase.thres_energy = 1/scale_factor;
   }
 
-  /* Final adjustment based on input depth, under the assumption that fuzzing
-     deeper test cases is more likely to reveal stuff that can't be
-     discovered with traditional fuzzers. */
+  std::string serialized;
+  serialized += std::to_string( testcase.qid );
+  serialized += ", ";
+  serialized += std::to_string( testcase.thres_energy * scale_factor );
+  serialized += ", ";
+  serialized += std::to_string( nonzero_border_edge_cnt );
+  serialized += ", ";
+  serialized += std::to_string( nonzero_border_edge_thres_cnt );
+  serialized += ", ";
+  serialized += std::to_string( new_border_edge );
+  fwrite( serialized.data(), sizeof( char ), serialized.size(), sched_log_file );
 
-  switch (testcase.depth) {
-    case 0 ... 3:
-      break;
-    case 4 ... 7:
-      perf_score *= 2;
-      break;
-    case 8 ... 13:
+  return testcase.thres_energy;
+}
+
+template <class Testcase>
+option::perf_type_t< typename AFLStateTemplate<Testcase>::Tag > AFLStateTemplate<Testcase>::DoCalcScore(Testcase& testcase) {
+  if constexpr ( option::EnableKScheduler<Tag>() ) {
+    double energy = 0.0;
+    /* Adjust score based on execution speed of this path, compared to the
+       global average. Multiplier ranges from 0.1x to 3x. Fast inputs are
+       less expensive to fuzz, so we're giving them more air time. */
+ 
+    energy = testcase.init_perf_score * testcase.thres_energy * scale_factor;
+ 
+    fprintf(sched_log_file, " %d %f || ", testcase.init_perf_score, energy);
+ 
+    if (energy > option::GetHavocMaxMult(*this) * 100) energy = option::GetHavocMaxMult(*this) * 100;
+ 
+    return energy;
+  }
+  else {
+    u32 avg_exec_us = total_cal_us / total_cal_cycles;
+    u32 avg_bitmap_size = total_bitmap_size / total_bitmap_entries;
+    option::perf_type_t< Tag > perf_score = 100;
+    /* Adjust score based on execution speed of this path, compared to the
+       global average. Multiplier ranges from 0.1x to 3x. Fast inputs are
+       less expensive to fuzz, so we're giving them more air time. */
+ 
+    if (testcase.exec_us * 0.1 > avg_exec_us)
+      perf_score = 10;
+    else if (testcase.exec_us * 0.25 > avg_exec_us)
+      perf_score = 25;
+    else if (testcase.exec_us * 0.5 > avg_exec_us)
+      perf_score = 50;
+    else if (testcase.exec_us * 0.75 > avg_exec_us)
+      perf_score = 75;
+    else if (testcase.exec_us * 4 < avg_exec_us)
+      perf_score = 300;
+    else if (testcase.exec_us * 3 < avg_exec_us)
+      perf_score = 200;
+    else if (testcase.exec_us * 2 < avg_exec_us)
+      perf_score = 150;
+ 
+    /* Adjust score based on bitmap size. The working theory is that better
+       coverage translates to better targets. Multiplier from 0.25x to 3x. */
+ 
+    if (testcase.bitmap_size * 0.3 > avg_bitmap_size)
       perf_score *= 3;
-      break;
-    case 14 ... 25:
+    else if (testcase.bitmap_size * 0.5 > avg_bitmap_size)
+      perf_score *= 2;
+    else if (testcase.bitmap_size * 0.75 > avg_bitmap_size)
+      perf_score *= 1.5;
+    else if (testcase.bitmap_size * 3 < avg_bitmap_size)
+      perf_score *= 0.25;
+    else if (testcase.bitmap_size * 2 < avg_bitmap_size)
+      perf_score *= 0.5;
+    else if (testcase.bitmap_size * 1.5 < avg_bitmap_size)
+      perf_score *= 0.75;
+ 
+    /* Adjust score based on handicap. Handicap is proportional to how late
+       in the game we learned about this path. Latecomers are allowed to run
+       for a bit longer until they catch up with the rest. */
+ 
+    if (testcase.handicap >= 4) {
       perf_score *= 4;
-      break;
-    default:
-      perf_score *= 5;
-      break;
+      testcase.handicap -= 4;
+    } else if (testcase.handicap) {
+      perf_score *= 2;
+      testcase.handicap--;
+    }
+ 
+    /* Final adjustment based on input depth, under the assumption that fuzzing
+       deeper test cases is more likely to reveal stuff that can't be
+       discovered with traditional fuzzers. */
+ 
+    switch (testcase.depth) {
+      case 0 ... 3:
+        break;
+      case 4 ... 7:
+        perf_score *= 2;
+        break;
+      case 8 ... 13:
+        perf_score *= 3;
+        break;
+      case 14 ... 25:
+        perf_score *= 4;
+        break;
+      default:
+        perf_score *= 5;
+        break;
+    }
+ 
+    /* Make sure that we don't go over limit. */
+ 
+    if (perf_score > option::GetHavocMaxMult(*this) * 100) {
+      perf_score = option::GetHavocMaxMult(*this) * 100;
+    }
+ 
+    return perf_score;
   }
-
-  /* Make sure that we don't go over limit. */
-
-  if (perf_score > option::GetHavocMaxMult(*this) * 100) {
-    perf_score = option::GetHavocMaxMult(*this) * 100;
-  }
-
-  return perf_score;
 }
 
 /* Check if the current execution path brings anything new to the table.
@@ -680,7 +1282,6 @@ u8 AFLStateTemplate<Testcase>::HasNewBits(const u8* trace_bits, u8* virgin_map,
         }
         if (ret != 2) ret = 1;
       }
-
       *virgin &= ~*current;
     }
 
@@ -1190,6 +1791,61 @@ void AFLStateTemplate<Testcase>::PivotInputs() {
 #endif
 }
 
+/* increment hit bits by 1 for every element of trace_bits that has been hit.
+ effectively counts that one input has hit each element of trace_bits */
+template <class Testcase>
+void AFLStateTemplate<Testcase>::IncrementHitBits(
+    feedback::InplaceMemoryFeedback &inp_feed
+  ){
+  inp_feed.ShowMemoryToFunc([&](const u8* trace_bits, u32 /* map_size */) {
+    u32 count = option::GetMapSize<Tag>();
+    if constexpr ( !option::EnableSequentialID<Tag>() ) {
+      if( enable_sequential_id ) {
+        count = num_edge + 8u;
+      }
+    }
+    u32 total_iters = count / sizeof( unsigned long int );
+    const unsigned long int *current = reinterpret_cast< const unsigned long int* >( trace_bits );
+    for (u32 i = 0; i < total_iters; ++i){ 
+      if (unlikely(*current)){
+        if constexpr ( sizeof( unsigned long int ) == 8u ) {
+          const u8 *cur = reinterpret_cast< const u8* >( current );
+          u32 base_idx = i * 8 ;
+          if (cur[0])
+            hit_bits[base_idx]++;
+          if (cur[1])
+            hit_bits[base_idx+1]++;
+          if (cur[2])
+            hit_bits[base_idx+2]++;
+          if (cur[3])
+            hit_bits[base_idx+3]++;
+          if (cur[4])
+            hit_bits[base_idx+4]++;
+          if (cur[5])
+            hit_bits[base_idx+5]++;
+          if (cur[6])
+            hit_bits[base_idx+6]++;
+          if (cur[7])
+            hit_bits[base_idx+7]++;
+        }
+        else if constexpr ( sizeof( unsigned long int ) == 4u ) {
+          u8 *cur = reinterpret_cast< u8* >( current );
+          u32 base_idx = i * 8 ;
+          if (cur[0])
+            hit_bits[base_idx]++;
+          if (cur[1])
+            hit_bits[base_idx+1]++;
+          if (cur[2])
+            hit_bits[base_idx+2]++;
+          if (cur[3])
+            hit_bits[base_idx+3]++;
+        }
+      }
+      current++;
+    }
+  });
+}
+
 template <class Tag>
 static void CheckMapCoverage(const feedback::InplaceMemoryFeedback& inp_feed) {
   if (inp_feed.CountNonZeroBytes() < 100) return;
@@ -1224,7 +1880,7 @@ void AFLStateTemplate<Testcase>::PerformDryRun() {
     feedback::ExitStatusFeedback exit_status;
     feedback::PUTExitReasonType res = CalibrateCaseWithFeedDestroyed(
         *testcase, input.GetBuf(), input.GetLen(), inp_feed, exit_status, 0,
-        true);
+        true, false);
 
     input.Unload();
 
@@ -1469,8 +2125,21 @@ void AFLStateTemplate<Testcase>::ShowStats(void) {
   if (!stats_update_freq) stats_update_freq = 1;
 
   /* Do some bitmap stats. */
-  u32 t_bytes =
-      fuzzuf::utils::CountNon255Bytes(&virgin_bits[0], virgin_bits.size());
+  u32 t_bytes = 0u;
+  if constexpr ( !option::EnableSequentialID<Tag>() ) {
+    if( enable_sequential_id ) {
+      t_bytes =
+        fuzzuf::utils::CountNon255Bytes(&virgin_bits[0], num_edge + 2u );
+    }
+    else {
+      t_bytes =
+        fuzzuf::utils::CountNon255Bytes(&virgin_bits[0], virgin_bits.size() );
+    }
+  }
+  else {
+    t_bytes =
+      fuzzuf::utils::CountNon255Bytes(&virgin_bits[0], virgin_bits.size() );
+  }
   double t_byte_ratio = ((double)t_bytes * 100) / MAP_SIZE;
 
   double stab_ratio;
@@ -1489,7 +2158,7 @@ void AFLStateTemplate<Testcase>::ShowStats(void) {
   }
 
   /* Every now and then, write plot data. */
-  if (cur_ms - last_plot_ms > GetPlotUpdateSec(*this) * 1000) {
+  if (cur_ms - last_plot_ms > GetPlotUpdateSec<Tag>() * 1000) {
     last_plot_ms = cur_ms;
     MaybeUpdatePlotFile(t_byte_ratio, avg_exec, t_bytes);
   }
@@ -1500,13 +2169,27 @@ void AFLStateTemplate<Testcase>::ShowStats(void) {
     stop_soon = 2;
 
   if (total_crashes && getenv("AFL_BENCH_UNTIL_CRASH")) stop_soon = 2;
+  
 
   /* If we're not on TTY, bail out. */
   if (not_on_tty) return;
 
   /* Compute some mildly useful bitmap stats. */
-  u32 t_bits = (MAP_SIZE << 3) -
-               fuzzuf::utils::CountBits(&virgin_bits[0], virgin_bits.size());
+  u32 t_bits = 0u;
+  if constexpr ( !option::EnableSequentialID<Tag>() ) {
+    if( enable_sequential_id ) {
+      t_bits = (MAP_SIZE << 3) -
+               fuzzuf::utils::CountBits(&virgin_bits[0], num_edge + 8u );
+    }
+    else {
+      t_bits = (MAP_SIZE << 3) -
+               fuzzuf::utils::CountBits(&virgin_bits[0], virgin_bits.size() );
+    }
+  }
+  else {
+    t_bits = (MAP_SIZE << 3) -
+             fuzzuf::utils::CountBits(&virgin_bits[0], virgin_bits.size() );
+  }
 
   /* Now, for the visuals... */
   bool term_too_small = false;
@@ -1633,7 +2316,9 @@ void AFLStateTemplate<Testcase>::ShowStats(void) {
   auto& queue_cur = *case_queue[current_entry];
 
   tmp = DescribeInteger(current_entry);
-  if (!queue_cur.favored) tmp += '*';
+  if constexpr ( !option::EnableKScheduler<Tag>() ) {
+    if (!queue_cur.favored) tmp += '*';
+  }
   tmp += fuzzuf::utils::StrPrintf(" (%0.02f%%)",
                                   ((double)current_entry * 100) / queued_paths);
 
@@ -1709,8 +2394,9 @@ void AFLStateTemplate<Testcase>::ShowStats(void) {
 
   if (avg_exec < 100) {
     tmp = DescribeFloat(avg_exec) + "/sec (";
-    if (avg_exec < 20)
+    if (avg_exec < 20) {
       tmp += "zzzz...";
+    }
     else
       tmp += "slow!";
     tmp += ')';
@@ -1885,6 +2571,69 @@ bool AFLStateTemplate<Testcase>::ShouldConstructAutoDict(void) {
 template <class Testcase>
 void AFLStateTemplate<Testcase>::SetShouldConstructAutoDict(bool v) {
   should_construct_auto_dict = v;
+}
+
+template <class Testcase>
+void AFLStateTemplate<Testcase>::LoadCentralityFile() {
+  if constexpr ( !option::EnableKScheduler<Tag>() ) {
+    return;
+  }
+  // create signal file, write 0 for initialization
+  {
+    std::fstream fp( "signal", std::ios::out );
+    if( !fp.good() ){
+      std::perror("signal open failed \n");
+      std::exit(0);
+    }
+    fp << "0\n";
+  }
+
+  // read katz centrality
+  try {
+    int line_cnt = 0;
+    std::fill( katz_weight.begin(), katz_weight.end(), 0 );
+    const auto katz_cent = utils::kscheduler::LoadKatzCentrality( "katz_cent" );
+    for( const auto &[idx,ret]: katz_cent ) {
+      katz_weight[idx] = ret;
+    }
+    line_cnt = katz_cent.size();
+    num_edge = line_cnt + 1;
+  }
+  catch( ... ) {
+    perror("katz_cent open failed \n");
+    exit(0);
+  }
+  
+  // read border edge pair
+  try {
+    int line_cnt = 0;
+    std::fill( border_edge_parent.begin(), border_edge_parent.end(), 0 );
+    std::fill( border_edge_child.begin(), border_edge_child.end(), 0 );
+    const auto border_edges = utils::kscheduler::LoadBorderEdges( "border_edges" );
+    for( const auto &[parent,child]: border_edges ) {
+      border_edge_parent[line_cnt] = parent;
+      border_edge_child[line_cnt] = child;
+      line_cnt += 1;
+    }
+    num_border_edge = line_cnt;
+  }
+  catch( ... ) {
+    perror("border_edges open failed \n");
+    exit(0);
+  }
+
+  // read child_list for each node
+  try {
+    const auto child_node = utils::kscheduler::LoadChildNode( "child_node" );
+    for( const auto &c: child_node ) {
+      node_child_list[ c.first ].push_back( c.second );
+    }
+  }
+  catch( ... ) {
+    perror("child_node open failed \n");
+    exit(0);
+  }
+  //initlize 
 }
 
 }  // namespace fuzzuf::algorithm::afl

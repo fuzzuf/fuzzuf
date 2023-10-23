@@ -214,7 +214,7 @@ void LinuxForkServerExecutor::Run(const u8 *buf, u32 len, u32 timeout_ms) {
   DEBUG("Run: ");
   DEBUG("%s ", cargv[0]);
   std::for_each(cargv.begin(), cargv.end(),
-                [](const char *v) { DEBUG("%s ", v); });
+                []([[maybe_unused]] const char *v) { DEBUG("%s ", v); });
   DEBUG("\n")
   //#endif
 

@@ -79,7 +79,7 @@ VUzzerUpdCalleeRef UpdateFitness::operator()(
   if (diff.size()) {
     /* New BB coverage! */
     DEBUG("New coverage");
-    for (const auto &bb : diff) DEBUG("0x%llx", bb);
+    for ([[maybe_unused]] const auto &bb : diff) DEBUG("0x%llx", bb);
 
     state.has_new_cov = true;  // XXX: Duplicate unncessary variable has_new_cov
 
@@ -171,7 +171,7 @@ UpdateQueue::operator()(void) {
       itr++;
     }
   }
-  for (const auto &seed : state.seed_queue)
+  for ([[maybe_unused]] const auto &seed : state.seed_queue)
     DEBUG("Seed %s (%lf)", seed->input->GetPath().c_str(), seed->fitness);
 
   CallSuccessors();

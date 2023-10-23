@@ -367,7 +367,7 @@ void NativeLinuxExecutor::Run(const u8 *buf, u32 len, u32 timeout_ms) {
   DEBUG("Run: ");
   DEBUG("%s ", cargv[0]);
   std::for_each(cargv.begin(), cargv.end(),
-                [](const char *v) { DEBUG("%s ", v); });
+                []([[maybe_unused]] const char *v) { DEBUG("%s ", v); });
   DEBUG("\n")
   //#endif
 
@@ -681,7 +681,7 @@ void NativeLinuxExecutor::Run(const u8 *buf, u32 len, u32 timeout_ms) {
      very normally and do not have to be treated as volatile. */
 
   MEM_BARRIER();
-
+  
   // Following implementation is dirty.
   // This may be inherited implementation from afl, and it may feel dirty, so it
   // shall be fixed.

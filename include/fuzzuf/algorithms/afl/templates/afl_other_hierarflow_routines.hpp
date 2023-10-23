@@ -23,6 +23,8 @@
 #include "fuzzuf/hierarflow/hierarflow_node.hpp"
 #include "fuzzuf/hierarflow/hierarflow_routine.hpp"
 #include "fuzzuf/logger/logger.hpp"
+#include "fuzzuf/utils/kscheduler/dump_coverage.hpp"
+#include "fuzzuf/algorithms/afl/afl_util.hpp"
 
 // routines other than mutations and updates
 namespace fuzzuf::algorithm::afl::routine::other {
@@ -33,22 +35,132 @@ CullQueueTemplate<State>::CullQueueTemplate(State &state) : state(state) {}
 template <class State>
 utils::NullableRef<hierarflow::HierarFlowCallee<void(void)>>
 CullQueueTemplate<State>::operator()(void) {
-  if (state.setting->dumb_mode || !state.score_changed)
-    return GoToDefaultNext();
-
+  FUZZUF_ALGORITHM_AFL_ENTER_HIERARFLOW_NODE
   using Tag = typename State::Tag;
+  if constexpr ( !option::EnableKScheduler< Tag >() ) {
+    if (state.setting->dumb_mode || !state.score_changed) {
+      return this->GoToDefaultNext();
+    }
+  }
 
   state.score_changed = false;
+
+  if constexpr ( option::EnableKScheduler<Tag>() ) {
+    if( !state.math_cache_computed_before ){
+       state.ComputeMathCache();
+       state.last_math_cache_time = fuzzuf::utils::GetCurTimeMs() / 1000;
+       state.math_cache_computed_before = 1;
+    }
+    // recompute the math cache every 2 minutes
+    else if( fuzzuf::utils::GetCurTimeMs()/1000 - state.last_math_cache_time > 120 ) {
+      state.ComputeMathCache();
+      state.last_math_cache_time = fuzzuf::utils::GetCurTimeMs()/1000;
+    }
+    // clear ptr_energy array
+    std::fill( state.ptr_energy.begin(), state.ptr_energy.end(), typename State::my_union{ 0, nullptr } );
+    std::fill( state.energy_arr.begin(), state.energy_arr.end(), 0.0 );
+  }
+  // arrary cnt
+  int arr_cnt = 0;
 
   std::bitset<option::GetMapSize<Tag>()> has_top_rated;
 
   state.queued_favored = 0;
   state.pending_favored = 0;
-
-  for (const auto &testcase : state.case_queue) {
-    testcase->favored = false;
+  
+  if constexpr ( option::EnableKScheduler<Tag>() ) {
+    // check if there is a not_fuzzed seed
+    bool found_not_fuzzed_seed = false;
+    bool found_not_fuzzed2_seed = false;
+    for (const auto &testcase : state.case_queue) {
+      // check if there is a not fuzzed seed, determine go greedy or weighted random selection 
+      if(!testcase->was_fuzzed) {
+        found_not_fuzzed_seed = true;
+      }
+      if(!testcase->was_fuzzed2) {
+        found_not_fuzzed2_seed = true;
+      }
+      if(!testcase->cnt_free_cksum_dup) {
+        double energy = state.CheckBorderEdge(*testcase);
+        state.ptr_energy[arr_cnt].energy = energy;
+        state.ptr_energy[arr_cnt].seed = testcase;
+        arr_cnt += 1;
+      }
+    }
+    // sort ptr_energy using energy in decreasing order
+    if constexpr ( option::EnableKSchedulerSortByEnergy<Tag>() ) {
+      std::sort(
+        state.ptr_energy.begin(),
+        std::next( state.ptr_energy.begin(), arr_cnt ),
+        []( const auto &l, const auto &r ) -> bool {
+          return l.energy > r.energy;
+        }
+      );
+    }
+    //auto& queue_cur = state.case_queue[state.current_entry];
+    if(found_not_fuzzed_seed){
+      // greedly select the not_fuzzed seed with largest energy
+      for (int idx=0; idx<arr_cnt; idx++){
+        if (!((state.ptr_energy[idx].seed)->was_fuzzed)){
+	  const auto index = std::distance( state.case_queue.begin(), std::find( state.case_queue.begin(), state.case_queue.end(), state.ptr_energy[idx].seed ) );
+          state.current_entry = index;
+          //queue_cur = state.ptr_energy[idx].seed;
+          break; 
+        }
+      }
+    }
+    else{
+      // if all seeds are fuzzed (selected with equal times), then reset was_fuzzed for all seeds.
+      if (!found_not_fuzzed2_seed){
+        for (auto &testcase : state.case_queue) {
+          testcase->was_fuzzed2 = false;
+	}
+        state.current_entry = 0;
+      }
+      // greedly select the not_fuzzed seed with largest energy
+      for (int idx=0; idx<arr_cnt; idx++){
+        if (!((state.ptr_energy[idx].seed)->was_fuzzed2)){
+	  const auto index = std::distance( state.case_queue.begin(), std::find( state.case_queue.begin(), state.case_queue.end(), state.ptr_energy[idx].seed ) );
+          state.current_entry = index;
+          (state.ptr_energy[idx].seed)->was_fuzzed2 = true;
+          break;
+        }
+      }
+    }
+    if (fuzzuf::utils::GetCurTimeMs()/1000 - state.last_edge_log_time > 300){
+      // read signal, if "0" return, if "1" reload centrality file 
+      if( fs::exists( "signal" ) ) {
+        std::fstream fp( "signal", std::ios::out );
+        if( !fp.good() ){
+          std::perror("signal open failed \n");
+          std::exit(0);
+        }
+        fp << "1\n";
+      }
+      state.ReloadCentralityFile();
+      utils::kscheduler::DumpCoverage( "cur_coverage", state.virgin_bits );
+      fprintf(state.edge_log_file, "edge cov %d ", int(fuzzuf::utils::CountNon255Bytes(&state.virgin_bits[0], state.virgin_bits.size() )));
+      std::time_t now;
+      struct tm *tm;
+      now = time(0);
+      if((tm = localtime (&now)) == NULL) {
+        printf("Error extracting time stuff\n");
+      }
+      else{
+        fprintf(state.edge_log_file, "%04d-%02d-%02d %02d:%02d:%02d\n",
+          tm->tm_year+1900, tm->tm_mon+1, tm->tm_mday,
+          tm->tm_hour, tm->tm_min, tm->tm_sec);
+      } 
+      fflush(state.edge_log_file);
+      state.last_edge_log_time = fuzzuf::utils::GetCurTimeMs()/1000;
+    }
   }
-
+  else {
+    for (const auto &testcase : state.case_queue) {
+      testcase->favored = false;
+    }
+  }
+  
   for (u32 i = 0; i < option::GetMapSize<Tag>(); i++) {
     if (state.top_rated[i] && !has_top_rated[i]) {
       auto &top_testcase = state.top_rated[i].value().get();
@@ -65,8 +177,15 @@ CullQueueTemplate<State>::operator()(void) {
   for (const auto &testcase : state.case_queue) {
     state.MarkAsRedundant(*testcase, !testcase->favored);
   }
-
-  return GoToDefaultNext();
+  
+  if constexpr ( option::EnableKScheduler< Tag >() ) {
+    // get the testcase indexed by state.current_entry and start mutations
+    auto &testcase = state.case_queue[state.current_entry];
+    this->CallSuccessors(testcase);
+    state.current_entry++;
+  }
+  
+  return this->GoToDefaultNext();
 }
 
 template <class State>
@@ -75,6 +194,7 @@ SelectSeedTemplate<State>::SelectSeedTemplate(State &state) : state(state) {}
 template <class State>
 utils::NullableRef<hierarflow::HierarFlowCallee<void(void)>>
 SelectSeedTemplate<State>::operator()(void) {
+  FUZZUF_ALGORITHM_AFL_ENTER_HIERARFLOW_NODE
   if (state.queue_cycle == 0 ||
       state.current_entry >= state.case_queue.size()) {
     state.queue_cycle++;
@@ -109,10 +229,13 @@ SelectSeedTemplate<State>::operator()(void) {
     DEBUG_ASSERT(state.current_entry < state.case_queue.size());
   }
 
-  // get the testcase indexed by state.current_entry and start mutations
-  auto &testcase = state.case_queue[state.current_entry];
-  this->CallSuccessors(testcase);
-  state.current_entry++;
+  using Tag = typename State::Tag;
+  if constexpr ( !option::EnableKScheduler< Tag >() ) {
+    // get the testcase indexed by state.current_entry and start mutations
+    auto &testcase = state.case_queue[state.current_entry];
+    this->CallSuccessors(testcase);
+    state.current_entry++;
+  }
 
 #if 0
     auto skipped_fuzz = CallSuccessors(testcase);
@@ -134,32 +257,64 @@ ConsiderSkipMutTemplate<State>::ConsiderSkipMutTemplate(State &state)
 template <class State>
 AFLMidCalleeRef<State> ConsiderSkipMutTemplate<State>::operator()(
     std::shared_ptr<typename State::OwnTestcase> testcase) {
-  // just an alias of afl::util::UR
-  auto UR = [this](u32 limit) { return afl::util::UR(limit, state.rand_fd); };
+  FUZZUF_ALGORITHM_AFL_ENTER_HIERARFLOW_NODE
 
-  if (state.setting->ignore_finds) {
-    if (testcase->depth > 1) {
+  using Tag = typename State::Tag;
+  if constexpr ( option::EnableKScheduler<Tag>() ) {
+    // Early reject a seed if didn't hit any top border edge
+    const double thres_energy = state.CheckTopBorderEdge( *testcase );
+    if (std::fpclassify(thres_energy) == FP_ZERO){
+      if (!testcase->was_fuzzed) 
+        testcase->was_fuzzed = true;
       this->SetResponseValue(true);
       return this->GoToParent();
     }
-  } else {
-    if (state.pending_favored) {
-      if ((testcase->WasFuzzed() || !testcase->favored) &&
-          UR(100) < option::GetSkipToNewProb(state)) {
+    // Early reject a seed whose execution trace(i.e., bitmap) is duplicated with other seeds.
+    if (testcase->cnt_free_cksum_dup == 1){
+      if (!testcase->was_fuzzed)
+        testcase->was_fuzzed = true;
+      fprintf(state.sched_log_file, " duplicated \n");
+      this->SetResponseValue(true);
+      return this->GoToParent();
+    }
+    if (testcase->cnt_free_cksum == state.last_cnt_free_cksum){
+      if (!testcase->was_fuzzed) {
+        testcase->was_fuzzed = true;
+      }
+      fprintf(state.sched_log_file, " duplicated \n");
+      this->SetResponseValue(true);
+      return this->GoToParent();
+    }
+ 
+    state.last_cnt_free_cksum  = testcase->cnt_free_cksum;
+  }
+  else {
+    // just an alias of afl::util::UR
+    auto UR = [this](u32 limit) { return afl::util::UR(limit, state.rand_fd); };
+    if (state.setting->ignore_finds) {
+      if (testcase->depth > 1) {
         this->SetResponseValue(true);
         return this->GoToParent();
       }
-    } else if (!state.setting->dumb_mode && !testcase->favored &&
-               state.queued_paths > 10) {
-      if (state.queue_cycle > 1 && !testcase->WasFuzzed()) {
-        if (UR(100) < option::GetSkipNfavNewProb(state)) {
+    } else {
+      if (state.pending_favored) {
+        if ((testcase->WasFuzzed() || !testcase->favored) &&
+            UR(100) < option::GetSkipToNewProb(state)) {
           this->SetResponseValue(true);
           return this->GoToParent();
         }
-      } else {
-        if (UR(100) < option::GetSkipNfavOldProb(state)) {
-          this->SetResponseValue(true);
-          return this->GoToParent();
+      } else if (!state.setting->dumb_mode && !testcase->favored &&
+                 state.queued_paths > 10) {
+        if (state.queue_cycle > 1 && !testcase->WasFuzzed()) {
+          if (UR(100) < option::GetSkipNfavNewProb(state)) {
+            this->SetResponseValue(true);
+            return this->GoToParent();
+          }
+        } else {
+          if (UR(100) < option::GetSkipNfavOldProb(state)) {
+            this->SetResponseValue(true);
+            return this->GoToParent();
+          }
         }
       }
     }
@@ -187,6 +342,7 @@ RetryCalibrateTemplate<State>::RetryCalibrateTemplate(
 template <class State>
 AFLMidCalleeRef<State> RetryCalibrateTemplate<State>::operator()(
     std::shared_ptr<typename State::OwnTestcase> testcase) {
+  FUZZUF_ALGORITHM_AFL_ENTER_HIERARFLOW_NODE
   auto &input = *testcase->input;
 
   // Mutator should be allocated after trimming is done
@@ -215,7 +371,7 @@ AFLMidCalleeRef<State> RetryCalibrateTemplate<State>::operator()(
     feedback::ExitStatusFeedback exit_status;
     res = state.CalibrateCaseWithFeedDestroyed(
         *testcase, input.GetBuf(), input.GetLen(), inp_feed, exit_status,
-        state.queue_cycle - 1, false);
+        state.queue_cycle - 1, false,true);
     if (res == feedback::PUTExitReasonType::FAULT_ERROR)
       ERROR("Unable to execute target application");
   }
@@ -347,9 +503,12 @@ static feedback::PUTExitReasonType DoTrimCase(
   if (needs_write) {
     // already saved on disk by "input.OverwriteKeepingLoaded()"
 
-    state.UpdateBitmapScoreWithRawTrace(
+    using Tag = typename State::Tag;
+    if constexpr ( !option::EnableKScheduler<Tag>() ) {
+      state.UpdateBitmapScoreWithRawTrace(
         testcase, pers_feed.mem.get(),
         option::GetMapSize<typename State::Tag>());
+    }
   }
 
 abort_trimming:
@@ -360,6 +519,29 @@ abort_trimming:
 template <class State>
 AFLMidCalleeRef<State> TrimCaseTemplate<State>::operator()(
     std::shared_ptr<typename State::OwnTestcase> testcase) {
+  FUZZUF_ALGORITHM_AFL_ENTER_HIERARFLOW_NODE
+  using Tag = typename State::Tag;
+  if constexpr ( option::EnableKScheduler<Tag>() ) {
+    testcase->init_perf_score = 100;
+    if (testcase->exec_us * 0.05 > state.avg_us_fast) testcase->init_perf_score = 0;
+    else if (testcase->exec_us * 0.075 > state.avg_us_fast) testcase->init_perf_score = 1;
+    else if (testcase->exec_us * 0.1 > state.avg_us_fast) testcase->init_perf_score = 10;
+    else if (testcase->exec_us * 0.25 > state.avg_us_fast) testcase->init_perf_score = 25;
+    else if (testcase->exec_us * 0.5 > state.avg_us_fast) testcase->init_perf_score = 50;
+    else if (testcase->exec_us * 0.75 > state.avg_us_fast) testcase->init_perf_score = 75;
+    else if (testcase->exec_us * 4 < state.avg_us_fast) testcase->init_perf_score = 300;
+    else if (testcase->exec_us * 3 < state.avg_us_fast) testcase->init_perf_score = 200;
+    else if (testcase->exec_us * 2 < state.avg_us_fast) testcase->init_perf_score = 150;
+    state.init_perf_score = testcase->init_perf_score;
+
+    if(testcase->init_perf_score <= 75) testcase->trim_done = true;
+  
+    if(testcase->init_perf_score == 0) {
+      this->SetResponseValue(true);
+      return abandon_entry;
+    }
+  }
+
   /************
    * TRIMMING *
    ************/
@@ -381,16 +563,25 @@ AFLMidCalleeRef<State> TrimCaseTemplate<State>::operator()(
 }
 
 template <class State>
-CalcScoreTemplate<State>::CalcScoreTemplate(State &state) : state(state) {}
+CalcScoreTemplate<State>::CalcScoreTemplate(
+    State &state, AFLMidCalleeRef<State> abandon_entry) : state(state), abandon_entry(abandon_entry) {}
 
 template <class State>
 AFLMidCalleeRef<State> CalcScoreTemplate<State>::operator()(
     std::shared_ptr<typename State::OwnTestcase> testcase) {
+  FUZZUF_ALGORITHM_AFL_ENTER_HIERARFLOW_NODE
   /*********************
    * PERFORMANCE SCORE *
    *********************/
-
+  
   state.orig_perf = state.DoCalcScore(*testcase);
+  using Tag = typename State::Tag;
+  if constexpr ( option::EnableKScheduler<Tag>() ) {
+    if (std::fpclassify(state.orig_perf) == FP_ZERO) {
+      this->SetResponseValue(true);
+      return abandon_entry;
+    }
+  }
   return this->GoToDefaultNext();
 }
 
@@ -402,6 +593,7 @@ ApplyDetMutsTemplate<State>::ApplyDetMutsTemplate(
 template <class State>
 AFLMidCalleeRef<State> ApplyDetMutsTemplate<State>::operator()(
     std::shared_ptr<typename State::OwnTestcase> testcase) {
+  FUZZUF_ALGORITHM_AFL_ENTER_HIERARFLOW_NODE
   // We no longer modify this testcase.
   // So we can reload the file with mmap.
   testcase->input->LoadByMmap();  // no need to Unload
@@ -414,6 +606,13 @@ AFLMidCalleeRef<State> ApplyDetMutsTemplate<State>::operator()(
       testcase->passed_det) {
     state.doing_det = false;
     return this->GoToDefaultNext();
+  }
+  using Tag = typename State::Tag;
+  if constexpr ( option::EnableKScheduler<Tag>() ) {
+    if( testcase->init_perf_score <= 25 ) {
+      state.doing_det = false;
+      return this->GoToDefaultNext();
+    }
   }
 
   /* Skip deterministic fuzzing if exec path checksum puts this out of scope
@@ -458,6 +657,7 @@ ApplyRandMutsTemplate<State>::ApplyRandMutsTemplate(
 template <class State>
 AFLMidCalleeRef<State> ApplyRandMutsTemplate<State>::operator()(
     std::shared_ptr<typename State::OwnTestcase> testcase) {
+  FUZZUF_ALGORITHM_AFL_ENTER_HIERARFLOW_NODE
   auto mutator = AFLMutatorTemplate<State>(*testcase->input, state);
 
   // call probablistic mutations
@@ -478,6 +678,7 @@ AbandonEntryTemplate<State>::AbandonEntryTemplate(State &state)
 template <class State>
 AFLMidCalleeRef<State> AbandonEntryTemplate<State>::operator()(
     std::shared_ptr<typename State::OwnTestcase> testcase) {
+  FUZZUF_ALGORITHM_AFL_ENTER_HIERARFLOW_NODE
   state.splicing_with = -1;
 
   /* Update pending_not_fuzzed count if we made it through the calibration
@@ -497,16 +698,39 @@ AFLMidCalleeRef<State> AbandonEntryTemplate<State>::operator()(
 }
 
 template <class State>
-ExecutePUTTemplate<State>::ExecutePUTTemplate(State &state) : state(state) {}
+ExecutePUTTemplate<State>::ExecutePUTTemplate(State &state, bool fail_on_too_slow) : state(state), fail_on_too_slow( fail_on_too_slow ) {}
 
 template <class State>
 utils::NullableRef<hierarflow::HierarFlowCallee<bool(const u8 *, u32)>>
 ExecutePUTTemplate<State>::operator()(const u8 *input, u32 len) {
+  FUZZUF_ALGORITHM_AFL_ENTER_HIERARFLOW_NODE
   feedback::ExitStatusFeedback exit_status;
 
-  auto inp_feed = state.RunExecutorWithClassifyCounts(input, len, exit_status);
-  bool should_abort = CallSuccessors(input, len, inp_feed, exit_status);
-  SetResponseValue(should_abort);
+  using Tag = typename State::Tag;
+  if constexpr ( option::EnableKScheduler<Tag>() ) {
+    if( fail_on_too_slow ) {
+      const u64 start_us = fuzzuf::utils::GetCurTimeUs();
+      auto inp_feed = state.RunExecutorWithClassifyCounts(input, len, exit_status);
+      const u64 end_us = fuzzuf::utils::GetCurTimeUs();
+      double exec_num = ((double)1000000.0)/(end_us-start_us);
+      if (exec_num <= 10) {  
+        this->SetResponseValue(true);
+        return this->GoToParent();
+      }
+      bool should_abort = CallSuccessors(input, len, inp_feed, exit_status);
+      SetResponseValue(should_abort);
+    }
+    else {
+      auto inp_feed = state.RunExecutorWithClassifyCounts(input, len, exit_status);
+      bool should_abort = CallSuccessors(input, len, inp_feed, exit_status);
+      SetResponseValue(should_abort);
+    }
+  }
+  else {
+    auto inp_feed = state.RunExecutorWithClassifyCounts(input, len, exit_status);
+    bool should_abort = CallSuccessors(input, len, inp_feed, exit_status);
+    SetResponseValue(should_abort);
+  }
   return GoToDefaultNext();
 }
 

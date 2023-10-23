@@ -40,13 +40,14 @@ template <class State>
 struct NormalUpdateTemplate
     : public hierarflow::HierarFlowRoutine<AFLUpdInputType, AFLUpdOutputType> {
  public:
-  NormalUpdateTemplate(State &state);
+  NormalUpdateTemplate(State &state,bool enable_skip=true);
 
   AFLUpdCalleeRef operator()(const u8 *, u32, feedback::InplaceMemoryFeedback &,
                              feedback::ExitStatusFeedback &);
 
  private:
   State &state;
+  bool enable_skip;
 };
 
 using NormalUpdate = NormalUpdateTemplate<AFLState>;

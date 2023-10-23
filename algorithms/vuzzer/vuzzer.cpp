@@ -72,7 +72,7 @@ void VUzzer::PerformDryRun(VUzzerState& state) {
   }
 
   DEBUG("Good BBs");
-  for (const auto& bb : state.good_bbs) DEBUG("0x%llx,", bb);
+  for ([[maybe_unused]] const auto& bb : state.good_bbs) DEBUG("0x%llx,", bb);
 
   /* Execute PUT with invalid inputs. */
   /* Generate invalid random inputs by mutating initial seeds. */
@@ -98,7 +98,7 @@ void VUzzer::PerformDryRun(VUzzerState& state) {
   }
 
   DEBUG("EHBs");
-  for (const auto& bb : state.ehb) DEBUG("0x%llx,", bb);
+  for ([[maybe_unused]] const auto& bb : state.ehb) DEBUG("0x%llx,", bb);
 
   /* Get taint info from execution with initial seeds
   ** It'll be used in FillSeeds
@@ -123,7 +123,7 @@ void VUzzer::FillSeeds(VUzzerState& state, u32 size) {
   std::default_random_engine eng(rd());
   std::uniform_real_distribution<> distr_cut(0.1, 1.0);
 
-  u32 _sz = size;
+  [[maybe_unused]] u32 _sz = size;
   DEBUG("FillSeeds with size (%u)", _sz);
   /* Generate a certain number of seeds by mutating initial seeds */
   std::vector<std::shared_ptr<VUzzerTestcase>> initial_queue =

@@ -88,7 +88,7 @@ void IJONFuzzer::BuildFuzzFlow() {
         CreateNode<RetryCalibrateTemplate<IJONState>>(*state, *abandon_node);
     auto trim_case =
         CreateNode<TrimCaseTemplate<IJONState>>(*state, *abandon_node);
-    auto calc_score = CreateNode<CalcScoreTemplate<IJONState>>(*state);
+    auto calc_score = CreateNode<CalcScoreTemplate<IJONState>>(*state, *abandon_node);
     auto apply_det_muts =
         CreateNode<ApplyDetMutsTemplate<IJONState>>(*state, *abandon_node);
     auto apply_rand_muts =

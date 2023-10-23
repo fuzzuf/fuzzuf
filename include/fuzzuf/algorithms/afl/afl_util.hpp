@@ -18,10 +18,13 @@
 #pragma once
 
 #include <string>
-
+#include <memory>
+#include <typeinfo>
+#include <boost/core/demangle.hpp>
 #include "fuzzuf/algorithms/afl/afl_dict_data.hpp"
 #include "fuzzuf/algorithms/afl/afl_option.hpp"
 #include "fuzzuf/algorithms/afl/count_classes.hpp"
+#include "fuzzuf/logger/logger.hpp"
 #include "fuzzuf/mutator/havoc_case.hpp"
 #include "fuzzuf/optimizer/optimizer.hpp"
 #include "fuzzuf/utils/common.hpp"
@@ -263,5 +266,29 @@ constexpr std::array<double, fuzzuf::mutator::NUM_CASE> AFLGetCaseWeights(
 
   return weights;
 }
+
+#define FUZZUF_ALGORITHM_AFL_ENTER_HIERARFLOW_NODE \
+  { \
+    using Tag = typename State::Tag; \
+    if constexpr ( fuzzuf::algorithm::afl::option::EnableVerboseDebugLog< Tag >() ) { \
+      const long int current_time = fuzzuf::utils::GetCurTimeMs(); \
+      DEBUG( "[%ld] %s", current_time, ( std::string( "Enter " ) + boost::core::demangle( typeid(*this).name() ) + "::" + __func__ ).c_str() ) \
+    } \
+  } \
+  std::shared_ptr< void > on_leave; \
+  { \
+    using Tag = typename State::Tag; \
+    if constexpr ( fuzzuf::algorithm::afl::option::EnableVerboseDebugLog< Tag >() ) { \
+      const long int begin = fuzzuf::utils::GetCurTimeMs(); \
+      on_leave.reset( \
+        static_cast< void* >( nullptr ), \
+        [name=boost::core::demangle( typeid(*this).name() ) + "::" + __func__,begin]( void* ) { \
+          const long int current_time = fuzzuf::utils::GetCurTimeMs(); \
+	  const long int elapsed = current_time - begin; \
+          DEBUG( "[%ld] %s (%ldms)", current_time, ( std::string( "Leave " ) + name ).c_str(), elapsed ) \
+	} \
+      ); \
+    } \
+  }
 
 }  // namespace fuzzuf::algorithm::afl::util

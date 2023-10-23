@@ -2,6 +2,7 @@ add_library(
   fuzzuf_core_afl
   STATIC
   afl_fuzzer.cpp
+  afl_testcase.cpp
 )
 
 target_include_directories(

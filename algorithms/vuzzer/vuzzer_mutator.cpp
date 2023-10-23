@@ -203,7 +203,7 @@ void VUzzerMutator::ChangeBytes() {
     offsets = &(taint_choices[0].second);
   }
 
-  for (auto o : *offsets) DEBUG("0x%x, ", o);
+  for ([[maybe_unused]] auto o : *offsets) DEBUG("0x%x, ", o);
   // TODO: Consider MOSTCOMMON
   if (offsets->size() > 0) {
     std::vector<u32> off_choices;

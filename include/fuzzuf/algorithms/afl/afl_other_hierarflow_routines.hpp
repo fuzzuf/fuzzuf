@@ -33,7 +33,13 @@ namespace fuzzuf::algorithm::afl::routine::other {
 
 template <class State>
 struct CullQueueTemplate
-    : public hierarflow::HierarFlowRoutine<void(void), void(void)> {
+    : public hierarflow::HierarFlowRoutine<void(void),
+      std::conditional_t<
+	option::EnableKScheduler< typename State::Tag >(),
+        bool(std::shared_ptr<typename State::OwnTestcase>),
+        void(void)
+      >
+> {
  public:
   CullQueueTemplate(State &state);
 
@@ -48,7 +54,13 @@ using CullQueue = CullQueueTemplate<AFLState>;
 template <class State>
 struct SelectSeedTemplate
     : public hierarflow::HierarFlowRoutine<
-          void(void), bool(std::shared_ptr<typename State::OwnTestcase>)> {
+          void(void),
+          std::conditional_t<
+            option::EnableKScheduler< typename State::Tag >(),
+            void(void),
+            bool(std::shared_ptr<typename State::OwnTestcase>)
+          >
+> {
  public:
   SelectSeedTemplate(State &state);
 
@@ -126,13 +138,14 @@ struct CalcScoreTemplate
     : public hierarflow::HierarFlowRoutine<AFLMidInputType<State>,
                                            AFLMidOutputType<State>> {
  public:
-  CalcScoreTemplate(State &state);
+  CalcScoreTemplate(State &state, AFLMidCalleeRef<State> abandon_entry);
 
   AFLMidCalleeRef<State> operator()(
       std::shared_ptr<typename State::OwnTestcase>);
 
  private:
   State &state;
+  AFLMidCalleeRef<State> abandon_entry;
 };
 
 using CalcScore = CalcScoreTemplate<AFLState>;
@@ -194,13 +207,14 @@ struct ExecutePUTTemplate
           bool(const u8 *, u32, feedback::InplaceMemoryFeedback &,
                feedback::ExitStatusFeedback &)> {
  public:
-  ExecutePUTTemplate(State &state);
+  ExecutePUTTemplate(State &state,bool fail_on_too_slow=false);
 
   utils::NullableRef<hierarflow::HierarFlowCallee<bool(const u8 *, u32)>>
   operator()(const u8 *, u32);
 
  private:
   State &state;
+  bool fail_on_too_slow;
 };
 
 using ExecutePUT = ExecutePUTTemplate<AFLState>;
