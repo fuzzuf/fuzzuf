@@ -781,7 +781,7 @@ if( ENABLE_CLANG_TIDY )
     CXX_CLANG_TIDY "${CLANG_TIDY};${CLANG_TIDY_CONFIG_FOR_TEST}"
   )
 endif()
-if( FUZZUF_CC_FOUND )
+if( FUZZUF_CC_FOUND AND RAGEL_FOUND )
 add_test( NAME "util.gen_dyn_weight" COMMAND test-util-gen_dyn_weight )
 endif()
 endif()
