@@ -37,6 +37,7 @@
 #include "fuzzuf/utils/get_aligned_addr.hpp"
 #include "fuzzuf/utils/setter.hpp"
 #include "fuzzuf/utils/vfs/local_filesystem.hpp"
+#include "fuzzuf/utils/instrumentation_info.hpp"
 
 namespace fuzzuf::executor {
 /**
@@ -55,6 +56,7 @@ struct LinuxForkServerExecutorParameters {
   FUZZUF_SETTER(record_stdout_and_err)
   FUZZUF_SETTER(environment_variables)
   FUZZUF_SETTER(allowed_path)
+  FUZZUF_SETTER(input_shm_size)
   /*
    * Calculate offset for IJON Counter
    */
@@ -123,6 +125,7 @@ struct LinuxForkServerExecutorParameters {
   bool record_stdout_and_err = false;
   std::vector<std::string> environment_variables;
   std::vector<fs::path> allowed_path;
+  std::size_t input_shm_size = 0u;
 };
 
 // A class for fuzz execution under native Linux environment (i.e. the Linux
@@ -236,5 +239,7 @@ class LinuxForkServerExecutor : public Executor {
   fuzzuf::utils::vfs::LocalFilesystem filesystem;
 
   channel::FdChannel put_channel;
+  std::optional< boost::iterator_range<fuzzuf::utils::range::shared_iterator< std::uint8_t *, std::shared_ptr<void> > > > input_shm;
+  utils::InstrumentationInfo instrumentation_info;
 };
 }  // namespace fuzzuf::executor

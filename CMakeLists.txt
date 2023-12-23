@@ -382,11 +382,13 @@ set(
   utils/common.cpp
   utils/count_regular_files.cpp
   utils/create_empty_file.cpp
+  utils/create_shared_memory.cpp
   utils/errno_to_system_error.cpp
   utils/get_aligned_addr.cpp
   utils/get_external_seeds.cpp
   utils/get_hash.cpp
   utils/hex_dump.cpp
+  utils/instrumentation_info.cpp
   utils/is_executable.cpp
   utils/load_inputs.cpp
   utils/map_file.cpp
@@ -479,6 +481,7 @@ list(APPEND FUZZUF_INCLUDE_DIRS "${CMAKE_BINARY_DIR}" )
 list(APPEND FUZZUF_INCLUDE_DIRS "${Pybind11_INCLUDE_DIRS}" )
 list(APPEND FUZZUF_INCLUDE_DIRS "${Python3_INCLUDE_DIRS}" )
 list(APPEND FUZZUF_INCLUDE_DIRS "${NLOHMANN_JSON_INCLUDE_DIRS}" )
+list(APPEND FUZZUF_INCLUDE_DIRS "${CMAKE_SOURCE_DIR}/external/ELFIO/")
 list(APPEND FUZZUF_LIBRARIES "${Python3_LIBRARIES}")
 list(APPEND FUZZUF_LIBRARIES "${${CMAKE_DL_LIBS}}")
 list(APPEND FUZZUF_LIBRARIES "${NLOHMANN_JSON_LIBRARIES}" )
