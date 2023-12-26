@@ -20,32 +20,20 @@
 #include <stdlib.h>
 #include <signal.h>
 
-int main() {
-  const int a = getchar();
-  const int b = getchar();
-  const int c = getchar();
+int main( int argc, char *argv[] ) {
+  if( argc < 2 ) abort();
+  FILE *fd = fopen( argv[ 1 ], "r" );
+  const int a = getc( fd );
+  const int b = getc( fd );
+  const int c = getc( fd );
 
   if( a < 0 || b < 0 || c < 0 ) {
     abort();
   }
-  if( a >= 'k' && a <= 'z' ) {
-    if( b >= 'a' && b <= 'c' ) {
-      abort();
-    }
-    else if( b >= 'A' && b <= 'E' ) {
-      if( c >= 'p' && c <= 'r' ) {
-        abort();
-      }
-    }
-  }
-  else if( a >= 'C' && a <= 'H' ) {
-    if( b >= 'k' && b <= 'm' ) {
-      abort();
-    }
-    else if( b == 'N' ) {
-      abort();
-    }
-  }
+  exit( 0 );
+  if( a == b && b == c ) {
+    abort();
+  } 
   exit(0);
 }
 

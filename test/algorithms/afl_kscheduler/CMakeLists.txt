@@ -142,7 +142,37 @@ add_test( NAME "algorithms.afl_kscheduler.noksched_fork" COMMAND test-afl_ksched
 endif()
 endif()
 
-
-
-
+add_executable( test-afl_kscheduler-once once.cpp )
+target_link_libraries(
+  test-afl_kscheduler-once
+  test-common
+  fuzzuf_core
+  fuzzuf-cli-lib
+  ${FUZZUF_LIBRARIES}
+  Boost::unit_test_framework
+)
+target_include_directories(
+  test-afl_kscheduler-once
+  PRIVATE
+  ${FUZZUF_INCLUDE_DIRS}
+  ${CMAKE_SOURCE_DIR}/test/common
+)
+set_target_properties(
+  test-afl_kscheduler-once
+  PROPERTIES COMPILE_FLAGS "${ADDITIONAL_COMPILE_FLAGS_STR}"
+)
+set_target_properties(
+  test-afl_kscheduler-once
+  PROPERTIES LINK_FLAGS "${ADDITIONAL_LINK_FLAGS_STR}"
+)
+if( ENABLE_CLANG_TIDY )
+  set_target_properties(
+    test-afl_kscheduler-once
+    PROPERTIES
+    CXX_CLANG_TIDY "${CLANG_TIDY};${CLANG_TIDY_CONFIG_FOR_TEST}"
+  )
+endif()
+if( FUZZUF_CC_FOUND AND RAGEL_FOUND )
+add_test( NAME "algorithms.afl_kscheduler.once" COMMAND test-afl_kscheduler-once )
+endif()
 
