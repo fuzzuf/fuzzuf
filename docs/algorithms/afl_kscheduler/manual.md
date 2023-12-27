@@ -42,7 +42,7 @@ The fuzzer set 1 on signal, that indicates gen\_dyn\_weight.py should generate n
 -d disables deterministic stage of AFL. Since deterministic stage causes performance regression, the sample included in original K-Scheduler implementation disable the stage. Therefore this option is needed to match fuzzuf's behavior to the sample.
 
 ```
-$ cd <OUTPUT_DIR>
+$ cd <ROOT_DIR>
 $ fuzzuf afl_kscheduler -i <INITIAL_SEED_DIR> -o <OUTPUT_DIR> -e forkserver --forksrv true -s -d <PUT> <ARGS_FOR_PUT>
 ```
 
@@ -51,7 +51,7 @@ This script reads graph\_data\_pack and cur\_coverage and generate control flow 
 Both fuzzer and the script read/write to current directory, it is important to run both at same directory.
 
 ```
-$ cd <OUTPUT_DIR>
+$ cd <ROOT_DIR>
 $ gen_dyn_weight.py
 ```
 
@@ -82,7 +82,7 @@ gen\_graph.py and gen\_dyn\_graph.py requires Python module called networkit. Si
 
 ## Options
 
-All global options and AFL specific options described in [afl/algorithms](../afl/algorithm_en.md) are available.
+All global options and AFL specific options described in [afl/algorithms](/docs/algorithms/afl/algorithm_en.md) are available.
 
 In addition following options are available
 

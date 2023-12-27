@@ -2,7 +2,7 @@
 
 This is the K-Scheduler combned with not AFL but Rezzuf.
 
-K-Scheduler is an algorithm to prioritize seeds in the queue of AFL like fuzzers. K-Scheduler can be combined with most afl like fuzzer, and fuzzuf implements AFL+K-Scheduler and Rezzuf+K-Scheduler. This docment covers ony difference between AFL+K-Scheduler and Rezzuf+K-Scheduer, so please refer [AFL+K-Scheduler](../afl_kscheduler/manual.md) for detail on K-Scheduler itself.
+K-Scheduler is an algorithm to prioritize seeds in the queue of AFL like fuzzers. K-Scheduler can be combined with most afl like fuzzer, and fuzzuf implements AFL+K-Scheduler and Rezzuf+K-Scheduler. This docment covers ony difference between AFL+K-Scheduler and Rezzuf+K-Scheduer, so please refer [AFL+K-Scheduler](/docs/algorithms/afl_kscheduler/manual.md) for detail on K-Scheduler itself.
 
 ## Usage
 
@@ -23,7 +23,7 @@ $ gen_graph.py <PUT>
 Run fuzzer. Notable difference to AFL+K-Scheduler is that there is no -d option due to Rezzuf doesn't have deterministic stage.
 
 ```
-$ cd <OUTPUT_DIR>
+$ cd <ROOT_DIR>
 $ fuzzuf rezzuf_kscheduler -i <INITIAL_SEED_DIR> -o <OUTPUT_DIR> -e forkserver --forksrv true -s <PUT> <ARGS_FOR_PUT>
 ```
 
@@ -31,13 +31,13 @@ Run gen\_dyn\_weight.py on another terminal.
 Again, it is important to run both at same directory.
 
 ```
-$ cd <OUTPUT_DIR>
+$ cd <ROOT_DIR>
 $ gen_dyn_weight.py
 ```
 
 ## Options
 
-All global options and AFL specific options described in [afl/algorithms](../afl/algorithm_en.md) are available.
+All global options and AFL specific options described in [afl/algorithms](/docs/algorithms/afl/algorithm_en.md) are available.
 
 In addition following option is available
 
