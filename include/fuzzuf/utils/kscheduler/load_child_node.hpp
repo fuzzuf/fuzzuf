@@ -16,7 +16,7 @@
  * along with this program.  If not, see http://www.gnu.org/licenses/.
  */
 /**
- * @file load_inputs.hpp
+ * @file load_child_node.hpp
  * @author Ricerca Security <fuzzuf-dev@ricsec.co.jp>
  */
 #ifndef FUZZUF_INCLUDE_UTILS_KSCHEDULER_LOAD_CHILD_NODE_HPP

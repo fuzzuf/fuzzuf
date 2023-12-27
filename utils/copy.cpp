@@ -16,7 +16,7 @@
  * along with this program.  If not, see http://www.gnu.org/licenses/.
  */
 /**
- * @file map_file.cpp
+ * @file copy.cpp
  * @author Ricerca Security <fuzzuf-dev@ricsec.co.jp>
  */
 

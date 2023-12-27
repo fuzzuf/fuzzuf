@@ -16,7 +16,7 @@
  * along with this program.  If not, see http://www.gnu.org/licenses/.
  */
 /**
- * @file load_inputs.hpp
+ * @file dump_coverage.hpp
  * @author Ricerca Security <fuzzuf-dev@ricsec.co.jp>
  */
 #ifndef FUZZUF_INCLUDE_UTILS_KSCHEDULER_DUMP_COVERAGE_HPP
