@@ -412,7 +412,7 @@ constexpr u32 GetStatsUpdateSec(State&) {
 
 template <class Tag>
 constexpr u32 GetPlotUpdateSec(void) {
-  return 5; /////
+  return 60;
 }
 
 /* Smoothing divisor for CPU load and exec speed stats (1 - no smoothing). */
