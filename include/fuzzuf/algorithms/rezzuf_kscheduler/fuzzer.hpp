@@ -37,6 +37,9 @@ class Fuzzer final : public afl::AFLFuzzerTemplate<State> {
 
   virtual void OneLoop(void) override;
 
+  const std::unique_ptr<State> &GetState() const {
+    return state;
+  }
  private:
   void SyncFuzzers();
   hierarflow::HierarFlowNode<void(void), void(void)> fuzz_loop;

@@ -219,6 +219,27 @@ struct ExecutePUTTemplate
 
 using ExecutePUT = ExecutePUTTemplate<AFLState>;
 
+template <class State>
+struct Probe
+    : public hierarflow::HierarFlowRoutine<AFLMidInputType<State>,
+                                           AFLMidOutputType<State>> {
+ public:
+  Probe( std::function< bool( const std::shared_ptr<typename State::OwnTestcase>& ) > &&f ) : func( f ) {}
+
+  AFLMidCalleeRef<State> operator()(
+      std::shared_ptr<typename State::OwnTestcase> testcase) {
+    FUZZUF_ALGORITHM_AFL_ENTER_HIERARFLOW_NODE
+    if( !func( testcase ) ) {
+      this->SetResponseValue(true);
+      return this->GoToParent();
+    }
+    return this->GoToDefaultNext();
+  }
+
+ private:
+  std::function< bool( const std::shared_ptr<typename State::OwnTestcase>& ) > func;
+};
+
 }  // namespace fuzzuf::algorithm::afl::routine::other
 
 #include "fuzzuf/algorithms/afl/templates/afl_other_hierarflow_routines.hpp"

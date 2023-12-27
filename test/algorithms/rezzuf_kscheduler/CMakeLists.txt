@@ -176,5 +176,37 @@ if( FUZZUF_CC_FOUND )
 add_test( NAME "algorithms.rezzuf_kscheduler.once" COMMAND test-rezzuf_kscheduler-once )
 endif()
 
-
+add_executable( test-rezzuf_kscheduler-select_seed select_seed.cpp )
+target_link_libraries(
+  test-rezzuf_kscheduler-select_seed
+  test-common
+  fuzzuf_core
+  fuzzuf-cli-lib
+  ${FUZZUF_LIBRARIES}
+  Boost::unit_test_framework
+)
+target_include_directories(
+  test-rezzuf_kscheduler-select_seed
+  PRIVATE
+  ${FUZZUF_INCLUDE_DIRS}
+  ${CMAKE_SOURCE_DIR}/test/common
+)
+set_target_properties(
+  test-rezzuf_kscheduler-select_seed
+  PROPERTIES COMPILE_FLAGS "${ADDITIONAL_COMPILE_FLAGS_STR}"
+)
+set_target_properties(
+  test-rezzuf_kscheduler-select_seed
+  PROPERTIES LINK_FLAGS "${ADDITIONAL_LINK_FLAGS_STR}"
+)
+if( ENABLE_CLANG_TIDY )
+  set_target_properties(
+    test-rezzuf_kscheduler-select_seed
+    PROPERTIES
+    CXX_CLANG_TIDY "${CLANG_TIDY};${CLANG_TIDY_CONFIG_FOR_TEST}"
+  )
+endif()
+if( FUZZUF_CC_FOUND )
+add_test( NAME "algorithms.rezzuf_kscheduler.select_seed" COMMAND test-rezzuf_kscheduler-select_seed )
+endif()
 
