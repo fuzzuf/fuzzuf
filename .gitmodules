@@ -1,6 +1,3 @@
-[submodule "tools/Eclipser"]
-	path = tools/Eclipser
-	url = https://github.com/SoftSec-KAIST/Eclipser.git
 [submodule "test/put/kscheduler/harfbuzz/harfbuzz"]
 	path = test/put/kscheduler/harfbuzz/harfbuzz
 	url = https://github.com/behdad/harfbuzz.git
