@@ -352,7 +352,7 @@ void RezzufState::ShowStats(void) {
   }
 
   /* Every now and then, write plot data. */
-  if (cur_ms - last_plot_ms > GetPlotUpdateSec(*this) * 1000) {
+  if (cur_ms - last_plot_ms > GetPlotUpdateSec<Tag>() * 1000) {
     last_plot_ms = cur_ms;
     MaybeUpdatePlotFile(t_byte_ratio, avg_exec, t_bytes);
   }

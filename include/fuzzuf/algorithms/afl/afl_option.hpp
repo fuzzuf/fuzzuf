@@ -410,8 +410,8 @@ constexpr u32 GetStatsUpdateSec(State&) {
   return 60;
 }
 
-template <class State>
-constexpr u32 GetPlotUpdateSec(State&) {
+template <class Tag>
+constexpr u32 GetPlotUpdateSec(void) {
   return 60;
 }
 
@@ -451,6 +451,33 @@ constexpr std::uint32_t GetSyncInterval(State&) {
 template <class Tag>
 constexpr u32 GetHashConst(void) {
   return 0xa5b35705;
+}
+
+template <class Tag>
+constexpr bool EnableKScheduler(void) {
+  return false;
+}
+
+template <class Tag>
+constexpr bool EnableKSchedulerSortByEnergy(void) {
+  return false;
+}
+
+template <class Tag>
+struct perf_type {
+  using type = u32;
+};
+template <class Tag>
+using perf_type_t = typename perf_type< Tag >::type;
+
+template <class Tag>
+constexpr bool EnableVerboseDebugLog(void) {
+  return false;
+}
+
+template <class Tag>
+constexpr bool EnableSequentialID(void) {
+  return false;
 }
 
 }  // namespace fuzzuf::algorithm::afl::option

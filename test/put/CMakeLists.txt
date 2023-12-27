@@ -5,6 +5,9 @@ add_subdirectory(
 add_subdirectory(
   afl
 )
+add_subdirectory(
+  kscheduler
+)
 endif()
 
 if( AFL_FOUND )

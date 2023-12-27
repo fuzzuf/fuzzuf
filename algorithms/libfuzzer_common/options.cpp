@@ -272,7 +272,7 @@ auto postProcess(
     EXIT("Unsupported executor: `%s`", global.executor.c_str());
   }
 
-  for (auto &v : dest.raw_targets) {
+  for ([[maybe_unused]] auto &v : dest.raw_targets) {
     DEBUG("[*] dest.raw_targets[] = %s", v.c_str());
   }
 

@@ -63,7 +63,7 @@ hierarflow::HierarFlowNode<void(void), void(void)> BuildAFLFuzzLoop(
   auto retry_calibrate =
       CreateNode<RetryCalibrateTemplate<State>>(state, *abandon_node);
   auto trim_case = CreateNode<TrimCaseTemplate<State>>(state, *abandon_node);
-  auto calc_score = CreateNode<CalcScoreTemplate<State>>(state);
+  auto calc_score = CreateNode<CalcScoreTemplate<State>>(state, *abandon_node);
   auto apply_det_muts =
       CreateNode<ApplyDetMutsTemplate<State>>(state, *abandon_node);
   auto apply_rand_muts =

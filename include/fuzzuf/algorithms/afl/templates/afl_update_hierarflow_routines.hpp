@@ -29,6 +29,7 @@
 #include "fuzzuf/feedback/put_exit_reason_type.hpp"
 #include "fuzzuf/logger/logger.hpp"
 #include "fuzzuf/mutator/mutator.hpp"
+#include "fuzzuf/algorithms/afl/afl_util.hpp"
 
 namespace fuzzuf::algorithm::afl::routine::update {
 
@@ -168,8 +169,8 @@ static void MaybeAddAuto(State &state, const std::vector<u8> &mem) {
 }
 
 template <class State>
-NormalUpdateTemplate<State>::NormalUpdateTemplate(State &state)
-    : state(state) {}
+NormalUpdateTemplate<State>::NormalUpdateTemplate(State &state, bool enable_skip)
+    : state(state), enable_skip( enable_skip ) {}
 
 /* Write a modified test case, run program, process results. Handle
    error conditions, returning true if it's time to bail out. */
@@ -178,33 +179,36 @@ template <class State>
 AFLUpdCalleeRef NormalUpdateTemplate<State>::operator()(
     const u8 *buf, u32 len, feedback::InplaceMemoryFeedback &inp_feed,
     feedback::ExitStatusFeedback &exit_status) {
+  FUZZUF_ALGORITHM_AFL_ENTER_HIERARFLOW_NODE
   if (state.stop_soon) {
     SetResponseValue(true);
     return GoToParent();
   }
 
-  if (exit_status.exit_reason == feedback::PUTExitReasonType::FAULT_TMOUT) {
-    if (state.subseq_tmouts++ > option::GetTmoutLimit(state)) {
-      state.cur_skipped_paths++;
-      SetResponseValue(true);
-      return GoToParent();
-    }
-  } else
-    state.subseq_tmouts = 0;
-
-    // FIXME: to handle SIGUSR1, we need to reconsider how and where we
-    // implement signal handlers
-#if 0
-    /* Users can hit us with SIGUSR1 to request the current input
-       to be abandoned. */
-
-    if (state.skip_requested) {
-        state.skip_requested = false;
+  if( enable_skip ) {
+    if (exit_status.exit_reason == feedback::PUTExitReasonType::FAULT_TMOUT) {
+      if (state.subseq_tmouts++ > option::GetTmoutLimit(state)) {
         state.cur_skipped_paths++;
         SetResponseValue(true);
         return GoToParent();
-    }
+      }
+    } else
+      state.subseq_tmouts = 0;
+ 
+      // FIXME: to handle SIGUSR1, we need to reconsider how and where we
+      // implement signal handlers
+#if 0
+      /* Users can hit us with SIGUSR1 to request the current input
+         to be abandoned. */
+ 
+      if (state.skip_requested) {
+          state.skip_requested = false;
+          state.cur_skipped_paths++;
+          SetResponseValue(true);
+          return GoToParent();
+      }
 #endif
+  }
 
   if (state.SaveIfInteresting(buf, len, inp_feed, exit_status)) {
     state.queued_discovered++;
@@ -228,6 +232,7 @@ AFLUpdCalleeRef ConstructAutoDictTemplate<State>::operator()(
     const u8 *buf, u32 /* unused */, feedback::InplaceMemoryFeedback &inp_feed,
     feedback::ExitStatusFeedback & /* unused */
 ) {
+  FUZZUF_ALGORITHM_AFL_ENTER_HIERARFLOW_NODE
   if (!state.ShouldConstructAutoDict()) return GoToDefaultNext();
 
   u32 cksum = inp_feed.CalcCksum32();
@@ -291,6 +296,7 @@ AFLUpdCalleeRef ConstructEffMapTemplate<State>::operator()(
     const u8 * /* unused */, u32 len, feedback::InplaceMemoryFeedback &inp_feed,
     feedback::ExitStatusFeedback & /* unused */
 ) {
+  FUZZUF_ALGORITHM_AFL_ENTER_HIERARFLOW_NODE
   /* We also use this stage to pull off a simple trick: we identify
      bytes that seem to have no effect on the current execution path
      even when fully flipped - and we skip them during more expensive

@@ -23,6 +23,7 @@
 #include "fuzzuf/optimizer/keys.hpp"
 #include "fuzzuf/optimizer/optimizer.hpp"
 #include "fuzzuf/utils/common.hpp"
+#include "fuzzuf/algorithms/afl/afl_util.hpp"
 
 namespace fuzzuf::algorithm::afl::routine::mutation {
 
@@ -34,6 +35,7 @@ BitFlip1WithAutoDictBuildTemplate<State>::BitFlip1WithAutoDictBuildTemplate(
 template <class State>
 AFLMutCalleeRef<State> BitFlip1WithAutoDictBuildTemplate<State>::operator()(
     AFLMutatorTemplate<State> &mutator) {
+  FUZZUF_ALGORITHM_AFL_ENTER_HIERARFLOW_NODE
   /*********************************************
    * SIMPLE BITFLIP (+dictionary construction) *
    *********************************************/
@@ -84,6 +86,7 @@ BitFlipOtherTemplate<State>::BitFlipOtherTemplate(State &state)
 template <class State>
 AFLMutCalleeRef<State> BitFlipOtherTemplate<State>::operator()(
     AFLMutatorTemplate<State> &mutator) {
+  FUZZUF_ALGORITHM_AFL_ENTER_HIERARFLOW_NODE
   /*********************************************
    * SIMPLE BITFLIP                            *
    *********************************************/
@@ -125,6 +128,7 @@ ByteFlip1WithEffMapBuildTemplate<State>::ByteFlip1WithEffMapBuildTemplate(
 template <class State>
 AFLMutCalleeRef<State> ByteFlip1WithEffMapBuildTemplate<State>::operator()(
     AFLMutatorTemplate<State> &mutator) {
+  FUZZUF_ALGORITHM_AFL_ENTER_HIERARFLOW_NODE
   /* Walking byte. */
 
   using Tag = typename State::Tag;
@@ -186,6 +190,7 @@ ByteFlipOtherTemplate<State>::ByteFlipOtherTemplate(State &state)
 template <class State>
 AFLMutCalleeRef<State> ByteFlipOtherTemplate<State>::operator()(
     AFLMutatorTemplate<State> &mutator) {
+  FUZZUF_ALGORITHM_AFL_ENTER_HIERARFLOW_NODE
   /* Walking byte. */
 
   using Tag = typename State::Tag;
@@ -243,6 +248,7 @@ ArithTemplate<State>::ArithTemplate(State &state) : state(state) {}
 template <class State>
 AFLMutCalleeRef<State> ArithTemplate<State>::operator()(
     AFLMutatorTemplate<State> &mutator) {
+  FUZZUF_ALGORITHM_AFL_ENTER_HIERARFLOW_NODE
   /**********************
    * ARITHMETIC INC/DEC *
    **********************/
@@ -274,6 +280,7 @@ InterestTemplate<State>::InterestTemplate(State &state) : state(state) {}
 template <class State>
 AFLMutCalleeRef<State> InterestTemplate<State>::operator()(
     AFLMutatorTemplate<State> &mutator) {
+  FUZZUF_ALGORITHM_AFL_ENTER_HIERARFLOW_NODE
   /**********************
    * INTERESTING VALUES *
    **********************/
@@ -304,6 +311,7 @@ UserDictInsertTemplate<State>::UserDictInsertTemplate(State &state)
 template <class State>
 AFLMutCalleeRef<State> UserDictInsertTemplate<State>::operator()(
     AFLMutatorTemplate<State> &mutator) {
+  FUZZUF_ALGORITHM_AFL_ENTER_HIERARFLOW_NODE
   // skip this step if the dictionary is empty
   if (state.extras.empty()) return this->GoToDefaultNext();
 
@@ -372,6 +380,10 @@ HavocBaseTemplate<State>::HavocBaseTemplate(State &state) : state(state) {}
 // Because the process details of Havoc will be used also in Splicing,
 // we extract the "core" of Havoc into another HierarFlowRoutine,
 // HavocBaseTemplate. both Havoc and Splicing will inherit this and use DoHavoc
+#if __GNUC__ < 8
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wunused-but-set-parameter"
+#endif
 template <class State>
 template <typename CustomCases>
 bool HavocBaseTemplate<State>::DoHavoc(
@@ -380,10 +392,24 @@ bool HavocBaseTemplate<State>::DoHavoc(
     const std::string &stage_name, const std::string &stage_short,
     u32 perf_score,
     s32 stage_max_multiplier,  // see directly below
-    int stage_idx) {
+    int stage_idx,
+    bool clamp_stage_max_multiplier) {
+#if __GNUC__ < 8
+#pragma GCC diagnostic pop
+#endif
   state.stage_name = stage_name;
   state.stage_short = stage_short;
   state.stage_max = stage_max_multiplier * perf_score / state.havoc_div / 100;
+  using Tag = typename State::Tag;
+  if constexpr ( option::EnableKScheduler<Tag>() ) {
+    if( clamp_stage_max_multiplier ) {
+      if( state.stage_max < 2*option::GetHavocMin(state) ) {
+        state.stage_max = 2*option::GetHavocMin(state);
+      }
+      fprintf(state.sched_log_file, " %d\n", state.stage_max);
+      fflush(state.sched_log_file);
+    }
+  }
   state.stage_cur_byte = -1;
 
   if (state.stage_max < option::GetHavocMin(state)) {
@@ -451,9 +477,17 @@ bool HavocBaseTemplate<State>::DoHavoc(
        permitting. */
 
     if (state.queued_paths != havoc_queued) {
-      if (perf_score <= option::GetHavocMaxMult(state) * 100) {
-        state.stage_max *= 2;
-        perf_score *= 2;
+      if constexpr ( option::EnableKScheduler<Tag>() ) {
+        if ( ( perf_score <= option::GetHavocMaxMult(state) * 100 ) && (state.init_perf_score >=100) ) {
+          state.stage_max *= 2;
+          perf_score *= 2;
+        }
+      }
+      else {
+        if (perf_score <= option::GetHavocMaxMult(state) * 100) {
+          state.stage_max *= 2;
+          perf_score *= 2;
+        }
       }
 
       havoc_queued = state.queued_paths;
@@ -474,6 +508,7 @@ HavocTemplate<State>::HavocTemplate(State &state)
 template <class State>
 AFLMutCalleeRef<State> HavocTemplate<State>::operator()(
     AFLMutatorTemplate<State> &mutator) {
+  FUZZUF_ALGORITHM_AFL_ENTER_HIERARFLOW_NODE
   // Declare the alias just to omit "this->" in this function.
   auto &state = this->state;
 
@@ -490,7 +525,7 @@ AFLMutCalleeRef<State> HavocTemplate<State>::operator()(
           [](int, u8 *&, u32 &, const std::vector<AFLDictData> &,
              const std::vector<AFLDictData> &) {},
           "havoc", "havoc", state.orig_perf, stage_max_multiplier,
-          option::STAGE_HAVOC)) {
+          option::STAGE_HAVOC,true)) {
     this->SetResponseValue(true);
     return this->GoToParent();
   }
@@ -505,6 +540,7 @@ SplicingTemplate<State>::SplicingTemplate(State &state)
 template <class State>
 AFLMutCalleeRef<State> SplicingTemplate<State>::operator()(
     AFLMutatorTemplate<State> &mutator) {
+  FUZZUF_ALGORITHM_AFL_ENTER_HIERARFLOW_NODE
   // Declare the alias just to omit "this->" in this function.
   auto &state = this->state;
 
@@ -556,7 +592,7 @@ AFLMutCalleeRef<State> SplicingTemplate<State>::operator()(
                const std::vector<AFLDictData> &) {},
             fuzzuf::utils::StrPrintf("splice %u", splice_cycle), "splice",
             state.orig_perf, option::GetSpliceHavoc(state),
-            option::STAGE_SPLICE)) {
+            option::STAGE_SPLICE,false)) {
       this->SetResponseValue(true);
       return this->GoToParent();
     }

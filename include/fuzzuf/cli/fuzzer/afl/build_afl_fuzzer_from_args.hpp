@@ -53,6 +53,9 @@ struct AFLFuzzerOptions {
   std::string instance_id;             // Optional
   utils::ParallelModeT parallel_mode =
       utils::ParallelModeT::SINGLE;  // Optional
+  u32 pass_rate = 5u; // Optional
+  u32 adjust_rate = 1u; // Optional
+  bool skip_deterministic = false;
   // Default values
   AFLFuzzerOptions() : forksrv(true), frida_mode(false){};
 };
@@ -84,7 +87,7 @@ std::unique_ptr<TFuzzer> BuildAFLFuzzerFromArgs(
       po::value<std::vector<std::string>>(&afl_options.dict_file)->composing(),
       "Load additional dictionary file.")(
       "pargs", po::value<std::vector<std::string>>(&pargs),
-      "Specify PUT and args for PUT.")(
+      "Specify PUT and args for PUT.")("det,d",po::bool_switch(&afl_options.skip_deterministic),"quick & dirty mode (skips deterministic steps)")(
       "frida",
       po::value<bool>(&afl_options.frida_mode)
           ->default_value(afl_options.frida_mode),
@@ -93,7 +96,13 @@ std::unique_ptr<TFuzzer> BuildAFLFuzzerFromArgs(
       po::value<std::string>(&afl_options.instance_id),
       "distributed mode (see docs/algorithms/afl/parallel_fuzzing.md)")(
       "parallel-random,S", po::value<std::string>(&afl_options.instance_id),
-      "distributed mode (see docs/algorithms/afl/parallel_fuzzing.md)");
+      "distributed mode (see docs/algorithms/afl/parallel_fuzzing.md)")(
+      "pass_rate,p", po::value<u32>(&afl_options.pass_rate),
+      "pass rate of K-Scheduler"
+      )(
+      "adjust_rate,j", po::value<u32>(&afl_options.adjust_rate),
+      "adjust rate of K-Scheduler"
+      );
 
   po::variables_map vm;
   po::store(
@@ -251,6 +260,7 @@ std::unique_ptr<TFuzzer> BuildFuzzer(
   using fuzzuf::algorithm::afl::AFLState;
   auto state =
       std::make_unique<AFLState>(setting, executor, std::move(havoc_optimizer));
+  state->skip_deterministic = afl_options.skip_deterministic;
 
   // Load dictionary
   for (const auto &d : afl_options.dict_file) {

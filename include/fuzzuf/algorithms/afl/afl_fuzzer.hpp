@@ -16,7 +16,7 @@
  * along with this program.  If not, see http://www.gnu.org/licenses/.
  */
 #pragma once
-
+#include <iostream>
 #include "fuzzuf/algorithms/afl/afl_state.hpp"
 #include "fuzzuf/exceptions.hpp"
 #include "fuzzuf/fuzzer/fuzzer.hpp"
@@ -48,7 +48,8 @@ class AFLFuzzer final : public AFLFuzzerTemplate<AFLState> {
  public:
   explicit AFLFuzzer(std::unique_ptr<AFLState>&& state)
       : AFLFuzzerTemplate<AFLState>(std::move(state)),
-        fuzz_loop(BuildAFLFuzzLoop(*AFLFuzzerTemplate<AFLState>::state)) {}
+        fuzz_loop(BuildAFLFuzzLoop(*AFLFuzzerTemplate<AFLState>::state)) {
+	}
   virtual void OneLoop(void) override;
 
  private:

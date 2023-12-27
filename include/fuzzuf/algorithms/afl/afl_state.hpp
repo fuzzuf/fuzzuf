@@ -74,24 +74,32 @@ struct AFLStateTemplate {
   feedback::PUTExitReasonType CalibrateCaseWithFeedDestroyed(
       Testcase &testcase, const u8 *buf, u32 len,
       feedback::InplaceMemoryFeedback &inp_feed,
-      feedback::ExitStatusFeedback &exit_status, u32 handicap, bool from_queue);
+      feedback::ExitStatusFeedback &exit_status, u32 handicap, bool from_queue, bool increment_hit_bits=false);
 
   virtual std::shared_ptr<Testcase> AddToQueue(const std::string &fn,
                                                const u8 *buf, u32 len,
                                                bool passed_det);
 
+  int SearchBorderEdgeId( u32 parent, u32 child );
+  
   virtual void UpdateBitmapScoreWithRawTrace(Testcase &testcase,
                                              const u8 *trace_bits,
                                              u32 map_size);
 
   void UpdateBitmapScore(Testcase &testcase,
                          const feedback::InplaceMemoryFeedback &inp_feed);
-
+  
+  void ComputeMathCache();
+  void ReloadCentralityFile();
+  double CheckBorderEdge(const Testcase& q);
+  
   virtual bool SaveIfInteresting(const u8 *buf, u32 len,
                                  feedback::InplaceMemoryFeedback &inp_feed,
                                  feedback::ExitStatusFeedback &exit_status);
+  
+  double CheckTopBorderEdge(Testcase& testcase);
 
-  virtual u32 DoCalcScore(Testcase &testcase);
+  virtual option::perf_type_t< Tag > DoCalcScore(Testcase &testcase);
 
   u8 HasNewBits(const u8 *trace_bits, u8 *virgin_map, u32 map_size);
 
@@ -117,6 +125,9 @@ struct AFLStateTemplate {
   bool ShouldConstructAutoDict(void);
   void SetShouldConstructAutoDict(bool v);
 
+  void LoadCentralityFile();
+  void IncrementHitBits( feedback::InplaceMemoryFeedback& );
+
   std::shared_ptr<const AFLSetting> setting;
   std::shared_ptr<executor::AFLExecutorInterface> executor;
   exec_input::ExecInputSet input_set;
@@ -135,7 +146,7 @@ struct AFLStateTemplate {
   bool doing_det;
 
   // this will be required in havoc and splicing
-  u32 orig_perf;
+  option::perf_type_t< Tag > orig_perf;
 
   // these will be required in WriteStatsFile
   // (originally, these are defined as its static variables)
@@ -158,6 +169,15 @@ struct AFLStateTemplate {
 
   // FILE used in MaybeUpdatePlotFile
   FILE *plot_file;
+
+  // log each border edge weight
+  FILE* edge_weight_file;
+
+  // schedule log file
+  FILE* sched_log_file;
+
+  // edge log file
+  FILE* edge_log_file;
 
   // AFLStateTemplate has to own eff_map and prev_cksum in fuzz_one
   u32 eff_cnt;
@@ -219,12 +239,56 @@ struct AFLStateTemplate {
   std::vector<u8> virgin_crash =
       std::vector<u8>(option::GetMapSize<Tag>(), 255);
 
+  u8 math_cache_computed_before = 0; /* set 1 after the first time compuation of math cache */
+
+  /* Hits to every basic block transition */
+  std::vector<u64> hit_bits =
+    std::vector<u64>( option::EnableKScheduler<Tag>() ? option::GetMapSize<Tag>() : 0u );
+  /* Katz centrality for every node */
+  std::vector<double> katz_weight =
+    std::vector<double>( option::EnableKScheduler<Tag>() ? option::GetMapSize<Tag>() : 0u );
+  double scale_factor = 0.0;           /* scale factor for edge weight */
+
+  u32 last_cnt_free_cksum = 0;      /* last edge cnt */
+
+  u32 num_border_edge = 0;           /* total number of all possible border edges */
+  u32 num_edge = 0;                  /* total number of all edges */
+  /* weight(centrality / sqrt(freq)) for every border edge, total num is number of all possible border edges */
+  std::vector<double> border_edge_weight =
+    std::vector<double>( option::EnableKScheduler<Tag>() ? 2*option::GetMapSize<Tag>() : 0u );
+  /*  parent side for every border edge */
+  std::vector<u32> border_edge_parent =
+    std::vector<u32>( option::EnableKScheduler<Tag>() ? 2*option::GetMapSize<Tag>() : 0u );
+  /* child side for every border edge */
+  std::vector<u32> border_edge_child =
+    std::vector<u32>( option::EnableKScheduler<Tag>() ? 2*option::GetMapSize<Tag>() : 0u );
+  /* cache for all seeds' cnt_free bitmap checksum  */
+  std::vector<u32> cnt_free_cksum_cache =
+    std::vector<u32>( option::EnableKScheduler<Tag>() ? option::GetMapSize<Tag>() : 0u );
+  u32 cnt_free_cksum_cnt = 0u;
+
+  /* local border edge id table */
+  std::vector<u32> local_border_edge_id =
+    std::vector<u32>( option::EnableKScheduler<Tag>() ? option::GetMapSize<Tag>()>>3 : 0u );
+
+  /* tmp array for stroing nonzero border edge weight, only for sorting */
+  std::vector<double> nonzero_border_edge_weight =
+    std::vector<double>( option::EnableKScheduler<Tag>() ? option::GetMapSize<Tag>()>>2 : 0u );
+
+  u32 pass_rate = 5;
+  u32 adjust_rate = 1;
+
+  /* children list for every node */
+  std::vector< std::vector< int > > node_child_list =
+    std::vector< std::vector< int > >( option::EnableKScheduler<Tag>() ? option::GetMapSize<Tag>() : 0u );
+
   /* Bytes that appear to be variable */
   std::vector<u8> var_bytes = std::vector<u8>(option::GetMapSize<Tag>(), 0);
 
   u8 stop_soon = 0;         /* Ctrl-C pressed?                  */
   bool clear_screen = true; /* Window resized?                  */
 
+  double border_edge_weight_threshold = 0.0; /* threshold for borderedge*/
   u32 queued_paths = 0;       /* Total number of queued testcases */
   u32 queued_variable = 0;    /* Testcases with variable behavior */
   u32 queued_at_start = 0;    /* Total number of initial inputs   */
@@ -252,6 +316,8 @@ struct AFLStateTemplate {
   u64 start_time = 0;        /* Unix start time (ms)             */
   u64 last_path_time = 0;    /* Time for most recent path (ms)   */
   u64 last_crash_time = 0;   /* Time for most recent crash (ms)  */
+  u64 last_math_cache_time = 0; /* Time for most recent math cache computation (s)   */
+  u64 last_edge_log_time = 0; /* Time for most recent log edge coverage computation (s)   */
   u64 last_hang_time = 0;    /* Time for most recent hang (ms)   */
   u64 last_crash_execs = 0;  /* Exec counter at last crash       */
   u64 queue_cycle = 0;       /* Queue round counter              */
@@ -292,6 +358,10 @@ struct AFLStateTemplate {
   u64 total_cal_us = 0;     /* Total calibration time (us)      */
   u64 total_cal_cycles = 0; /* Total calibration cycles         */
 
+  u64 total_cal_us_fast = 0; /* Total calibration time (us) for normal inputs(exclude any slow inputs)     */
+  u64 total_cal_cycles_fast = 0; /* Total calibration cycles for normal inputs(exclude any slow inputs)        */
+  u64 avg_us_fast = 0u; 
+
   u64 total_bitmap_size = 0;    /* Total bit count for all bitmaps  */
   u64 total_bitmap_entries = 0; /* Number of bitmaps counted        */
 
@@ -300,6 +370,18 @@ struct AFLStateTemplate {
 
   /* Selected CPU core                */
   int cpu_aff;
+
+  struct my_union{
+    double energy;
+    std::shared_ptr< Testcase > seed;
+  };
+
+  std::vector<my_union> ptr_energy =
+    std::vector<my_union>( option::EnableKScheduler<Tag>() ? option::GetMapSize<Tag>() : 0u );
+  std::vector<double> energy_arr =
+    std::vector<double>( option::EnableKScheduler<Tag>() ? option::GetMapSize<Tag>() : 0u );
+
+  u32 init_perf_score = 100;
 
   /* Fuzzing queue (vector)           */
   std::vector<std::shared_ptr<Testcase>> case_queue;
@@ -319,7 +401,7 @@ struct AFLStateTemplate {
 
   bool sync_external_queue = false; /* Enable parallel mode */
   std::uint32_t sync_interval_cnt = 0u;
-
+  bool enable_sequential_id = false;
  private:
   bool should_construct_auto_dict;
 };

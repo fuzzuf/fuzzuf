@@ -50,15 +50,17 @@ try_compile(
   ${CMAKE_BINARY_DIR}/check
   SOURCES ${CMAKE_SOURCE_DIR}/check/has_filesystem.cpp
 )
-if( HAS_CXX_STD_FILESYSTEM )
-  find_package( Boost 1.53.0 COMPONENTS system unit_test_framework program_options REQUIRED )
-else()
-  find_package( Boost 1.53.0 COMPONENTS filesystem system unit_test_framework program_options REQUIRED )
-endif()
+try_compile(
+  STATX_IS_DEFINED
+  ${CMAKE_BINARY_DIR}/check
+  SOURCES ${CMAKE_SOURCE_DIR}/check/statx_is_available.cpp
+)
+find_package( Boost 1.53.0 COMPONENTS filesystem system unit_test_framework program_options REQUIRED )
 find_package( NPM )
 find_package( Python2x )
 pkg_check_modules( GLIB glib-2.0 )
 find_package( ZLIB )
+find_package( Ragel )
 get_subdirs( AVAILABLE_ALGORITHMS ${CMAKE_CURRENT_SOURCE_DIR}/include/fuzzuf/algorithms )
 set( DEFAULT_ALGORITHMS "${AVAILABLE_ALGORITHMS}" )
 list( REMOVE_ITEM DEFAULT_ALGORITHMS "eclipser" )
@@ -66,6 +68,11 @@ string(REPLACE ";" "," AVAILABLE_ALGORITHMS_STR "${AVAILABLE_ALGORITHMS}")
 set( ENABLE_ALGORITHMS "default" CACHE STRING "Available values: ${AVAILABLE_ALGORITHMS_STR},default,all" )
 string(REPLACE "," ";" ALGORITHMS "${ENABLE_ALGORITHMS}")
 list(FIND ALGORITHMS "all" ALL_INDEX_IN_ALGORITHMS)
+list(FIND ALGORITHMS "afl" AFL_INDEX_IN_ALGORITHMS)
+list(FIND ALGORITHMS "afl_kscheduler" AFL_KSCHEDULER_INDEX_IN_ALGORITHMS)
+list(FIND ALGORITHMS "rezzuf" REZZUF_INDEX_IN_ALGORITHMS)
+list(FIND ALGORITHMS "rezzuf_kscheduler" REZZUF_KSCHEDULER_INDEX_IN_ALGORITHMS)
+list(FIND ALGORITHMS "aflplusplus" AFLPLUSPLUS_INDEX_IN_ALGORITHMS)
 list(FIND ALGORITHMS "default" DEFAULT_INDEX_IN_ALGORITHMS)
 foreach( alg ${ALGORITHMS} )
   list(FIND AVAILABLE_ALGORITHMS ${alg} alg_index )
@@ -80,6 +87,19 @@ if( NOT "${DEFAULT_INDEX_IN_ALGORITHMS}" EQUAL "-1" )
 endif()
 if( NOT "${ALL_INDEX_IN_ALGORITHMS}" EQUAL "-1" )
   set( ALGORITHMS "${AVAILABLE_ALGORITHMS}" )
+endif()
+if( NOT "${AFL_KSCHEDULER_INDEX_IN_ALGORITHMS}" EQUAL "-1" )
+  if( "${AFL_INDEX_IN_ALGORITHMS}" EQUAL "-1" )
+    list(APPEND ALGORITHMS "afl")
+  endif()
+endif()
+if( NOT "${REZZUF_KSCHEDULER_INDEX_IN_ALGORITHMS}" EQUAL "-1" )
+  if( "${REZZUF_INDEX_IN_ALGORITHMS}" EQUAL "-1" )
+    list(APPEND ALGORITHMS "rezzuf")
+  endif()
+  if( "${AFLPLUSPLUS_INDEX_IN_ALGORITHMS}" EQUAL "-1" )
+    list(APPEND ALGORITHMS "aflplusplus")
+  endif()
 endif()
 list( FIND ALGORITHMS "die" DIE_INDEX_IN_ALGORITHMS )
 if( NOT DIE_INDEX_IN_ALGORITHMS EQUAL -1 )
@@ -228,7 +248,7 @@ if( CMAKE_CXX_COMPILER_ID STREQUAL "GNU" )
   endif()
 endif()
 option( ENABLE_DISPLAY_LAST_STACK_TRACE "parse and display stacktrace.dump at next execution" OFF )
-option( ENABLE_HEAVY_TEST "enable heavy test" ON )
+option( ENABLE_HEAVY_TEST "enable heavy test" OFF )
 option( ENABLE_NODE_TRACER "enable node tracer" OFF )
 option( ENABLE_NODE_TRACER_ADDRESS_DUMPER "display node address on DumpTrace outputs" OFF )
 option( ENABLE_NODE_TRACER_LOCATION_DUMPER "display source filename and line number on DumpTrace outputs" OFF )
@@ -346,6 +366,7 @@ message("rpm requirements: ${RPM_REQUIREMENTS_STR}")
 set(CPACK_SET_DESTDIR true)
 
 include(CPack)
+include(GetKatzCentricity)
 
 #アルファベット順に並べてください
 set(
@@ -380,6 +401,7 @@ set(
   utils/check_crash_handling.cpp
   utils/check_if_string_is_decimal.cpp
   utils/common.cpp
+  utils/copy.cpp
   utils/count_regular_files.cpp
   utils/create_empty_file.cpp
   utils/errno_to_system_error.cpp
@@ -388,6 +410,11 @@ set(
   utils/get_hash.cpp
   utils/hex_dump.cpp
   utils/is_executable.cpp
+  utils/kscheduler/dump_coverage.cpp
+  utils/kscheduler/gen_dyn_weight.cpp
+  utils/kscheduler/load_katz_centrality.cpp
+  utils/kscheduler/load_border_edges.cpp 
+  utils/kscheduler/load_child_node.cpp 
   utils/load_inputs.cpp
   utils/map_file.cpp
   utils/sha1.cpp
@@ -487,9 +514,7 @@ if( ${CMAKE_VERSION} VERSION_LESS 3.15.0 )
 else()
   list(APPEND FUZZUF_LIBRARIES Boost::headers )
 endif()
-if( NOT HAS_CXX_STD_FILESYSTEM )
-  list(APPEND FUZZUF_LIBRARIES Boost::filesystem )
-endif()
+list(APPEND FUZZUF_LIBRARIES Boost::filesystem )
 if( FLC_FOUND )
   list(APPEND FUZZUF_INCLUDE_DIRS "${FLC_INCLUDE_DIRS}" )
   list(APPEND FUZZUF_LIBRARY_DIRS "${FLC_LIBRARY_DIRS}" )

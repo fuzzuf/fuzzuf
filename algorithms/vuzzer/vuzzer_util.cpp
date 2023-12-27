@@ -166,7 +166,7 @@ void ParseTaintInfo(VUzzerState& state,
       state.taint_cmp_all[id][offset] = values;
       state.taint_cmp_offsets[id].insert(offset);
 
-      for (auto v : values)
+      for ([[maybe_unused]] auto v : values)
         DEBUG("taint_cmp_all[%llu][0x%x] = 0x%x", id, offset, v);
 
     } else if (tokens[0] == "LEA") {

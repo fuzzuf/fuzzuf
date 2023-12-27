@@ -59,7 +59,7 @@ void MOptFuzzer::BuildFuzzFlow() {
         CreateNode<RetryCalibrateTemplate<MOptState>>(*state, *abandon_node);
     auto trim_case =
         CreateNode<TrimCaseTemplate<MOptState>>(*state, *abandon_node);
-    auto calc_score = CreateNode<CalcScoreTemplate<MOptState>>(*state);
+    auto calc_score = CreateNode<CalcScoreTemplate<MOptState>>(*state, *abandon_node);
     auto apply_det_muts =
         CreateNode<ApplyDetMutsTemplate<MOptState>>(*state, *abandon_node);
     auto apply_rand_muts =

@@ -1,0 +1,3 @@
+[submodule "test/put/kscheduler/harfbuzz/harfbuzz"]
+	path = test/put/kscheduler/harfbuzz/harfbuzz
+	url = https://github.com/behdad/harfbuzz.git

@@ -490,7 +490,7 @@ struct HavocBaseTemplate
                optimizer::HavocOptimizer &havoc_optimizer,
                CustomCases custom_cases, const std::string &stage_name,
                const std::string &stage_short, u32 perf_score,
-               s32 stage_max_multiplier, int stage_idx);
+               s32 stage_max_multiplier, int stage_idx,bool=false);
 
   virtual AFLMutCalleeRef<State> operator()(
       AFLMutatorTemplate<State> &mutator) = 0;

@@ -656,3 +656,133 @@ if( ENABLE_CLANG_TIDY )
   )
 endif()
 add_test( NAME "util.random" COMMAND test-util-random )
+
+if( enable_afl_common )
+
+add_executable( test-util-load_katz_centrality load_katz_centrality.cpp )
+target_link_libraries(
+  test-util-load_katz_centrality
+  test-common
+  fuzzuf_core
+  ${FUZZUF_LIBRARIES}
+  Boost::unit_test_framework
+)
+target_include_directories(
+  test-util-load_katz_centrality
+  PRIVATE
+  ${FUZZUF_INCLUDE_DIRS}
+  ${CMAKE_SOURCE_DIR}/test/common
+)
+set_target_properties(
+  test-util-load_katz_centrality
+  PROPERTIES COMPILE_FLAGS "${ADDITIONAL_COMPILE_FLAGS_STR}"
+)
+set_target_properties(
+  test-util-load_katz_centrality
+  PROPERTIES LINK_FLAGS "${ADDITIONAL_LINK_FLAGS_STR}"
+)
+if( ENABLE_CLANG_TIDY )
+  set_target_properties(
+    test-util-load_katz_centrality
+    PROPERTIES
+    CXX_CLANG_TIDY "${CLANG_TIDY};${CLANG_TIDY_CONFIG_FOR_TEST}"
+  )
+endif()
+add_test( NAME "util.load_katz_centrality" COMMAND test-util-load_katz_centrality )
+
+add_executable( test-util-load_border_edges load_border_edges.cpp )
+target_link_libraries(
+  test-util-load_border_edges
+  test-common
+  fuzzuf_core
+  ${FUZZUF_LIBRARIES}
+  Boost::unit_test_framework
+)
+target_include_directories(
+  test-util-load_border_edges
+  PRIVATE
+  ${FUZZUF_INCLUDE_DIRS}
+  ${CMAKE_SOURCE_DIR}/test/common
+)
+set_target_properties(
+  test-util-load_border_edges
+  PROPERTIES COMPILE_FLAGS "${ADDITIONAL_COMPILE_FLAGS_STR}"
+)
+set_target_properties(
+  test-util-load_border_edges
+  PROPERTIES LINK_FLAGS "${ADDITIONAL_LINK_FLAGS_STR}"
+)
+if( ENABLE_CLANG_TIDY )
+  set_target_properties(
+    test-util-load_border_edges
+    PROPERTIES
+    CXX_CLANG_TIDY "${CLANG_TIDY};${CLANG_TIDY_CONFIG_FOR_TEST}"
+  )
+endif()
+add_test( NAME "util.load_border_edges" COMMAND test-util-load_border_edges )
+
+add_executable( test-util-load_child_node load_child_node.cpp )
+target_link_libraries(
+  test-util-load_child_node
+  test-common
+  fuzzuf_core
+  ${FUZZUF_LIBRARIES}
+  Boost::unit_test_framework
+)
+target_include_directories(
+  test-util-load_child_node
+  PRIVATE
+  ${FUZZUF_INCLUDE_DIRS}
+  ${CMAKE_SOURCE_DIR}/test/common
+)
+set_target_properties(
+  test-util-load_child_node
+  PROPERTIES COMPILE_FLAGS "${ADDITIONAL_COMPILE_FLAGS_STR}"
+)
+set_target_properties(
+  test-util-load_child_node
+  PROPERTIES LINK_FLAGS "${ADDITIONAL_LINK_FLAGS_STR}"
+)
+if( ENABLE_CLANG_TIDY )
+  set_target_properties(
+    test-util-load_child_node
+    PROPERTIES
+    CXX_CLANG_TIDY "${CLANG_TIDY};${CLANG_TIDY_CONFIG_FOR_TEST}"
+  )
+endif()
+add_test( NAME "util.load_child_node" COMMAND test-util-load_child_node )
+
+add_executable( test-util-gen_dyn_weight gen_dyn_weight.cpp )
+target_link_libraries(
+  test-util-gen_dyn_weight
+  test-common
+  fuzzuf_core
+  ${FUZZUF_LIBRARIES}
+  Boost::unit_test_framework
+)
+target_include_directories(
+  test-util-gen_dyn_weight
+  PRIVATE
+  ${FUZZUF_INCLUDE_DIRS}
+  ${CMAKE_SOURCE_DIR}/test/common
+)
+set_target_properties(
+  test-util-gen_dyn_weight
+  PROPERTIES COMPILE_FLAGS "${ADDITIONAL_COMPILE_FLAGS_STR}"
+)
+set_target_properties(
+  test-util-gen_dyn_weight
+  PROPERTIES LINK_FLAGS "${ADDITIONAL_LINK_FLAGS_STR}"
+)
+if( ENABLE_CLANG_TIDY )
+  set_target_properties(
+    test-util-gen_dyn_weight
+    PROPERTIES
+    CXX_CLANG_TIDY "${CLANG_TIDY};${CLANG_TIDY_CONFIG_FOR_TEST}"
+  )
+endif()
+if( FUZZUF_CC_FOUND AND RAGEL_FOUND )
+add_test( NAME "util.gen_dyn_weight" COMMAND test-util-gen_dyn_weight )
+endif()
+endif()
+

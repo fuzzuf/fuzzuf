@@ -56,7 +56,7 @@ VUzzerMidCalleeRef DecideKeep::operator()(void) {
                   std::back_inserter(state.keep_queue), state.keepfilenum,
                   std::mt19937{std::random_device{}()});
       DEBUG("Keep queue");
-      for (const auto &seed : state.keep_queue)
+      for ([[maybe_unused]] const auto &seed : state.keep_queue)
         DEBUG("%s", seed->input->GetPath().c_str());
     }
   }
