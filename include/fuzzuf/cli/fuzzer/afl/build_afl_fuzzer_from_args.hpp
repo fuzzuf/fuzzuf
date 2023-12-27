@@ -1,5 +1,4 @@
 /*
-  state->skip_deterministic = vm[ "det" ].as<bool>();
  * fuzzuf
  * Copyright (C) 2021-2023 Ricerca Security
  *
