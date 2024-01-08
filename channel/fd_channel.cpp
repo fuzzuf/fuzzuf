@@ -43,7 +43,7 @@ ssize_t FdChannel::Recv(void *buf, size_t size, const char *comment) {
     throw fuzzuf::utils::errno_to_system_error(
         errno,
         fuzzuf::utils::StrPrintf("[FdChannel] Failed to recieve: %s (Requested "
-                                 "%d bytes, Recieved %d bytes)",
+                                 "%ld bytes, Recieved %ld bytes)",
                                  comment, size, nbytes));
   }
   return nbytes;
