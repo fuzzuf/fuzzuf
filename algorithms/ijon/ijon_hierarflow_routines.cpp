@@ -159,12 +159,12 @@ IJONUpdCalleeRef IJONUpdate::operator()(
 
         state.max_map[i] = afl_max[i];
         utils::StdoutLogger::Println(fuzzuf::utils::StrPrintf(
-            "updated maxmap %d: %lx (len: %ld)", i, state.max_map[i], len));
+            "updated maxmap %d: %lx (len: %d)", i, state.max_map[i], len));
       } else if (should_minify && afl_max[i] == state.max_map[i] &&
                  len < state.all_inputs[i]->GetLen()) {
         need_update = true;
         utils::StdoutLogger::Println(fuzzuf::utils::StrPrintf(
-            "minimized maxmap %d: %lx (len: %ld)", i, state.max_map[i], len));
+            "minimized maxmap %d: %lx (len: %d)", i, state.max_map[i], len));
       }
 
       if (need_update) StoreMaxInput(state, i, buf, len);
