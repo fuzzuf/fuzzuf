@@ -58,14 +58,14 @@ PyUpdate::operator()(const u8* buf, u32 len,
   std::string fn;
   if (exit_status.exit_reason == feedback::PUTExitReasonType::FAULT_TMOUT) {
     fn = fuzzuf::utils::StrPrintf(
-        "%s/hangs/%06u", state.setting.out_dir.c_str(), input->GetID());
+        "%s/hangs/%06llu", state.setting.out_dir.c_str(), input->GetID());
   } else if (exit_status.exit_reason ==
              feedback::PUTExitReasonType::FAULT_CRASH) {
     fn = fuzzuf::utils::StrPrintf(
-        "%s/crashes/%06u", state.setting.out_dir.c_str(), input->GetID());
+        "%s/crashes/%06llu", state.setting.out_dir.c_str(), input->GetID());
   } else {
     fn = fuzzuf::utils::StrPrintf(
-        "%s/queue/id:%06u", state.setting.out_dir.c_str(), input->GetID());
+        "%s/queue/id:%06llu", state.setting.out_dir.c_str(), input->GetID());
   }
 
   input->SaveToFile(fn);
