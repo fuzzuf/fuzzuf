@@ -21,6 +21,7 @@
 #include "fuzzuf/logger/logger.hpp"
 #include "fuzzuf/utils/common.hpp"
 #include "fuzzuf/utils/filesystem.hpp"
+#include "fuzzuf/utils/unlink_file.hpp"
 
 namespace fuzzuf::exec_input {
 
@@ -147,6 +148,8 @@ void OnDiskExecInput::CopyAndRefer(const fs::path& new_path) {
   path = new_path;
   hardlinked = false;
 }
+
+void OnDiskExecInput::Unlink() { fuzzuf::utils::UnlinkFile(path.string()); }
 
 const fs::path& OnDiskExecInput::GetPath(void) const { return path; }
 

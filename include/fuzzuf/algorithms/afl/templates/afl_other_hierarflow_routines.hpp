@@ -470,6 +470,7 @@ static feedback::PUTExitReasonType DoTrimCase(
          negatives every now and then. */
 
       if (cksum == testcase.exec_cksum) {
+        if (!state.setting->do_not_unlink) input.Unlink();
         input.OverwriteKeepingLoaded(std::move(test_buf), test_len);
 
         len_p2 = fuzzuf::utils::NextP2(input.GetLen());

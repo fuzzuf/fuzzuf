@@ -420,6 +420,7 @@ set(
   utils/sha1.cpp
   utils/to_hex.cpp
   utils/to_string.cpp
+  utils/unlink_file.cpp
   utils/vfs/vfs.cpp
   utils/vfs/local_filesystem.cpp
   utils/which.cpp

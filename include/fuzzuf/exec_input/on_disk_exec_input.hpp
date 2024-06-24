@@ -54,6 +54,7 @@ class OnDiskExecInput : public ExecInput {
   void Copy(const fs::path& dest_path);
   bool LinkAndRefer(const fs::path& new_path);
   void CopyAndRefer(const fs::path& new_path);
+  void Unlink();
 
   const fs::path& GetPath(void) const;
 
