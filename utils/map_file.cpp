@@ -60,6 +60,11 @@ auto map_file(const std::string &filename, unsigned int flags, bool populate, bo
     file_size = stat_.st_size;
   }
 
+  // Skip if empty to avoid mmap error
+  if (file_size == 0) {
+    return {};
+  }
+
   unsigned int map_prot = 0U;
   unsigned int map_flags = 0U;
   if ((flags & O_RDONLY) == O_RDONLY) {
