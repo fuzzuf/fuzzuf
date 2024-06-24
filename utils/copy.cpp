@@ -34,7 +34,7 @@ void copy( const fs::path &from, const fs::path &to ) {
 #ifdef STATX_IS_DEFINED
   fs::copy( from, to );
 #else
-  const auto data = fuzzuf::utils::map_file( from.c_str(), O_RDONLY, true );
+  const auto data = fuzzuf::utils::map_file( from.c_str(), O_RDONLY, true, false );
   std::fstream fd( to.c_str(), std::ios::out|std::ios::binary );
   fd.write( reinterpret_cast< char* >( &*data.begin() ), std::distance( data.begin(), data.end() ) );
 #endif

@@ -34,7 +34,7 @@ std::unordered_map< std::uint32_t, double >
 LoadKatzCentrality(
   const fs::path &filename
 ) {
-  const auto range = map_file( filename.string(), O_RDONLY, true );
+  const auto range = map_file( filename.string(), O_RDONLY, true, false );
   auto iter = range.begin();
   const auto end = range.end();
   std::vector< boost::fusion::vector< std::uint32_t, double > > temp;

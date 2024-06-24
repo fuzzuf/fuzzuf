@@ -173,7 +173,7 @@ LocalFilesystem::OpenDirectoryRecursive(const fs::path &p) {
 }
 mapped_file_t LocalFilesystem::Mmap(const fs::path &p, unsigned int flags,
                                     bool populate) {
-  return map_file(SanitizePath(p).string(), flags, populate);
+  return map_file(SanitizePath(p).string(), flags, populate, false);
 }
 std::fstream LocalFilesystem::Open(const fs::path &p,
                                    std::ios_base::openmode mode) {

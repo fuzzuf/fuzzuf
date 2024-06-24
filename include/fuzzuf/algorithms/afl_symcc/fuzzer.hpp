@@ -81,7 +81,7 @@ struct AFLFuzzerTemplate final : public afl::AFLFuzzerTemplate<State> {
                   1u) %
                  afl::AFLFuzzerTemplate<State>::state->case_queue.size()]
             ->input->GetPath();
-    return utils::map_file(fs::absolute(fs::path(fn)).string(), O_RDONLY, true);
+    return utils::map_file(fs::absolute(fs::path(fn)).string(), O_RDONLY, true, false);
   }
   State &GetState() const { return *afl::AFLFuzzerTemplate<State>::state; }
 

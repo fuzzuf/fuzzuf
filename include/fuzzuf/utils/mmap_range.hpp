@@ -78,9 +78,10 @@ class mmap_iterator /*<T,
                         type_traits::RemoveCvrT<
                             typename std::iterator_traits<T>::value_type>,
                         fs::path>) {
-        cur = map_file((*base).string(), flags, populate);
+        // NOTE: ignore ENOENT error because the file may be unlinked.
+        cur = map_file((*base).string(), flags, populate, true);
       } else {
-        cur = map_file(*base, flags, populate);
+        cur = map_file(*base, flags, populate, true);
       }
     } else {
       cur = mapped_file_t();

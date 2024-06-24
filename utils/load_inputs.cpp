@@ -39,13 +39,13 @@ auto LoadInputs(const fs::path &dir, bool check_sha1)
   for (const auto &p : fs::recursive_directory_iterator(dir)) {
     if (fs::is_regular_file(p)) {
       if (check_sha1) {
-        auto mapped = map_file(p.path().string(), O_RDONLY, true);
+        auto mapped = map_file(p.path().string(), O_RDONLY, true, false);
         auto sha1 = ToSerializedSha1(mapped);
         if (sha1 == p.path().filename().string()) {
           inputs.push_back(std::move(mapped));
         }
       } else {
-        inputs.push_back(map_file(p.path().string(), O_RDONLY, true));
+        inputs.push_back(map_file(p.path().string(), O_RDONLY, true, false));
       }
     }
   }

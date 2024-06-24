@@ -34,12 +34,16 @@
 
 namespace fuzzuf::utils {
 
-auto map_file(const std::string &filename, unsigned int flags, bool populate)
+auto map_file(const std::string &filename, unsigned int flags, bool populate, bool ignore_enoent)
     -> mapped_file_t {
   // NOLINTBEGIN(cppcoreguidelines-pro-type-vararg,hicpp-vararg)
   int fd = open(filename.c_str(), flags);
   // NOLINTEND(cppcoreguidelines-pro-type-vararg,hicpp-vararg)
   if (fd == -1) {
+    // NOTE: ignore ENOENT error because the file may be unlinked.
+    if (ignore_enoent && errno == ENOENT) {
+      return {};
+    }
     throw std::system_error(errno, std::generic_category(), filename);
   }
   // NOLINTBEGIN(cppcoreguidelines-pro-type-cstyle-cast,cppcoreguidelines-pro-type-member-init,cppcoreguidelines-special-member-functions,hicpp-explicit-conversions,cppcoreguidelines-pro-type-vararg,hicpp-vararg,misc-non-private-member-variables-in-classes,hicpp-member-init)

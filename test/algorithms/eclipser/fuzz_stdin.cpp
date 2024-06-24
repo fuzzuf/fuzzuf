@@ -64,7 +64,7 @@ BOOST_AUTO_TEST_CASE(Run) {
   std::uint32_t cov = 0u;
   std::size_t count = 0u;
   for( const auto &p: fs::directory_iterator( fs::path( options.out_dir ) / "queue" ) ) {
-    const auto range = fuzzuf::utils::map_file( p.path().string(), O_RDONLY, false );
+    const auto range = fuzzuf::utils::map_file( p.path().string(), O_RDONLY, false, false );
     if( range[ 0 ] == 'A' ) {
       cov |= ( 1u << 0 );
     }

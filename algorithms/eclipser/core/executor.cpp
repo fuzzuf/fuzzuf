@@ -161,7 +161,7 @@ std::vector< std::byte > PrepareStdIn( const seed::Seed &seed ) {
 }
 
 CoverageGain ParseCoverage( const std::string &p ) {
-  auto range = fuzzuf::utils::map_file( p, O_RDONLY, false );
+  auto range = fuzzuf::utils::map_file( p, O_RDONLY, false, false );
   BranchTrace branch_trace;
   auto iter = range.begin().get();
   const auto end = range.end().get();
