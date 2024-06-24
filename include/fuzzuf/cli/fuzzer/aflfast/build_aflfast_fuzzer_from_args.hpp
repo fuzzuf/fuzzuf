@@ -53,6 +53,7 @@ struct AFLFastFuzzerOptions {
   std::string instance_id;             // Optional
   utils::ParallelModeT parallel_mode =
       utils::ParallelModeT::SINGLE;  // Optional
+  bool do_not_unlink = false;        // Optional
 
   // Default values
   AFLFastFuzzerOptions() : forksrv(true), frida_mode(false){};
@@ -99,7 +100,10 @@ std::unique_ptr<TFuzzer> BuildAFLFastFuzzerFromArgs(
           "distributed mode (see docs/algorithms/afl/parallel_fuzzing.md)")(
           "parallel-random,S",
           po::value<std::string>(&aflfast_options.instance_id),
-          "distributed mode (see docs/algorithms/afl/parallel_fuzzing.md)");
+          "distributed mode (see docs/algorithms/afl/parallel_fuzzing.md)")(
+          "no-unlink,N",
+          po::bool_switch(&aflfast_options.do_not_unlink),
+          "do not unlink the fuzzing input file (for devices etc.)");
 
   po::variables_map vm;
   po::store(
@@ -167,7 +171,7 @@ std::unique_ptr<TFuzzer> BuildAFLFastFuzzerFromArgs(
       global_options.exec_timelimit_ms.value_or(GetExecTimeout<AFLFastTag>()),
       mem_limit, aflfast_options.forksrv,
       /* dumb_mode */ false,  // FIXME: add dumb_mode
-      global_options.cpuid_to_bind, FAST);
+      global_options.cpuid_to_bind, FAST, aflfast_options.do_not_unlink);
 
   // NativeLinuxExecutor needs the directory specified by "out_dir" to be
   // already set up so we need to create the directory first, and then

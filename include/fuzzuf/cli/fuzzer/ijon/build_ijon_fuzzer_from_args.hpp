@@ -51,6 +51,7 @@ struct IJONFuzzerOptions {
   std::string instance_id;             // Optional
   utils::ParallelModeT parallel_mode =
       utils::ParallelModeT::SINGLE;  // Optional
+  bool do_not_unlink = false;         // Optional
 
   // Default values
   IJONFuzzerOptions() : forksrv(true) {}
@@ -92,7 +93,10 @@ std::unique_ptr<TFuzzer> BuildIJONFuzzerFromArgs(
           "distributed mode (see docs/algorithms/afl/parallel_fuzzing.md)")(
           "parallel-random,S",
           po::value<std::string>(&ijon_options.instance_id),
-          "distributed mode (see docs/algorithms/afl/parallel_fuzzing.md)");
+          "distributed mode (see docs/algorithms/afl/parallel_fuzzing.md)")(
+          "no-unlink,N",
+          po::bool_switch(&ijon_options.do_not_unlink),
+          "do not unlink the fuzzing input file (for devices etc.)");
 
   po::variables_map vm;
   po::store(
@@ -138,7 +142,7 @@ std::unique_ptr<TFuzzer> BuildIJONFuzzerFromArgs(
       global_options.exec_memlimit.value_or(GetMemLimit<IJONTag>()),
       ijon_options.forksrv,
       /* dumb_mode */ false,  // FIXME: add dumb_mode
-      global_options.cpuid_to_bind);
+      global_options.cpuid_to_bind, ijon_options.do_not_unlink);
 
   // NativeLinuxExecutor needs the directory specified by "out_dir" to be
   // already set up so we need to create the directory first, and then

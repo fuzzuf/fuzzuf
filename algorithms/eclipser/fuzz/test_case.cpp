@@ -23,6 +23,7 @@
 #include <fstream>
 #include <boost/spirit/include/karma.hpp>
 #include <fuzzuf/utils/filesystem.hpp>
+#include <fuzzuf/utils/unlink_file.hpp>
 #include <fuzzuf/algorithms/eclipser/core/failwith.hpp>
 #include <fuzzuf/algorithms/eclipser/core/executor.hpp>
 #include <fuzzuf/algorithms/eclipser/fuzz/test_case.hpp>
@@ -162,6 +163,7 @@ void DumpCrash(
 }
 
 void DumpTestCase(
+  const options::FuzzOption &opt,
   const seed::Seed &seed
 ) {
   std::array< char, 12u > tc_name = { 0 };
@@ -175,6 +177,7 @@ void DumpTestCase(
     total_test_cases
   );
   const auto tc_path = fs::path( testcase_dir ) / tc_name.data();
+  if ( !opt.do_not_unlink ) fuzzuf::utils::UnlinkFile( tc_path.string() );
   std::fstream fd( tc_path.c_str(), std::ios::out );
   const auto concretized = seed.Concretize();
   fd.write( reinterpret_cast< const char* >( concretized.data() ), concretized.size() );
@@ -220,7 +223,7 @@ void Save(
     DumpCrash( sink, opt, seed, new_exit_sig );
   }
   if( cov_gain == CoverageGain::NewEdge ) {
-    DumpTestCase( seed );
+    DumpTestCase( opt, seed );
   }
 }
 

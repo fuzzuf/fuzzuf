@@ -56,6 +56,7 @@ struct AFLFuzzerOptions {
   u32 pass_rate = 5u; // Optional
   u32 adjust_rate = 1u; // Optional
   bool skip_deterministic = false;
+  bool do_not_unlink = false;  // Optional
   // Default values
   AFLFuzzerOptions() : forksrv(true), frida_mode(false){};
 };
@@ -102,6 +103,9 @@ std::unique_ptr<TFuzzer> BuildAFLFuzzerFromArgs(
       )(
       "adjust_rate,j", po::value<u32>(&afl_options.adjust_rate),
       "adjust rate of K-Scheduler"
+      )(
+      "no-unlink,N", po::bool_switch(&afl_options.do_not_unlink),
+      "do not unlink the fuzzing input file (for devices etc.)"
       );
 
   po::variables_map vm;
@@ -183,7 +187,7 @@ std::unique_ptr<TFuzzer> BuildFuzzer(
       global_options.exec_timelimit_ms.value_or(GetExecTimeout<AFLTag>()),
       mem_limit, afl_options.forksrv,
       /* dumb_mode */ false,  // FIXME: add dumb_mode
-      global_options.cpuid_to_bind);
+      global_options.cpuid_to_bind, afl_options.do_not_unlink);
 
   // NativeLinuxExecutor needs the directory specified by "out_dir" to be
   // already set up so we need to create the directory first, and then

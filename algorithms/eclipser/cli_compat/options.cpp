@@ -104,6 +104,11 @@ auto CreateOptions(options::FuzzOption &dest)
     po::value<int>(&dest.n_spawn),
     "Number of byte values to initially spawn in grey-box "
     "concolic testing. 'N_spawn' parameter in the paper. "
+  )
+  (
+    "no-unlink,N",
+    po::bool_switch(&dest.do_not_unlink),
+    "do not unlink the fuzzing input file (for devices etc.)"
   );
   return desc;
 }

@@ -27,7 +27,7 @@ struct AFLFastSetting : public afl::AFLSetting {
                           const std::string &in_dir, const std::string &out_dir,
                           u32 exec_timelimit_ms, u64 exec_memlimit,
                           bool forksrv, bool dumb_mode, int cpuid_to_bind,
-                          const option::Schedule schedule);
+                          const option::Schedule schedule, bool do_not_unlink);
 
   ~AFLFastSetting();
 

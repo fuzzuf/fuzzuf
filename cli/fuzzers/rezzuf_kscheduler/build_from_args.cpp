@@ -74,7 +74,9 @@ std::unique_ptr<fuzzuf::fuzzer::Fuzzer> BuildFromArgs(
           "distributed mode (see docs/algorithms/afl/parallel_fuzzing.md)")(
           "parallel-random,S",
           po::value<std::string>(&rezzuf_options.instance_id),
-          "distributed mode (see docs/algorithms/afl/parallel_fuzzing.md)");
+          "distributed mode (see docs/algorithms/afl/parallel_fuzzing.md)")(
+          "no-unlink,N", po::bool_switch(&rezzuf_options.do_not_unlink),
+          "do not unlink the fuzzing input file (for devices etc.)");
 
   po::variables_map vm;
   po::store(
@@ -156,7 +158,8 @@ std::unique_ptr<fuzzuf::fuzzer::Fuzzer> BuildFromArgs(
       global_options.exec_timelimit_ms.value_or(algorithm::afl::option::GetExecTimeout<Tag>()),
       mem_limit, rezzuf_options.forksrv,
       /* dumb_mode */ false,  // FIXME: add dumb_mode
-      global_options.cpuid_to_bind, schedule, rezzuf_options.schedule);
+      global_options.cpuid_to_bind, schedule, rezzuf_options.schedule,
+      rezzuf_options.do_not_unlink);
 
   // NativeLinuxExecutor needs the directory specified by "out_dir" to be
   // already set up so we need to create the directory first, and then

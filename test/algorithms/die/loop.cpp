@@ -83,6 +83,7 @@ BOOST_AUTO_TEST_CASE(DIELoop) {
       true,   // forksrv
       false,  // dump_mode
       fuzzuf::utils::CPUID_BIND_WHICHEVER,
+      false,                          // do_not_unlink
       "../../../tools/algorithms/die/DIE",       // die_dir
       "python3", "node",              // cmd_py, cmd_node
       path_put.string(), "",          // d8_path, d8_flags

@@ -59,6 +59,7 @@ struct AFLplusplusFuzzerOptions {
   std::string instance_id;           
   utils::ParallelModeT parallel_mode =
       utils::ParallelModeT::SINGLE;
+  bool do_not_unlink = false;
 };
 
 // Fuzzer specific help
@@ -114,7 +115,10 @@ std::unique_ptr<TFuzzer> BuildAFLplusplusFuzzerFromArgs(
           "distributed mode (see docs/algorithms/afl/parallel_fuzzing.md)")(
           "parallel-random,S",
           po::value<std::string>(&aflplusplus_options.instance_id),
-          "distributed mode (see docs/algorithms/afl/parallel_fuzzing.md)");
+          "distributed mode (see docs/algorithms/afl/parallel_fuzzing.md)")(
+          "no-unlink,N",
+          po::bool_switch(&aflplusplus_options.do_not_unlink),
+          "do not unlink the fuzzing input file (for devices etc.)");
 
   po::variables_map vm;
   po::store(
@@ -203,7 +207,8 @@ std::unique_ptr<TFuzzer> BuildAFLplusplusFuzzerFromArgs(
           GetExecTimeout<AFLplusplusTag>()),
       mem_limit, aflplusplus_options.forksrv,
       /* dumb_mode */ false,  // FIXME: add dumb_mode
-      global_options.cpuid_to_bind, schedule, aflplusplus_options.schedule);
+      global_options.cpuid_to_bind, schedule, aflplusplus_options.schedule,
+      aflplusplus_options.do_not_unlink);
 
   // NativeLinuxExecutor needs the directory specified by "out_dir" to be
   // already set up so we need to create the directory first, and then

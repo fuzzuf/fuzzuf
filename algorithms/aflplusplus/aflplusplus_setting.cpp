@@ -26,9 +26,10 @@ AFLplusplusSetting::AFLplusplusSetting(const std::vector<std::string> &argv,
                                        bool forksrv, bool dumb_mode,
                                        int cpuid_to_bind,
                                        const aflfast::option::Schedule schedule,
-                                       const std::string &schedule_string)
+                                       const std::string &schedule_string,
+                                       bool do_not_unlink)
     : AFLSetting(argv, in_dir, out_dir, exec_timelimit_ms, exec_memlimit,
-                 forksrv, dumb_mode, cpuid_to_bind),
+                 forksrv, dumb_mode, cpuid_to_bind, do_not_unlink),
       schedule(schedule),
       schedule_string(schedule_string) {}
 

@@ -30,7 +30,7 @@ struct AFLSetting {
   explicit AFLSetting(const std::vector<std::string> &argv,
                       const std::string &in_dir, const std::string &out_dir,
                       u32 exec_timelimit_ms, u64 exec_memlimit, bool forksrv,
-                      bool dumb_mode, int cpuid_to_bind);
+                      bool dumb_mode, int cpuid_to_bind, bool do_not_unlink);
 
   ~AFLSetting();
 
@@ -44,6 +44,7 @@ struct AFLSetting {
   const bool simple_files = false;
   const bool ignore_finds = false;
   const int cpuid_to_bind;
+  const bool do_not_unlink;
 };
 
 }  // namespace fuzzuf::algorithm::afl
