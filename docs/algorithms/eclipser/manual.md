@@ -118,3 +118,7 @@ Default value is 600.
 Number of byte values to initially spawn in grey-box concolic testing. 'N\_spawn' parameter in the paper.
 Default value is 10.
 
+### --no-unlink
+
+Do not unlink the fuzzing input file.
+
