@@ -36,9 +36,10 @@ using mapped_file_t = boost::iterator_range<
  * @param filename Filename
  * @param flags Flags passed to open(2)
  * @param populate If true, require all pages to be loaded at mmap
+ * @param ignore_enoent If true, ignore ENOENT error
  * @return range of mmaped memory range
  */
-auto map_file(const std::string &filename, unsigned int flags, bool populate)
+auto map_file(const std::string &filename, unsigned int flags, bool populate, bool ignore_enoent)
     -> mapped_file_t;
 
 }  // namespace fuzzuf::utils

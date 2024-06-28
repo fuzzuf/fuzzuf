@@ -141,7 +141,7 @@ BOOST_AUTO_TEST_CASE(HierarFlowExecute) {
          fs::directory_iterator{create_info.output_dir}) {
       if (fs::is_regular_file(filename.status())) {
         auto mapped =
-            fuzzuf::utils::map_file(filename.path().string(), O_RDONLY, true);
+            fuzzuf::utils::map_file(filename.path().string(), O_RDONLY, true, false);
         std::vector<std::uint8_t> input(mapped.begin(), mapped.end());
         auto sha1 = fuzzuf::utils::ToSerializedSha1(input);
         if (sha1 != filename.path().filename().string()) continue;

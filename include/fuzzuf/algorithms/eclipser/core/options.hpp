@@ -48,6 +48,7 @@ struct FuzzOption {
   InputSource fuzz_source = StdInput{};
   int n_solve = 600;
   int n_spawn = 10;
+  bool do_not_unlink = false;
   std::function<void(std::string &&)> sink;
   std::mt19937 rng;
   std::unordered_map< Tracer, std::vector< std::string > > splited_args;

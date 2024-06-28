@@ -47,7 +47,10 @@ std::unique_ptr<fuzzuf::fuzzer::Fuzzer> BuildFromArgs(
                         po::value<std::string>(&afl_options.instance_id),
                         "distributed mode (see docs/algorithms/afl/parallel_fuzzing.md)")(
           "parallel-random,S", po::value<std::string>(&afl_options.instance_id),
-          "distributed mode (see docs/algorithms/afl/parallel_fuzzing.md)");
+          "distributed mode (see docs/algorithms/afl/parallel_fuzzing.md)")(
+          "no-unlink,N", po::bool_switch(&afl_options.do_not_unlink),
+          "do not unlink the fuzzing input file (for devices etc.)"
+          );
 
   po::variables_map vm;
   po::store(po::command_line_parser(fuzzer_args.argc, fuzzer_args.argv)

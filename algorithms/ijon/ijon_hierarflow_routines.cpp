@@ -118,6 +118,7 @@ static void StoreMaxInput(IJONState &state, u32 idx, const u8 *data, u32 len) {
   // If Mutator's implementation is changed, then we have to
   // add to ExecInput a member function that checks loaded or unloaded,
   // and use OverwriteThenUnload and OverwriteKeepingLoaded accordingly.
+  if (!state.setting->do_not_unlink) state.all_inputs[idx]->Unlink();
   state.all_inputs[idx]->OverwriteThenUnload(data, len);
 
   fs::path copy_fn =

@@ -37,6 +37,8 @@ Options available are listed below:
 - Local options (only available for AFL)
     - `--dict_file=path/to/dict/file`
         - Specifies a path to the file, loaded as an additional dictionary.
+    - `--no-unlink`
+        - Do not unlink the fuzzing input file.
 
 ## Algorithm Overview
 

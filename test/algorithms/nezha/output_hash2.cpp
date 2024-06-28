@@ -190,7 +190,7 @@ BOOST_AUTO_TEST_CASE(HierarFlowOutputHash) {
          fs::directory_iterator{create_info.output_dir}) {
       if (fs::is_regular_file(filename.status())) {
         auto mapped =
-            fuzzuf::utils::map_file(filename.path().string(), O_RDONLY, true);
+            fuzzuf::utils::map_file(filename.path().string(), O_RDONLY, true, false);
         std::vector<std::uint8_t> input(mapped.begin(), mapped.end());
         const auto leaf = filename.path().filename().string();
         static const auto expected_prefix = std::string("diff_");

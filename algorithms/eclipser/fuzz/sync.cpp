@@ -115,7 +115,8 @@ seed_queue::SeedQueue &ImportSeed(
   const std::string &tc_path,
   seed_queue::SeedQueue &seed_queue
 ) {
-  const auto mapped = utils::map_file(tc_path, O_RDONLY, true);
+  // NOTE: ignore ENOENT error because the file may be unlinked.
+  const auto mapped = utils::map_file(tc_path, O_RDONLY, true, true);
   std::vector< std::byte > tc_bytes;
   tc_bytes.reserve( mapped.size() );
   std::transform(

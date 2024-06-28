@@ -1,6 +1,6 @@
 /*
  * fuzzuf
- * Copyright (C) 2023 Ricerca Security
+ * Copyright (C) 2021-2024 Ricerca Security
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
@@ -16,29 +16,17 @@
  * along with this program.  If not, see http://www.gnu.org/licenses/.
  */
 /**
- * @file copy.cpp
+ * @file unlink_file.hpp
  * @author Ricerca Security <fuzzuf-dev@ricsec.co.jp>
  */
 
-#include <fstream>
-#include <fcntl.h>
-#include <sys/mman.h>
-#include <sys/stat.h>
-#include "fuzzuf/utils/copy.hpp"
-#include "fuzzuf/utils/map_file.hpp"
-#include "config.h"
+#ifndef FUZZUF_INCLUDE_UTILS_UNLINK_FILE_HPP
+#define FUZZUF_INCLUDE_UTILS_UNLINK_FILE_HPP
+
+#include <string>
 
 namespace fuzzuf::utils {
+void UnlinkFile(std::string path);
+}
 
-void copy( const fs::path &from, const fs::path &to ) {
-#ifdef STATX_IS_DEFINED
-  fs::copy( from, to );
-#else
-  const auto data = fuzzuf::utils::map_file( from.c_str(), O_RDONLY, true, false );
-  std::fstream fd( to.c_str(), std::ios::out|std::ios::binary );
-  fd.write( reinterpret_cast< char* >( &*data.begin() ), std::distance( data.begin(), data.end() ) );
 #endif
-}
-
-}
-

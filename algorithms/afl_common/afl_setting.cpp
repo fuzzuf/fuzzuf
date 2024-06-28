@@ -26,7 +26,7 @@ namespace fuzzuf::algorithm::afl {
 AFLSetting::AFLSetting(const std::vector<std::string> &argv,
                        const std::string &in_dir, const std::string &out_dir,
                        u32 exec_timelimit_ms, u64 exec_memlimit, bool forksrv,
-                       bool dumb_mode, int cpuid_to_bind)
+                       bool dumb_mode, int cpuid_to_bind, bool do_not_unlink)
     : argv(argv),
       in_dir(in_dir),
       out_dir(out_dir),
@@ -34,7 +34,8 @@ AFLSetting::AFLSetting(const std::vector<std::string> &argv,
       exec_memlimit(exec_memlimit),
       forksrv(forksrv),
       dumb_mode(dumb_mode),
-      cpuid_to_bind(cpuid_to_bind) {}
+      cpuid_to_bind(cpuid_to_bind),
+      do_not_unlink(do_not_unlink) {}
 
 AFLSetting::~AFLSetting() {}
 

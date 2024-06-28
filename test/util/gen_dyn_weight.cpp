@@ -71,7 +71,7 @@ BOOST_AUTO_TEST_CASE(ExecuteAFLKSchedulerFromCLI) {
     }
   }
   {
-    const auto range = fuzzuf::utils::map_file( ( root_dir/"dyn_katz_cent" ).c_str(), O_RDONLY, true );
+    const auto range = fuzzuf::utils::map_file( ( root_dir/"dyn_katz_cent" ).c_str(), O_RDONLY, true, false );
     auto iter = range.begin();
     const auto end = range.end();
     std::vector< boost::fusion::vector< std::uint32_t, double > > temp;

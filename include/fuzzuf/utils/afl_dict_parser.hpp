@@ -193,7 +193,7 @@ auto LoadAFLDictionary(const std::string &filename_, T &dest, bool strict,
     }
   }
 
-  auto mapped_file = utils::map_file(filename, O_RDONLY, true);
+  auto mapped_file = utils::map_file(filename, O_RDONLY, true, false);
   const AFLDictRule<uint8_t *, T> rule(level, strict, eout);
   auto iter = mapped_file.begin().get();
   const auto end = mapped_file.end().get();

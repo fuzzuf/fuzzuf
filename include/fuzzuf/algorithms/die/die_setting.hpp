@@ -32,13 +32,13 @@ struct DIESetting : public afl::AFLSetting {
   explicit DIESetting(const std::vector<std::string> &argv,
                       const std::string &in_dir, const std::string &out_dir,
                       u32 exec_timelimit_ms, u64 exec_memlimit, bool forksrv,
-                      bool dumb_mode, int cpuid_to_bind,
+                      bool dumb_mode, int cpuid_to_bind, bool do_not_unlink,
                       const std::string &die_dir, const std::string &cmd_py,
                       const std::string &cmd_node, const std::string &d8_path,
                       const std::string &d8_flags,
                       const std::string &typer_path, int mut_cnt)
       : AFLSetting(argv, in_dir, out_dir, exec_timelimit_ms, exec_memlimit,
-                   forksrv, dumb_mode, cpuid_to_bind),
+                   forksrv, dumb_mode, cpuid_to_bind, do_not_unlink),
         die_dir(die_dir),        // Path to DIE directory
         cmd_py(cmd_py),          // Command to execute Python 3
         cmd_node(cmd_node),      // Command to execute JavaScript

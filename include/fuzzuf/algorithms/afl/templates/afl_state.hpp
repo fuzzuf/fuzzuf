@@ -472,6 +472,7 @@ std::shared_ptr<Testcase> AFLStateTemplate<Testcase>::AddToQueue(
     const std::string& fn, const u8* buf, u32 len, bool passed_det) {
   auto input = input_set.CreateOnDisk(fn);
   if (buf) {
+    if (!setting->do_not_unlink) input->Unlink();
     input->OverwriteThenUnload(buf, len);
   }
 

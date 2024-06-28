@@ -64,13 +64,15 @@ struct DIEOptions {
   std::string d8_flags;    // (optional) Flags for d8
   std::string typer_path;  // (optional) Path to die_typer.py
   int mut_cnt;             // (optional) Mutation count
+  bool do_not_unlink;      // (optional) Do not unlink
 
   /* Default values */
   DIEOptions()
       : die_dir("tools/die/DIE"),
         d8_flags(""),
         typer_path("tools/die/typer.py"),
-        mut_cnt(100){};
+        mut_cnt(100),
+        do_not_unlink(false){};
 };
 
 /**
@@ -107,7 +109,9 @@ std::unique_ptr<TFuzzer> BuildDIEFuzzerFromArgs(
       "Set path to python script to collect type information.\nDefault: "
       "tools/die/typer.py")(
       "mut_cnt", po::value<int>(&die_options.mut_cnt),
-      "Set number of scripts to generate per mutation.\nDefault: 100")
+      "Set number of scripts to generate per mutation.\nDefault: 100")(
+      "no-unlink,N", po::bool_switch(&die_options.do_not_unlink),
+      "do not unlink the fuzzing input file (for devices etc.)")
       //
       ("pargs", po::value<std::vector<std::string>>(&pargs),
        "Specify PUT and args for PUT.");
@@ -173,6 +177,7 @@ std::unique_ptr<TFuzzer> BuildDIEFuzzerFromArgs(
       global_options.exec_memlimit.value_or(GetMemLimit<DIETag>()),
       /* forksrv */ true,
       /* dumb_mode */ false, global_options.cpuid_to_bind,
+      die_options.do_not_unlink,
       die_options.die_dir,  // vvv DIE vvv
       die_options.cmd_py, die_options.cmd_node, die_options.d8_path,
       die_options.d8_flags, die_options.typer_path, die_options.mut_cnt);

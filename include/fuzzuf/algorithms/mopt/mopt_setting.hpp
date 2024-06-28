@@ -29,7 +29,7 @@ struct MOptSetting : public afl::AFLSetting {
                        const std::string &in_dir, const std::string &out_dir,
                        u32 exec_timelimit_ms, u64 exec_memlimit, bool forksrv,
                        bool dumb_mode, int cpuid_to_bind, u64 mopt_limit_time,
-                       u64 mopt_most_time);
+                       u64 mopt_most_time, bool do_not_unlink);
 
   ~MOptSetting();
 
