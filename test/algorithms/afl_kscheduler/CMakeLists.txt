@@ -173,6 +173,8 @@ if( ENABLE_CLANG_TIDY )
   )
 endif()
 if( FUZZUF_CC_FOUND AND RAGEL_FOUND )
+if( ENABLE_HEAVY_TEST )
 add_test( NAME "algorithms.afl_kscheduler.once" COMMAND test-afl_kscheduler-once )
+endif()
 endif()
 
