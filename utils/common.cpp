@@ -20,7 +20,9 @@
 #include <memory>
 #include <numeric>
 #include <thread>
-
+#include <iostream>
+#include <ctime>
+#include <boost/stacktrace.hpp>
 #include "config.h"
 #ifdef HAS_CXX_STD_BIT
 #include <bit>
@@ -539,20 +541,31 @@ u64 NextP2(u64 val) {
 pid_t Fork() { return fork(); }
 
 u64 GetCurTimeMs() {
-  struct timeval tv;
-  struct timezone tz;
-
-  gettimeofday(&tv, &tz);
-
-  return (tv.tv_sec * 1000ULL) + (tv.tv_usec / 1000);
+#if __GNUC__ >= 10 || ( __GNUC__ == 9 && __GNUC_MINOR__ > 1 )
+  struct std::timespec tv;
+#else
+  struct timespec tv;
+#endif
+  if( clock_gettime( CLOCK_MONOTONIC, &tv ) < 0 ) {
+    std::cout << "clock_gettime failed : " << errno << std::endl;
+    std::cout << boost::stacktrace::stacktrace();
+    std::abort();
+  }
+  return ( std::uint64_t( tv.tv_sec ) * 1000ULL) + ( std::uint64_t( tv.tv_nsec ) / 1000u / 1000u );
 }
 
 u64 GetCurTimeUs() {
-  struct timeval tv;
-  struct timezone tz;
-
-  gettimeofday(&tv, &tz);
-  return (tv.tv_sec * 1000000ULL) + tv.tv_usec;
+#if __GNUC__ >= 10 || ( __GNUC__ == 9 && __GNUC_MINOR__ > 1 )
+  struct std::timespec tv;
+#else
+  struct timespec tv;
+#endif
+  if( clock_gettime( CLOCK_MONOTONIC, &tv ) < 0 ) {
+    std::cout << "clock_gettime failed : " << errno << std::endl;
+    std::cout << boost::stacktrace::stacktrace();
+    std::abort();
+  }
+  return ( std::uint64_t( tv.tv_sec ) * 1000000ULL) + ( std::uint64_t( tv.tv_nsec ) / 1000u );
 }
 
 std::string StrPrintf(const char *format, ...) {
