@@ -57,9 +57,6 @@ if __name__ == '__main__':
 
   sections = ''
   with subprocess.Popen([ 'objdump', '-h', args.filename ], stdout=subprocess.PIPE ) as list_sections:
-    while list_sections.poll() is not None:
-      (partial_stdout,partial_stderr) = list_sections.communicate()
-      sections += partial_stdout.decode( 'utf-8' )
     (partial_stdout,partial_stderr) = list_sections.communicate()
     sections += partial_stdout.decode( 'utf-8' )
     if list_sections.returncode != 0:
