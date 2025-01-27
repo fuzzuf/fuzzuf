@@ -40,6 +40,7 @@
 #include "fuzzuf/utils/optparser.hpp"
 #include "fuzzuf/utils/which.hpp"
 #include "fuzzuf/utils/workspace.hpp"
+#include "fuzzuf/utils/get_afl_map_size.hpp"
 
 namespace fuzzuf::cli::fuzzer::die {
 
@@ -188,6 +189,8 @@ std::unique_ptr<TFuzzer> BuildDIEFuzzerFromArgs(
   using fuzzuf::algorithm::afl::option::GetDefaultOutfile;
   using fuzzuf::algorithm::afl::option::GetMapSize;
   using fuzzuf::cli::ExecutorKind;
+  
+  const std::size_t afl_map_size = utils::get_afl_map_size( GetMapSize<DIETag>() );
 
   std::shared_ptr<TExecutor> executor;
   switch (global_options.executor) {
@@ -195,7 +198,7 @@ std::unique_ptr<TFuzzer> BuildDIEFuzzerFromArgs(
       auto nle = std::make_shared<fuzzuf::executor::NativeLinuxExecutor>(
           setting->argv, setting->exec_timelimit_ms, setting->exec_memlimit,
           setting->forksrv, setting->out_dir / GetDefaultOutfile<DIETag>(),
-          GetMapSize<DIETag>(),  // afl_shm_size
+          afl_map_size,  // afl_shm_size
           0                      // bb_shm_size
       );
       executor = std::make_shared<TExecutor>(std::move(nle));
@@ -218,7 +221,7 @@ std::unique_ptr<TFuzzer> BuildDIEFuzzerFromArgs(
           global_options.proxy_path.value(), setting->argv,
           setting->exec_timelimit_ms, setting->exec_memlimit, setting->forksrv,
           setting->out_dir / GetDefaultOutfile<DIETag>(),
-          GetMapSize<DIETag>()  // afl_shm_size
+          afl_map_size  // afl_shm_size
       );
       executor = std::make_shared<TExecutor>(std::move(cse));
       break;

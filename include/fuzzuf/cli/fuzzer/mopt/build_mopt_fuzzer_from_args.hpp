@@ -41,6 +41,7 @@
 #include "fuzzuf/utils/optparser.hpp"
 #include "fuzzuf/utils/parallel_mode.hpp"
 #include "fuzzuf/utils/workspace.hpp"
+#include "fuzzuf/utils/get_afl_map_size.hpp"
 
 namespace fuzzuf::cli::fuzzer::mopt {
 
@@ -196,6 +197,8 @@ std::unique_ptr<TFuzzer> BuildMOptFuzzerFromArgs(
   using fuzzuf::algorithm::afl::option::GetDefaultOutfile;
   using fuzzuf::algorithm::afl::option::GetMapSize;
   using fuzzuf::cli::ExecutorKind;
+  
+  const std::size_t afl_map_size = utils::get_afl_map_size( GetMapSize<MOptTag>() );
 
   std::shared_ptr<TExecutor> executor;
   switch (global_options.executor) {
@@ -203,7 +206,7 @@ std::unique_ptr<TFuzzer> BuildMOptFuzzerFromArgs(
       auto nle = std::make_shared<fuzzuf::executor::NativeLinuxExecutor>(
           setting->argv, setting->exec_timelimit_ms, setting->exec_memlimit,
           setting->forksrv, setting->out_dir / GetDefaultOutfile<MOptTag>(),
-          GetMapSize<MOptTag>(),  // afl_shm_size
+          afl_map_size,  // afl_shm_size
           0                       // bb_shm_size
       );
       executor = std::make_shared<TExecutor>(std::move(nle));
@@ -218,7 +221,7 @@ std::unique_ptr<TFuzzer> BuildMOptFuzzerFromArgs(
               .set_exec_memlimit(setting->exec_memlimit)
               .set_path_to_write_input(setting->out_dir /
                                        GetDefaultOutfile<MOptTag>())
-              .set_afl_shm_size(GetMapSize<MOptTag>())  // afl_shm_size
+              .set_afl_shm_size(afl_map_size)  // afl_shm_size
               .move());
       executor = std::make_shared<TExecutor>(std::move(lfe));
       break;
