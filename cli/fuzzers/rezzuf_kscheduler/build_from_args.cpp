@@ -24,6 +24,7 @@
 #include <string>
 #include <vector>
 
+
 #include "fuzzuf/algorithms/afl/afl_havoc_case_distrib.hpp"
 #include "fuzzuf/algorithms/aflfast/aflfast_option.hpp"
 #include "fuzzuf/algorithms/aflplusplus/aflplusplus_havoc.hpp"
@@ -33,6 +34,7 @@
 #include "fuzzuf/algorithms/rezzuf_kscheduler/state.hpp"
 #include "fuzzuf/algorithms/rezzuf_kscheduler/testcase.hpp"
 #include "fuzzuf/cli/fuzzer/rezzuf/build_rezzuf_fuzzer_from_args.hpp"
+#include "fuzzuf/utils/get_afl_map_size.hpp"
 
 namespace fuzzuf::cli::fuzzer::rezzuf_kscheduler {
 // Used only for CLI
@@ -166,6 +168,8 @@ std::unique_ptr<fuzzuf::fuzzer::Fuzzer> BuildFromArgs(
   // initialize Executor
   fuzzuf::utils::SetupDirs(setting->out_dir.string());
 
+  const std::size_t afl_map_size = utils::get_afl_map_size( fuzzuf::algorithm::afl::option::GetMapSize<Tag>() );
+  
   using TExecutor = executor::AFLExecutorInterface; 
   std::shared_ptr<TExecutor> executor;
   switch (global_options.executor) {
@@ -173,7 +177,7 @@ std::unique_ptr<fuzzuf::fuzzer::Fuzzer> BuildFromArgs(
       auto nle = std::make_shared<fuzzuf::executor::NativeLinuxExecutor>(
           setting->argv, setting->exec_timelimit_ms, setting->exec_memlimit,
           setting->forksrv, setting->out_dir / algorithm::afl::option::GetDefaultOutfile<Tag>(),
-          algorithm::afl::option::GetMapSize<Tag>(),  // afl_shm_size
+          afl_map_size,  // afl_shm_size
           0                         // bb_shm_size
       );
       executor = std::make_shared<TExecutor>(std::move(nle));
@@ -188,7 +192,7 @@ std::unique_ptr<fuzzuf::fuzzer::Fuzzer> BuildFromArgs(
               .set_exec_memlimit(setting->exec_memlimit)
               .set_path_to_write_input(setting->out_dir /
                                        algorithm::afl::option::GetDefaultOutfile<Tag>())
-              .set_afl_shm_size(algorithm::afl::option::GetMapSize<Tag>())  // afl_shm_size
+              .set_afl_shm_size(afl_map_size)  // afl_shm_size
               .move());
       executor = std::make_shared<TExecutor>(std::move(lfe));
       break;
@@ -211,7 +215,7 @@ std::unique_ptr<fuzzuf::fuzzer::Fuzzer> BuildFromArgs(
           global_options.proxy_path.value(), setting->argv,
           setting->exec_timelimit_ms, setting->exec_memlimit, setting->forksrv,
           setting->out_dir / algorithm::afl::option::GetDefaultOutfile<Tag>(),
-          algorithm::afl::option::GetMapSize<Tag>()  // afl_shm_size
+          afl_map_size  // afl_shm_size
       );
       executor = std::make_shared<TExecutor>(std::move(cse));
       break;

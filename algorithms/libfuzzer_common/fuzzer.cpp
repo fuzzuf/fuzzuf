@@ -26,12 +26,14 @@
 #include <fstream>
 #include <string>
 
+
 #include "fuzzuf/algorithms/libfuzzer/cli_compat/options.hpp"
 #include "fuzzuf/algorithms/libfuzzer/config.hpp"
 #include "fuzzuf/algorithms/libfuzzer/create.hpp"
 #include "fuzzuf/cli/fuzzer_args.hpp"
 #include "fuzzuf/cli/global_fuzzer_options.hpp"
 #include "fuzzuf/logger/logger.hpp"
+#include "fuzzuf/utils/get_afl_map_size.hpp"
 
 namespace fuzzuf::algorithm::libfuzzer {
 LibFuzzer::LibFuzzer(cli::FuzzerArgs &fuzzer_args,
@@ -64,6 +66,9 @@ LibFuzzer::LibFuzzer(cli::FuzzerArgs &fuzzer_args,
   const auto path_to_write_seed = create_info.output_dir / "cur_input";
   const auto symcc_dir = create_info.output_dir / "symcc";
   vars.executors.reserve(opts.targets.size());
+  
+  const std::size_t afl_map_size = utils::get_afl_map_size( create_info.afl_shm_size );
+
   std::size_t i = 0u;
   for (const auto &target_path : opts.targets) {
     if (i >= create_info.symcc_target_offset &&
@@ -73,7 +78,7 @@ LibFuzzer::LibFuzzer(cli::FuzzerArgs &fuzzer_args,
               new fuzzuf::executor::NativeLinuxExecutor(
                   {target_path.string(), output_file_path.string()},
                   create_info.exec_timelimit_ms, create_info.exec_memlimit,
-                  false, path_to_write_seed, create_info.afl_shm_size,
+                  false, path_to_write_seed, afl_map_size,
                   create_info.bb_shm_size, false,
                   {"SYMCC_OUTPUT_DIR=" + symcc_dir.string()}, {symcc_dir})));
     } else {
@@ -83,7 +88,7 @@ LibFuzzer::LibFuzzer(cli::FuzzerArgs &fuzzer_args,
                   {target_path.string(), output_file_path.string()},
                   create_info.exec_timelimit_ms, create_info.exec_memlimit,
                   create_info.forksrv, path_to_write_seed,
-                  create_info.afl_shm_size, create_info.bb_shm_size)));
+                  afl_map_size, create_info.bb_shm_size)));
     }
     ++i;
   }

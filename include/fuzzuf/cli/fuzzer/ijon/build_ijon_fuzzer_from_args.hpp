@@ -40,6 +40,7 @@
 #include "fuzzuf/utils/optparser.hpp"
 #include "fuzzuf/utils/parallel_mode.hpp"
 #include "fuzzuf/utils/workspace.hpp"
+#include "fuzzuf/utils/get_afl_map_size.hpp"
 
 namespace fuzzuf::cli::fuzzer::ijon {
 
@@ -151,6 +152,8 @@ std::unique_ptr<TFuzzer> BuildIJONFuzzerFromArgs(
 
   using fuzzuf::algorithm::afl::option::GetDefaultOutfile;
   using fuzzuf::executor::IJONExecutorInterface;
+  
+  const std::size_t afl_map_size = utils::get_afl_map_size( fuzzuf::algorithm::afl::option::GetMapSize<IJONTag>() );
 
   std::shared_ptr<IJONExecutorInterface> executor;
   u32 ijon_max_offset = 0u;
@@ -163,8 +166,7 @@ std::unique_ptr<TFuzzer> BuildIJONFuzzerFromArgs(
               .set_exec_memlimit(setting->exec_memlimit)
               .set_path_to_write_input(setting->out_dir /
                                        GetDefaultOutfile<IJONTag>())
-              .set_afl_shm_size(fuzzuf::algorithm::afl::option::GetMapSize<
-                                fuzzuf::algorithm::ijon::option::IJONTag>())
+              .set_afl_shm_size( afl_map_size )
               .set_ijon_counter_shm_size(
                   fuzzuf::algorithm::afl::option::GetMapSize<
                       fuzzuf::algorithm::ijon::option::IJONTag>())

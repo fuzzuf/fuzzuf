@@ -405,6 +405,7 @@ set(
   utils/count_regular_files.cpp
   utils/create_empty_file.cpp
   utils/errno_to_system_error.cpp
+  utils/get_afl_map_size.cpp
   utils/get_aligned_addr.cpp
   utils/get_external_seeds.cpp
   utils/get_hash.cpp

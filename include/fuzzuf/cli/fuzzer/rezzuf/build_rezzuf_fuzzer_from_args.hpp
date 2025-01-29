@@ -37,6 +37,7 @@
 #include "fuzzuf/utils/optparser.hpp"
 #include "fuzzuf/utils/parallel_mode.hpp"
 #include "fuzzuf/utils/workspace.hpp"
+#include "fuzzuf/utils/get_afl_map_size.hpp"
 #ifdef __aarch64__
 #include "fuzzuf/executor/coresight_executor.hpp"
 #endif
@@ -206,6 +207,8 @@ std::unique_ptr<TFuzzer> BuildRezzufFuzzerFromArgs(
   using fuzzuf::algorithm::afl::option::GetDefaultOutfile;
   using fuzzuf::algorithm::afl::option::GetMapSize;
   using fuzzuf::cli::ExecutorKind;
+  
+  const std::size_t afl_map_size = utils::get_afl_map_size( GetMapSize<RezzufTag>() );
 
   std::shared_ptr<TExecutor> executor;
   switch (global_options.executor) {
@@ -213,7 +216,7 @@ std::unique_ptr<TFuzzer> BuildRezzufFuzzerFromArgs(
       auto nle = std::make_shared<fuzzuf::executor::NativeLinuxExecutor>(
           setting->argv, setting->exec_timelimit_ms, setting->exec_memlimit,
           setting->forksrv, setting->out_dir / GetDefaultOutfile<RezzufTag>(),
-          GetMapSize<RezzufTag>(),  // afl_shm_size
+          afl_map_size,  // afl_shm_size
           0                         // bb_shm_size
       );
       executor = std::make_shared<TExecutor>(std::move(nle));
@@ -228,7 +231,7 @@ std::unique_ptr<TFuzzer> BuildRezzufFuzzerFromArgs(
               .set_exec_memlimit(setting->exec_memlimit)
               .set_path_to_write_input(setting->out_dir /
                                        GetDefaultOutfile<RezzufTag>())
-              .set_afl_shm_size(GetMapSize<RezzufTag>())  // afl_shm_size
+              .set_afl_shm_size(afl_map_size)  // afl_shm_size
               .move());
       executor = std::make_shared<TExecutor>(std::move(lfe));
       break;
@@ -251,7 +254,7 @@ std::unique_ptr<TFuzzer> BuildRezzufFuzzerFromArgs(
           global_options.proxy_path.value(), setting->argv,
           setting->exec_timelimit_ms, setting->exec_memlimit, setting->forksrv,
           setting->out_dir / GetDefaultOutfile<RezzufTag>(),
-          GetMapSize<RezzufTag>()  // afl_shm_size
+          afl_map_size  // afl_shm_size
       );
       executor = std::make_shared<TExecutor>(std::move(cse));
       break;

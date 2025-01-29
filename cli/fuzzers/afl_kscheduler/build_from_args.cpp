@@ -24,12 +24,14 @@
 #include <string>
 #include <vector>
 
+
 #include "fuzzuf/algorithms/afl/afl_fuzzer.hpp"
 #include "fuzzuf/algorithms/afl_kscheduler/fuzzer.hpp"
 #include "fuzzuf/algorithms/afl_kscheduler/option.hpp"
 #include "fuzzuf/algorithms/afl_kscheduler/state.hpp"
 #include "fuzzuf/algorithms/afl_kscheduler/testcase.hpp"
 #include "fuzzuf/cli/fuzzer/afl/build_afl_fuzzer_from_args.hpp"
+#include "fuzzuf/utils/get_afl_map_size.hpp"
 
 namespace fuzzuf::cli::fuzzer::afl_kscheduler {
 // Used only for CLI
@@ -134,13 +136,15 @@ std::unique_ptr<fuzzuf::fuzzer::Fuzzer> BuildFromArgs(
   using fuzzuf::algorithm::afl::option::GetDefaultOutfile;
   using fuzzuf::algorithm::afl::option::GetMapSize;
 
+  const std::size_t afl_map_size = utils::get_afl_map_size( GetMapSize<algorithm::afl::option::AFLKSchedulerTag>() );
+
   std::shared_ptr<executor::AFLExecutorInterface> executor;
   switch (global_options.executor) {
     case ExecutorKind::NATIVE: {
       auto nle = std::make_shared<fuzzuf::executor::NativeLinuxExecutor>(
           setting->argv, setting->exec_timelimit_ms, setting->exec_memlimit,
           setting->forksrv, setting->out_dir / GetDefaultOutfile<algorithm::afl::option::AFLKSchedulerTag>(),
-          GetMapSize<algorithm::afl::option::AFLKSchedulerTag>(),  // afl_shm_size
+          afl_map_size,  // afl_shm_size
           0                      // bb_shm_size
       );
       executor = std::make_shared<executor::AFLExecutorInterface>(std::move(nle));
@@ -155,7 +159,7 @@ std::unique_ptr<fuzzuf::fuzzer::Fuzzer> BuildFromArgs(
               .set_exec_memlimit(setting->exec_memlimit)
               .set_path_to_write_input(setting->out_dir /
                                        GetDefaultOutfile<algorithm::afl::option::AFLKSchedulerTag>())
-              .set_afl_shm_size(GetMapSize<algorithm::afl::option::AFLKSchedulerTag>())  // afl_shm_size
+              .set_afl_shm_size(afl_map_size)  // afl_shm_size
               .move());
       executor = std::make_shared<executor::AFLExecutorInterface>(std::move(lfe));
       break;
@@ -177,7 +181,7 @@ std::unique_ptr<fuzzuf::fuzzer::Fuzzer> BuildFromArgs(
           global_options.proxy_path.value(), setting->argv,
           setting->exec_timelimit_ms, setting->exec_memlimit, setting->forksrv,
           setting->out_dir / GetDefaultOutfile<algorithm::afl::option::AFLKSchedulerTag>(),
-          GetMapSize<algorithm::afl::option::AFLKSchedulerTag>()  // afl_shm_size
+          afl_map_size  // afl_shm_size
       );
       executor = std::make_shared<executor::AFLExecutorInterface>(std::move(cse));
       break;
